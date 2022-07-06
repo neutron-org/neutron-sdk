@@ -16,11 +16,6 @@
 
 pub mod contract;
 
-mod error;
-mod queries;
-mod register_queries;
-mod storage;
 #[allow(clippy::unwrap_used)]
 #[cfg(test)]
 mod testing;
-mod types;

@@ -16,19 +16,17 @@
 use cosmwasm_std::entry_point;
 
 use cosmwasm_std::{
-    Binary, Deps, DepsMut, Env, MessageInfo, Reply, Response, StdResult, SubMsgResult,
+    Binary, Deps, DepsMut, Env, MessageInfo, Reply, Response, StdResult,
 };
-use protobuf::Message;
 
-use crate::error::{ContractError, ContractResult};
-use crate::queries::{query_balance, query_delegations, query_transfer_transactions};
-use crate::register_queries::{
+use interchain_queries::error::{ContractError, ContractResult};
+use interchain_queries::queries::{query_balance, query_delegations, query_transfer_transactions};
+use interchain_queries::register_queries::{
     register_balance_query, register_delegator_delegations_query, register_transfers_query,
 };
-use crate::storage::{REGISTERED_INTERCHAIN_QUERIES, TMP_REGISTER_INTERCHAIN_QUERY_REQUEST};
-use crate::types::REGISTER_INTERCHAIN_QUERY_REPLY_ID;
-use interchain_queries::interchain_queries::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
-use stargate::interchain::interchainqueries_tx::MsgRegisterInterchainQueryResponse;
+use interchain_queries::types::REGISTER_INTERCHAIN_QUERY_REPLY_ID;
+use interchain_queries::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
+use interchain_queries::reply::register_interchain_query_reply_handler;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -87,34 +85,10 @@ pub fn execute(
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn reply(deps: DepsMut, _env: Env, msg: Reply) -> ContractResult<Response> {
+pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> ContractResult<Response> {
     // Save registered query id to work with it in query handlers
     if msg.id == REGISTER_INTERCHAIN_QUERY_REPLY_ID {
-        let register_query_request = TMP_REGISTER_INTERCHAIN_QUERY_REQUEST.load(deps.storage)?;
-
-        return match msg.result {
-            SubMsgResult::Ok(result) => {
-                let result_data = match result.data {
-                    None => return Err(ContractError::EmptyInterchainQueryResult),
-                    Some(data) => data,
-                };
-                let register_interchain_query_response: MsgRegisterInterchainQueryResponse =
-                    Message::parse_from_bytes(result_data.as_slice())?;
-
-                REGISTERED_INTERCHAIN_QUERIES.save(
-                    deps.storage,
-                    (
-                        register_query_request.zone_id.as_str(),
-                        register_query_request.query_type.as_str(),
-                        register_query_request.query_data.as_str(),
-                    ),
-                    &register_interchain_query_response.id,
-                )?;
-
-                Ok(Response::new().add_attribute("action", "register"))
-            }
-            SubMsgResult::Err(err) => Err(ContractError::RegisterInterchainQueryFailed(err)),
-        };
+        register_interchain_query_reply_handler(deps, env, msg)
     } else {
         Err(ContractError::InvalidReplyID(msg.id))
     }

@@ -355,10 +355,17 @@ dependencies = [
 name = "interchain_queries"
 version = "0.1.0"
 dependencies = [
+ "base64",
+ "bech32",
+ "cosmos-sdk-proto",
  "cosmwasm-std",
+ "cw-storage-plus",
+ "prost",
  "protobuf",
  "schemars",
  "serde",
+ "stargate",
+ "thiserror",
 ]
 
 [[package]]
@@ -400,18 +407,13 @@ name = "neutron_interchain_queries"
 version = "0.1.0"
 dependencies = [
  "base64",
- "bech32",
- "cosmos-sdk-proto",
  "cosmwasm-schema",
  "cosmwasm-std",
- "cw-storage-plus",
  "interchain_queries",
- "prost",
  "protobuf",
  "schemars",
  "serde",
  "stargate",
- "thiserror",
 ]
 
 [[package]]

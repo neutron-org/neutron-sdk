@@ -69,7 +69,7 @@ where
 }
 
 // Registers an interchain query to get balance of account on remote chain for particular denom
-pub(crate) fn register_balance_query(
+pub fn register_balance_query(
     deps: DepsMut,
     env: Env,
     connection_id: String,
@@ -92,7 +92,7 @@ pub(crate) fn register_balance_query(
 }
 
 // Registeres an interchain query to get delegations of particular delegator on remote chain
-pub(crate) fn register_delegator_delegations_query(
+pub fn register_delegator_delegations_query(
     deps: DepsMut,
     env: Env,
     connection_id: String,
@@ -114,7 +114,7 @@ pub(crate) fn register_delegator_delegations_query(
 }
 
 // Registeres an interchain query to get transfer events to a recipient on a remote chain
-pub(crate) fn register_transfers_query(
+pub fn register_transfers_query(
     deps: DepsMut,
     env: Env,
     connection_id: String,

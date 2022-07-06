@@ -2,7 +2,7 @@ use cosmwasm_std::StdError;
 use protobuf::Error as ProtobufError;
 use thiserror::Error;
 
-pub(crate) type ContractResult<T> = Result<T, ContractError>;
+pub type ContractResult<T> = Result<T, ContractError>;
 
 #[derive(Error, Debug, PartialEq)]
 pub enum ContractError {

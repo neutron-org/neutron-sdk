@@ -7,7 +7,7 @@ use crate::types::{
     QUERY_DELEGATOR_DELEGATIONS_QUERY_TYPE, QUERY_REGISTERED_QUERY_RESULT_PATH, QUERY_TRANSFERS,
 };
 use cosmwasm_std::{to_binary, Addr, Binary, Coin, Deps, Env, Uint128};
-use interchain_queries::interchain_queries::{
+use crate::types::{
     DelegatorDelegationsResponse, QueryBalanceResponse, Transfer, TransfersResponse,
 };
 use stargate::interchain::interchainqueries_query::{
@@ -45,7 +45,7 @@ fn get_interchain_query_result(
 }
 
 // Returns balance of account on remote chain for particular denom
-pub(crate) fn query_balance(
+pub fn query_balance(
     deps: Deps,
     _env: Env,
     zone_id: String,
@@ -94,7 +94,7 @@ pub(crate) fn query_balance(
 }
 
 // Returns delegations of particular delegator on remote chain
-pub(crate) fn query_delegations(
+pub fn query_delegations(
     deps: Deps,
     _env: Env,
     zone_id: String,
@@ -141,7 +141,7 @@ pub(crate) fn query_delegations(
 
 // TODO: limit transactions to avoid querieng same txs over and over again
 // Returns transactions with transfer of remote zone's stake tokens on our interchain account
-pub(crate) fn query_transfer_transactions(
+pub fn query_transfer_transactions(
     deps: Deps,
     _env: Env,
     zone_id: String,

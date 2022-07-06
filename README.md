@@ -8,10 +8,10 @@ This monorepository contains the source code of smart contracts and packages for
 
 The following packages are maintained here:
 
-| Package            | Reference                                                                              | Description                                                                        |
-|--------------------|----------------------------------------------------------------------------------------|------------------------------------------------------------------------------------|
-| Interchain Queries | https://github.com/neutron-org/neutron-contracts/tree/main/packages/interchain_queries | Queries And Messages for interacting with Neutron Interchain Queries Contract      |
-| Stargate           | https://github.com/neutron-org/neutron-contracts/tree/main/packages/stargate           | Structures and Helper methods for interacting with Neutron blockchain via Stargate |
+| Package            | Reference                                                                              | Description                                                                                     |
+|--------------------|----------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
+| Interchain Queries | https://github.com/neutron-org/neutron-contracts/tree/main/packages/interchain_queries | Queries, messages and helper methods and for interacting with Neutron Interchain Queries Module |
+| Stargate           | https://github.com/neutron-org/neutron-contracts/tree/main/packages/stargate           | Structures and helper methods for interacting with Neutron blockchain via Stargate              |
 
 ### Contracts
 

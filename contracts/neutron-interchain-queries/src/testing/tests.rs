@@ -13,16 +13,16 @@
 use super::mock_querier::mock_dependencies as dependencies;
 use crate::contract::{execute, query, reply};
 use crate::testing::mock_querier::WasmMockQuerier;
-use crate::types::{QUERY_REGISTERED_QUERY_RESULT_PATH, REGISTER_INTERCHAIN_QUERY_REPLY_ID};
+use interchain_queries::types::{QUERY_REGISTERED_QUERY_RESULT_PATH, REGISTER_INTERCHAIN_QUERY_REPLY_ID};
 use cosmwasm_std::testing::{mock_env, mock_info, MockApi, MockStorage};
 use cosmwasm_std::{
     from_binary, Addr, Binary, Coin, Delegation, Env, MessageInfo, OwnedDeps, Reply,
     SubMsgResponse, SubMsgResult,
 };
-use interchain_queries::interchain_queries::QueryMsg;
-use interchain_queries::interchain_queries::{
-    DelegatorDelegationsResponse, ExecuteMsg, QueryBalanceResponse, Transfer, TransfersResponse,
+use interchain_queries::types::{
+    DelegatorDelegationsResponse, QueryBalanceResponse, Transfer, TransfersResponse,
 };
+use interchain_queries::msg::{ExecuteMsg, QueryMsg};
 use protobuf::Message;
 use stargate::interchain::interchainqueries_tx::MsgRegisterInterchainQueryResponse;
 
