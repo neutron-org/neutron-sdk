@@ -1,0 +1,11 @@
+[package]
+name = "check_contract"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+
+[workspace]
+
+[dependencies]
+clap = "2.33.3"
+cosmwasm-vm = "1.0.0"
