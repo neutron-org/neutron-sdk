@@ -1,6 +1,6 @@
 # Neutron Cosmwasm Contracts
 
-This monorepository contains the source code of smart contracts and packages for interacting with [Neutron blockchain](https://github.com/neutron-org/gaia-wasm-zone)
+This monorepository contains the source code of smart contracts and packages for interacting with [Neutron blockchain](https://github.com/neutron-org/neutron)
 
 ## Overview
 
@@ -19,7 +19,7 @@ The following contracts are maintained here:
 
 | Contract                            | Reference                                                                                       | Description                                                                                                                                                                   |
 |-------------------------------------|-------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Neutron Interchain Queries Contract | https://github.com/neutron-org/neutron-contracts/tree/main/contracts/neutron-interchain-queries | The contract provides a convenient interface for interacting with [Interchain Queries Module](https://github.com/neutron-org/gaia-wasm-zone/tree/master/x/interchainqueries). |
+| Neutron Interchain Queries Contract | https://github.com/neutron-org/neutron-contracts/tree/main/contracts/neutron-interchain-queries | The contract provides a convenient interface for interacting with [Interchain Queries Module](https://github.com/neutron-org/neutron/tree/master/x/interchainqueries). |
 
 ## Development
 
