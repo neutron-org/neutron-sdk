@@ -1,0 +1,12 @@
+syntax = "proto3";
+package neutron_org.interchainadapter.interchainqueries;
+
+import "interchainqueries/interchainqueries_tx.proto";
+
+message QueryRegisteredQueryResultRequest {
+  uint64 query_id = 1;
+}
+
+message QueryRegisteredQueryResultResponse {
+  QueryResult result = 1;
+}

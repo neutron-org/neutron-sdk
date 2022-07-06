@@ -1,0 +1,29 @@
+syntax = "proto3";
+package neutron_org.interchainadapter.interchaintxs.v1;
+
+option go_package = "github.com/neutron_org/interchain-adapter/x/interchaintxs/types";
+
+
+import "google/protobuf/any.proto";
+
+// MsgRegisterInterchainAccount is used to register an account on a remote zone.
+message MsgRegisterInterchainAccount {
+  string from_address = 1;
+  string connection_id = 2;
+  string owner = 3;
+}
+
+// MsgRegisterInterchainAccountResponse is the response type for
+// MsgRegisterInterchainAccount.
+message MsgRegisterInterchainAccountResponse {}
+
+// MsgSubmitTx defines the payload for Msg/SubmitTx
+message MsgSubmitTx {
+  string from_address = 1;
+  string owner = 2;
+  string connection_id = 3;
+  repeated google.protobuf.Any msgs = 4;
+}
+
+// MsgSubmitTxResponse defines the response for Msg/SubmitTx
+message MsgSubmitTxResponse {}
