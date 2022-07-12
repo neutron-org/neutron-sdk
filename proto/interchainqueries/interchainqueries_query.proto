@@ -1,7 +1,24 @@
 syntax = "proto3";
-package neutron_org.interchainadapter.interchainqueries;
+package neutron.interchainadapter.interchainqueries;
 
 import "interchainqueries/interchainqueries_tx.proto";
+import "interchainqueries/interchainqueries_genesis.proto";
+import "gogoproto/gogo.proto";
+
+message QueryRegisteredQueriesRequest {}
+
+message QueryRegisteredQueriesResponse {
+  repeated RegisteredQuery registered_queries = 1
+  [ (gogoproto.nullable) = false ];
+}
+
+message QueryRegisteredQueryRequest {
+  uint64 query_id = 1;
+}
+
+message QueryRegisteredQueryResponse {
+  RegisteredQuery registered_query = 1;
+}
 
 message QueryRegisteredQueryResultRequest {
   uint64 query_id = 1;
@@ -9,4 +26,20 @@ message QueryRegisteredQueryResultRequest {
 
 message QueryRegisteredQueryResultResponse {
   QueryResult result = 1;
+}
+
+message QuerySubmittedTransactionsRequest {
+  uint64 query_id = 1;
+  uint64 start = 2;
+  uint64 end = 3;
+}
+
+message QuerySubmittedTransactionsResponse {
+  repeated Transaction transactions = 1;
+}
+
+message Transaction {
+  uint64 id = 1;
+  uint64 height = 2;
+  bytes data = 3;
 }

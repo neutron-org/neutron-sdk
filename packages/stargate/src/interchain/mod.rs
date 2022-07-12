@@ -8,6 +8,7 @@ pub mod evidence;
 pub mod gogo;
 pub mod interchainaccounts_query;
 pub mod interchainaccounts_tx;
+pub mod interchainqueries_genesis;
 pub mod interchainqueries_query;
 pub mod interchainqueries_tx;
 pub mod keys;
