@@ -24,4 +24,4 @@ RUN set -x; \
      && unzip -o $PROTOC_ZIP -d /usr/local bin/protoc \
      && unzip -o $PROTOC_ZIP -d /usr/local include/* \
      && rm -f $PROTOC_ZIP \
-     && cargo install protobuf-codegen
+     && cargo install protobuf-codegen --locked
