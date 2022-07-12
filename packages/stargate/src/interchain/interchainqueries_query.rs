@@ -26,13 +26,13 @@
 const _PROTOBUF_VERSION_CHECK: () = ::protobuf::VERSION_3_1_0;
 
 #[derive(PartialEq,Clone,Default,Debug)]
-// @@protoc_insertion_point(message:neutron_org.interchainadapter.interchainqueries.QueryRegisteredQueryResultRequest)
+// @@protoc_insertion_point(message:neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResultRequest)
 pub struct QueryRegisteredQueryResultRequest {
     // message fields
-    // @@protoc_insertion_point(field:neutron_org.interchainadapter.interchainqueries.QueryRegisteredQueryResultRequest.query_id)
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResultRequest.query_id)
     pub query_id: u64,
     // special fields
-    // @@protoc_insertion_point(special_field:neutron_org.interchainadapter.interchainqueries.QueryRegisteredQueryResultRequest.special_fields)
+    // @@protoc_insertion_point(special_field:neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResultRequest.special_fields)
     pub special_fields: ::protobuf::SpecialFields,
 }
 
@@ -148,13 +148,13 @@ impl ::protobuf::reflect::ProtobufValue for QueryRegisteredQueryResultRequest {
 }
 
 #[derive(PartialEq,Clone,Default,Debug)]
-// @@protoc_insertion_point(message:neutron_org.interchainadapter.interchainqueries.QueryRegisteredQueryResultResponse)
+// @@protoc_insertion_point(message:neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResultResponse)
 pub struct QueryRegisteredQueryResultResponse {
     // message fields
-    // @@protoc_insertion_point(field:neutron_org.interchainadapter.interchainqueries.QueryRegisteredQueryResultResponse.result)
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResultResponse.result)
     pub result: ::protobuf::MessageField<super::interchainqueries_tx::QueryResult>,
     // special fields
-    // @@protoc_insertion_point(special_field:neutron_org.interchainadapter.interchainqueries.QueryRegisteredQueryResultResponse.special_fields)
+    // @@protoc_insertion_point(special_field:neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResultResponse.special_fields)
     pub special_fields: ::protobuf::SpecialFields,
 }
 
@@ -271,23 +271,23 @@ impl ::protobuf::reflect::ProtobufValue for QueryRegisteredQueryResultResponse {
 }
 
 static file_descriptor_proto_data: &'static [u8] = b"\
-    \n/interchainqueries/interchainqueries_query.proto\x12/neutron_org.inter\
-    chainadapter.interchainqueries\x1a,interchainqueries/interchainqueries_t\
-    x.proto\">\n!QueryRegisteredQueryResultRequest\x12\x19\n\x08query_id\x18\
-    \x01\x20\x01(\x04R\x07queryId\"z\n\"QueryRegisteredQueryResultResponse\
-    \x12T\n\x06result\x18\x01\x20\x01(\x0b2<.neutron_org.interchainadapter.i\
-    nterchainqueries.QueryResultR\x06resultJ\xe3\x01\n\x06\x12\x04\0\0\x0b\
-    \x01\n\x08\n\x01\x0c\x12\x03\0\0\x12\n\x08\n\x01\x02\x12\x03\x01\08\n\t\
-    \n\x02\x03\0\x12\x03\x03\06\n\n\n\x02\x04\0\x12\x04\x05\0\x07\x01\n\n\n\
-    \x03\x04\0\x01\x12\x03\x05\x08)\n\x0b\n\x04\x04\0\x02\0\x12\x03\x06\x02\
-    \x16\n\r\n\x05\x04\0\x02\0\x04\x12\x04\x06\x02\x05+\n\x0c\n\x05\x04\0\
-    \x02\0\x05\x12\x03\x06\x02\x08\n\x0c\n\x05\x04\0\x02\0\x01\x12\x03\x06\t\
-    \x11\n\x0c\n\x05\x04\0\x02\0\x03\x12\x03\x06\x14\x15\n\n\n\x02\x04\x01\
-    \x12\x04\t\0\x0b\x01\n\n\n\x03\x04\x01\x01\x12\x03\t\x08*\n\x0b\n\x04\
-    \x04\x01\x02\0\x12\x03\n\x02\x19\n\r\n\x05\x04\x01\x02\0\x04\x12\x04\n\
-    \x02\t,\n\x0c\n\x05\x04\x01\x02\0\x06\x12\x03\n\x02\r\n\x0c\n\x05\x04\
-    \x01\x02\0\x01\x12\x03\n\x0e\x14\n\x0c\n\x05\x04\x01\x02\0\x03\x12\x03\n\
-    \x17\x18b\x06proto3\
+    \n/interchainqueries/interchainqueries_query.proto\x12+neutron.interchai\
+    nadapter.interchainqueries\x1a,interchainqueries/interchainqueries_tx.pr\
+    oto\">\n!QueryRegisteredQueryResultRequest\x12\x19\n\x08query_id\x18\x01\
+    \x20\x01(\x04R\x07queryId\"v\n\"QueryRegisteredQueryResultResponse\x12P\
+    \n\x06result\x18\x01\x20\x01(\x0b28.neutron.interchainadapter.interchain\
+    queries.QueryResultR\x06resultJ\xe3\x01\n\x06\x12\x04\0\0\x0b\x01\n\x08\
+    \n\x01\x0c\x12\x03\0\0\x12\n\x08\n\x01\x02\x12\x03\x01\04\n\t\n\x02\x03\
+    \0\x12\x03\x03\06\n\n\n\x02\x04\0\x12\x04\x05\0\x07\x01\n\n\n\x03\x04\0\
+    \x01\x12\x03\x05\x08)\n\x0b\n\x04\x04\0\x02\0\x12\x03\x06\x02\x16\n\r\n\
+    \x05\x04\0\x02\0\x04\x12\x04\x06\x02\x05+\n\x0c\n\x05\x04\0\x02\0\x05\
+    \x12\x03\x06\x02\x08\n\x0c\n\x05\x04\0\x02\0\x01\x12\x03\x06\t\x11\n\x0c\
+    \n\x05\x04\0\x02\0\x03\x12\x03\x06\x14\x15\n\n\n\x02\x04\x01\x12\x04\t\0\
+    \x0b\x01\n\n\n\x03\x04\x01\x01\x12\x03\t\x08*\n\x0b\n\x04\x04\x01\x02\0\
+    \x12\x03\n\x02\x19\n\r\n\x05\x04\x01\x02\0\x04\x12\x04\n\x02\t,\n\x0c\n\
+    \x05\x04\x01\x02\0\x06\x12\x03\n\x02\r\n\x0c\n\x05\x04\x01\x02\0\x01\x12\
+    \x03\n\x0e\x14\n\x0c\n\x05\x04\x01\x02\0\x03\x12\x03\n\x17\x18b\x06proto\
+    3\
 ";
 
 /// `FileDescriptorProto` object which was a source for this generated file

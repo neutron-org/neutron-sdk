@@ -15,7 +15,7 @@ pub const REGISTER_INTERCHAIN_QUERY_REPLY_ID: u64 = 1;
 pub const REGISTER_INTERCHAIN_QUERY_PATH: &str = "interchainqueries/RegisterQuery";
 
 pub const QUERY_REGISTERED_QUERY_RESULT_PATH: &str =
-    "neutron_org.interchainadapter.interchainqueries.QueryRegisteredQueryResultRequest";
+    "neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResultRequest";
 
 pub const COSMOS_SDK_TRANSFER_MSG_URL: &str = "/cosmos.bank.v1beta1.MsgSend";
 

@@ -1,1 +1,1 @@
-c29f4d7f03d827640b0628590494bbcac46bea4681b7f8e2ef81ba7c8fbf2116  neutron_interchain_queries.wasm
+5e23dd479921610fd09cd93bf8765570602f30a5196f77f57b8b460388176dd3  neutron_interchain_queries.wasm

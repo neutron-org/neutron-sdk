@@ -27,17 +27,17 @@ const _PROTOBUF_VERSION_CHECK: () = ::protobuf::VERSION_3_1_0;
 
 ///  MsgRegisterInterchainAccount is used to register an account on a remote zone.
 #[derive(PartialEq,Clone,Default,Debug)]
-// @@protoc_insertion_point(message:neutron_org.interchainadapter.interchaintxs.v1.MsgRegisterInterchainAccount)
+// @@protoc_insertion_point(message:neutron.interchainadapter.interchaintxs.v1.MsgRegisterInterchainAccount)
 pub struct MsgRegisterInterchainAccount {
     // message fields
-    // @@protoc_insertion_point(field:neutron_org.interchainadapter.interchaintxs.v1.MsgRegisterInterchainAccount.from_address)
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchaintxs.v1.MsgRegisterInterchainAccount.from_address)
     pub from_address: ::std::string::String,
-    // @@protoc_insertion_point(field:neutron_org.interchainadapter.interchaintxs.v1.MsgRegisterInterchainAccount.connection_id)
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchaintxs.v1.MsgRegisterInterchainAccount.connection_id)
     pub connection_id: ::std::string::String,
-    // @@protoc_insertion_point(field:neutron_org.interchainadapter.interchaintxs.v1.MsgRegisterInterchainAccount.owner)
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchaintxs.v1.MsgRegisterInterchainAccount.owner)
     pub owner: ::std::string::String,
     // special fields
-    // @@protoc_insertion_point(special_field:neutron_org.interchainadapter.interchaintxs.v1.MsgRegisterInterchainAccount.special_fields)
+    // @@protoc_insertion_point(special_field:neutron.interchainadapter.interchaintxs.v1.MsgRegisterInterchainAccount.special_fields)
     pub special_fields: ::protobuf::SpecialFields,
 }
 
@@ -187,10 +187,10 @@ impl ::protobuf::reflect::ProtobufValue for MsgRegisterInterchainAccount {
 ///  MsgRegisterInterchainAccountResponse is the response type for
 ///  MsgRegisterInterchainAccount.
 #[derive(PartialEq,Clone,Default,Debug)]
-// @@protoc_insertion_point(message:neutron_org.interchainadapter.interchaintxs.v1.MsgRegisterInterchainAccountResponse)
+// @@protoc_insertion_point(message:neutron.interchainadapter.interchaintxs.v1.MsgRegisterInterchainAccountResponse)
 pub struct MsgRegisterInterchainAccountResponse {
     // special fields
-    // @@protoc_insertion_point(special_field:neutron_org.interchainadapter.interchaintxs.v1.MsgRegisterInterchainAccountResponse.special_fields)
+    // @@protoc_insertion_point(special_field:neutron.interchainadapter.interchaintxs.v1.MsgRegisterInterchainAccountResponse.special_fields)
     pub special_fields: ::protobuf::SpecialFields,
 }
 
@@ -291,19 +291,19 @@ impl ::protobuf::reflect::ProtobufValue for MsgRegisterInterchainAccountResponse
 
 ///  MsgSubmitTx defines the payload for Msg/SubmitTx
 #[derive(PartialEq,Clone,Default,Debug)]
-// @@protoc_insertion_point(message:neutron_org.interchainadapter.interchaintxs.v1.MsgSubmitTx)
+// @@protoc_insertion_point(message:neutron.interchainadapter.interchaintxs.v1.MsgSubmitTx)
 pub struct MsgSubmitTx {
     // message fields
-    // @@protoc_insertion_point(field:neutron_org.interchainadapter.interchaintxs.v1.MsgSubmitTx.from_address)
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchaintxs.v1.MsgSubmitTx.from_address)
     pub from_address: ::std::string::String,
-    // @@protoc_insertion_point(field:neutron_org.interchainadapter.interchaintxs.v1.MsgSubmitTx.owner)
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchaintxs.v1.MsgSubmitTx.owner)
     pub owner: ::std::string::String,
-    // @@protoc_insertion_point(field:neutron_org.interchainadapter.interchaintxs.v1.MsgSubmitTx.connection_id)
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchaintxs.v1.MsgSubmitTx.connection_id)
     pub connection_id: ::std::string::String,
-    // @@protoc_insertion_point(field:neutron_org.interchainadapter.interchaintxs.v1.MsgSubmitTx.msgs)
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchaintxs.v1.MsgSubmitTx.msgs)
     pub msgs: ::std::vec::Vec<::protobuf::well_known_types::any::Any>,
     // special fields
-    // @@protoc_insertion_point(special_field:neutron_org.interchainadapter.interchaintxs.v1.MsgSubmitTx.special_fields)
+    // @@protoc_insertion_point(special_field:neutron.interchainadapter.interchaintxs.v1.MsgSubmitTx.special_fields)
     pub special_fields: ::protobuf::SpecialFields,
 }
 
@@ -469,10 +469,10 @@ impl ::protobuf::reflect::ProtobufValue for MsgSubmitTx {
 
 ///  MsgSubmitTxResponse defines the response for Msg/SubmitTx
 #[derive(PartialEq,Clone,Default,Debug)]
-// @@protoc_insertion_point(message:neutron_org.interchainadapter.interchaintxs.v1.MsgSubmitTxResponse)
+// @@protoc_insertion_point(message:neutron.interchainadapter.interchaintxs.v1.MsgSubmitTxResponse)
 pub struct MsgSubmitTxResponse {
     // special fields
-    // @@protoc_insertion_point(special_field:neutron_org.interchainadapter.interchaintxs.v1.MsgSubmitTxResponse.special_fields)
+    // @@protoc_insertion_point(special_field:neutron.interchainadapter.interchaintxs.v1.MsgSubmitTxResponse.special_fields)
     pub special_fields: ::protobuf::SpecialFields,
 }
 
@@ -572,54 +572,53 @@ impl ::protobuf::reflect::ProtobufValue for MsgSubmitTxResponse {
 }
 
 static file_descriptor_proto_data: &'static [u8] = b"\
-    \n.interchainaccounts/interchainaccounts_tx.proto\x12.neutron_org.interc\
-    hainadapter.interchaintxs.v1\x1a\x19google/protobuf/any.proto\"|\n\x1cMs\
-    gRegisterInterchainAccount\x12!\n\x0cfrom_address\x18\x01\x20\x01(\tR\
-    \x0bfromAddress\x12#\n\rconnection_id\x18\x02\x20\x01(\tR\x0cconnectionI\
-    d\x12\x14\n\x05owner\x18\x03\x20\x01(\tR\x05owner\"&\n$MsgRegisterInterc\
-    hainAccountResponse\"\x95\x01\n\x0bMsgSubmitTx\x12!\n\x0cfrom_address\
-    \x18\x01\x20\x01(\tR\x0bfromAddress\x12\x14\n\x05owner\x18\x02\x20\x01(\
-    \tR\x05owner\x12#\n\rconnection_id\x18\x03\x20\x01(\tR\x0cconnectionId\
-    \x12(\n\x04msgs\x18\x04\x20\x03(\x0b2\x14.google.protobuf.AnyR\x04msgs\"\
-    \x15\n\x13MsgSubmitTxResponseBAZ?github.com/neutron_org/interchain-adapt\
-    er/x/interchaintxs/typesJ\xa5\x07\n\x06\x12\x04\0\0\x1c\x1e\n\x08\n\x01\
-    \x0c\x12\x03\0\0\x12\n\x08\n\x01\x02\x12\x03\x01\07\n\x08\n\x01\x08\x12\
-    \x03\x03\0V\n\t\n\x02\x08\x0b\x12\x03\x03\0V\n\t\n\x02\x03\0\x12\x03\x06\
-    \0#\n[\n\x02\x04\0\x12\x04\t\0\r\x01\x1aO\x20MsgRegisterInterchainAccoun\
-    t\x20is\x20used\x20to\x20register\x20an\x20account\x20on\x20a\x20remote\
-    \x20zone.\n\n\n\n\x03\x04\0\x01\x12\x03\t\x08$\n\x0b\n\x04\x04\0\x02\0\
-    \x12\x03\n\x02\x1a\n\r\n\x05\x04\0\x02\0\x04\x12\x04\n\x02\t&\n\x0c\n\
-    \x05\x04\0\x02\0\x05\x12\x03\n\x02\x08\n\x0c\n\x05\x04\0\x02\0\x01\x12\
-    \x03\n\t\x15\n\x0c\n\x05\x04\0\x02\0\x03\x12\x03\n\x18\x19\n\x0b\n\x04\
-    \x04\0\x02\x01\x12\x03\x0b\x02\x1b\n\r\n\x05\x04\0\x02\x01\x04\x12\x04\
-    \x0b\x02\n\x1a\n\x0c\n\x05\x04\0\x02\x01\x05\x12\x03\x0b\x02\x08\n\x0c\n\
-    \x05\x04\0\x02\x01\x01\x12\x03\x0b\t\x16\n\x0c\n\x05\x04\0\x02\x01\x03\
-    \x12\x03\x0b\x19\x1a\n\x0b\n\x04\x04\0\x02\x02\x12\x03\x0c\x02\x13\n\r\n\
-    \x05\x04\0\x02\x02\x04\x12\x04\x0c\x02\x0b\x1b\n\x0c\n\x05\x04\0\x02\x02\
-    \x05\x12\x03\x0c\x02\x08\n\x0c\n\x05\x04\0\x02\x02\x01\x12\x03\x0c\t\x0e\
-    \n\x0c\n\x05\x04\0\x02\x02\x03\x12\x03\x0c\x11\x12\ni\n\x02\x04\x01\x12\
-    \x03\x11\0/\x1a^\x20MsgRegisterInterchainAccountResponse\x20is\x20the\
-    \x20response\x20type\x20for\n\x20MsgRegisterInterchainAccount.\n\n\n\n\
-    \x03\x04\x01\x01\x12\x03\x11\x08,\n>\n\x02\x04\x02\x12\x04\x14\0\x19\x01\
-    \x1a2\x20MsgSubmitTx\x20defines\x20the\x20payload\x20for\x20Msg/SubmitTx\
-    \n\n\n\n\x03\x04\x02\x01\x12\x03\x14\x08\x13\n\x0b\n\x04\x04\x02\x02\0\
-    \x12\x03\x15\x02\x1a\n\r\n\x05\x04\x02\x02\0\x04\x12\x04\x15\x02\x14\x15\
-    \n\x0c\n\x05\x04\x02\x02\0\x05\x12\x03\x15\x02\x08\n\x0c\n\x05\x04\x02\
-    \x02\0\x01\x12\x03\x15\t\x15\n\x0c\n\x05\x04\x02\x02\0\x03\x12\x03\x15\
-    \x18\x19\n\x0b\n\x04\x04\x02\x02\x01\x12\x03\x16\x02\x13\n\r\n\x05\x04\
-    \x02\x02\x01\x04\x12\x04\x16\x02\x15\x1a\n\x0c\n\x05\x04\x02\x02\x01\x05\
-    \x12\x03\x16\x02\x08\n\x0c\n\x05\x04\x02\x02\x01\x01\x12\x03\x16\t\x0e\n\
-    \x0c\n\x05\x04\x02\x02\x01\x03\x12\x03\x16\x11\x12\n\x0b\n\x04\x04\x02\
-    \x02\x02\x12\x03\x17\x02\x1b\n\r\n\x05\x04\x02\x02\x02\x04\x12\x04\x17\
-    \x02\x16\x13\n\x0c\n\x05\x04\x02\x02\x02\x05\x12\x03\x17\x02\x08\n\x0c\n\
-    \x05\x04\x02\x02\x02\x01\x12\x03\x17\t\x16\n\x0c\n\x05\x04\x02\x02\x02\
-    \x03\x12\x03\x17\x19\x1a\n\x0b\n\x04\x04\x02\x02\x03\x12\x03\x18\x02(\n\
-    \x0c\n\x05\x04\x02\x02\x03\x04\x12\x03\x18\x02\n\n\x0c\n\x05\x04\x02\x02\
-    \x03\x06\x12\x03\x18\x0b\x1e\n\x0c\n\x05\x04\x02\x02\x03\x01\x12\x03\x18\
-    \x1f#\n\x0c\n\x05\x04\x02\x02\x03\x03\x12\x03\x18&'\nF\n\x02\x04\x03\x12\
-    \x03\x1c\0\x1e\x1a;\x20MsgSubmitTxResponse\x20defines\x20the\x20response\
-    \x20for\x20Msg/SubmitTx\n\n\n\n\x03\x04\x03\x01\x12\x03\x1c\x08\x1bb\x06\
-    proto3\
+    \n.interchainaccounts/interchainaccounts_tx.proto\x12*neutron.interchain\
+    adapter.interchaintxs.v1\x1a\x19google/protobuf/any.proto\"|\n\x1cMsgReg\
+    isterInterchainAccount\x12!\n\x0cfrom_address\x18\x01\x20\x01(\tR\x0bfro\
+    mAddress\x12#\n\rconnection_id\x18\x02\x20\x01(\tR\x0cconnectionId\x12\
+    \x14\n\x05owner\x18\x03\x20\x01(\tR\x05owner\"&\n$MsgRegisterInterchainA\
+    ccountResponse\"\x95\x01\n\x0bMsgSubmitTx\x12!\n\x0cfrom_address\x18\x01\
+    \x20\x01(\tR\x0bfromAddress\x12\x14\n\x05owner\x18\x02\x20\x01(\tR\x05ow\
+    ner\x12#\n\rconnection_id\x18\x03\x20\x01(\tR\x0cconnectionId\x12(\n\x04\
+    msgs\x18\x04\x20\x03(\x0b2\x14.google.protobuf.AnyR\x04msgs\"\x15\n\x13M\
+    sgSubmitTxResponseB=Z;github.com/neutron/interchain-adapter/x/interchain\
+    txs/typesJ\xa5\x07\n\x06\x12\x04\0\0\x1c\x1e\n\x08\n\x01\x0c\x12\x03\0\0\
+    \x12\n\x08\n\x01\x02\x12\x03\x01\03\n\x08\n\x01\x08\x12\x03\x03\0R\n\t\n\
+    \x02\x08\x0b\x12\x03\x03\0R\n\t\n\x02\x03\0\x12\x03\x06\0#\n[\n\x02\x04\
+    \0\x12\x04\t\0\r\x01\x1aO\x20MsgRegisterInterchainAccount\x20is\x20used\
+    \x20to\x20register\x20an\x20account\x20on\x20a\x20remote\x20zone.\n\n\n\
+    \n\x03\x04\0\x01\x12\x03\t\x08$\n\x0b\n\x04\x04\0\x02\0\x12\x03\n\x02\
+    \x1a\n\r\n\x05\x04\0\x02\0\x04\x12\x04\n\x02\t&\n\x0c\n\x05\x04\0\x02\0\
+    \x05\x12\x03\n\x02\x08\n\x0c\n\x05\x04\0\x02\0\x01\x12\x03\n\t\x15\n\x0c\
+    \n\x05\x04\0\x02\0\x03\x12\x03\n\x18\x19\n\x0b\n\x04\x04\0\x02\x01\x12\
+    \x03\x0b\x02\x1b\n\r\n\x05\x04\0\x02\x01\x04\x12\x04\x0b\x02\n\x1a\n\x0c\
+    \n\x05\x04\0\x02\x01\x05\x12\x03\x0b\x02\x08\n\x0c\n\x05\x04\0\x02\x01\
+    \x01\x12\x03\x0b\t\x16\n\x0c\n\x05\x04\0\x02\x01\x03\x12\x03\x0b\x19\x1a\
+    \n\x0b\n\x04\x04\0\x02\x02\x12\x03\x0c\x02\x13\n\r\n\x05\x04\0\x02\x02\
+    \x04\x12\x04\x0c\x02\x0b\x1b\n\x0c\n\x05\x04\0\x02\x02\x05\x12\x03\x0c\
+    \x02\x08\n\x0c\n\x05\x04\0\x02\x02\x01\x12\x03\x0c\t\x0e\n\x0c\n\x05\x04\
+    \0\x02\x02\x03\x12\x03\x0c\x11\x12\ni\n\x02\x04\x01\x12\x03\x11\0/\x1a^\
+    \x20MsgRegisterInterchainAccountResponse\x20is\x20the\x20response\x20typ\
+    e\x20for\n\x20MsgRegisterInterchainAccount.\n\n\n\n\x03\x04\x01\x01\x12\
+    \x03\x11\x08,\n>\n\x02\x04\x02\x12\x04\x14\0\x19\x01\x1a2\x20MsgSubmitTx\
+    \x20defines\x20the\x20payload\x20for\x20Msg/SubmitTx\n\n\n\n\x03\x04\x02\
+    \x01\x12\x03\x14\x08\x13\n\x0b\n\x04\x04\x02\x02\0\x12\x03\x15\x02\x1a\n\
+    \r\n\x05\x04\x02\x02\0\x04\x12\x04\x15\x02\x14\x15\n\x0c\n\x05\x04\x02\
+    \x02\0\x05\x12\x03\x15\x02\x08\n\x0c\n\x05\x04\x02\x02\0\x01\x12\x03\x15\
+    \t\x15\n\x0c\n\x05\x04\x02\x02\0\x03\x12\x03\x15\x18\x19\n\x0b\n\x04\x04\
+    \x02\x02\x01\x12\x03\x16\x02\x13\n\r\n\x05\x04\x02\x02\x01\x04\x12\x04\
+    \x16\x02\x15\x1a\n\x0c\n\x05\x04\x02\x02\x01\x05\x12\x03\x16\x02\x08\n\
+    \x0c\n\x05\x04\x02\x02\x01\x01\x12\x03\x16\t\x0e\n\x0c\n\x05\x04\x02\x02\
+    \x01\x03\x12\x03\x16\x11\x12\n\x0b\n\x04\x04\x02\x02\x02\x12\x03\x17\x02\
+    \x1b\n\r\n\x05\x04\x02\x02\x02\x04\x12\x04\x17\x02\x16\x13\n\x0c\n\x05\
+    \x04\x02\x02\x02\x05\x12\x03\x17\x02\x08\n\x0c\n\x05\x04\x02\x02\x02\x01\
+    \x12\x03\x17\t\x16\n\x0c\n\x05\x04\x02\x02\x02\x03\x12\x03\x17\x19\x1a\n\
+    \x0b\n\x04\x04\x02\x02\x03\x12\x03\x18\x02(\n\x0c\n\x05\x04\x02\x02\x03\
+    \x04\x12\x03\x18\x02\n\n\x0c\n\x05\x04\x02\x02\x03\x06\x12\x03\x18\x0b\
+    \x1e\n\x0c\n\x05\x04\x02\x02\x03\x01\x12\x03\x18\x1f#\n\x0c\n\x05\x04\
+    \x02\x02\x03\x03\x12\x03\x18&'\nF\n\x02\x04\x03\x12\x03\x1c\0\x1e\x1a;\
+    \x20MsgSubmitTxResponse\x20defines\x20the\x20response\x20for\x20Msg/Subm\
+    itTx\n\n\n\n\x03\x04\x03\x01\x12\x03\x1c\x08\x1bb\x06proto3\
 ";
 
 /// `FileDescriptorProto` object which was a source for this generated file

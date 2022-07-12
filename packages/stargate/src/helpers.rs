@@ -6,7 +6,7 @@ use cosmwasm_std::{
 use protobuf::Message;
 
 pub const SUBMIT_INTERCHAIN_TX_PATH: &str =
-    "/neutron_org.interchainadapter.interchaintxs.v1.MsgSubmitTx";
+    "/neutron.interchainadapter.interchaintxs.v1.MsgSubmitTx";
 
 /// Helper to make a stargate query.
 /// * path - is a protobuf path of any Cosmos-SDK query.
