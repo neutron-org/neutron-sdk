@@ -91,7 +91,7 @@ pub fn register_balance_query(
     )
 }
 
-// Registeres an interchain query to get delegations of particular delegator on remote chain
+// Registers an interchain query to get delegations of particular delegator on remote chain
 pub fn register_delegator_delegations_query(
     deps: DepsMut,
     env: Env,
@@ -113,7 +113,7 @@ pub fn register_delegator_delegations_query(
     )
 }
 
-// Registeres an interchain query to get transfer events to a recipient on a remote chain
+// Registers an interchain query to get transfer events to a recipient on a remote chain
 pub fn register_transfers_query(
     deps: DepsMut,
     env: Env,
