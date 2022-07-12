@@ -13,7 +13,7 @@ pub const SUBMIT_INTERCHAIN_TX_PATH: &str =
 /// * encoded_query_data - is a protobuf encoded query data
 ///
 /// Usage example:
-/// ```rust
+/// ```rust,ignore
 ///     let mut interchain_query = QueryRegisteredQueryResultRequest::new();
 ///     interchain_query.query_id = 1;
 ///

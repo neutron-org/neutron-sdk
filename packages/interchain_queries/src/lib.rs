@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub mod msg;
 pub mod error;
-pub mod types;
+pub mod msg;
 pub mod queries;
-pub mod storage;
 pub mod register_queries;
 pub mod reply;
+pub mod storage;
+pub mod types;

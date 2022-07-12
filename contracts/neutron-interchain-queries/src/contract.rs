@@ -15,18 +15,16 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 
-use cosmwasm_std::{
-    Binary, Deps, DepsMut, Env, MessageInfo, Reply, Response, StdResult,
-};
+use cosmwasm_std::{Binary, Deps, DepsMut, Env, MessageInfo, Reply, Response, StdResult};
 
 use interchain_queries::error::{ContractError, ContractResult};
+use interchain_queries::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use interchain_queries::queries::{query_balance, query_delegations, query_transfer_transactions};
 use interchain_queries::register_queries::{
     register_balance_query, register_delegator_delegations_query, register_transfers_query,
 };
-use interchain_queries::types::REGISTER_INTERCHAIN_QUERY_REPLY_ID;
-use interchain_queries::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use interchain_queries::reply::register_interchain_query_reply_handler;
+use interchain_queries::types::REGISTER_INTERCHAIN_QUERY_REPLY_ID;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(

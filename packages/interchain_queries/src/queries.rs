@@ -6,10 +6,10 @@ use crate::types::{
     GetTransfersParams, COSMOS_SDK_TRANSFER_MSG_URL, QUERY_BALANCE_QUERY_TYPE,
     QUERY_DELEGATOR_DELEGATIONS_QUERY_TYPE, QUERY_REGISTERED_QUERY_RESULT_PATH, QUERY_TRANSFERS,
 };
-use cosmwasm_std::{to_binary, Addr, Binary, Coin, Deps, Env, Uint128};
 use crate::types::{
     DelegatorDelegationsResponse, QueryBalanceResponse, Transfer, TransfersResponse,
 };
+use cosmwasm_std::{to_binary, Addr, Binary, Coin, Deps, Env, Uint128};
 use stargate::interchain::interchainqueries_query::{
     QueryRegisteredQueryResultRequest, QueryRegisteredQueryResultResponse,
 };
