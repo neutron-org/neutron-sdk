@@ -5,15 +5,15 @@ use cw_storage_plus::{Item, Map};
 use schemars::_serde_json::to_string;
 use serde::Serialize;
 
-// Storage for temp requests used in reply logic
+/// Storage for temp requests used in reply logic
 pub const TMP_REGISTER_INTERCHAIN_QUERY_REQUEST: Item<TmpRegisteredQuery> =
     Item::new("tmp_register_interchain_query_request");
 
-// Storage to store registered query ids where key are (zone_id, query_type, query_data) and value is registered_query_id
+/// Storage to store registered query ids where key are (zone_id, query_type, query_data) and value is registered_query_id
 pub const REGISTERED_INTERCHAIN_QUERIES: Map<(&str, &str, &str), u64> =
     Map::new("registered_interchain_queries");
 
-// Returns registered query id by zone_id, query_type and query_data
+/// Returns registered query id by zone_id, query_type and query_data
 pub fn get_registered_query_id<T>(
     deps: Deps,
     zone_id: &str,

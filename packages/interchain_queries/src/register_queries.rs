@@ -11,7 +11,7 @@ use schemars::_serde_json::to_string;
 use serde::Serialize;
 use stargate::interchain::interchainqueries_tx::MsgRegisterInterchainQuery;
 
-// Registers an interchain query
+/// Registers an interchain query
 fn register_interchain_query<T>(
     deps: DepsMut,
     env: Env,
@@ -68,7 +68,7 @@ where
         )))
 }
 
-// Registers an interchain query to get balance of account on remote chain for particular denom
+/// Registers an interchain query to get balance of account on remote chain for particular denom
 pub fn register_balance_query(
     deps: DepsMut,
     env: Env,
@@ -91,7 +91,7 @@ pub fn register_balance_query(
     )
 }
 
-// Registers an interchain query to get delegations of particular delegator on remote chain
+/// Registers an interchain query to get delegations of particular delegator on remote chain
 pub fn register_delegator_delegations_query(
     deps: DepsMut,
     env: Env,
@@ -113,7 +113,7 @@ pub fn register_delegator_delegations_query(
     )
 }
 
-// Registers an interchain query to get transfer events to a recipient on a remote chain
+/// Registers an interchain query to get transfer events to a recipient on a remote chain
 pub fn register_transfers_query(
     deps: DepsMut,
     env: Env,

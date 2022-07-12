@@ -25,7 +25,7 @@ use stargate::make_stargate_query;
 use std::io::Cursor;
 use std::str::FromStr;
 
-// Queries interchain query result (raw KV storage values or transactions) from Interchain Queries Module
+/// Queries interchain query result (raw KV storage values or transactions) from Interchain Queries Module
 fn get_interchain_query_result(
     deps: Deps,
     interchain_query_id: u64,
@@ -44,7 +44,7 @@ fn get_interchain_query_result(
     Ok(interchain_query_result)
 }
 
-// Returns balance of account on remote chain for particular denom
+/// Returns balance of account on remote chain for particular denom
 pub fn query_balance(
     deps: Deps,
     _env: Env,
@@ -93,7 +93,7 @@ pub fn query_balance(
     })
 }
 
-// Returns delegations of particular delegator on remote chain
+/// Returns delegations of particular delegator on remote chain
 pub fn query_delegations(
     deps: Deps,
     _env: Env,
@@ -140,7 +140,7 @@ pub fn query_delegations(
 }
 
 // TODO: limit transactions to avoid querieng same txs over and over again
-// Returns transactions with transfer of remote zone's stake tokens on our interchain account
+/// Returns transactions with transfer of remote zone's stake tokens on our interchain account
 pub fn query_transfer_transactions(
     deps: Deps,
     _env: Env,

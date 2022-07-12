@@ -24,15 +24,15 @@ const DELEGATION_KEY: u8 = 0x31;
 
 const MAX_ADDR_LEN: usize = 255;
 
-// decodes a bech32 encoded string and converts to base64 encoded bytes
-// https://github.com/cosmos/cosmos-sdk/blob/ad9e5620fb3445c716e9de45cfcdb56e8f1745bf/types/bech32/bech32.go#L20
+/// Decodes a bech32 encoded string and converts to base64 encoded bytes
+/// https://github.com/cosmos/cosmos-sdk/blob/ad9e5620fb3445c716e9de45cfcdb56e8f1745bf/types/bech32/bech32.go#L20
 pub fn decode_and_convert(decoded: &str) -> ContractResult<Vec<u8>> {
     let (_hrp, bytes, _variant) = bech32::decode(decoded)?;
 
     Ok(bech32::convert_bits(bytes.as_slice(), 5, 8, false)?)
 }
 
-// prefixes the address bytes with its length
+/// Prefixes the address bytes with its length
 pub fn length_prefix(bz: Vec<u8>) -> ContractResult<Vec<u8>> {
     let bz_length = bz.len();
 

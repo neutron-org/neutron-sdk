@@ -8,6 +8,23 @@ use protobuf::Message;
 pub const SUBMIT_INTERCHAIN_TX_PATH: &str =
     "/neutron_org.interchainadapter.interchaintxs.v1.MsgSubmitTx";
 
+/// Helper to make a stargate query.
+/// * path - is a protobuf path of any Cosmos-SDK query.
+/// * encoded_query_data - is a protobuf encoded query data
+///
+/// Usage example:
+/// ```rust
+///     let mut interchain_query = QueryRegisteredQueryResultRequest::new();
+///     interchain_query.query_id = 1;
+///
+///     let encoded_query_bytes = interchain_query.write_to_bytes()?;
+///
+///     let interchain_query_result: QueryRegisteredQueryResultResponse = make_stargate_query(
+///         deps,
+///         QUERY_REGISTERED_QUERY_RESULT_PATH.to_string(),
+///         encoded_query_bytes,
+///     )?;
+/// ```
 pub fn make_stargate_query<T: Message>(
     deps: Deps,
     path: String,
@@ -39,6 +56,7 @@ pub fn make_stargate_query<T: Message>(
     }
 }
 
+/// Composes a protobuf encoded message (to be sent via stargate) for submitting an interchain transaction
 pub fn make_stargate_tx(message: MsgSubmitTx) -> StdResult<CosmosMsg> {
     Ok(CosmosMsg::Stargate {
         type_url: SUBMIT_INTERCHAIN_TX_PATH.to_string(),
