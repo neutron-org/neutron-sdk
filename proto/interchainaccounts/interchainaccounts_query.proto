@@ -1,0 +1,17 @@
+syntax = "proto3";
+package ibc.applications.interchain_accounts.v1;
+
+
+message QueryInterchainAccountAddressRequest {
+
+
+  // Owner address is the owner of the interchain account on the controller chain
+  string owner_address = 1;
+  string connection_id = 2;
+}
+
+// Query response for an interchain account address
+message QueryInterchainAccountAddressResponse {
+  // The corresponding interchain account address on the host chain
+  string interchain_account_address = 1;
+}

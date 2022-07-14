@@ -1,0 +1,45 @@
+syntax = "proto3";
+package neutron.interchainadapter.interchainqueries;
+
+import "tendermint/crypto/proof.proto";
+import "tendermint/abci/abcitypes.proto";
+
+
+message MsgRegisterInterchainQuery {
+  string query_data = 1;
+  string query_type = 2;
+  string zone_id = 3;
+  string connection_id = 4;
+  uint64 update_period = 5;
+  string sender = 6;
+}
+
+message MsgRegisterInterchainQueryResponse { uint64 id = 1; }
+
+message QueryResult {
+  repeated StorageValue kv_results = 1;
+  repeated TxValue txs = 2;
+  uint64 height = 3;
+}
+
+message StorageValue {
+  string storage_prefix = 1;
+  bytes key = 2;
+  bytes value = 3;
+
+  tendermint.crypto.ProofOps proof = 4;
+}
+
+message TxValue {
+  tendermint.abci.ResponseDeliverTx tx = 1;
+  MerkleProof delivery_proof = 2;
+  MerkleProof inclusion_proof = 3;
+  uint64 height = 4;
+}
+
+message MerkleProof {
+  int64 total = 1;
+  int64 index = 2;
+  bytes leaf_hash = 3;
+  repeated bytes aunts = 4;
+}
