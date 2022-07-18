@@ -122,7 +122,10 @@ pub fn register_transfers_query(
     recipient: String,
     update_period: u64,
 ) -> ContractResult<Response> {
-    let query_data = GetTransfersParams { recipient };
+    let query_data = GetTransfersParams {
+        recipient,
+        ..Default::default()
+    };
 
     register_interchain_query(
         deps,

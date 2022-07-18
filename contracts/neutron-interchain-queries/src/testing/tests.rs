@@ -21,12 +21,38 @@ use cosmwasm_std::{
 use interchain_queries::msg::{ExecuteMsg, QueryMsg};
 use interchain_queries::types::{
     DelegatorDelegationsResponse, QueryBalanceResponse, Transfer, TransfersResponse,
+    QUERY_REGISTERED_QUERY_PATH, QUERY_REGISTERED_QUERY_TRANSACTIONS_RESULT_PATH,
 };
 use interchain_queries::types::{
     QUERY_REGISTERED_QUERY_RESULT_PATH, REGISTER_INTERCHAIN_QUERY_REPLY_ID,
 };
-use protobuf::Message;
+use protobuf::{Message, MessageField};
+use stargate::interchain::interchainqueries_genesis::RegisteredQuery;
+use stargate::interchain::interchainqueries_query::{
+    QueryRegisteredQueryResponse, QuerySubmittedTransactionsResponse, Transaction,
+};
 use stargate::interchain::interchainqueries_tx::MsgRegisterInterchainQueryResponse;
+
+fn build_registered_query_response(
+    id: u64,
+    last_submitted_result_local_height: u64,
+) -> QueryRegisteredQueryResponse {
+    QueryRegisteredQueryResponse {
+        registered_query: MessageField::some(RegisteredQuery {
+            id,
+            query_data: "".to_string(),
+            query_type: "".to_string(),
+            zone_id: "".to_string(),
+            connection_id: "".to_string(),
+            update_period: 0,
+            last_emitted_height: 0,
+            last_submitted_result_local_height,
+            last_submitted_result_remote_height: 0,
+            special_fields: Default::default(),
+        }),
+        special_fields: Default::default(),
+    }
+}
 
 // registers an interchain query (full register flow: execute + reply)
 fn register_query(
@@ -80,6 +106,13 @@ fn test_query_balance() {
         balance_resp_bytes,
     );
 
+    let registered_query = build_registered_query_response(1, 987);
+
+    deps.querier.add_stargate_response(
+        QUERY_REGISTERED_QUERY_PATH.to_string(),
+        registered_query.write_to_bytes().unwrap(),
+    );
+
     let query_balance = QueryMsg::Balance {
         zone_id: "zone".to_string(),
         addr: "osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs".to_string(),
@@ -90,6 +123,9 @@ fn test_query_balance() {
     assert_eq!(
         resp,
         QueryBalanceResponse {
+            last_submitted_local_height: registered_query
+                .registered_query
+                .last_submitted_result_local_height,
             amount: Coin::new(8278104u128, "uosmo")
         }
     )
@@ -118,6 +154,13 @@ fn test_query_delegator_delegations() {
         delegations_resp_bytes,
     );
 
+    let registered_query = build_registered_query_response(1, 987);
+
+    deps.querier.add_stargate_response(
+        QUERY_REGISTERED_QUERY_PATH.to_string(),
+        registered_query.write_to_bytes().unwrap(),
+    );
+
     let query_delegations = QueryMsg::GetDelegations {
         zone_id: "zone".to_string(),
         delegator: "osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs".to_string(),
@@ -128,6 +171,9 @@ fn test_query_delegator_delegations() {
     assert_eq!(
         resp,
         DelegatorDelegationsResponse {
+            last_submitted_local_height: registered_query
+                .registered_query
+                .last_submitted_result_local_height,
             delegations: vec![
                 Delegation {
                     delegator: Addr::unchecked("osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs"),
@@ -163,29 +209,48 @@ fn test_query_transfers() {
     register_query(&mut deps, mock_env(), mock_info("", &[]), msg);
 
     // protobuf encoded QueryRegisteredQueryResultResponse for balance query
-    // TODO: come up with something better than using large base64 string. Good enough for sketch btw
-    let transfers_response = "CvsNEvUNCu0NErwCCpABCo0BChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEm0KK29zbW8xa2tnZDd6dno5dnJkOHZ5OWNyMzd5eHdkbXc5NGNydXN3NXBxemcSK29zbW8xc3Rsa205c2FkbXkwa2czdG00bDh1Y3l0dmw3eHdhbHVnODVxNWEaEQoFdW9zbW8SCDUwMDAwMDAwEmUKUQpGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQOyiHa4C7rJvMSdoQYF4VcCndaYtlP7Hn8MnpBZ/Rh1ohIECgIIfxiPBxIQCgoKBXVvc21vEgEwEKCNBhpAHBjxUTgIkKwcN/5dMYH+PeCHS9fuvj52W0RvOOUDZ5oeOv/siKybbHzYtjvjQXLu9d36jRWU5KXW9sAWUbbxmxrcBVt7ImV2ZW50cyI6W3sidHlwZSI6ImNvaW5fcmVjZWl2ZWQiLCJhdHRyaWJ1dGVzIjpbeyJrZXkiOiJyZWNlaXZlciIsInZhbHVlIjoib3NtbzFzdGxrbTlzYWRteTBrZzN0bTRsOHVjeXR2bDd4d2FsdWc4NXE1YSJ9LHsia2V5IjoiYW1vdW50IiwidmFsdWUiOiI1MDAwMDAwMHVvc21vIn1dfSx7InR5cGUiOiJjb2luX3NwZW50IiwiYXR0cmlidXRlcyI6W3sia2V5Ijoic3BlbmRlciIsInZhbHVlIjoib3NtbzFra2dkN3p2ejl2cmQ4dnk5Y3IzN3l4d2Rtdzk0Y3J1c3c1cHF6ZyJ9LHsia2V5IjoiYW1vdW50IiwidmFsdWUiOiI1MDAwMDAwMHVvc21vIn1dfSx7InR5cGUiOiJtZXNzYWdlIiwiYXR0cmlidXRlcyI6W3sia2V5IjoiYWN0aW9uIiwidmFsdWUiOiIvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kIn0seyJrZXkiOiJzZW5kZXIiLCJ2YWx1ZSI6Im9zbW8xa2tnZDd6dno5dnJkOHZ5OWNyMzd5eHdkbXc5NGNydXN3NXBxemcifSx7ImtleSI6Im1vZHVsZSIsInZhbHVlIjoiYmFuayJ9XX0seyJ0eXBlIjoidHJhbnNmZXIiLCJhdHRyaWJ1dGVzIjpbeyJrZXkiOiJyZWNpcGllbnQiLCJ2YWx1ZSI6Im9zbW8xc3Rsa205c2FkbXkwa2czdG00bDh1Y3l0dmw3eHdhbHVnODVxNWEifSx7ImtleSI6InNlbmRlciIsInZhbHVlIjoib3NtbzFra2dkN3p2ejl2cmQ4dnk5Y3IzN3l4d2Rtdzk0Y3J1c3c1cHF6ZyJ9LHsia2V5IjoiYW1vdW50IiwidmFsdWUiOiI1MDAwMDAwMHVvc21vIn1dfV19XSigjQYwzvUDOhUKAnR4Eg8KA2ZlZRIGMHVvc21vGAE6QgoCdHgSPAoHYWNjX3NlcRIvb3NtbzFra2dkN3p2ejl2cmQ4dnk5Y3IzN3l4d2Rtdzk0Y3J1c3c1cHF6Zy85MTEYATptCgJ0eBJnCglzaWduYXR1cmUSWEhCanhVVGdJa0t3Y04vNWRNWUgrUGVDSFM5ZnV2ajUyVzBSdk9PVURaNW9lT3Yvc2lLeWJiSHpZdGp2alFYTHU5ZDM2alJXVTVLWFc5c0FXVWJieG13PT0YATozCgdtZXNzYWdlEigKBmFjdGlvbhIcL2Nvc21vcy5iYW5rLnYxYmV0YTEuTXNnU2VuZBgBOmEKCmNvaW5fc3BlbnQSOAoHc3BlbmRlchIrb3NtbzFra2dkN3p2ejl2cmQ4dnk5Y3IzN3l4d2Rtdzk0Y3J1c3c1cHF6ZxgBEhkKBmFtb3VudBINNTAwMDAwMDB1b3NtbxgBOmUKDWNvaW5fcmVjZWl2ZWQSOQoIcmVjZWl2ZXISK29zbW8xc3Rsa205c2FkbXkwa2czdG00bDh1Y3l0dmw3eHdhbHVnODVxNWEYARIZCgZhbW91bnQSDTUwMDAwMDAwdW9zbW8YATqaAQoIdHJhbnNmZXISOgoJcmVjaXBpZW50Eitvc21vMXN0bGttOXNhZG15MGtnM3RtNGw4dWN5dHZsN3h3YWx1Zzg1cTVhGAESNwoGc2VuZGVyEitvc21vMWtrZ2Q3enZ6OXZyZDh2eTljcjM3eXh3ZG13OTRjcnVzdzVwcXpnGAESGQoGYW1vdW50Eg01MDAwMDAwMHVvc21vGAE6QgoHbWVzc2FnZRI3CgZzZW5kZXISK29zbW8xa2tnZDd6dno5dnJkOHZ5OWNyMzd5eHdkbXc5NGNydXN3NXBxemcYATobCgdtZXNzYWdlEhAKBm1vZHVsZRIEYmFuaxgBII2cmgIY0As=";
-
-    let transfers_resp_bytes = base64::decode(transfers_response).unwrap();
+    let transfers_response = QuerySubmittedTransactionsResponse {
+        transactions: vec![Transaction {
+            id: 100,
+            height: 4623885u64,
+            data: base64::decode("CpABCo0BChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEm0KK29zbW8xa2tnZDd6dno5dnJkOHZ5OWNyMzd5eHdkbXc5NGNydXN3NXBxemcSK29zbW8xc3Rsa205c2FkbXkwa2czdG00bDh1Y3l0dmw3eHdhbHVnODVxNWEaEQoFdW9zbW8SCDUwMDAwMDAwEmUKUQpGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQOyiHa4C7rJvMSdoQYF4VcCndaYtlP7Hn8MnpBZ/Rh1ohIECgIIfxiPBxIQCgoKBXVvc21vEgEwEKCNBhpAHBjxUTgIkKwcN/5dMYH+PeCHS9fuvj52W0RvOOUDZ5oeOv/siKybbHzYtjvjQXLu9d36jRWU5KXW9sAWUbbxmw==").unwrap(),
+            special_fields: Default::default(),
+        }],
+        special_fields: Default::default(),
+    };
 
     deps.querier.add_stargate_response(
-        QUERY_REGISTERED_QUERY_RESULT_PATH.to_string(),
-        transfers_resp_bytes,
+        QUERY_REGISTERED_QUERY_TRANSACTIONS_RESULT_PATH.to_string(),
+        transfers_response.write_to_bytes().unwrap(),
+    );
+
+    let registered_query = build_registered_query_response(1, 987);
+
+    deps.querier.add_stargate_response(
+        QUERY_REGISTERED_QUERY_PATH.to_string(),
+        registered_query.write_to_bytes().unwrap(),
     );
 
     let query_transfers = QueryMsg::GetTransfers {
         zone_id: "zone".to_string(),
         recipient: "osmo1stlkm9sadmy0kg3tm4l8ucytvl7xwalug85q5a".to_string(),
+        start: 0,
+        end: 0,
     };
     let resp: TransfersResponse =
         from_binary(&query(deps.as_ref(), mock_env(), query_transfers).unwrap()).unwrap();
     assert_eq!(
         resp,
         TransfersResponse {
+            last_submitted_local_height: registered_query
+                .registered_query
+                .last_submitted_result_local_height,
             transfers: vec![Transfer {
+                tx_id: 100,
                 sender: "osmo1kkgd7zvz9vrd8vy9cr37yxwdmw94crusw5pqzg".to_string(),
                 amount: vec![Coin::new(50000000u128, "uosmo")],
-                height: 4623885
+                height: 4623885,
+                recipient: "osmo1stlkm9sadmy0kg3tm4l8ucytvl7xwalug85q5a".to_string(),
             }]
         }
     )

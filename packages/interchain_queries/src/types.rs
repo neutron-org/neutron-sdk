@@ -12,10 +12,17 @@ pub const QUERY_TRANSFERS: &str = "x/tx/RecipientTransactions";
 
 pub const REGISTER_INTERCHAIN_QUERY_REPLY_ID: u64 = 1;
 
-pub const REGISTER_INTERCHAIN_QUERY_PATH: &str = "interchainqueries/RegisterQuery";
+pub const REGISTER_INTERCHAIN_QUERY_PATH: &str =
+    "/neutron.interchainadapter.interchainqueries.MsgRegisterInterchainQuery";
 
 pub const QUERY_REGISTERED_QUERY_RESULT_PATH: &str =
-    "neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResultRequest";
+    "/neutron.interchainadapter.interchainqueries.Query/QueryResult";
+
+pub const QUERY_REGISTERED_QUERY_PATH: &str =
+    "/neutron.interchainadapter.interchainqueries.Query/RegisteredQuery";
+
+pub const QUERY_REGISTERED_QUERY_TRANSACTIONS_RESULT_PATH: &str =
+    "/neutron.interchainadapter.interchainqueries.Query/QueryTransactions";
 
 pub const COSMOS_SDK_TRANSFER_MSG_URL: &str = "/cosmos.bank.v1beta1.MsgSend";
 
@@ -91,11 +98,17 @@ pub struct GetDelegatorDelegationsParams {
     pub delegator: String,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema, Default)]
 #[serde(rename_all = "snake_case")]
 pub struct GetTransfersParams {
     #[serde(rename = "transfer.recipient")]
     pub recipient: String,
+
+    #[serde(skip_serializing)]
+    pub start: u64,
+
+    #[serde(skip_serializing)]
+    pub end: u64,
 }
 
 pub fn protobuf_coin_to_std_coin(
@@ -111,19 +124,22 @@ pub fn protobuf_coin_to_std_coin(
 #[serde(rename_all = "snake_case")]
 pub struct QueryBalanceResponse {
     pub amount: Coin,
+    pub last_submitted_local_height: u64,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct DelegatorDelegationsResponse {
-    // TODO: return local height when a query result was submitted
     pub delegations: Vec<cosmwasm_std::Delegation>,
+    pub last_submitted_local_height: u64,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct Transfer {
+    pub tx_id: u64,
     pub sender: String,
+    pub recipient: String,
     pub amount: Vec<Coin>,
     pub height: u64,
 }
@@ -132,4 +148,5 @@ pub struct Transfer {
 #[serde(rename_all = "snake_case")]
 pub struct TransfersResponse {
     pub transfers: Vec<Transfer>,
+    pub last_submitted_local_height: u64,
 }

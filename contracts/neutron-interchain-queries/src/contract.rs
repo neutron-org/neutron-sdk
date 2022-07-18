@@ -104,9 +104,12 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> ContractResult<Binary> {
         QueryMsg::GetDelegations { zone_id, delegator } => {
             query_delegations(deps, env, zone_id, delegator)
         }
-        QueryMsg::GetTransfers { zone_id, recipient } => {
-            query_transfer_transactions(deps, env, zone_id, recipient)
-        }
+        QueryMsg::GetTransfers {
+            zone_id,
+            recipient,
+            start,
+            end,
+        } => query_transfer_transactions(deps, env, zone_id, recipient, start, end),
     }
 }
 
