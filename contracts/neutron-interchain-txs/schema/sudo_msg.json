@@ -1,0 +1,190 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SudoMsg",
+  "oneOf": [
+    {
+      "type": "object",
+      "required": [
+        "response"
+      ],
+      "properties": {
+        "response": {
+          "type": "object",
+          "required": [
+            "data",
+            "request"
+          ],
+          "properties": {
+            "data": {
+              "type": "string"
+            },
+            "request": {
+              "$ref": "#/definitions/RequestPacket"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "error"
+      ],
+      "properties": {
+        "error": {
+          "type": "object",
+          "required": [
+            "details",
+            "request"
+          ],
+          "properties": {
+            "details": {
+              "type": "string"
+            },
+            "request": {
+              "$ref": "#/definitions/RequestPacket"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "timeout"
+      ],
+      "properties": {
+        "timeout": {
+          "type": "object",
+          "required": [
+            "request"
+          ],
+          "properties": {
+            "request": {
+              "$ref": "#/definitions/RequestPacket"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "open_ack"
+      ],
+      "properties": {
+        "open_ack": {
+          "type": "object",
+          "required": [
+            "channel_id",
+            "counterparty_channel_id",
+            "counterparty_version",
+            "port_id"
+          ],
+          "properties": {
+            "channel_id": {
+              "type": "string"
+            },
+            "counterparty_channel_id": {
+              "type": "string"
+            },
+            "counterparty_version": {
+              "type": "string"
+            },
+            "port_id": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  ],
+  "definitions": {
+    "RequestPacket": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "destination_channel": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "destination_port": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sequence": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint64",
+          "minimum": 0.0
+        },
+        "source_channel": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source_port": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "timeout_height": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/RequestPacketTimeoutHeight"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "timeout_timestamp": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint64",
+          "minimum": 0.0
+        }
+      }
+    },
+    "RequestPacketTimeoutHeight": {
+      "type": "object",
+      "properties": {
+        "revision_height": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint64",
+          "minimum": 0.0
+        },
+        "revision_number": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint64",
+          "minimum": 0.0
+        }
+      }
+    }
+  }
+}

@@ -369,6 +369,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "interchain_txs"
+version = "0.1.0"
+dependencies = [
+ "cosmos-sdk-proto",
+ "cosmwasm-std",
+ "cw-storage-plus",
+ "prost",
+ "schemars",
+ "serde",
+]
+
+[[package]]
 name = "itertools"
 version = "0.10.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -414,6 +426,24 @@ dependencies = [
  "schemars",
  "serde",
  "stargate",
+]
+
+[[package]]
+name = "neutron_interchain_txs"
+version = "0.1.0"
+dependencies = [
+ "base64",
+ "bech32",
+ "cosmos-sdk-proto",
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "interchain_txs",
+ "prost",
+ "protobuf",
+ "schemars",
+ "serde",
+ "stargate",
+ "thiserror",
 ]
 
 [[package]]
