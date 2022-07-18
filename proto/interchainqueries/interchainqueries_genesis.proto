@@ -1,0 +1,15 @@
+syntax = "proto3";
+package neutron.interchainadapter.interchainqueries;
+
+message RegisteredQuery {
+  uint64 id = 1;
+  string query_data = 2;
+  string query_type = 3;
+  string zone_id = 4;
+  string connection_id = 5;
+  uint64 update_period = 6;
+  uint64 last_emitted_height = 7;
+
+  uint64 last_submitted_result_local_height = 8;
+  uint64 last_submitted_result_remote_height = 9;
+}

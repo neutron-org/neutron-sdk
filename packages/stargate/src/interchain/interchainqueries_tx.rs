@@ -360,15 +360,194 @@ impl ::protobuf::reflect::ProtobufValue for MsgRegisterInterchainQueryResponse {
 }
 
 #[derive(PartialEq,Clone,Default,Debug)]
+// @@protoc_insertion_point(message:neutron.interchainadapter.interchainqueries.MsgSubmitQueryResult)
+pub struct MsgSubmitQueryResult {
+    // message fields
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.MsgSubmitQueryResult.query_id)
+    pub query_id: u64,
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.MsgSubmitQueryResult.sender)
+    pub sender: ::std::string::String,
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.MsgSubmitQueryResult.client_id)
+    pub client_id: ::std::string::String,
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.MsgSubmitQueryResult.result)
+    pub result: ::protobuf::MessageField<QueryResult>,
+    // special fields
+    // @@protoc_insertion_point(special_field:neutron.interchainadapter.interchainqueries.MsgSubmitQueryResult.special_fields)
+    pub special_fields: ::protobuf::SpecialFields,
+}
+
+impl<'a> ::std::default::Default for &'a MsgSubmitQueryResult {
+    fn default() -> &'a MsgSubmitQueryResult {
+        <MsgSubmitQueryResult as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl MsgSubmitQueryResult {
+    pub fn new() -> MsgSubmitQueryResult {
+        ::std::default::Default::default()
+    }
+
+    fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
+        let mut fields = ::std::vec::Vec::with_capacity(4);
+        let mut oneofs = ::std::vec::Vec::with_capacity(0);
+        fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
+            "query_id",
+            |m: &MsgSubmitQueryResult| { &m.query_id },
+            |m: &mut MsgSubmitQueryResult| { &mut m.query_id },
+        ));
+        fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
+            "sender",
+            |m: &MsgSubmitQueryResult| { &m.sender },
+            |m: &mut MsgSubmitQueryResult| { &mut m.sender },
+        ));
+        fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
+            "client_id",
+            |m: &MsgSubmitQueryResult| { &m.client_id },
+            |m: &mut MsgSubmitQueryResult| { &mut m.client_id },
+        ));
+        fields.push(::protobuf::reflect::rt::v2::make_message_field_accessor::<_, QueryResult>(
+            "result",
+            |m: &MsgSubmitQueryResult| { &m.result },
+            |m: &mut MsgSubmitQueryResult| { &mut m.result },
+        ));
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<MsgSubmitQueryResult>(
+            "MsgSubmitQueryResult",
+            fields,
+            oneofs,
+        )
+    }
+}
+
+impl ::protobuf::Message for MsgSubmitQueryResult {
+    const NAME: &'static str = "MsgSubmitQueryResult";
+
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
+        while let Some(tag) = is.read_raw_tag_or_eof()? {
+            match tag {
+                8 => {
+                    self.query_id = is.read_uint64()?;
+                },
+                18 => {
+                    self.sender = is.read_string()?;
+                },
+                26 => {
+                    self.client_id = is.read_string()?;
+                },
+                34 => {
+                    ::protobuf::rt::read_singular_message_into_field(is, &mut self.result)?;
+                },
+                tag => {
+                    ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u64 {
+        let mut my_size = 0;
+        if self.query_id != 0 {
+            my_size += ::protobuf::rt::uint64_size(1, self.query_id);
+        }
+        if !self.sender.is_empty() {
+            my_size += ::protobuf::rt::string_size(2, &self.sender);
+        }
+        if !self.client_id.is_empty() {
+            my_size += ::protobuf::rt::string_size(3, &self.client_id);
+        }
+        if let Some(v) = self.result.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint64_size(len) + len;
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
+        self.special_fields.cached_size().set(my_size as u32);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
+        if self.query_id != 0 {
+            os.write_uint64(1, self.query_id)?;
+        }
+        if !self.sender.is_empty() {
+            os.write_string(2, &self.sender)?;
+        }
+        if !self.client_id.is_empty() {
+            os.write_string(3, &self.client_id)?;
+        }
+        if let Some(v) = self.result.as_ref() {
+            ::protobuf::rt::write_message_field_with_cached_size(4, v, os)?;
+        }
+        os.write_unknown_fields(self.special_fields.unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn special_fields(&self) -> &::protobuf::SpecialFields {
+        &self.special_fields
+    }
+
+    fn mut_special_fields(&mut self) -> &mut ::protobuf::SpecialFields {
+        &mut self.special_fields
+    }
+
+    fn new() -> MsgSubmitQueryResult {
+        MsgSubmitQueryResult::new()
+    }
+
+    fn clear(&mut self) {
+        self.query_id = 0;
+        self.sender.clear();
+        self.client_id.clear();
+        self.result.clear();
+        self.special_fields.clear();
+    }
+
+    fn default_instance() -> &'static MsgSubmitQueryResult {
+        static instance: MsgSubmitQueryResult = MsgSubmitQueryResult {
+            query_id: 0,
+            sender: ::std::string::String::new(),
+            client_id: ::std::string::String::new(),
+            result: ::protobuf::MessageField::none(),
+            special_fields: ::protobuf::SpecialFields::new(),
+        };
+        &instance
+    }
+}
+
+impl ::protobuf::MessageFull for MsgSubmitQueryResult {
+    fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("MsgSubmitQueryResult").unwrap()).clone()
+    }
+}
+
+impl ::std::fmt::Display for MsgSubmitQueryResult {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for MsgSubmitQueryResult {
+    type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
+}
+
+#[derive(PartialEq,Clone,Default,Debug)]
 // @@protoc_insertion_point(message:neutron.interchainadapter.interchainqueries.QueryResult)
 pub struct QueryResult {
     // message fields
     // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.QueryResult.kv_results)
     pub kv_results: ::std::vec::Vec<StorageValue>,
-    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.QueryResult.txs)
-    pub txs: ::std::vec::Vec<TxValue>,
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.QueryResult.blocks)
+    pub blocks: ::std::vec::Vec<Block>,
     // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.QueryResult.height)
     pub height: u64,
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.QueryResult.revision)
+    pub revision: u64,
     // special fields
     // @@protoc_insertion_point(special_field:neutron.interchainadapter.interchainqueries.QueryResult.special_fields)
     pub special_fields: ::protobuf::SpecialFields,
@@ -386,7 +565,7 @@ impl QueryResult {
     }
 
     fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
-        let mut fields = ::std::vec::Vec::with_capacity(3);
+        let mut fields = ::std::vec::Vec::with_capacity(4);
         let mut oneofs = ::std::vec::Vec::with_capacity(0);
         fields.push(::protobuf::reflect::rt::v2::make_vec_simpler_accessor::<_, _>(
             "kv_results",
@@ -394,14 +573,19 @@ impl QueryResult {
             |m: &mut QueryResult| { &mut m.kv_results },
         ));
         fields.push(::protobuf::reflect::rt::v2::make_vec_simpler_accessor::<_, _>(
-            "txs",
-            |m: &QueryResult| { &m.txs },
-            |m: &mut QueryResult| { &mut m.txs },
+            "blocks",
+            |m: &QueryResult| { &m.blocks },
+            |m: &mut QueryResult| { &mut m.blocks },
         ));
         fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
             "height",
             |m: &QueryResult| { &m.height },
             |m: &mut QueryResult| { &mut m.height },
+        ));
+        fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
+            "revision",
+            |m: &QueryResult| { &m.revision },
+            |m: &mut QueryResult| { &mut m.revision },
         ));
         ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<QueryResult>(
             "QueryResult",
@@ -425,10 +609,13 @@ impl ::protobuf::Message for QueryResult {
                     self.kv_results.push(is.read_message()?);
                 },
                 18 => {
-                    self.txs.push(is.read_message()?);
+                    self.blocks.push(is.read_message()?);
                 },
                 24 => {
                     self.height = is.read_uint64()?;
+                },
+                32 => {
+                    self.revision = is.read_uint64()?;
                 },
                 tag => {
                     ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
@@ -446,12 +633,15 @@ impl ::protobuf::Message for QueryResult {
             let len = value.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint64_size(len) + len;
         };
-        for value in &self.txs {
+        for value in &self.blocks {
             let len = value.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint64_size(len) + len;
         };
         if self.height != 0 {
             my_size += ::protobuf::rt::uint64_size(3, self.height);
+        }
+        if self.revision != 0 {
+            my_size += ::protobuf::rt::uint64_size(4, self.revision);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
         self.special_fields.cached_size().set(my_size as u32);
@@ -462,11 +652,14 @@ impl ::protobuf::Message for QueryResult {
         for v in &self.kv_results {
             ::protobuf::rt::write_message_field_with_cached_size(1, v, os)?;
         };
-        for v in &self.txs {
+        for v in &self.blocks {
             ::protobuf::rt::write_message_field_with_cached_size(2, v, os)?;
         };
         if self.height != 0 {
             os.write_uint64(3, self.height)?;
+        }
+        if self.revision != 0 {
+            os.write_uint64(4, self.revision)?;
         }
         os.write_unknown_fields(self.special_fields.unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -486,16 +679,18 @@ impl ::protobuf::Message for QueryResult {
 
     fn clear(&mut self) {
         self.kv_results.clear();
-        self.txs.clear();
+        self.blocks.clear();
         self.height = 0;
+        self.revision = 0;
         self.special_fields.clear();
     }
 
     fn default_instance() -> &'static QueryResult {
         static instance: QueryResult = QueryResult {
             kv_results: ::std::vec::Vec::new(),
-            txs: ::std::vec::Vec::new(),
+            blocks: ::std::vec::Vec::new(),
             height: 0,
+            revision: 0,
             special_fields: ::protobuf::SpecialFields::new(),
         };
         &instance
@@ -529,8 +724,8 @@ pub struct StorageValue {
     pub key: ::std::vec::Vec<u8>,
     // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.StorageValue.value)
     pub value: ::std::vec::Vec<u8>,
-    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.StorageValue.proof)
-    pub proof: ::protobuf::MessageField<super::proof::ProofOps>,
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.StorageValue.Proof)
+    pub Proof: ::protobuf::MessageField<super::proof::ProofOps>,
     // special fields
     // @@protoc_insertion_point(special_field:neutron.interchainadapter.interchainqueries.StorageValue.special_fields)
     pub special_fields: ::protobuf::SpecialFields,
@@ -566,9 +761,9 @@ impl StorageValue {
             |m: &mut StorageValue| { &mut m.value },
         ));
         fields.push(::protobuf::reflect::rt::v2::make_message_field_accessor::<_, super::proof::ProofOps>(
-            "proof",
-            |m: &StorageValue| { &m.proof },
-            |m: &mut StorageValue| { &mut m.proof },
+            "Proof",
+            |m: &StorageValue| { &m.Proof },
+            |m: &mut StorageValue| { &mut m.Proof },
         ));
         ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<StorageValue>(
             "StorageValue",
@@ -598,7 +793,7 @@ impl ::protobuf::Message for StorageValue {
                     self.value = is.read_bytes()?;
                 },
                 34 => {
-                    ::protobuf::rt::read_singular_message_into_field(is, &mut self.proof)?;
+                    ::protobuf::rt::read_singular_message_into_field(is, &mut self.Proof)?;
                 },
                 tag => {
                     ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
@@ -621,7 +816,7 @@ impl ::protobuf::Message for StorageValue {
         if !self.value.is_empty() {
             my_size += ::protobuf::rt::bytes_size(3, &self.value);
         }
-        if let Some(v) = self.proof.as_ref() {
+        if let Some(v) = self.Proof.as_ref() {
             let len = v.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint64_size(len) + len;
         }
@@ -640,7 +835,7 @@ impl ::protobuf::Message for StorageValue {
         if !self.value.is_empty() {
             os.write_bytes(3, &self.value)?;
         }
-        if let Some(v) = self.proof.as_ref() {
+        if let Some(v) = self.Proof.as_ref() {
             ::protobuf::rt::write_message_field_with_cached_size(4, v, os)?;
         }
         os.write_unknown_fields(self.special_fields.unknown_fields())?;
@@ -663,7 +858,7 @@ impl ::protobuf::Message for StorageValue {
         self.storage_prefix.clear();
         self.key.clear();
         self.value.clear();
-        self.proof.clear();
+        self.Proof.clear();
         self.special_fields.clear();
     }
 
@@ -672,7 +867,7 @@ impl ::protobuf::Message for StorageValue {
             storage_prefix: ::std::string::String::new(),
             key: ::std::vec::Vec::new(),
             value: ::std::vec::Vec::new(),
-            proof: ::protobuf::MessageField::none(),
+            Proof: ::protobuf::MessageField::none(),
             special_fields: ::protobuf::SpecialFields::new(),
         };
         &instance
@@ -697,17 +892,181 @@ impl ::protobuf::reflect::ProtobufValue for StorageValue {
 }
 
 #[derive(PartialEq,Clone,Default,Debug)]
+// @@protoc_insertion_point(message:neutron.interchainadapter.interchainqueries.Block)
+pub struct Block {
+    // message fields
+    ///  We need to know block X+1 to verify result of transaction for block X
+    ///  since LastResultsHash is root hash of all results from the txs from the previous block
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.Block.next_block_header)
+    pub next_block_header: ::protobuf::MessageField<::protobuf::well_known_types::any::Any>,
+    ///  We need to know block X to verify inclusion of transaction for block X
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.Block.header)
+    pub header: ::protobuf::MessageField<::protobuf::well_known_types::any::Any>,
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.Block.txs)
+    pub txs: ::std::vec::Vec<TxValue>,
+    // special fields
+    // @@protoc_insertion_point(special_field:neutron.interchainadapter.interchainqueries.Block.special_fields)
+    pub special_fields: ::protobuf::SpecialFields,
+}
+
+impl<'a> ::std::default::Default for &'a Block {
+    fn default() -> &'a Block {
+        <Block as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl Block {
+    pub fn new() -> Block {
+        ::std::default::Default::default()
+    }
+
+    fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
+        let mut fields = ::std::vec::Vec::with_capacity(3);
+        let mut oneofs = ::std::vec::Vec::with_capacity(0);
+        fields.push(::protobuf::reflect::rt::v2::make_message_field_accessor::<_, ::protobuf::well_known_types::any::Any>(
+            "next_block_header",
+            |m: &Block| { &m.next_block_header },
+            |m: &mut Block| { &mut m.next_block_header },
+        ));
+        fields.push(::protobuf::reflect::rt::v2::make_message_field_accessor::<_, ::protobuf::well_known_types::any::Any>(
+            "header",
+            |m: &Block| { &m.header },
+            |m: &mut Block| { &mut m.header },
+        ));
+        fields.push(::protobuf::reflect::rt::v2::make_vec_simpler_accessor::<_, _>(
+            "txs",
+            |m: &Block| { &m.txs },
+            |m: &mut Block| { &mut m.txs },
+        ));
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<Block>(
+            "Block",
+            fields,
+            oneofs,
+        )
+    }
+}
+
+impl ::protobuf::Message for Block {
+    const NAME: &'static str = "Block";
+
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
+        while let Some(tag) = is.read_raw_tag_or_eof()? {
+            match tag {
+                10 => {
+                    ::protobuf::rt::read_singular_message_into_field(is, &mut self.next_block_header)?;
+                },
+                18 => {
+                    ::protobuf::rt::read_singular_message_into_field(is, &mut self.header)?;
+                },
+                26 => {
+                    self.txs.push(is.read_message()?);
+                },
+                tag => {
+                    ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u64 {
+        let mut my_size = 0;
+        if let Some(v) = self.next_block_header.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint64_size(len) + len;
+        }
+        if let Some(v) = self.header.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint64_size(len) + len;
+        }
+        for value in &self.txs {
+            let len = value.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint64_size(len) + len;
+        };
+        my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
+        self.special_fields.cached_size().set(my_size as u32);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
+        if let Some(v) = self.next_block_header.as_ref() {
+            ::protobuf::rt::write_message_field_with_cached_size(1, v, os)?;
+        }
+        if let Some(v) = self.header.as_ref() {
+            ::protobuf::rt::write_message_field_with_cached_size(2, v, os)?;
+        }
+        for v in &self.txs {
+            ::protobuf::rt::write_message_field_with_cached_size(3, v, os)?;
+        };
+        os.write_unknown_fields(self.special_fields.unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn special_fields(&self) -> &::protobuf::SpecialFields {
+        &self.special_fields
+    }
+
+    fn mut_special_fields(&mut self) -> &mut ::protobuf::SpecialFields {
+        &mut self.special_fields
+    }
+
+    fn new() -> Block {
+        Block::new()
+    }
+
+    fn clear(&mut self) {
+        self.next_block_header.clear();
+        self.header.clear();
+        self.txs.clear();
+        self.special_fields.clear();
+    }
+
+    fn default_instance() -> &'static Block {
+        static instance: Block = Block {
+            next_block_header: ::protobuf::MessageField::none(),
+            header: ::protobuf::MessageField::none(),
+            txs: ::std::vec::Vec::new(),
+            special_fields: ::protobuf::SpecialFields::new(),
+        };
+        &instance
+    }
+}
+
+impl ::protobuf::MessageFull for Block {
+    fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("Block").unwrap()).clone()
+    }
+}
+
+impl ::std::fmt::Display for Block {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for Block {
+    type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
+}
+
+#[derive(PartialEq,Clone,Default,Debug)]
 // @@protoc_insertion_point(message:neutron.interchainadapter.interchainqueries.TxValue)
 pub struct TxValue {
     // message fields
-    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.TxValue.tx)
-    pub tx: ::protobuf::MessageField<super::abcitypes::ResponseDeliverTx>,
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.TxValue.response)
+    pub response: ::protobuf::MessageField<super::abcitypes::ResponseDeliverTx>,
     // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.TxValue.delivery_proof)
-    pub delivery_proof: ::protobuf::MessageField<MerkleProof>,
+    pub delivery_proof: ::protobuf::MessageField<super::proof::Proof>,
     // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.TxValue.inclusion_proof)
-    pub inclusion_proof: ::protobuf::MessageField<MerkleProof>,
-    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.TxValue.height)
-    pub height: u64,
+    pub inclusion_proof: ::protobuf::MessageField<super::proof::Proof>,
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.TxValue.data)
+    pub data: ::std::vec::Vec<u8>,
     // special fields
     // @@protoc_insertion_point(special_field:neutron.interchainadapter.interchainqueries.TxValue.special_fields)
     pub special_fields: ::protobuf::SpecialFields,
@@ -728,24 +1087,24 @@ impl TxValue {
         let mut fields = ::std::vec::Vec::with_capacity(4);
         let mut oneofs = ::std::vec::Vec::with_capacity(0);
         fields.push(::protobuf::reflect::rt::v2::make_message_field_accessor::<_, super::abcitypes::ResponseDeliverTx>(
-            "tx",
-            |m: &TxValue| { &m.tx },
-            |m: &mut TxValue| { &mut m.tx },
+            "response",
+            |m: &TxValue| { &m.response },
+            |m: &mut TxValue| { &mut m.response },
         ));
-        fields.push(::protobuf::reflect::rt::v2::make_message_field_accessor::<_, MerkleProof>(
+        fields.push(::protobuf::reflect::rt::v2::make_message_field_accessor::<_, super::proof::Proof>(
             "delivery_proof",
             |m: &TxValue| { &m.delivery_proof },
             |m: &mut TxValue| { &mut m.delivery_proof },
         ));
-        fields.push(::protobuf::reflect::rt::v2::make_message_field_accessor::<_, MerkleProof>(
+        fields.push(::protobuf::reflect::rt::v2::make_message_field_accessor::<_, super::proof::Proof>(
             "inclusion_proof",
             |m: &TxValue| { &m.inclusion_proof },
             |m: &mut TxValue| { &mut m.inclusion_proof },
         ));
         fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
-            "height",
-            |m: &TxValue| { &m.height },
-            |m: &mut TxValue| { &mut m.height },
+            "data",
+            |m: &TxValue| { &m.data },
+            |m: &mut TxValue| { &mut m.data },
         ));
         ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<TxValue>(
             "TxValue",
@@ -766,7 +1125,7 @@ impl ::protobuf::Message for TxValue {
         while let Some(tag) = is.read_raw_tag_or_eof()? {
             match tag {
                 10 => {
-                    ::protobuf::rt::read_singular_message_into_field(is, &mut self.tx)?;
+                    ::protobuf::rt::read_singular_message_into_field(is, &mut self.response)?;
                 },
                 18 => {
                     ::protobuf::rt::read_singular_message_into_field(is, &mut self.delivery_proof)?;
@@ -774,8 +1133,8 @@ impl ::protobuf::Message for TxValue {
                 26 => {
                     ::protobuf::rt::read_singular_message_into_field(is, &mut self.inclusion_proof)?;
                 },
-                32 => {
-                    self.height = is.read_uint64()?;
+                34 => {
+                    self.data = is.read_bytes()?;
                 },
                 tag => {
                     ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
@@ -789,7 +1148,7 @@ impl ::protobuf::Message for TxValue {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u64 {
         let mut my_size = 0;
-        if let Some(v) = self.tx.as_ref() {
+        if let Some(v) = self.response.as_ref() {
             let len = v.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint64_size(len) + len;
         }
@@ -801,8 +1160,8 @@ impl ::protobuf::Message for TxValue {
             let len = v.compute_size();
             my_size += 1 + ::protobuf::rt::compute_raw_varint64_size(len) + len;
         }
-        if self.height != 0 {
-            my_size += ::protobuf::rt::uint64_size(4, self.height);
+        if !self.data.is_empty() {
+            my_size += ::protobuf::rt::bytes_size(4, &self.data);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
         self.special_fields.cached_size().set(my_size as u32);
@@ -810,7 +1169,7 @@ impl ::protobuf::Message for TxValue {
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
-        if let Some(v) = self.tx.as_ref() {
+        if let Some(v) = self.response.as_ref() {
             ::protobuf::rt::write_message_field_with_cached_size(1, v, os)?;
         }
         if let Some(v) = self.delivery_proof.as_ref() {
@@ -819,8 +1178,8 @@ impl ::protobuf::Message for TxValue {
         if let Some(v) = self.inclusion_proof.as_ref() {
             ::protobuf::rt::write_message_field_with_cached_size(3, v, os)?;
         }
-        if self.height != 0 {
-            os.write_uint64(4, self.height)?;
+        if !self.data.is_empty() {
+            os.write_bytes(4, &self.data)?;
         }
         os.write_unknown_fields(self.special_fields.unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -839,19 +1198,19 @@ impl ::protobuf::Message for TxValue {
     }
 
     fn clear(&mut self) {
-        self.tx.clear();
+        self.response.clear();
         self.delivery_proof.clear();
         self.inclusion_proof.clear();
-        self.height = 0;
+        self.data.clear();
         self.special_fields.clear();
     }
 
     fn default_instance() -> &'static TxValue {
         static instance: TxValue = TxValue {
-            tx: ::protobuf::MessageField::none(),
+            response: ::protobuf::MessageField::none(),
             delivery_proof: ::protobuf::MessageField::none(),
             inclusion_proof: ::protobuf::MessageField::none(),
-            height: 0,
+            data: ::std::vec::Vec::new(),
             special_fields: ::protobuf::SpecialFields::new(),
         };
         &instance
@@ -876,66 +1235,37 @@ impl ::protobuf::reflect::ProtobufValue for TxValue {
 }
 
 #[derive(PartialEq,Clone,Default,Debug)]
-// @@protoc_insertion_point(message:neutron.interchainadapter.interchainqueries.MerkleProof)
-pub struct MerkleProof {
-    // message fields
-    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.MerkleProof.total)
-    pub total: i64,
-    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.MerkleProof.index)
-    pub index: i64,
-    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.MerkleProof.leaf_hash)
-    pub leaf_hash: ::std::vec::Vec<u8>,
-    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.MerkleProof.aunts)
-    pub aunts: ::std::vec::Vec<::std::vec::Vec<u8>>,
+// @@protoc_insertion_point(message:neutron.interchainadapter.interchainqueries.MsgSubmitQueryResultResponse)
+pub struct MsgSubmitQueryResultResponse {
     // special fields
-    // @@protoc_insertion_point(special_field:neutron.interchainadapter.interchainqueries.MerkleProof.special_fields)
+    // @@protoc_insertion_point(special_field:neutron.interchainadapter.interchainqueries.MsgSubmitQueryResultResponse.special_fields)
     pub special_fields: ::protobuf::SpecialFields,
 }
 
-impl<'a> ::std::default::Default for &'a MerkleProof {
-    fn default() -> &'a MerkleProof {
-        <MerkleProof as ::protobuf::Message>::default_instance()
+impl<'a> ::std::default::Default for &'a MsgSubmitQueryResultResponse {
+    fn default() -> &'a MsgSubmitQueryResultResponse {
+        <MsgSubmitQueryResultResponse as ::protobuf::Message>::default_instance()
     }
 }
 
-impl MerkleProof {
-    pub fn new() -> MerkleProof {
+impl MsgSubmitQueryResultResponse {
+    pub fn new() -> MsgSubmitQueryResultResponse {
         ::std::default::Default::default()
     }
 
     fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
-        let mut fields = ::std::vec::Vec::with_capacity(4);
+        let mut fields = ::std::vec::Vec::with_capacity(0);
         let mut oneofs = ::std::vec::Vec::with_capacity(0);
-        fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
-            "total",
-            |m: &MerkleProof| { &m.total },
-            |m: &mut MerkleProof| { &mut m.total },
-        ));
-        fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
-            "index",
-            |m: &MerkleProof| { &m.index },
-            |m: &mut MerkleProof| { &mut m.index },
-        ));
-        fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
-            "leaf_hash",
-            |m: &MerkleProof| { &m.leaf_hash },
-            |m: &mut MerkleProof| { &mut m.leaf_hash },
-        ));
-        fields.push(::protobuf::reflect::rt::v2::make_vec_simpler_accessor::<_, _>(
-            "aunts",
-            |m: &MerkleProof| { &m.aunts },
-            |m: &mut MerkleProof| { &mut m.aunts },
-        ));
-        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<MerkleProof>(
-            "MerkleProof",
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<MsgSubmitQueryResultResponse>(
+            "MsgSubmitQueryResultResponse",
             fields,
             oneofs,
         )
     }
 }
 
-impl ::protobuf::Message for MerkleProof {
-    const NAME: &'static str = "MerkleProof";
+impl ::protobuf::Message for MsgSubmitQueryResultResponse {
+    const NAME: &'static str = "MsgSubmitQueryResultResponse";
 
     fn is_initialized(&self) -> bool {
         true
@@ -944,18 +1274,6 @@ impl ::protobuf::Message for MerkleProof {
     fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
         while let Some(tag) = is.read_raw_tag_or_eof()? {
             match tag {
-                8 => {
-                    self.total = is.read_int64()?;
-                },
-                16 => {
-                    self.index = is.read_int64()?;
-                },
-                26 => {
-                    self.leaf_hash = is.read_bytes()?;
-                },
-                34 => {
-                    self.aunts.push(is.read_bytes()?);
-                },
                 tag => {
                     ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
                 },
@@ -968,36 +1286,12 @@ impl ::protobuf::Message for MerkleProof {
     #[allow(unused_variables)]
     fn compute_size(&self) -> u64 {
         let mut my_size = 0;
-        if self.total != 0 {
-            my_size += ::protobuf::rt::int64_size(1, self.total);
-        }
-        if self.index != 0 {
-            my_size += ::protobuf::rt::int64_size(2, self.index);
-        }
-        if !self.leaf_hash.is_empty() {
-            my_size += ::protobuf::rt::bytes_size(3, &self.leaf_hash);
-        }
-        for value in &self.aunts {
-            my_size += ::protobuf::rt::bytes_size(4, &value);
-        };
         my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
         self.special_fields.cached_size().set(my_size as u32);
         my_size
     }
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
-        if self.total != 0 {
-            os.write_int64(1, self.total)?;
-        }
-        if self.index != 0 {
-            os.write_int64(2, self.index)?;
-        }
-        if !self.leaf_hash.is_empty() {
-            os.write_bytes(3, &self.leaf_hash)?;
-        }
-        for v in &self.aunts {
-            os.write_bytes(4, &v)?;
-        };
         os.write_unknown_fields(self.special_fields.unknown_fields())?;
         ::std::result::Result::Ok(())
     }
@@ -1010,156 +1304,178 @@ impl ::protobuf::Message for MerkleProof {
         &mut self.special_fields
     }
 
-    fn new() -> MerkleProof {
-        MerkleProof::new()
+    fn new() -> MsgSubmitQueryResultResponse {
+        MsgSubmitQueryResultResponse::new()
     }
 
     fn clear(&mut self) {
-        self.total = 0;
-        self.index = 0;
-        self.leaf_hash.clear();
-        self.aunts.clear();
         self.special_fields.clear();
     }
 
-    fn default_instance() -> &'static MerkleProof {
-        static instance: MerkleProof = MerkleProof {
-            total: 0,
-            index: 0,
-            leaf_hash: ::std::vec::Vec::new(),
-            aunts: ::std::vec::Vec::new(),
+    fn default_instance() -> &'static MsgSubmitQueryResultResponse {
+        static instance: MsgSubmitQueryResultResponse = MsgSubmitQueryResultResponse {
             special_fields: ::protobuf::SpecialFields::new(),
         };
         &instance
     }
 }
 
-impl ::protobuf::MessageFull for MerkleProof {
+impl ::protobuf::MessageFull for MsgSubmitQueryResultResponse {
     fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
         static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
-        descriptor.get(|| file_descriptor().message_by_package_relative_name("MerkleProof").unwrap()).clone()
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("MsgSubmitQueryResultResponse").unwrap()).clone()
     }
 }
 
-impl ::std::fmt::Display for MerkleProof {
+impl ::std::fmt::Display for MsgSubmitQueryResultResponse {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         ::protobuf::text_format::fmt(self, f)
     }
 }
 
-impl ::protobuf::reflect::ProtobufValue for MerkleProof {
+impl ::protobuf::reflect::ProtobufValue for MsgSubmitQueryResultResponse {
     type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
 }
 
 static file_descriptor_proto_data: &'static [u8] = b"\
     \n,interchainqueries/interchainqueries_tx.proto\x12+neutron.interchainad\
     apter.interchainqueries\x1a\x1dtendermint/crypto/proof.proto\x1a\x1ftend\
-    ermint/abci/abcitypes.proto\"\xd5\x01\n\x1aMsgRegisterInterchainQuery\
-    \x12\x1d\n\nquery_data\x18\x01\x20\x01(\tR\tqueryData\x12\x1d\n\nquery_t\
-    ype\x18\x02\x20\x01(\tR\tqueryType\x12\x17\n\x07zone_id\x18\x03\x20\x01(\
-    \tR\x06zoneId\x12#\n\rconnection_id\x18\x04\x20\x01(\tR\x0cconnectionId\
-    \x12#\n\rupdate_period\x18\x05\x20\x01(\x04R\x0cupdatePeriod\x12\x16\n\
-    \x06sender\x18\x06\x20\x01(\tR\x06sender\"4\n\"MsgRegisterInterchainQuer\
-    yResponse\x12\x0e\n\x02id\x18\x01\x20\x01(\x04R\x02id\"\xc7\x01\n\x0bQue\
-    ryResult\x12X\n\nkv_results\x18\x01\x20\x03(\x0b29.neutron.interchainada\
-    pter.interchainqueries.StorageValueR\tkvResults\x12F\n\x03txs\x18\x02\
+    ermint/abci/abcitypes.proto\x1a\x19google/protobuf/any.proto\"\xd5\x01\n\
+    \x1aMsgRegisterInterchainQuery\x12\x1d\n\nquery_data\x18\x01\x20\x01(\tR\
+    \tqueryData\x12\x1d\n\nquery_type\x18\x02\x20\x01(\tR\tqueryType\x12\x17\
+    \n\x07zone_id\x18\x03\x20\x01(\tR\x06zoneId\x12#\n\rconnection_id\x18\
+    \x04\x20\x01(\tR\x0cconnectionId\x12#\n\rupdate_period\x18\x05\x20\x01(\
+    \x04R\x0cupdatePeriod\x12\x16\n\x06sender\x18\x06\x20\x01(\tR\x06sender\
+    \"4\n\"MsgRegisterInterchainQueryResponse\x12\x0e\n\x02id\x18\x01\x20\
+    \x01(\x04R\x02id\"\xb8\x01\n\x14MsgSubmitQueryResult\x12\x19\n\x08query_\
+    id\x18\x01\x20\x01(\x04R\x07queryId\x12\x16\n\x06sender\x18\x02\x20\x01(\
+    \tR\x06sender\x12\x1b\n\tclient_id\x18\x03\x20\x01(\tR\x08clientId\x12P\
+    \n\x06result\x18\x04\x20\x01(\x0b28.neutron.interchainadapter.interchain\
+    queries.QueryResultR\x06result\"\xe7\x01\n\x0bQueryResult\x12X\n\nkv_res\
+    ults\x18\x01\x20\x03(\x0b29.neutron.interchainadapter.interchainqueries.\
+    StorageValueR\tkvResults\x12J\n\x06blocks\x18\x02\x20\x03(\x0b22.neutron\
+    .interchainadapter.interchainqueries.BlockR\x06blocks\x12\x16\n\x06heigh\
+    t\x18\x03\x20\x01(\x04R\x06height\x12\x1a\n\x08revision\x18\x04\x20\x01(\
+    \x04R\x08revision\"\x90\x01\n\x0cStorageValue\x12%\n\x0estorage_prefix\
+    \x18\x01\x20\x01(\tR\rstoragePrefix\x12\x10\n\x03key\x18\x02\x20\x01(\
+    \x0cR\x03key\x12\x14\n\x05value\x18\x03\x20\x01(\x0cR\x05value\x121\n\
+    \x05Proof\x18\x04\x20\x01(\x0b2\x1b.tendermint.crypto.ProofOpsR\x05Proof\
+    \"\xbf\x01\n\x05Block\x12@\n\x11next_block_header\x18\x01\x20\x01(\x0b2\
+    \x14.google.protobuf.AnyR\x0fnextBlockHeader\x12,\n\x06header\x18\x02\
+    \x20\x01(\x0b2\x14.google.protobuf.AnyR\x06header\x12F\n\x03txs\x18\x03\
     \x20\x03(\x0b24.neutron.interchainadapter.interchainqueries.TxValueR\x03\
-    txs\x12\x16\n\x06height\x18\x03\x20\x01(\x04R\x06height\"\x90\x01\n\x0cS\
-    torageValue\x12%\n\x0estorage_prefix\x18\x01\x20\x01(\tR\rstoragePrefix\
-    \x12\x10\n\x03key\x18\x02\x20\x01(\x0cR\x03key\x12\x14\n\x05value\x18\
-    \x03\x20\x01(\x0cR\x05value\x121\n\x05proof\x18\x04\x20\x01(\x0b2\x1b.te\
-    ndermint.crypto.ProofOpsR\x05proof\"\x99\x02\n\x07TxValue\x122\n\x02tx\
-    \x18\x01\x20\x01(\x0b2\".tendermint.abci.ResponseDeliverTxR\x02tx\x12_\n\
-    \x0edelivery_proof\x18\x02\x20\x01(\x0b28.neutron.interchainadapter.inte\
-    rchainqueries.MerkleProofR\rdeliveryProof\x12a\n\x0finclusion_proof\x18\
-    \x03\x20\x01(\x0b28.neutron.interchainadapter.interchainqueries.MerklePr\
-    oofR\x0einclusionProof\x12\x16\n\x06height\x18\x04\x20\x01(\x04R\x06heig\
-    ht\"l\n\x0bMerkleProof\x12\x14\n\x05total\x18\x01\x20\x01(\x03R\x05total\
-    \x12\x14\n\x05index\x18\x02\x20\x01(\x03R\x05index\x12\x1b\n\tleaf_hash\
-    \x18\x03\x20\x01(\x0cR\x08leafHash\x12\x14\n\x05aunts\x18\x04\x20\x03(\
-    \x0cR\x05auntsJ\xc1\r\n\x06\x12\x04\0\0,\x01\n\x08\n\x01\x0c\x12\x03\0\0\
-    \x12\n\x08\n\x01\x02\x12\x03\x01\04\n\t\n\x02\x03\0\x12\x03\x03\0'\n\t\n\
-    \x02\x03\x01\x12\x03\x04\0)\n\n\n\x02\x04\0\x12\x04\x07\0\x0e\x01\n\n\n\
-    \x03\x04\0\x01\x12\x03\x07\x08\"\n\x0b\n\x04\x04\0\x02\0\x12\x03\x08\x02\
-    \x18\n\r\n\x05\x04\0\x02\0\x04\x12\x04\x08\x02\x07$\n\x0c\n\x05\x04\0\
-    \x02\0\x05\x12\x03\x08\x02\x08\n\x0c\n\x05\x04\0\x02\0\x01\x12\x03\x08\t\
-    \x13\n\x0c\n\x05\x04\0\x02\0\x03\x12\x03\x08\x16\x17\n\x0b\n\x04\x04\0\
-    \x02\x01\x12\x03\t\x02\x18\n\r\n\x05\x04\0\x02\x01\x04\x12\x04\t\x02\x08\
-    \x18\n\x0c\n\x05\x04\0\x02\x01\x05\x12\x03\t\x02\x08\n\x0c\n\x05\x04\0\
-    \x02\x01\x01\x12\x03\t\t\x13\n\x0c\n\x05\x04\0\x02\x01\x03\x12\x03\t\x16\
-    \x17\n\x0b\n\x04\x04\0\x02\x02\x12\x03\n\x02\x15\n\r\n\x05\x04\0\x02\x02\
-    \x04\x12\x04\n\x02\t\x18\n\x0c\n\x05\x04\0\x02\x02\x05\x12\x03\n\x02\x08\
-    \n\x0c\n\x05\x04\0\x02\x02\x01\x12\x03\n\t\x10\n\x0c\n\x05\x04\0\x02\x02\
-    \x03\x12\x03\n\x13\x14\n\x0b\n\x04\x04\0\x02\x03\x12\x03\x0b\x02\x1b\n\r\
-    \n\x05\x04\0\x02\x03\x04\x12\x04\x0b\x02\n\x15\n\x0c\n\x05\x04\0\x02\x03\
-    \x05\x12\x03\x0b\x02\x08\n\x0c\n\x05\x04\0\x02\x03\x01\x12\x03\x0b\t\x16\
-    \n\x0c\n\x05\x04\0\x02\x03\x03\x12\x03\x0b\x19\x1a\n\x0b\n\x04\x04\0\x02\
-    \x04\x12\x03\x0c\x02\x1b\n\r\n\x05\x04\0\x02\x04\x04\x12\x04\x0c\x02\x0b\
-    \x1b\n\x0c\n\x05\x04\0\x02\x04\x05\x12\x03\x0c\x02\x08\n\x0c\n\x05\x04\0\
-    \x02\x04\x01\x12\x03\x0c\t\x16\n\x0c\n\x05\x04\0\x02\x04\x03\x12\x03\x0c\
-    \x19\x1a\n\x0b\n\x04\x04\0\x02\x05\x12\x03\r\x02\x14\n\r\n\x05\x04\0\x02\
-    \x05\x04\x12\x04\r\x02\x0c\x1b\n\x0c\n\x05\x04\0\x02\x05\x05\x12\x03\r\
-    \x02\x08\n\x0c\n\x05\x04\0\x02\x05\x01\x12\x03\r\t\x0f\n\x0c\n\x05\x04\0\
-    \x02\x05\x03\x12\x03\r\x12\x13\n\t\n\x02\x04\x01\x12\x03\x10\0=\n\n\n\
-    \x03\x04\x01\x01\x12\x03\x10\x08*\n\x0b\n\x04\x04\x01\x02\0\x12\x03\x10-\
-    ;\n\x0c\n\x05\x04\x01\x02\0\x04\x12\x03\x10-,\n\x0c\n\x05\x04\x01\x02\0\
-    \x05\x12\x03\x10-3\n\x0c\n\x05\x04\x01\x02\0\x01\x12\x03\x1046\n\x0c\n\
-    \x05\x04\x01\x02\0\x03\x12\x03\x109:\n\n\n\x02\x04\x02\x12\x04\x12\0\x16\
-    \x01\n\n\n\x03\x04\x02\x01\x12\x03\x12\x08\x13\n\x0b\n\x04\x04\x02\x02\0\
-    \x12\x03\x13\x02'\n\x0c\n\x05\x04\x02\x02\0\x04\x12\x03\x13\x02\n\n\x0c\
-    \n\x05\x04\x02\x02\0\x06\x12\x03\x13\x0b\x17\n\x0c\n\x05\x04\x02\x02\0\
-    \x01\x12\x03\x13\x18\"\n\x0c\n\x05\x04\x02\x02\0\x03\x12\x03\x13%&\n\x0b\
-    \n\x04\x04\x02\x02\x01\x12\x03\x14\x02\x1b\n\x0c\n\x05\x04\x02\x02\x01\
-    \x04\x12\x03\x14\x02\n\n\x0c\n\x05\x04\x02\x02\x01\x06\x12\x03\x14\x0b\
-    \x12\n\x0c\n\x05\x04\x02\x02\x01\x01\x12\x03\x14\x13\x16\n\x0c\n\x05\x04\
-    \x02\x02\x01\x03\x12\x03\x14\x19\x1a\n\x0b\n\x04\x04\x02\x02\x02\x12\x03\
-    \x15\x02\x14\n\r\n\x05\x04\x02\x02\x02\x04\x12\x04\x15\x02\x14\x1b\n\x0c\
-    \n\x05\x04\x02\x02\x02\x05\x12\x03\x15\x02\x08\n\x0c\n\x05\x04\x02\x02\
-    \x02\x01\x12\x03\x15\t\x0f\n\x0c\n\x05\x04\x02\x02\x02\x03\x12\x03\x15\
-    \x12\x13\n\n\n\x02\x04\x03\x12\x04\x18\0\x1e\x01\n\n\n\x03\x04\x03\x01\
-    \x12\x03\x18\x08\x14\n\x0b\n\x04\x04\x03\x02\0\x12\x03\x19\x02\x1c\n\r\n\
-    \x05\x04\x03\x02\0\x04\x12\x04\x19\x02\x18\x16\n\x0c\n\x05\x04\x03\x02\0\
-    \x05\x12\x03\x19\x02\x08\n\x0c\n\x05\x04\x03\x02\0\x01\x12\x03\x19\t\x17\
-    \n\x0c\n\x05\x04\x03\x02\0\x03\x12\x03\x19\x1a\x1b\n\x0b\n\x04\x04\x03\
-    \x02\x01\x12\x03\x1a\x02\x10\n\r\n\x05\x04\x03\x02\x01\x04\x12\x04\x1a\
-    \x02\x19\x1c\n\x0c\n\x05\x04\x03\x02\x01\x05\x12\x03\x1a\x02\x07\n\x0c\n\
-    \x05\x04\x03\x02\x01\x01\x12\x03\x1a\x08\x0b\n\x0c\n\x05\x04\x03\x02\x01\
-    \x03\x12\x03\x1a\x0e\x0f\n\x0b\n\x04\x04\x03\x02\x02\x12\x03\x1b\x02\x12\
-    \n\r\n\x05\x04\x03\x02\x02\x04\x12\x04\x1b\x02\x1a\x10\n\x0c\n\x05\x04\
-    \x03\x02\x02\x05\x12\x03\x1b\x02\x07\n\x0c\n\x05\x04\x03\x02\x02\x01\x12\
-    \x03\x1b\x08\r\n\x0c\n\x05\x04\x03\x02\x02\x03\x12\x03\x1b\x10\x11\n\x0b\
-    \n\x04\x04\x03\x02\x03\x12\x03\x1d\x02'\n\r\n\x05\x04\x03\x02\x03\x04\
-    \x12\x04\x1d\x02\x1b\x12\n\x0c\n\x05\x04\x03\x02\x03\x06\x12\x03\x1d\x02\
-    \x1c\n\x0c\n\x05\x04\x03\x02\x03\x01\x12\x03\x1d\x1d\"\n\x0c\n\x05\x04\
-    \x03\x02\x03\x03\x12\x03\x1d%&\n\n\n\x02\x04\x04\x12\x04\x20\0%\x01\n\n\
-    \n\x03\x04\x04\x01\x12\x03\x20\x08\x0f\n\x0b\n\x04\x04\x04\x02\0\x12\x03\
-    !\x02+\n\r\n\x05\x04\x04\x02\0\x04\x12\x04!\x02\x20\x11\n\x0c\n\x05\x04\
-    \x04\x02\0\x06\x12\x03!\x02#\n\x0c\n\x05\x04\x04\x02\0\x01\x12\x03!$&\n\
-    \x0c\n\x05\x04\x04\x02\0\x03\x12\x03!)*\n\x0b\n\x04\x04\x04\x02\x01\x12\
-    \x03\"\x02!\n\r\n\x05\x04\x04\x02\x01\x04\x12\x04\"\x02!+\n\x0c\n\x05\
-    \x04\x04\x02\x01\x06\x12\x03\"\x02\r\n\x0c\n\x05\x04\x04\x02\x01\x01\x12\
-    \x03\"\x0e\x1c\n\x0c\n\x05\x04\x04\x02\x01\x03\x12\x03\"\x1f\x20\n\x0b\n\
-    \x04\x04\x04\x02\x02\x12\x03#\x02\"\n\r\n\x05\x04\x04\x02\x02\x04\x12\
-    \x04#\x02\"!\n\x0c\n\x05\x04\x04\x02\x02\x06\x12\x03#\x02\r\n\x0c\n\x05\
-    \x04\x04\x02\x02\x01\x12\x03#\x0e\x1d\n\x0c\n\x05\x04\x04\x02\x02\x03\
-    \x12\x03#\x20!\n\x0b\n\x04\x04\x04\x02\x03\x12\x03$\x02\x14\n\r\n\x05\
-    \x04\x04\x02\x03\x04\x12\x04$\x02#\"\n\x0c\n\x05\x04\x04\x02\x03\x05\x12\
-    \x03$\x02\x08\n\x0c\n\x05\x04\x04\x02\x03\x01\x12\x03$\t\x0f\n\x0c\n\x05\
-    \x04\x04\x02\x03\x03\x12\x03$\x12\x13\n\n\n\x02\x04\x05\x12\x04'\0,\x01\
-    \n\n\n\x03\x04\x05\x01\x12\x03'\x08\x13\n\x0b\n\x04\x04\x05\x02\0\x12\
-    \x03(\x02\x12\n\r\n\x05\x04\x05\x02\0\x04\x12\x04(\x02'\x15\n\x0c\n\x05\
-    \x04\x05\x02\0\x05\x12\x03(\x02\x07\n\x0c\n\x05\x04\x05\x02\0\x01\x12\
-    \x03(\x08\r\n\x0c\n\x05\x04\x05\x02\0\x03\x12\x03(\x10\x11\n\x0b\n\x04\
-    \x04\x05\x02\x01\x12\x03)\x02\x12\n\r\n\x05\x04\x05\x02\x01\x04\x12\x04)\
-    \x02(\x12\n\x0c\n\x05\x04\x05\x02\x01\x05\x12\x03)\x02\x07\n\x0c\n\x05\
-    \x04\x05\x02\x01\x01\x12\x03)\x08\r\n\x0c\n\x05\x04\x05\x02\x01\x03\x12\
-    \x03)\x10\x11\n\x0b\n\x04\x04\x05\x02\x02\x12\x03*\x02\x16\n\r\n\x05\x04\
-    \x05\x02\x02\x04\x12\x04*\x02)\x12\n\x0c\n\x05\x04\x05\x02\x02\x05\x12\
-    \x03*\x02\x07\n\x0c\n\x05\x04\x05\x02\x02\x01\x12\x03*\x08\x11\n\x0c\n\
-    \x05\x04\x05\x02\x02\x03\x12\x03*\x14\x15\n\x0b\n\x04\x04\x05\x02\x03\
-    \x12\x03+\x02\x1b\n\x0c\n\x05\x04\x05\x02\x03\x04\x12\x03+\x02\n\n\x0c\n\
-    \x05\x04\x05\x02\x03\x05\x12\x03+\x0b\x10\n\x0c\n\x05\x04\x05\x02\x03\
-    \x01\x12\x03+\x11\x16\n\x0c\n\x05\x04\x05\x02\x03\x03\x12\x03+\x19\x1ab\
+    txs\"\xe1\x01\n\x07TxValue\x12>\n\x08response\x18\x01\x20\x01(\x0b2\".te\
+    ndermint.abci.ResponseDeliverTxR\x08response\x12?\n\x0edelivery_proof\
+    \x18\x02\x20\x01(\x0b2\x18.tendermint.crypto.ProofR\rdeliveryProof\x12A\
+    \n\x0finclusion_proof\x18\x03\x20\x01(\x0b2\x18.tendermint.crypto.ProofR\
+    \x0einclusionProof\x12\x12\n\x04data\x18\x04\x20\x01(\x0cR\x04data\"\x1e\
+    \n\x1cMsgSubmitQueryResultResponseB:Z8github.com/neutron-org/neutron/x/i\
+    nterchainqueries/typesJ\xd5\x12\n\x06\x12\x04\0\0A\x01\n\x08\n\x01\x0c\
+    \x12\x03\0\0\x12\n\x08\n\x01\x02\x12\x03\x01\04\n\t\n\x02\x03\0\x12\x03\
+    \x03\0'\n\t\n\x02\x03\x01\x12\x03\x04\0)\n\t\n\x02\x03\x02\x12\x03\x05\0\
+    #\n\x08\n\x01\x08\x12\x03\t\0O\nH\n\x02\x08\x0b\x12\x03\t\0O2=\x20this\
+    \x20line\x20is\x20used\x20by\x20starport\x20scaffolding\x20#\x20proto/tx\
+    /import\n\n\n\n\x02\x04\0\x12\x04\x0c\0\x13\x01\n\n\n\x03\x04\0\x01\x12\
+    \x03\x0c\x08\"\n\x0b\n\x04\x04\0\x02\0\x12\x03\r\x02\x18\n\r\n\x05\x04\0\
+    \x02\0\x04\x12\x04\r\x02\x0c$\n\x0c\n\x05\x04\0\x02\0\x05\x12\x03\r\x02\
+    \x08\n\x0c\n\x05\x04\0\x02\0\x01\x12\x03\r\t\x13\n\x0c\n\x05\x04\0\x02\0\
+    \x03\x12\x03\r\x16\x17\n\x0b\n\x04\x04\0\x02\x01\x12\x03\x0e\x02\x18\n\r\
+    \n\x05\x04\0\x02\x01\x04\x12\x04\x0e\x02\r\x18\n\x0c\n\x05\x04\0\x02\x01\
+    \x05\x12\x03\x0e\x02\x08\n\x0c\n\x05\x04\0\x02\x01\x01\x12\x03\x0e\t\x13\
+    \n\x0c\n\x05\x04\0\x02\x01\x03\x12\x03\x0e\x16\x17\n\x0b\n\x04\x04\0\x02\
+    \x02\x12\x03\x0f\x02\x15\n\r\n\x05\x04\0\x02\x02\x04\x12\x04\x0f\x02\x0e\
+    \x18\n\x0c\n\x05\x04\0\x02\x02\x05\x12\x03\x0f\x02\x08\n\x0c\n\x05\x04\0\
+    \x02\x02\x01\x12\x03\x0f\t\x10\n\x0c\n\x05\x04\0\x02\x02\x03\x12\x03\x0f\
+    \x13\x14\n\x0b\n\x04\x04\0\x02\x03\x12\x03\x10\x02\x1b\n\r\n\x05\x04\0\
+    \x02\x03\x04\x12\x04\x10\x02\x0f\x15\n\x0c\n\x05\x04\0\x02\x03\x05\x12\
+    \x03\x10\x02\x08\n\x0c\n\x05\x04\0\x02\x03\x01\x12\x03\x10\t\x16\n\x0c\n\
+    \x05\x04\0\x02\x03\x03\x12\x03\x10\x19\x1a\n\x0b\n\x04\x04\0\x02\x04\x12\
+    \x03\x11\x02\x1b\n\r\n\x05\x04\0\x02\x04\x04\x12\x04\x11\x02\x10\x1b\n\
+    \x0c\n\x05\x04\0\x02\x04\x05\x12\x03\x11\x02\x08\n\x0c\n\x05\x04\0\x02\
+    \x04\x01\x12\x03\x11\t\x16\n\x0c\n\x05\x04\0\x02\x04\x03\x12\x03\x11\x19\
+    \x1a\n\x0b\n\x04\x04\0\x02\x05\x12\x03\x12\x02\x14\n\r\n\x05\x04\0\x02\
+    \x05\x04\x12\x04\x12\x02\x11\x1b\n\x0c\n\x05\x04\0\x02\x05\x05\x12\x03\
+    \x12\x02\x08\n\x0c\n\x05\x04\0\x02\x05\x01\x12\x03\x12\t\x0f\n\x0c\n\x05\
+    \x04\0\x02\x05\x03\x12\x03\x12\x12\x13\n\t\n\x02\x04\x01\x12\x03\x15\0=\
+    \n\n\n\x03\x04\x01\x01\x12\x03\x15\x08*\n\x0b\n\x04\x04\x01\x02\0\x12\
+    \x03\x15-;\n\x0c\n\x05\x04\x01\x02\0\x04\x12\x03\x15-,\n\x0c\n\x05\x04\
+    \x01\x02\0\x05\x12\x03\x15-3\n\x0c\n\x05\x04\x01\x02\0\x01\x12\x03\x1546\
+    \n\x0c\n\x05\x04\x01\x02\0\x03\x12\x03\x159:\n\n\n\x02\x04\x02\x12\x04\
+    \x17\0\x1c\x01\n\n\n\x03\x04\x02\x01\x12\x03\x17\x08\x1c\n\x0b\n\x04\x04\
+    \x02\x02\0\x12\x03\x18\x02\x16\n\r\n\x05\x04\x02\x02\0\x04\x12\x04\x18\
+    \x02\x17\x1e\n\x0c\n\x05\x04\x02\x02\0\x05\x12\x03\x18\x02\x08\n\x0c\n\
+    \x05\x04\x02\x02\0\x01\x12\x03\x18\t\x11\n\x0c\n\x05\x04\x02\x02\0\x03\
+    \x12\x03\x18\x14\x15\n\x0b\n\x04\x04\x02\x02\x01\x12\x03\x19\x02\x14\n\r\
+    \n\x05\x04\x02\x02\x01\x04\x12\x04\x19\x02\x18\x16\n\x0c\n\x05\x04\x02\
+    \x02\x01\x05\x12\x03\x19\x02\x08\n\x0c\n\x05\x04\x02\x02\x01\x01\x12\x03\
+    \x19\t\x0f\n\x0c\n\x05\x04\x02\x02\x01\x03\x12\x03\x19\x12\x13\n\x0b\n\
+    \x04\x04\x02\x02\x02\x12\x03\x1a\x02\x17\n\r\n\x05\x04\x02\x02\x02\x04\
+    \x12\x04\x1a\x02\x19\x14\n\x0c\n\x05\x04\x02\x02\x02\x05\x12\x03\x1a\x02\
+    \x08\n\x0c\n\x05\x04\x02\x02\x02\x01\x12\x03\x1a\t\x12\n\x0c\n\x05\x04\
+    \x02\x02\x02\x03\x12\x03\x1a\x15\x16\n\x0b\n\x04\x04\x02\x02\x03\x12\x03\
+    \x1b\x02\x19\n\r\n\x05\x04\x02\x02\x03\x04\x12\x04\x1b\x02\x1a\x17\n\x0c\
+    \n\x05\x04\x02\x02\x03\x06\x12\x03\x1b\x02\r\n\x0c\n\x05\x04\x02\x02\x03\
+    \x01\x12\x03\x1b\x0e\x14\n\x0c\n\x05\x04\x02\x02\x03\x03\x12\x03\x1b\x17\
+    \x18\n\n\n\x02\x04\x03\x12\x04\x1e\0#\x01\n\n\n\x03\x04\x03\x01\x12\x03\
+    \x1e\x08\x13\n\x0b\n\x04\x04\x03\x02\0\x12\x03\x1f\x02'\n\x0c\n\x05\x04\
+    \x03\x02\0\x04\x12\x03\x1f\x02\n\n\x0c\n\x05\x04\x03\x02\0\x06\x12\x03\
+    \x1f\x0b\x17\n\x0c\n\x05\x04\x03\x02\0\x01\x12\x03\x1f\x18\"\n\x0c\n\x05\
+    \x04\x03\x02\0\x03\x12\x03\x1f%&\n\x0b\n\x04\x04\x03\x02\x01\x12\x03\x20\
+    \x02\x1c\n\x0c\n\x05\x04\x03\x02\x01\x04\x12\x03\x20\x02\n\n\x0c\n\x05\
+    \x04\x03\x02\x01\x06\x12\x03\x20\x0b\x10\n\x0c\n\x05\x04\x03\x02\x01\x01\
+    \x12\x03\x20\x11\x17\n\x0c\n\x05\x04\x03\x02\x01\x03\x12\x03\x20\x1a\x1b\
+    \n\x0b\n\x04\x04\x03\x02\x02\x12\x03!\x02\x14\n\r\n\x05\x04\x03\x02\x02\
+    \x04\x12\x04!\x02\x20\x1c\n\x0c\n\x05\x04\x03\x02\x02\x05\x12\x03!\x02\
+    \x08\n\x0c\n\x05\x04\x03\x02\x02\x01\x12\x03!\t\x0f\n\x0c\n\x05\x04\x03\
+    \x02\x02\x03\x12\x03!\x12\x13\n\x0b\n\x04\x04\x03\x02\x03\x12\x03\"\x02\
+    \x16\n\r\n\x05\x04\x03\x02\x03\x04\x12\x04\"\x02!\x14\n\x0c\n\x05\x04\
+    \x03\x02\x03\x05\x12\x03\"\x02\x08\n\x0c\n\x05\x04\x03\x02\x03\x01\x12\
+    \x03\"\t\x11\n\x0c\n\x05\x04\x03\x02\x03\x03\x12\x03\"\x14\x15\n\n\n\x02\
+    \x04\x04\x12\x04%\0+\x01\n\n\n\x03\x04\x04\x01\x12\x03%\x08\x14\n\x0b\n\
+    \x04\x04\x04\x02\0\x12\x03&\x02\x1c\n\r\n\x05\x04\x04\x02\0\x04\x12\x04&\
+    \x02%\x16\n\x0c\n\x05\x04\x04\x02\0\x05\x12\x03&\x02\x08\n\x0c\n\x05\x04\
+    \x04\x02\0\x01\x12\x03&\t\x17\n\x0c\n\x05\x04\x04\x02\0\x03\x12\x03&\x1a\
+    \x1b\n\x0b\n\x04\x04\x04\x02\x01\x12\x03'\x02\x10\n\r\n\x05\x04\x04\x02\
+    \x01\x04\x12\x04'\x02&\x1c\n\x0c\n\x05\x04\x04\x02\x01\x05\x12\x03'\x02\
+    \x07\n\x0c\n\x05\x04\x04\x02\x01\x01\x12\x03'\x08\x0b\n\x0c\n\x05\x04\
+    \x04\x02\x01\x03\x12\x03'\x0e\x0f\n\x0b\n\x04\x04\x04\x02\x02\x12\x03(\
+    \x02\x12\n\r\n\x05\x04\x04\x02\x02\x04\x12\x04(\x02'\x10\n\x0c\n\x05\x04\
+    \x04\x02\x02\x05\x12\x03(\x02\x07\n\x0c\n\x05\x04\x04\x02\x02\x01\x12\
+    \x03(\x08\r\n\x0c\n\x05\x04\x04\x02\x02\x03\x12\x03(\x10\x11\n\x0b\n\x04\
+    \x04\x04\x02\x03\x12\x03*\x02'\n\r\n\x05\x04\x04\x02\x03\x04\x12\x04*\
+    \x02(\x12\n\x0c\n\x05\x04\x04\x02\x03\x06\x12\x03*\x02\x1c\n\x0c\n\x05\
+    \x04\x04\x02\x03\x01\x12\x03*\x1d\"\n\x0c\n\x05\x04\x04\x02\x03\x03\x12\
+    \x03*%&\n\n\n\x02\x04\x05\x12\x04-\06\x01\n\n\n\x03\x04\x05\x01\x12\x03-\
+    \x08\r\n\xad\x01\n\x04\x04\x05\x02\0\x12\x030\x02,\x1a\x9f\x01\x20We\x20\
+    need\x20to\x20know\x20block\x20X+1\x20to\x20verify\x20result\x20of\x20tr\
+    ansaction\x20for\x20block\x20X\n\x20since\x20LastResultsHash\x20is\x20ro\
+    ot\x20hash\x20of\x20all\x20results\x20from\x20the\x20txs\x20from\x20the\
+    \x20previous\x20block\n\n\r\n\x05\x04\x05\x02\0\x04\x12\x040\x02-\x0f\n\
+    \x0c\n\x05\x04\x05\x02\0\x06\x12\x030\x02\x15\n\x0c\n\x05\x04\x05\x02\0\
+    \x01\x12\x030\x16'\n\x0c\n\x05\x04\x05\x02\0\x03\x12\x030*+\nU\n\x04\x04\
+    \x05\x02\x01\x12\x033\x02!\x1aH\x20We\x20need\x20to\x20know\x20block\x20\
+    X\x20to\x20verify\x20inclusion\x20of\x20transaction\x20for\x20block\x20X\
+    \n\n\r\n\x05\x04\x05\x02\x01\x04\x12\x043\x020,\n\x0c\n\x05\x04\x05\x02\
+    \x01\x06\x12\x033\x02\x15\n\x0c\n\x05\x04\x05\x02\x01\x01\x12\x033\x16\
+    \x1c\n\x0c\n\x05\x04\x05\x02\x01\x03\x12\x033\x1f\x20\n\x0b\n\x04\x04\
+    \x05\x02\x02\x12\x035\x02\x1b\n\x0c\n\x05\x04\x05\x02\x02\x04\x12\x035\
+    \x02\n\n\x0c\n\x05\x04\x05\x02\x02\x06\x12\x035\x0b\x12\n\x0c\n\x05\x04\
+    \x05\x02\x02\x01\x12\x035\x13\x16\n\x0c\n\x05\x04\x05\x02\x02\x03\x12\
+    \x035\x19\x1a\n\n\n\x02\x04\x06\x12\x048\0=\x01\n\n\n\x03\x04\x06\x01\
+    \x12\x038\x08\x0f\n\x0b\n\x04\x04\x06\x02\0\x12\x039\x021\n\r\n\x05\x04\
+    \x06\x02\0\x04\x12\x049\x028\x11\n\x0c\n\x05\x04\x06\x02\0\x06\x12\x039\
+    \x02#\n\x0c\n\x05\x04\x06\x02\0\x01\x12\x039$,\n\x0c\n\x05\x04\x06\x02\0\
+    \x03\x12\x039/0\n\x0b\n\x04\x04\x06\x02\x01\x12\x03:\x02-\n\r\n\x05\x04\
+    \x06\x02\x01\x04\x12\x04:\x0291\n\x0c\n\x05\x04\x06\x02\x01\x06\x12\x03:\
+    \x02\x19\n\x0c\n\x05\x04\x06\x02\x01\x01\x12\x03:\x1a(\n\x0c\n\x05\x04\
+    \x06\x02\x01\x03\x12\x03:+,\n\x0b\n\x04\x04\x06\x02\x02\x12\x03;\x02.\n\
+    \r\n\x05\x04\x06\x02\x02\x04\x12\x04;\x02:-\n\x0c\n\x05\x04\x06\x02\x02\
+    \x06\x12\x03;\x02\x19\n\x0c\n\x05\x04\x06\x02\x02\x01\x12\x03;\x1a)\n\
+    \x0c\n\x05\x04\x06\x02\x02\x03\x12\x03;,-\n\x0b\n\x04\x04\x06\x02\x03\
+    \x12\x03<\x02\x11\n\r\n\x05\x04\x06\x02\x03\x04\x12\x04<\x02;.\n\x0c\n\
+    \x05\x04\x06\x02\x03\x05\x12\x03<\x02\x07\n\x0c\n\x05\x04\x06\x02\x03\
+    \x01\x12\x03<\x08\x0c\n\x0c\n\x05\x04\x06\x02\x03\x03\x12\x03<\x0f\x10\n\
+    \n\n\x02\x04\x07\x12\x04?\0A\x01\n\n\n\x03\x04\x07\x01\x12\x03?\x08$b\
     \x06proto3\
 ";
 
@@ -1177,16 +1493,19 @@ pub fn file_descriptor() -> &'static ::protobuf::reflect::FileDescriptor {
     static file_descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::FileDescriptor> = ::protobuf::rt::Lazy::new();
     file_descriptor.get(|| {
         let generated_file_descriptor = generated_file_descriptor_lazy.get(|| {
-            let mut deps = ::std::vec::Vec::with_capacity(2);
+            let mut deps = ::std::vec::Vec::with_capacity(3);
             deps.push(super::proof::file_descriptor().clone());
             deps.push(super::abcitypes::file_descriptor().clone());
-            let mut messages = ::std::vec::Vec::with_capacity(6);
+            deps.push(::protobuf::well_known_types::any::file_descriptor().clone());
+            let mut messages = ::std::vec::Vec::with_capacity(8);
             messages.push(MsgRegisterInterchainQuery::generated_message_descriptor_data());
             messages.push(MsgRegisterInterchainQueryResponse::generated_message_descriptor_data());
+            messages.push(MsgSubmitQueryResult::generated_message_descriptor_data());
             messages.push(QueryResult::generated_message_descriptor_data());
             messages.push(StorageValue::generated_message_descriptor_data());
+            messages.push(Block::generated_message_descriptor_data());
             messages.push(TxValue::generated_message_descriptor_data());
-            messages.push(MerkleProof::generated_message_descriptor_data());
+            messages.push(MsgSubmitQueryResultResponse::generated_message_descriptor_data());
             let mut enums = ::std::vec::Vec::with_capacity(0);
             ::protobuf::reflect::GeneratedFileDescriptor::new_generated(
                 file_descriptor_proto(),
