@@ -352,6 +352,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "ibc_transfer"
+version = "0.1.0"
+dependencies = [
+ "cosmwasm-std",
+ "cw-storage-plus",
+ "schemars",
+ "serde",
+]
+
+[[package]]
 name = "interchain_queries"
 version = "0.1.0"
 dependencies = [
