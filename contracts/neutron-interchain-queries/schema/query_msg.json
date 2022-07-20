@@ -39,12 +39,24 @@
         "get_transfers": {
           "type": "object",
           "required": [
+            "end",
             "recipient",
+            "start",
             "zone_id"
           ],
           "properties": {
+            "end": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
             "recipient": {
               "type": "string"
+            },
+            "start": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
             },
             "zone_id": {
               "type": "string"

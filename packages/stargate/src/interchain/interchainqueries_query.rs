@@ -26,6 +26,477 @@
 const _PROTOBUF_VERSION_CHECK: () = ::protobuf::VERSION_3_1_0;
 
 #[derive(PartialEq,Clone,Default,Debug)]
+// @@protoc_insertion_point(message:neutron.interchainadapter.interchainqueries.QueryRegisteredQueriesRequest)
+pub struct QueryRegisteredQueriesRequest {
+    // special fields
+    // @@protoc_insertion_point(special_field:neutron.interchainadapter.interchainqueries.QueryRegisteredQueriesRequest.special_fields)
+    pub special_fields: ::protobuf::SpecialFields,
+}
+
+impl<'a> ::std::default::Default for &'a QueryRegisteredQueriesRequest {
+    fn default() -> &'a QueryRegisteredQueriesRequest {
+        <QueryRegisteredQueriesRequest as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl QueryRegisteredQueriesRequest {
+    pub fn new() -> QueryRegisteredQueriesRequest {
+        ::std::default::Default::default()
+    }
+
+    fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
+        let mut fields = ::std::vec::Vec::with_capacity(0);
+        let mut oneofs = ::std::vec::Vec::with_capacity(0);
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<QueryRegisteredQueriesRequest>(
+            "QueryRegisteredQueriesRequest",
+            fields,
+            oneofs,
+        )
+    }
+}
+
+impl ::protobuf::Message for QueryRegisteredQueriesRequest {
+    const NAME: &'static str = "QueryRegisteredQueriesRequest";
+
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
+        while let Some(tag) = is.read_raw_tag_or_eof()? {
+            match tag {
+                tag => {
+                    ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u64 {
+        let mut my_size = 0;
+        my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
+        self.special_fields.cached_size().set(my_size as u32);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
+        os.write_unknown_fields(self.special_fields.unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn special_fields(&self) -> &::protobuf::SpecialFields {
+        &self.special_fields
+    }
+
+    fn mut_special_fields(&mut self) -> &mut ::protobuf::SpecialFields {
+        &mut self.special_fields
+    }
+
+    fn new() -> QueryRegisteredQueriesRequest {
+        QueryRegisteredQueriesRequest::new()
+    }
+
+    fn clear(&mut self) {
+        self.special_fields.clear();
+    }
+
+    fn default_instance() -> &'static QueryRegisteredQueriesRequest {
+        static instance: QueryRegisteredQueriesRequest = QueryRegisteredQueriesRequest {
+            special_fields: ::protobuf::SpecialFields::new(),
+        };
+        &instance
+    }
+}
+
+impl ::protobuf::MessageFull for QueryRegisteredQueriesRequest {
+    fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("QueryRegisteredQueriesRequest").unwrap()).clone()
+    }
+}
+
+impl ::std::fmt::Display for QueryRegisteredQueriesRequest {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for QueryRegisteredQueriesRequest {
+    type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
+}
+
+#[derive(PartialEq,Clone,Default,Debug)]
+// @@protoc_insertion_point(message:neutron.interchainadapter.interchainqueries.QueryRegisteredQueriesResponse)
+pub struct QueryRegisteredQueriesResponse {
+    // message fields
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.QueryRegisteredQueriesResponse.registered_queries)
+    pub registered_queries: ::std::vec::Vec<super::interchainqueries_genesis::RegisteredQuery>,
+    // special fields
+    // @@protoc_insertion_point(special_field:neutron.interchainadapter.interchainqueries.QueryRegisteredQueriesResponse.special_fields)
+    pub special_fields: ::protobuf::SpecialFields,
+}
+
+impl<'a> ::std::default::Default for &'a QueryRegisteredQueriesResponse {
+    fn default() -> &'a QueryRegisteredQueriesResponse {
+        <QueryRegisteredQueriesResponse as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl QueryRegisteredQueriesResponse {
+    pub fn new() -> QueryRegisteredQueriesResponse {
+        ::std::default::Default::default()
+    }
+
+    fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
+        let mut fields = ::std::vec::Vec::with_capacity(1);
+        let mut oneofs = ::std::vec::Vec::with_capacity(0);
+        fields.push(::protobuf::reflect::rt::v2::make_vec_simpler_accessor::<_, _>(
+            "registered_queries",
+            |m: &QueryRegisteredQueriesResponse| { &m.registered_queries },
+            |m: &mut QueryRegisteredQueriesResponse| { &mut m.registered_queries },
+        ));
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<QueryRegisteredQueriesResponse>(
+            "QueryRegisteredQueriesResponse",
+            fields,
+            oneofs,
+        )
+    }
+}
+
+impl ::protobuf::Message for QueryRegisteredQueriesResponse {
+    const NAME: &'static str = "QueryRegisteredQueriesResponse";
+
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
+        while let Some(tag) = is.read_raw_tag_or_eof()? {
+            match tag {
+                10 => {
+                    self.registered_queries.push(is.read_message()?);
+                },
+                tag => {
+                    ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u64 {
+        let mut my_size = 0;
+        for value in &self.registered_queries {
+            let len = value.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint64_size(len) + len;
+        };
+        my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
+        self.special_fields.cached_size().set(my_size as u32);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
+        for v in &self.registered_queries {
+            ::protobuf::rt::write_message_field_with_cached_size(1, v, os)?;
+        };
+        os.write_unknown_fields(self.special_fields.unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn special_fields(&self) -> &::protobuf::SpecialFields {
+        &self.special_fields
+    }
+
+    fn mut_special_fields(&mut self) -> &mut ::protobuf::SpecialFields {
+        &mut self.special_fields
+    }
+
+    fn new() -> QueryRegisteredQueriesResponse {
+        QueryRegisteredQueriesResponse::new()
+    }
+
+    fn clear(&mut self) {
+        self.registered_queries.clear();
+        self.special_fields.clear();
+    }
+
+    fn default_instance() -> &'static QueryRegisteredQueriesResponse {
+        static instance: QueryRegisteredQueriesResponse = QueryRegisteredQueriesResponse {
+            registered_queries: ::std::vec::Vec::new(),
+            special_fields: ::protobuf::SpecialFields::new(),
+        };
+        &instance
+    }
+}
+
+impl ::protobuf::MessageFull for QueryRegisteredQueriesResponse {
+    fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("QueryRegisteredQueriesResponse").unwrap()).clone()
+    }
+}
+
+impl ::std::fmt::Display for QueryRegisteredQueriesResponse {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for QueryRegisteredQueriesResponse {
+    type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
+}
+
+#[derive(PartialEq,Clone,Default,Debug)]
+// @@protoc_insertion_point(message:neutron.interchainadapter.interchainqueries.QueryRegisteredQueryRequest)
+pub struct QueryRegisteredQueryRequest {
+    // message fields
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.QueryRegisteredQueryRequest.query_id)
+    pub query_id: u64,
+    // special fields
+    // @@protoc_insertion_point(special_field:neutron.interchainadapter.interchainqueries.QueryRegisteredQueryRequest.special_fields)
+    pub special_fields: ::protobuf::SpecialFields,
+}
+
+impl<'a> ::std::default::Default for &'a QueryRegisteredQueryRequest {
+    fn default() -> &'a QueryRegisteredQueryRequest {
+        <QueryRegisteredQueryRequest as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl QueryRegisteredQueryRequest {
+    pub fn new() -> QueryRegisteredQueryRequest {
+        ::std::default::Default::default()
+    }
+
+    fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
+        let mut fields = ::std::vec::Vec::with_capacity(1);
+        let mut oneofs = ::std::vec::Vec::with_capacity(0);
+        fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
+            "query_id",
+            |m: &QueryRegisteredQueryRequest| { &m.query_id },
+            |m: &mut QueryRegisteredQueryRequest| { &mut m.query_id },
+        ));
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<QueryRegisteredQueryRequest>(
+            "QueryRegisteredQueryRequest",
+            fields,
+            oneofs,
+        )
+    }
+}
+
+impl ::protobuf::Message for QueryRegisteredQueryRequest {
+    const NAME: &'static str = "QueryRegisteredQueryRequest";
+
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
+        while let Some(tag) = is.read_raw_tag_or_eof()? {
+            match tag {
+                8 => {
+                    self.query_id = is.read_uint64()?;
+                },
+                tag => {
+                    ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u64 {
+        let mut my_size = 0;
+        if self.query_id != 0 {
+            my_size += ::protobuf::rt::uint64_size(1, self.query_id);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
+        self.special_fields.cached_size().set(my_size as u32);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
+        if self.query_id != 0 {
+            os.write_uint64(1, self.query_id)?;
+        }
+        os.write_unknown_fields(self.special_fields.unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn special_fields(&self) -> &::protobuf::SpecialFields {
+        &self.special_fields
+    }
+
+    fn mut_special_fields(&mut self) -> &mut ::protobuf::SpecialFields {
+        &mut self.special_fields
+    }
+
+    fn new() -> QueryRegisteredQueryRequest {
+        QueryRegisteredQueryRequest::new()
+    }
+
+    fn clear(&mut self) {
+        self.query_id = 0;
+        self.special_fields.clear();
+    }
+
+    fn default_instance() -> &'static QueryRegisteredQueryRequest {
+        static instance: QueryRegisteredQueryRequest = QueryRegisteredQueryRequest {
+            query_id: 0,
+            special_fields: ::protobuf::SpecialFields::new(),
+        };
+        &instance
+    }
+}
+
+impl ::protobuf::MessageFull for QueryRegisteredQueryRequest {
+    fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("QueryRegisteredQueryRequest").unwrap()).clone()
+    }
+}
+
+impl ::std::fmt::Display for QueryRegisteredQueryRequest {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for QueryRegisteredQueryRequest {
+    type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
+}
+
+#[derive(PartialEq,Clone,Default,Debug)]
+// @@protoc_insertion_point(message:neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResponse)
+pub struct QueryRegisteredQueryResponse {
+    // message fields
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResponse.registered_query)
+    pub registered_query: ::protobuf::MessageField<super::interchainqueries_genesis::RegisteredQuery>,
+    // special fields
+    // @@protoc_insertion_point(special_field:neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResponse.special_fields)
+    pub special_fields: ::protobuf::SpecialFields,
+}
+
+impl<'a> ::std::default::Default for &'a QueryRegisteredQueryResponse {
+    fn default() -> &'a QueryRegisteredQueryResponse {
+        <QueryRegisteredQueryResponse as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl QueryRegisteredQueryResponse {
+    pub fn new() -> QueryRegisteredQueryResponse {
+        ::std::default::Default::default()
+    }
+
+    fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
+        let mut fields = ::std::vec::Vec::with_capacity(1);
+        let mut oneofs = ::std::vec::Vec::with_capacity(0);
+        fields.push(::protobuf::reflect::rt::v2::make_message_field_accessor::<_, super::interchainqueries_genesis::RegisteredQuery>(
+            "registered_query",
+            |m: &QueryRegisteredQueryResponse| { &m.registered_query },
+            |m: &mut QueryRegisteredQueryResponse| { &mut m.registered_query },
+        ));
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<QueryRegisteredQueryResponse>(
+            "QueryRegisteredQueryResponse",
+            fields,
+            oneofs,
+        )
+    }
+}
+
+impl ::protobuf::Message for QueryRegisteredQueryResponse {
+    const NAME: &'static str = "QueryRegisteredQueryResponse";
+
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
+        while let Some(tag) = is.read_raw_tag_or_eof()? {
+            match tag {
+                10 => {
+                    ::protobuf::rt::read_singular_message_into_field(is, &mut self.registered_query)?;
+                },
+                tag => {
+                    ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u64 {
+        let mut my_size = 0;
+        if let Some(v) = self.registered_query.as_ref() {
+            let len = v.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint64_size(len) + len;
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
+        self.special_fields.cached_size().set(my_size as u32);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
+        if let Some(v) = self.registered_query.as_ref() {
+            ::protobuf::rt::write_message_field_with_cached_size(1, v, os)?;
+        }
+        os.write_unknown_fields(self.special_fields.unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn special_fields(&self) -> &::protobuf::SpecialFields {
+        &self.special_fields
+    }
+
+    fn mut_special_fields(&mut self) -> &mut ::protobuf::SpecialFields {
+        &mut self.special_fields
+    }
+
+    fn new() -> QueryRegisteredQueryResponse {
+        QueryRegisteredQueryResponse::new()
+    }
+
+    fn clear(&mut self) {
+        self.registered_query.clear();
+        self.special_fields.clear();
+    }
+
+    fn default_instance() -> &'static QueryRegisteredQueryResponse {
+        static instance: QueryRegisteredQueryResponse = QueryRegisteredQueryResponse {
+            registered_query: ::protobuf::MessageField::none(),
+            special_fields: ::protobuf::SpecialFields::new(),
+        };
+        &instance
+    }
+}
+
+impl ::protobuf::MessageFull for QueryRegisteredQueryResponse {
+    fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("QueryRegisteredQueryResponse").unwrap()).clone()
+    }
+}
+
+impl ::std::fmt::Display for QueryRegisteredQueryResponse {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for QueryRegisteredQueryResponse {
+    type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
+}
+
+#[derive(PartialEq,Clone,Default,Debug)]
 // @@protoc_insertion_point(message:neutron.interchainadapter.interchainqueries.QueryRegisteredQueryResultRequest)
 pub struct QueryRegisteredQueryResultRequest {
     // message fields
@@ -270,24 +741,522 @@ impl ::protobuf::reflect::ProtobufValue for QueryRegisteredQueryResultResponse {
     type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
 }
 
+#[derive(PartialEq,Clone,Default,Debug)]
+// @@protoc_insertion_point(message:neutron.interchainadapter.interchainqueries.QuerySubmittedTransactionsRequest)
+pub struct QuerySubmittedTransactionsRequest {
+    // message fields
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.QuerySubmittedTransactionsRequest.query_id)
+    pub query_id: u64,
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.QuerySubmittedTransactionsRequest.start)
+    pub start: u64,
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.QuerySubmittedTransactionsRequest.end)
+    pub end: u64,
+    // special fields
+    // @@protoc_insertion_point(special_field:neutron.interchainadapter.interchainqueries.QuerySubmittedTransactionsRequest.special_fields)
+    pub special_fields: ::protobuf::SpecialFields,
+}
+
+impl<'a> ::std::default::Default for &'a QuerySubmittedTransactionsRequest {
+    fn default() -> &'a QuerySubmittedTransactionsRequest {
+        <QuerySubmittedTransactionsRequest as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl QuerySubmittedTransactionsRequest {
+    pub fn new() -> QuerySubmittedTransactionsRequest {
+        ::std::default::Default::default()
+    }
+
+    fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
+        let mut fields = ::std::vec::Vec::with_capacity(3);
+        let mut oneofs = ::std::vec::Vec::with_capacity(0);
+        fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
+            "query_id",
+            |m: &QuerySubmittedTransactionsRequest| { &m.query_id },
+            |m: &mut QuerySubmittedTransactionsRequest| { &mut m.query_id },
+        ));
+        fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
+            "start",
+            |m: &QuerySubmittedTransactionsRequest| { &m.start },
+            |m: &mut QuerySubmittedTransactionsRequest| { &mut m.start },
+        ));
+        fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
+            "end",
+            |m: &QuerySubmittedTransactionsRequest| { &m.end },
+            |m: &mut QuerySubmittedTransactionsRequest| { &mut m.end },
+        ));
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<QuerySubmittedTransactionsRequest>(
+            "QuerySubmittedTransactionsRequest",
+            fields,
+            oneofs,
+        )
+    }
+}
+
+impl ::protobuf::Message for QuerySubmittedTransactionsRequest {
+    const NAME: &'static str = "QuerySubmittedTransactionsRequest";
+
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
+        while let Some(tag) = is.read_raw_tag_or_eof()? {
+            match tag {
+                8 => {
+                    self.query_id = is.read_uint64()?;
+                },
+                16 => {
+                    self.start = is.read_uint64()?;
+                },
+                24 => {
+                    self.end = is.read_uint64()?;
+                },
+                tag => {
+                    ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u64 {
+        let mut my_size = 0;
+        if self.query_id != 0 {
+            my_size += ::protobuf::rt::uint64_size(1, self.query_id);
+        }
+        if self.start != 0 {
+            my_size += ::protobuf::rt::uint64_size(2, self.start);
+        }
+        if self.end != 0 {
+            my_size += ::protobuf::rt::uint64_size(3, self.end);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
+        self.special_fields.cached_size().set(my_size as u32);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
+        if self.query_id != 0 {
+            os.write_uint64(1, self.query_id)?;
+        }
+        if self.start != 0 {
+            os.write_uint64(2, self.start)?;
+        }
+        if self.end != 0 {
+            os.write_uint64(3, self.end)?;
+        }
+        os.write_unknown_fields(self.special_fields.unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn special_fields(&self) -> &::protobuf::SpecialFields {
+        &self.special_fields
+    }
+
+    fn mut_special_fields(&mut self) -> &mut ::protobuf::SpecialFields {
+        &mut self.special_fields
+    }
+
+    fn new() -> QuerySubmittedTransactionsRequest {
+        QuerySubmittedTransactionsRequest::new()
+    }
+
+    fn clear(&mut self) {
+        self.query_id = 0;
+        self.start = 0;
+        self.end = 0;
+        self.special_fields.clear();
+    }
+
+    fn default_instance() -> &'static QuerySubmittedTransactionsRequest {
+        static instance: QuerySubmittedTransactionsRequest = QuerySubmittedTransactionsRequest {
+            query_id: 0,
+            start: 0,
+            end: 0,
+            special_fields: ::protobuf::SpecialFields::new(),
+        };
+        &instance
+    }
+}
+
+impl ::protobuf::MessageFull for QuerySubmittedTransactionsRequest {
+    fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("QuerySubmittedTransactionsRequest").unwrap()).clone()
+    }
+}
+
+impl ::std::fmt::Display for QuerySubmittedTransactionsRequest {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for QuerySubmittedTransactionsRequest {
+    type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
+}
+
+#[derive(PartialEq,Clone,Default,Debug)]
+// @@protoc_insertion_point(message:neutron.interchainadapter.interchainqueries.QuerySubmittedTransactionsResponse)
+pub struct QuerySubmittedTransactionsResponse {
+    // message fields
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.QuerySubmittedTransactionsResponse.transactions)
+    pub transactions: ::std::vec::Vec<Transaction>,
+    // special fields
+    // @@protoc_insertion_point(special_field:neutron.interchainadapter.interchainqueries.QuerySubmittedTransactionsResponse.special_fields)
+    pub special_fields: ::protobuf::SpecialFields,
+}
+
+impl<'a> ::std::default::Default for &'a QuerySubmittedTransactionsResponse {
+    fn default() -> &'a QuerySubmittedTransactionsResponse {
+        <QuerySubmittedTransactionsResponse as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl QuerySubmittedTransactionsResponse {
+    pub fn new() -> QuerySubmittedTransactionsResponse {
+        ::std::default::Default::default()
+    }
+
+    fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
+        let mut fields = ::std::vec::Vec::with_capacity(1);
+        let mut oneofs = ::std::vec::Vec::with_capacity(0);
+        fields.push(::protobuf::reflect::rt::v2::make_vec_simpler_accessor::<_, _>(
+            "transactions",
+            |m: &QuerySubmittedTransactionsResponse| { &m.transactions },
+            |m: &mut QuerySubmittedTransactionsResponse| { &mut m.transactions },
+        ));
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<QuerySubmittedTransactionsResponse>(
+            "QuerySubmittedTransactionsResponse",
+            fields,
+            oneofs,
+        )
+    }
+}
+
+impl ::protobuf::Message for QuerySubmittedTransactionsResponse {
+    const NAME: &'static str = "QuerySubmittedTransactionsResponse";
+
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
+        while let Some(tag) = is.read_raw_tag_or_eof()? {
+            match tag {
+                10 => {
+                    self.transactions.push(is.read_message()?);
+                },
+                tag => {
+                    ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u64 {
+        let mut my_size = 0;
+        for value in &self.transactions {
+            let len = value.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint64_size(len) + len;
+        };
+        my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
+        self.special_fields.cached_size().set(my_size as u32);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
+        for v in &self.transactions {
+            ::protobuf::rt::write_message_field_with_cached_size(1, v, os)?;
+        };
+        os.write_unknown_fields(self.special_fields.unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn special_fields(&self) -> &::protobuf::SpecialFields {
+        &self.special_fields
+    }
+
+    fn mut_special_fields(&mut self) -> &mut ::protobuf::SpecialFields {
+        &mut self.special_fields
+    }
+
+    fn new() -> QuerySubmittedTransactionsResponse {
+        QuerySubmittedTransactionsResponse::new()
+    }
+
+    fn clear(&mut self) {
+        self.transactions.clear();
+        self.special_fields.clear();
+    }
+
+    fn default_instance() -> &'static QuerySubmittedTransactionsResponse {
+        static instance: QuerySubmittedTransactionsResponse = QuerySubmittedTransactionsResponse {
+            transactions: ::std::vec::Vec::new(),
+            special_fields: ::protobuf::SpecialFields::new(),
+        };
+        &instance
+    }
+}
+
+impl ::protobuf::MessageFull for QuerySubmittedTransactionsResponse {
+    fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("QuerySubmittedTransactionsResponse").unwrap()).clone()
+    }
+}
+
+impl ::std::fmt::Display for QuerySubmittedTransactionsResponse {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for QuerySubmittedTransactionsResponse {
+    type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
+}
+
+#[derive(PartialEq,Clone,Default,Debug)]
+// @@protoc_insertion_point(message:neutron.interchainadapter.interchainqueries.Transaction)
+pub struct Transaction {
+    // message fields
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.Transaction.id)
+    pub id: u64,
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.Transaction.height)
+    pub height: u64,
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.Transaction.data)
+    pub data: ::std::vec::Vec<u8>,
+    // special fields
+    // @@protoc_insertion_point(special_field:neutron.interchainadapter.interchainqueries.Transaction.special_fields)
+    pub special_fields: ::protobuf::SpecialFields,
+}
+
+impl<'a> ::std::default::Default for &'a Transaction {
+    fn default() -> &'a Transaction {
+        <Transaction as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl Transaction {
+    pub fn new() -> Transaction {
+        ::std::default::Default::default()
+    }
+
+    fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
+        let mut fields = ::std::vec::Vec::with_capacity(3);
+        let mut oneofs = ::std::vec::Vec::with_capacity(0);
+        fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
+            "id",
+            |m: &Transaction| { &m.id },
+            |m: &mut Transaction| { &mut m.id },
+        ));
+        fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
+            "height",
+            |m: &Transaction| { &m.height },
+            |m: &mut Transaction| { &mut m.height },
+        ));
+        fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
+            "data",
+            |m: &Transaction| { &m.data },
+            |m: &mut Transaction| { &mut m.data },
+        ));
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<Transaction>(
+            "Transaction",
+            fields,
+            oneofs,
+        )
+    }
+}
+
+impl ::protobuf::Message for Transaction {
+    const NAME: &'static str = "Transaction";
+
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
+        while let Some(tag) = is.read_raw_tag_or_eof()? {
+            match tag {
+                8 => {
+                    self.id = is.read_uint64()?;
+                },
+                16 => {
+                    self.height = is.read_uint64()?;
+                },
+                26 => {
+                    self.data = is.read_bytes()?;
+                },
+                tag => {
+                    ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u64 {
+        let mut my_size = 0;
+        if self.id != 0 {
+            my_size += ::protobuf::rt::uint64_size(1, self.id);
+        }
+        if self.height != 0 {
+            my_size += ::protobuf::rt::uint64_size(2, self.height);
+        }
+        if !self.data.is_empty() {
+            my_size += ::protobuf::rt::bytes_size(3, &self.data);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
+        self.special_fields.cached_size().set(my_size as u32);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
+        if self.id != 0 {
+            os.write_uint64(1, self.id)?;
+        }
+        if self.height != 0 {
+            os.write_uint64(2, self.height)?;
+        }
+        if !self.data.is_empty() {
+            os.write_bytes(3, &self.data)?;
+        }
+        os.write_unknown_fields(self.special_fields.unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn special_fields(&self) -> &::protobuf::SpecialFields {
+        &self.special_fields
+    }
+
+    fn mut_special_fields(&mut self) -> &mut ::protobuf::SpecialFields {
+        &mut self.special_fields
+    }
+
+    fn new() -> Transaction {
+        Transaction::new()
+    }
+
+    fn clear(&mut self) {
+        self.id = 0;
+        self.height = 0;
+        self.data.clear();
+        self.special_fields.clear();
+    }
+
+    fn default_instance() -> &'static Transaction {
+        static instance: Transaction = Transaction {
+            id: 0,
+            height: 0,
+            data: ::std::vec::Vec::new(),
+            special_fields: ::protobuf::SpecialFields::new(),
+        };
+        &instance
+    }
+}
+
+impl ::protobuf::MessageFull for Transaction {
+    fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("Transaction").unwrap()).clone()
+    }
+}
+
+impl ::std::fmt::Display for Transaction {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for Transaction {
+    type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
+}
+
 static file_descriptor_proto_data: &'static [u8] = b"\
     \n/interchainqueries/interchainqueries_query.proto\x12+neutron.interchai\
     nadapter.interchainqueries\x1a,interchainqueries/interchainqueries_tx.pr\
-    oto\">\n!QueryRegisteredQueryResultRequest\x12\x19\n\x08query_id\x18\x01\
-    \x20\x01(\x04R\x07queryId\"v\n\"QueryRegisteredQueryResultResponse\x12P\
-    \n\x06result\x18\x01\x20\x01(\x0b28.neutron.interchainadapter.interchain\
-    queries.QueryResultR\x06resultJ\xe3\x01\n\x06\x12\x04\0\0\x0b\x01\n\x08\
-    \n\x01\x0c\x12\x03\0\0\x12\n\x08\n\x01\x02\x12\x03\x01\04\n\t\n\x02\x03\
-    \0\x12\x03\x03\06\n\n\n\x02\x04\0\x12\x04\x05\0\x07\x01\n\n\n\x03\x04\0\
-    \x01\x12\x03\x05\x08)\n\x0b\n\x04\x04\0\x02\0\x12\x03\x06\x02\x16\n\r\n\
-    \x05\x04\0\x02\0\x04\x12\x04\x06\x02\x05+\n\x0c\n\x05\x04\0\x02\0\x05\
-    \x12\x03\x06\x02\x08\n\x0c\n\x05\x04\0\x02\0\x01\x12\x03\x06\t\x11\n\x0c\
-    \n\x05\x04\0\x02\0\x03\x12\x03\x06\x14\x15\n\n\n\x02\x04\x01\x12\x04\t\0\
-    \x0b\x01\n\n\n\x03\x04\x01\x01\x12\x03\t\x08*\n\x0b\n\x04\x04\x01\x02\0\
-    \x12\x03\n\x02\x19\n\r\n\x05\x04\x01\x02\0\x04\x12\x04\n\x02\t,\n\x0c\n\
-    \x05\x04\x01\x02\0\x06\x12\x03\n\x02\r\n\x0c\n\x05\x04\x01\x02\0\x01\x12\
-    \x03\n\x0e\x14\n\x0c\n\x05\x04\x01\x02\0\x03\x12\x03\n\x17\x18b\x06proto\
-    3\
+    oto\x1a1interchainqueries/interchainqueries_genesis.proto\x1a\x14gogopro\
+    to/gogo.proto\"\x1f\n\x1dQueryRegisteredQueriesRequest\"\x93\x01\n\x1eQu\
+    eryRegisteredQueriesResponse\x12q\n\x12registered_queries\x18\x01\x20\
+    \x03(\x0b2<.neutron.interchainadapter.interchainqueries.RegisteredQueryR\
+    \x11registeredQueriesB\x04\xc8\xde\x1f\0\"8\n\x1bQueryRegisteredQueryReq\
+    uest\x12\x19\n\x08query_id\x18\x01\x20\x01(\x04R\x07queryId\"\x87\x01\n\
+    \x1cQueryRegisteredQueryResponse\x12g\n\x10registered_query\x18\x01\x20\
+    \x01(\x0b2<.neutron.interchainadapter.interchainqueries.RegisteredQueryR\
+    \x0fregisteredQuery\">\n!QueryRegisteredQueryResultRequest\x12\x19\n\x08\
+    query_id\x18\x01\x20\x01(\x04R\x07queryId\"v\n\"QueryRegisteredQueryResu\
+    ltResponse\x12P\n\x06result\x18\x01\x20\x01(\x0b28.neutron.interchainada\
+    pter.interchainqueries.QueryResultR\x06result\"f\n!QuerySubmittedTransac\
+    tionsRequest\x12\x19\n\x08query_id\x18\x01\x20\x01(\x04R\x07queryId\x12\
+    \x14\n\x05start\x18\x02\x20\x01(\x04R\x05start\x12\x10\n\x03end\x18\x03\
+    \x20\x01(\x04R\x03end\"\x82\x01\n\"QuerySubmittedTransactionsResponse\
+    \x12\\\n\x0ctransactions\x18\x01\x20\x03(\x0b28.neutron.interchainadapte\
+    r.interchainqueries.TransactionR\x0ctransactions\"I\n\x0bTransaction\x12\
+    \x0e\n\x02id\x18\x01\x20\x01(\x04R\x02id\x12\x16\n\x06height\x18\x02\x20\
+    \x01(\x04R\x06height\x12\x12\n\x04data\x18\x03\x20\x01(\x0cR\x04dataJ\
+    \xfa\x08\n\x06\x12\x04\0\0,\x01\n\x08\n\x01\x0c\x12\x03\0\0\x12\n\x08\n\
+    \x01\x02\x12\x03\x01\04\n\t\n\x02\x03\0\x12\x03\x03\06\n\t\n\x02\x03\x01\
+    \x12\x03\x04\0;\n\t\n\x02\x03\x02\x12\x03\x05\0\x1e\n\t\n\x02\x04\0\x12\
+    \x03\x07\0(\n\n\n\x03\x04\0\x01\x12\x03\x07\x08%\n\n\n\x02\x04\x01\x12\
+    \x04\t\0\x0c\x01\n\n\n\x03\x04\x01\x01\x12\x03\t\x08&\n\x0c\n\x04\x04\
+    \x01\x02\0\x12\x04\n\x02\x0b#\n\x0c\n\x05\x04\x01\x02\0\x04\x12\x03\n\
+    \x02\n\n\x0c\n\x05\x04\x01\x02\0\x06\x12\x03\n\x0b\x1a\n\x0c\n\x05\x04\
+    \x01\x02\0\x01\x12\x03\n\x1b-\n\x0c\n\x05\x04\x01\x02\0\x03\x12\x03\n01\
+    \n\x0c\n\x05\x04\x01\x02\0\x08\x12\x03\x0b\x02\"\n\x0f\n\x08\x04\x01\x02\
+    \0\x08\xe9\xfb\x03\x12\x03\x0b\x04\x20\n\n\n\x02\x04\x02\x12\x04\x0e\0\
+    \x10\x01\n\n\n\x03\x04\x02\x01\x12\x03\x0e\x08#\n\x0b\n\x04\x04\x02\x02\
+    \0\x12\x03\x0f\x02\x16\n\r\n\x05\x04\x02\x02\0\x04\x12\x04\x0f\x02\x0e%\
+    \n\x0c\n\x05\x04\x02\x02\0\x05\x12\x03\x0f\x02\x08\n\x0c\n\x05\x04\x02\
+    \x02\0\x01\x12\x03\x0f\t\x11\n\x0c\n\x05\x04\x02\x02\0\x03\x12\x03\x0f\
+    \x14\x15\n\n\n\x02\x04\x03\x12\x04\x12\0\x14\x01\n\n\n\x03\x04\x03\x01\
+    \x12\x03\x12\x08$\n\x0b\n\x04\x04\x03\x02\0\x12\x03\x13\x02'\n\r\n\x05\
+    \x04\x03\x02\0\x04\x12\x04\x13\x02\x12&\n\x0c\n\x05\x04\x03\x02\0\x06\
+    \x12\x03\x13\x02\x11\n\x0c\n\x05\x04\x03\x02\0\x01\x12\x03\x13\x12\"\n\
+    \x0c\n\x05\x04\x03\x02\0\x03\x12\x03\x13%&\n\n\n\x02\x04\x04\x12\x04\x16\
+    \0\x18\x01\n\n\n\x03\x04\x04\x01\x12\x03\x16\x08)\n\x0b\n\x04\x04\x04\
+    \x02\0\x12\x03\x17\x02\x16\n\r\n\x05\x04\x04\x02\0\x04\x12\x04\x17\x02\
+    \x16+\n\x0c\n\x05\x04\x04\x02\0\x05\x12\x03\x17\x02\x08\n\x0c\n\x05\x04\
+    \x04\x02\0\x01\x12\x03\x17\t\x11\n\x0c\n\x05\x04\x04\x02\0\x03\x12\x03\
+    \x17\x14\x15\n\n\n\x02\x04\x05\x12\x04\x1a\0\x1c\x01\n\n\n\x03\x04\x05\
+    \x01\x12\x03\x1a\x08*\n\x0b\n\x04\x04\x05\x02\0\x12\x03\x1b\x02\x19\n\r\
+    \n\x05\x04\x05\x02\0\x04\x12\x04\x1b\x02\x1a,\n\x0c\n\x05\x04\x05\x02\0\
+    \x06\x12\x03\x1b\x02\r\n\x0c\n\x05\x04\x05\x02\0\x01\x12\x03\x1b\x0e\x14\
+    \n\x0c\n\x05\x04\x05\x02\0\x03\x12\x03\x1b\x17\x18\n\n\n\x02\x04\x06\x12\
+    \x04\x1e\0\"\x01\n\n\n\x03\x04\x06\x01\x12\x03\x1e\x08)\n\x0b\n\x04\x04\
+    \x06\x02\0\x12\x03\x1f\x02\x16\n\r\n\x05\x04\x06\x02\0\x04\x12\x04\x1f\
+    \x02\x1e+\n\x0c\n\x05\x04\x06\x02\0\x05\x12\x03\x1f\x02\x08\n\x0c\n\x05\
+    \x04\x06\x02\0\x01\x12\x03\x1f\t\x11\n\x0c\n\x05\x04\x06\x02\0\x03\x12\
+    \x03\x1f\x14\x15\n\x0b\n\x04\x04\x06\x02\x01\x12\x03\x20\x02\x13\n\r\n\
+    \x05\x04\x06\x02\x01\x04\x12\x04\x20\x02\x1f\x16\n\x0c\n\x05\x04\x06\x02\
+    \x01\x05\x12\x03\x20\x02\x08\n\x0c\n\x05\x04\x06\x02\x01\x01\x12\x03\x20\
+    \t\x0e\n\x0c\n\x05\x04\x06\x02\x01\x03\x12\x03\x20\x11\x12\n\x0b\n\x04\
+    \x04\x06\x02\x02\x12\x03!\x02\x11\n\r\n\x05\x04\x06\x02\x02\x04\x12\x04!\
+    \x02\x20\x13\n\x0c\n\x05\x04\x06\x02\x02\x05\x12\x03!\x02\x08\n\x0c\n\
+    \x05\x04\x06\x02\x02\x01\x12\x03!\t\x0c\n\x0c\n\x05\x04\x06\x02\x02\x03\
+    \x12\x03!\x0f\x10\n\n\n\x02\x04\x07\x12\x04$\0&\x01\n\n\n\x03\x04\x07\
+    \x01\x12\x03$\x08*\n\x0b\n\x04\x04\x07\x02\0\x12\x03%\x02(\n\x0c\n\x05\
+    \x04\x07\x02\0\x04\x12\x03%\x02\n\n\x0c\n\x05\x04\x07\x02\0\x06\x12\x03%\
+    \x0b\x16\n\x0c\n\x05\x04\x07\x02\0\x01\x12\x03%\x17#\n\x0c\n\x05\x04\x07\
+    \x02\0\x03\x12\x03%&'\n\n\n\x02\x04\x08\x12\x04(\0,\x01\n\n\n\x03\x04\
+    \x08\x01\x12\x03(\x08\x13\n\x0b\n\x04\x04\x08\x02\0\x12\x03)\x02\x10\n\r\
+    \n\x05\x04\x08\x02\0\x04\x12\x04)\x02(\x15\n\x0c\n\x05\x04\x08\x02\0\x05\
+    \x12\x03)\x02\x08\n\x0c\n\x05\x04\x08\x02\0\x01\x12\x03)\t\x0b\n\x0c\n\
+    \x05\x04\x08\x02\0\x03\x12\x03)\x0e\x0f\n\x0b\n\x04\x04\x08\x02\x01\x12\
+    \x03*\x02\x14\n\r\n\x05\x04\x08\x02\x01\x04\x12\x04*\x02)\x10\n\x0c\n\
+    \x05\x04\x08\x02\x01\x05\x12\x03*\x02\x08\n\x0c\n\x05\x04\x08\x02\x01\
+    \x01\x12\x03*\t\x0f\n\x0c\n\x05\x04\x08\x02\x01\x03\x12\x03*\x12\x13\n\
+    \x0b\n\x04\x04\x08\x02\x02\x12\x03+\x02\x11\n\r\n\x05\x04\x08\x02\x02\
+    \x04\x12\x04+\x02*\x14\n\x0c\n\x05\x04\x08\x02\x02\x05\x12\x03+\x02\x07\
+    \n\x0c\n\x05\x04\x08\x02\x02\x01\x12\x03+\x08\x0c\n\x0c\n\x05\x04\x08\
+    \x02\x02\x03\x12\x03+\x0f\x10b\x06proto3\
 ";
 
 /// `FileDescriptorProto` object which was a source for this generated file
@@ -304,11 +1273,20 @@ pub fn file_descriptor() -> &'static ::protobuf::reflect::FileDescriptor {
     static file_descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::FileDescriptor> = ::protobuf::rt::Lazy::new();
     file_descriptor.get(|| {
         let generated_file_descriptor = generated_file_descriptor_lazy.get(|| {
-            let mut deps = ::std::vec::Vec::with_capacity(1);
+            let mut deps = ::std::vec::Vec::with_capacity(3);
             deps.push(super::interchainqueries_tx::file_descriptor().clone());
-            let mut messages = ::std::vec::Vec::with_capacity(2);
+            deps.push(super::interchainqueries_genesis::file_descriptor().clone());
+            deps.push(super::gogo::file_descriptor().clone());
+            let mut messages = ::std::vec::Vec::with_capacity(9);
+            messages.push(QueryRegisteredQueriesRequest::generated_message_descriptor_data());
+            messages.push(QueryRegisteredQueriesResponse::generated_message_descriptor_data());
+            messages.push(QueryRegisteredQueryRequest::generated_message_descriptor_data());
+            messages.push(QueryRegisteredQueryResponse::generated_message_descriptor_data());
             messages.push(QueryRegisteredQueryResultRequest::generated_message_descriptor_data());
             messages.push(QueryRegisteredQueryResultResponse::generated_message_descriptor_data());
+            messages.push(QuerySubmittedTransactionsRequest::generated_message_descriptor_data());
+            messages.push(QuerySubmittedTransactionsResponse::generated_message_descriptor_data());
+            messages.push(Transaction::generated_message_descriptor_data());
             let mut enums = ::std::vec::Vec::with_capacity(0);
             ::protobuf::reflect::GeneratedFileDescriptor::new_generated(
                 file_descriptor_proto(),
