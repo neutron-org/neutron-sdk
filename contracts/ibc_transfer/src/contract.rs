@@ -78,29 +78,50 @@ fn msg_with_sudo_callback<C: Into<CosmosMsg>>(
     Ok(SubMsg::reply_on_success(msg, id))
 }
 
-fn parse_sequence(deps: Deps, msg: Reply) -> StdResult<u64> {
-    let seq_id = str::parse(
-        &msg.result
-            .into_result()
-            .map_err(StdError::generic_err)?
-            .events
-            .iter()
-            .find(|e| e.ty == "send_packet")
-            .and_then(|e| e.attributes.iter().find(|a| a.key == "packet_sequence"))
-            .ok_or_else(|| StdError::generic_err("failed to find packet_sequence atribute"))?
-            .value
-            .clone(),
-    )
-    .map_err(|_e| StdError::generic_err("parse int error"))?;
-    deps.api
-        .debug(format!("WASMDEBUG: parse_sequence: reply result: {:?}", seq_id).as_str());
-    Ok(seq_id)
+fn parse_sequence(deps: Deps, msg: Reply) -> StdResult<(String, u64)> {
+    let mut may_seq_id: Option<u64> = None;
+    let mut may_channel_id: Option<String> = None;
+    for attr in msg
+        .result
+        .into_result()
+        .map_err(StdError::generic_err)?
+        .events
+        .iter()
+        .find(|e| e.ty == "send_packet")
+        .ok_or_else(|| StdError::generic_err("failed to find packet_sequence attribute"))?
+        .attributes
+        .iter()
+    {
+        if attr.key == "packet_sequence" {
+            may_seq_id = Some(
+                str::parse(&attr.value).map_err(|_e| StdError::generic_err("parse int error"))?,
+            );
+        }
+        if attr.key == "packet_src_channel" {
+            may_channel_id = Some(attr.value.clone())
+        }
+        if let (Some(seq_id), Some(channel_id)) = (may_seq_id, &may_channel_id) {
+            deps.api.debug(
+                format!(
+                    "WASMDEBUG: parse_sequence: reply result: {:?} {:?}",
+                    channel_id, seq_id
+                )
+                .as_str(),
+            );
+            return Ok((channel_id.clone(), seq_id));
+        }
+    }
+
+    Err(StdError::generic_err(format!(
+        "failed to find channel_id or seq_id: {:?} {:?}",
+        may_channel_id, may_seq_id
+    )))
 }
 
 fn prepare_sudo_payload(mut deps: DepsMut, _env: Env, msg: Reply) -> StdResult<Response> {
     let payload = read_reply_payload(deps.storage, msg.id)?;
-    let seq_id = parse_sequence(deps.as_ref(), msg)?;
-    save_sudo_payload(deps.branch().storage, seq_id, payload)?;
+    let (channel_id, seq_id) = parse_sequence(deps.as_ref(), msg)?;
+    save_sudo_payload(deps.branch().storage, channel_id, seq_id, payload)?;
     Ok(Response::new())
 }
 
@@ -206,8 +227,13 @@ fn sudo_response(deps: DepsMut, req: RequestPacket, data: String) -> StdResult<R
     let seq_id = req
         .sequence
         .ok_or_else(|| StdError::generic_err("sequence not found"))?;
-    match read_sudo_payload(deps.storage, seq_id)? {
+    let channel_id = req
+        .source_channel
+        .ok_or_else(|| StdError::generic_err("channel_id not found"))?;
+    match read_sudo_payload(deps.storage, channel_id, seq_id)? {
         SudoPayload::HandlerPayload1(t1) => sudo_callback1(deps.as_ref(), t1),
         SudoPayload::HandlerPayload2(t2) => sudo_callback2(deps.as_ref(), t2),
     }
+    // at this place we can safely remove the data under (channel_id, seq_id) key
+    // but it costs an extra gas, so its on you how to use the storage 
 }
