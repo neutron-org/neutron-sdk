@@ -40,7 +40,7 @@ pub enum QueryMsg {
         zone_id: String,
         recipient: String,
         start: u64,
-        end: u64,
+        limit: u64,
     },
     GetDelegations {
         zone_id: String,

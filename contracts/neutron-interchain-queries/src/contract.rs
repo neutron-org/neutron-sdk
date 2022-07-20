@@ -108,8 +108,8 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> ContractResult<Binary> {
             zone_id,
             recipient,
             start,
-            end,
-        } => query_transfer_transactions(deps, env, zone_id, recipient, start, end),
+            limit,
+        } => query_transfer_transactions(deps, env, zone_id, recipient, start, limit),
     }
 }
 

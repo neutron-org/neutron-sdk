@@ -71,12 +71,12 @@ fn get_interchain_query_transactions_search_response(
     deps: Deps,
     interchain_query_id: u64,
     start: u64,
-    end: u64,
+    limit: u64,
 ) -> ContractResult<QuerySubmittedTransactionsResponse> {
     let mut interchain_query = QuerySubmittedTransactionsRequest::new();
     interchain_query.query_id = interchain_query_id;
     interchain_query.start = start;
-    interchain_query.end = end;
+    interchain_query.limit = limit;
 
     let encoded_query_bytes = interchain_query.write_to_bytes()?;
 
@@ -203,12 +203,12 @@ pub fn query_transfer_transactions(
     zone_id: String,
     recipient: String,
     start: u64,
-    end: u64,
+    limit: u64,
 ) -> ContractResult<Binary> {
     let query_data = GetTransfersParams {
         recipient,
         start,
-        end,
+        end: limit,
     };
     let registered_query_id =
         get_registered_query_id(deps, zone_id.as_str(), QUERY_TRANSFERS, &query_data)?;
@@ -216,7 +216,7 @@ pub fn query_transfer_transactions(
     let registered_query = get_registered_query(deps, registered_query_id)?;
 
     let registered_query_result =
-        get_interchain_query_transactions_search_response(deps, registered_query_id, start, end)?;
+        get_interchain_query_transactions_search_response(deps, registered_query_id, start, limit)?;
 
     let mut transfers: Vec<Transfer> = vec![];
     #[allow(clippy::unwrap_used)]

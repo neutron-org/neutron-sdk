@@ -749,8 +749,8 @@ pub struct QuerySubmittedTransactionsRequest {
     pub query_id: u64,
     // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.QuerySubmittedTransactionsRequest.start)
     pub start: u64,
-    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.QuerySubmittedTransactionsRequest.end)
-    pub end: u64,
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.QuerySubmittedTransactionsRequest.limit)
+    pub limit: u64,
     // special fields
     // @@protoc_insertion_point(special_field:neutron.interchainadapter.interchainqueries.QuerySubmittedTransactionsRequest.special_fields)
     pub special_fields: ::protobuf::SpecialFields,
@@ -781,9 +781,9 @@ impl QuerySubmittedTransactionsRequest {
             |m: &mut QuerySubmittedTransactionsRequest| { &mut m.start },
         ));
         fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
-            "end",
-            |m: &QuerySubmittedTransactionsRequest| { &m.end },
-            |m: &mut QuerySubmittedTransactionsRequest| { &mut m.end },
+            "limit",
+            |m: &QuerySubmittedTransactionsRequest| { &m.limit },
+            |m: &mut QuerySubmittedTransactionsRequest| { &mut m.limit },
         ));
         ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<QuerySubmittedTransactionsRequest>(
             "QuerySubmittedTransactionsRequest",
@@ -810,7 +810,7 @@ impl ::protobuf::Message for QuerySubmittedTransactionsRequest {
                     self.start = is.read_uint64()?;
                 },
                 24 => {
-                    self.end = is.read_uint64()?;
+                    self.limit = is.read_uint64()?;
                 },
                 tag => {
                     ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
@@ -830,8 +830,8 @@ impl ::protobuf::Message for QuerySubmittedTransactionsRequest {
         if self.start != 0 {
             my_size += ::protobuf::rt::uint64_size(2, self.start);
         }
-        if self.end != 0 {
-            my_size += ::protobuf::rt::uint64_size(3, self.end);
+        if self.limit != 0 {
+            my_size += ::protobuf::rt::uint64_size(3, self.limit);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
         self.special_fields.cached_size().set(my_size as u32);
@@ -845,8 +845,8 @@ impl ::protobuf::Message for QuerySubmittedTransactionsRequest {
         if self.start != 0 {
             os.write_uint64(2, self.start)?;
         }
-        if self.end != 0 {
-            os.write_uint64(3, self.end)?;
+        if self.limit != 0 {
+            os.write_uint64(3, self.limit)?;
         }
         os.write_unknown_fields(self.special_fields.unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -867,7 +867,7 @@ impl ::protobuf::Message for QuerySubmittedTransactionsRequest {
     fn clear(&mut self) {
         self.query_id = 0;
         self.start = 0;
-        self.end = 0;
+        self.limit = 0;
         self.special_fields.clear();
     }
 
@@ -875,7 +875,7 @@ impl ::protobuf::Message for QuerySubmittedTransactionsRequest {
         static instance: QuerySubmittedTransactionsRequest = QuerySubmittedTransactionsRequest {
             query_id: 0,
             start: 0,
-            end: 0,
+            limit: 0,
             special_fields: ::protobuf::SpecialFields::new(),
         };
         &instance
@@ -1194,15 +1194,15 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x0fregisteredQuery\">\n!QueryRegisteredQueryResultRequest\x12\x19\n\x08\
     query_id\x18\x01\x20\x01(\x04R\x07queryId\"v\n\"QueryRegisteredQueryResu\
     ltResponse\x12P\n\x06result\x18\x01\x20\x01(\x0b28.neutron.interchainada\
-    pter.interchainqueries.QueryResultR\x06result\"f\n!QuerySubmittedTransac\
+    pter.interchainqueries.QueryResultR\x06result\"j\n!QuerySubmittedTransac\
     tionsRequest\x12\x19\n\x08query_id\x18\x01\x20\x01(\x04R\x07queryId\x12\
-    \x14\n\x05start\x18\x02\x20\x01(\x04R\x05start\x12\x10\n\x03end\x18\x03\
-    \x20\x01(\x04R\x03end\"\x82\x01\n\"QuerySubmittedTransactionsResponse\
-    \x12\\\n\x0ctransactions\x18\x01\x20\x03(\x0b28.neutron.interchainadapte\
-    r.interchainqueries.TransactionR\x0ctransactions\"I\n\x0bTransaction\x12\
-    \x0e\n\x02id\x18\x01\x20\x01(\x04R\x02id\x12\x16\n\x06height\x18\x02\x20\
-    \x01(\x04R\x06height\x12\x12\n\x04data\x18\x03\x20\x01(\x0cR\x04dataJ\
-    \xfa\x08\n\x06\x12\x04\0\0,\x01\n\x08\n\x01\x0c\x12\x03\0\0\x12\n\x08\n\
+    \x14\n\x05start\x18\x02\x20\x01(\x04R\x05start\x12\x14\n\x05limit\x18\
+    \x03\x20\x01(\x04R\x05limit\"\x82\x01\n\"QuerySubmittedTransactionsRespo\
+    nse\x12\\\n\x0ctransactions\x18\x01\x20\x03(\x0b28.neutron.interchainada\
+    pter.interchainqueries.TransactionR\x0ctransactions\"I\n\x0bTransaction\
+    \x12\x0e\n\x02id\x18\x01\x20\x01(\x04R\x02id\x12\x16\n\x06height\x18\x02\
+    \x20\x01(\x04R\x06height\x12\x12\n\x04data\x18\x03\x20\x01(\x0cR\x04data\
+    J\xfa\x08\n\x06\x12\x04\0\0,\x01\n\x08\n\x01\x0c\x12\x03\0\0\x12\n\x08\n\
     \x01\x02\x12\x03\x01\04\n\t\n\x02\x03\0\x12\x03\x03\06\n\t\n\x02\x03\x01\
     \x12\x03\x04\0;\n\t\n\x02\x03\x02\x12\x03\x05\0\x1e\n\t\n\x02\x04\0\x12\
     \x03\x07\0(\n\n\n\x03\x04\0\x01\x12\x03\x07\x08%\n\n\n\x02\x04\x01\x12\
@@ -1238,10 +1238,10 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x05\x04\x06\x02\x01\x04\x12\x04\x20\x02\x1f\x16\n\x0c\n\x05\x04\x06\x02\
     \x01\x05\x12\x03\x20\x02\x08\n\x0c\n\x05\x04\x06\x02\x01\x01\x12\x03\x20\
     \t\x0e\n\x0c\n\x05\x04\x06\x02\x01\x03\x12\x03\x20\x11\x12\n\x0b\n\x04\
-    \x04\x06\x02\x02\x12\x03!\x02\x11\n\r\n\x05\x04\x06\x02\x02\x04\x12\x04!\
+    \x04\x06\x02\x02\x12\x03!\x02\x13\n\r\n\x05\x04\x06\x02\x02\x04\x12\x04!\
     \x02\x20\x13\n\x0c\n\x05\x04\x06\x02\x02\x05\x12\x03!\x02\x08\n\x0c\n\
-    \x05\x04\x06\x02\x02\x01\x12\x03!\t\x0c\n\x0c\n\x05\x04\x06\x02\x02\x03\
-    \x12\x03!\x0f\x10\n\n\n\x02\x04\x07\x12\x04$\0&\x01\n\n\n\x03\x04\x07\
+    \x05\x04\x06\x02\x02\x01\x12\x03!\t\x0e\n\x0c\n\x05\x04\x06\x02\x02\x03\
+    \x12\x03!\x11\x12\n\n\n\x02\x04\x07\x12\x04$\0&\x01\n\n\n\x03\x04\x07\
     \x01\x12\x03$\x08*\n\x0b\n\x04\x04\x07\x02\0\x12\x03%\x02(\n\x0c\n\x05\
     \x04\x07\x02\0\x04\x12\x03%\x02\n\n\x0c\n\x05\x04\x07\x02\0\x06\x12\x03%\
     \x0b\x16\n\x0c\n\x05\x04\x07\x02\0\x01\x12\x03%\x17#\n\x0c\n\x05\x04\x07\

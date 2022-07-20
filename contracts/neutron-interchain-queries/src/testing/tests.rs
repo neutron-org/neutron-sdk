@@ -235,7 +235,7 @@ fn test_query_transfers() {
         zone_id: "zone".to_string(),
         recipient: "osmo1stlkm9sadmy0kg3tm4l8ucytvl7xwalug85q5a".to_string(),
         start: 0,
-        end: 0,
+        limit: 0,
     };
     let resp: TransfersResponse =
         from_binary(&query(deps.as_ref(), mock_env(), query_transfers).unwrap()).unwrap();

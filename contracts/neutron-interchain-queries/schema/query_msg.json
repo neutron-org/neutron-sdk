@@ -39,13 +39,13 @@
         "get_transfers": {
           "type": "object",
           "required": [
-            "end",
+            "limit",
             "recipient",
             "start",
             "zone_id"
           ],
           "properties": {
-            "end": {
+            "limit": {
               "type": "integer",
               "format": "uint64",
               "minimum": 0.0
