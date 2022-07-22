@@ -1,7 +1,8 @@
 use cosmwasm_std::{
-    coin, entry_point, CosmosMsg, Deps, DepsMut, Env, IbcMsg, IbcTimeout, IbcTimeoutBlock,
+    coin, entry_point, Binary, CosmosMsg, Deps, DepsMut, Env, IbcMsg, IbcTimeout, IbcTimeoutBlock,
     MessageInfo, Reply, Response, StdError, StdResult, SubMsg,
 };
+use interchain_txs::msg::{RequestPacket, SudoMsg};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -183,43 +184,18 @@ fn execute_send(mut deps: DepsMut, to: String, amount: u128) -> StdResult<Respon
     Ok(Response::default().add_submessages(vec![submsg1, submsg2]))
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct RequestPacket {
-    sequence: Option<u64>,
-    source_port: Option<String>,
-    source_channel: Option<String>,
-    destination_port: Option<String>,
-    destination_channel: Option<String>,
-    data: Option<String>,
-    timeout_height: Option<RequestPacketTimeoutHeight>,
-    timeout_timestamp: Option<u64>,
-}
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct RequestPacketTimeoutHeight {
-    revision_number: Option<u64>,
-    revision_height: Option<u64>,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub enum SudoMsg {
-    Response {
-        request: RequestPacket,
-        data: String,
-    },
-}
-
 #[entry_point]
 pub fn sudo(deps: DepsMut, _env: Env, msg: SudoMsg) -> StdResult<Response> {
     match msg {
         SudoMsg::Response { request, data } => sudo_response(deps, request, data),
+        _ => todo!(),
     }
 }
 
-fn sudo_response(deps: DepsMut, req: RequestPacket, data: String) -> StdResult<Response> {
+fn sudo_response(deps: DepsMut, req: RequestPacket, data: Binary) -> StdResult<Response> {
     deps.api.debug(
         format!(
-            "WASMDEBUG: sudo_response: sudo received: {:?} {:?}",
+            "WASMDEBUG: sudo_response: sudo received: {:?} {}",
             req, data
         )
         .as_str(),
@@ -235,5 +211,5 @@ fn sudo_response(deps: DepsMut, req: RequestPacket, data: String) -> StdResult<R
         SudoPayload::HandlerPayload2(t2) => sudo_callback2(deps.as_ref(), t2),
     }
     // at this place we can safely remove the data under (channel_id, seq_id) key
-    // but it costs an extra gas, so its on you how to use the storage 
+    // but it costs an extra gas, so its on you how to use the storage
 }

@@ -12,17 +12,17 @@ pub const REPLY_QUEUE_ID: Map<u64, Vec<u8>> = Map::new("reply_queue_id");
 const REPLY_ID: Item<u64> = Item::new("reply_id");
 
 /// get_next_id gives us an id for a reply msg
-/// dynamic reply id hepls us to pass sudo payload to sudo handler via reply handler
+/// dynamic reply id helps us to pass sudo payload to sudo handler via reply handler
 /// by setting unique(in transaction lifetime) id to the reply and mapping our paload to the id
 /// execute ->(unique reply.id) reply (channel_id,seq_id)-> sudo handler
-/// Since id uniqueless id only matters inside a transaction, 
+/// Since id uniqueless id only matters inside a transaction,
 /// we can safely reuse the same id set in every new transaction
 pub fn get_next_id(store: &mut dyn Storage) -> StdResult<u64> {
     let mut id = REPLY_ID.may_load(store)?.unwrap_or(IBC_SUDO_ID_RANGE_START);
-    if id > IBC_SUDO_ID_RANGE_END{
+    if id > IBC_SUDO_ID_RANGE_END {
         id = IBC_SUDO_ID_RANGE_START
     }
-    REPLY_ID.save(store, &(id+1))?;
+    REPLY_ID.save(store, &(id + 1))?;
     Ok(id)
 }
 
