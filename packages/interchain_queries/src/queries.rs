@@ -29,7 +29,7 @@ use std::io::Cursor;
 use std::str::FromStr;
 
 /// Queries registered query info
-fn get_registered_query(
+pub fn get_registered_query(
     deps: Deps,
     interchain_query_id: u64,
 ) -> ContractResult<QueryRegisteredQueryResponse> {

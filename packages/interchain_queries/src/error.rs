@@ -1,5 +1,6 @@
 use cosmwasm_std::StdError;
 use protobuf::Error as ProtobufError;
+use schemars::_serde_json;
 use thiserror::Error;
 
 pub type ContractResult<T> = Result<T, ContractError>;
@@ -46,6 +47,12 @@ pub enum ContractError {
 
 impl From<ProtobufError> for ContractError {
     fn from(e: ProtobufError) -> Self {
+        ContractError::Protobuf(e.to_string())
+    }
+}
+
+impl From<_serde_json::Error> for ContractError {
+    fn from(e: _serde_json::Error) -> Self {
         ContractError::Protobuf(e.to_string())
     }
 }

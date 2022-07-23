@@ -24,7 +24,10 @@ use interchain_queries::register_queries::{
     register_balance_query, register_delegator_delegations_query, register_transfers_query,
 };
 use interchain_queries::reply::register_interchain_query_reply_handler;
+use interchain_queries::sudo::sudo_check_tx_query_result;
 use interchain_queries::types::REGISTER_INTERCHAIN_QUERY_REPLY_ID;
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -116,4 +119,25 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> ContractResult<Binary> {
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
     Ok(Response::default())
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum SudoMsg {
+    CheckTxQueryResult {
+        query_id: u64,
+        height: u64,
+        data: Vec<u8>,
+    },
+}
+
+#[entry_point]
+pub fn sudo(deps: DepsMut, env: Env, msg: SudoMsg) -> ContractResult<Response> {
+    match msg {
+        SudoMsg::CheckTxQueryResult {
+            query_id,
+            height,
+            data,
+        } => sudo_check_tx_query_result(deps, env, query_id, height, data),
+    }
 }
