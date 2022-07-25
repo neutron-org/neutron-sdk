@@ -11,37 +11,34 @@
 // limitations under the License.
 
 use super::mock_querier::mock_dependencies as dependencies;
-use crate::contract::{execute, query, reply};
+use crate::contract::{execute, query};
 use crate::testing::mock_querier::WasmMockQuerier;
 use cosmwasm_std::testing::{mock_env, mock_info, MockApi, MockStorage};
-use cosmwasm_std::{
-    from_binary, Addr, Binary, Coin, Delegation, Env, MessageInfo, OwnedDeps, Reply,
-    SubMsgResponse, SubMsgResult,
-};
+use cosmwasm_std::{from_binary, Addr, Coin, Delegation, Env, MessageInfo, OwnedDeps};
 use interchain_queries::msg::{ExecuteMsg, QueryMsg};
 use interchain_queries::types::{
     DelegatorDelegationsResponse, QueryBalanceResponse, Transfer, TransfersResponse,
     QUERY_REGISTERED_QUERY_PATH, QUERY_REGISTERED_QUERY_TRANSACTIONS_RESULT_PATH,
 };
-use interchain_queries::types::{
-    QUERY_REGISTERED_QUERY_RESULT_PATH, REGISTER_INTERCHAIN_QUERY_REPLY_ID,
-};
+use interchain_queries::types::{QueryType, QUERY_REGISTERED_QUERY_RESULT_PATH};
 use protobuf::{Message, MessageField};
-use stargate::interchain::interchainqueries_genesis::RegisteredQuery;
+use stargate::interchain::interchainqueries_genesis::{KVKey, RegisteredQuery};
 use stargate::interchain::interchainqueries_query::{
     QueryRegisteredQueryResponse, QuerySubmittedTransactionsResponse, Transaction,
 };
-use stargate::interchain::interchainqueries_tx::MsgRegisterInterchainQueryResponse;
 
 fn build_registered_query_response(
     id: u64,
+    keys: Vec<KVKey>,
+    query_type: String,
     last_submitted_result_local_height: u64,
 ) -> QueryRegisteredQueryResponse {
     QueryRegisteredQueryResponse {
         registered_query: MessageField::some(RegisteredQuery {
             id,
-            query_data: "".to_string(),
-            query_type: "".to_string(),
+            query_type,
+            keys,
+            transactions_filter: "".to_string(),
             zone_id: "".to_string(),
             connection_id: "".to_string(),
             update_period: 0,
@@ -54,31 +51,40 @@ fn build_registered_query_response(
     }
 }
 
-// registers an interchain query (full register flow: execute + reply)
+use std::num::ParseIntError;
+
+pub fn decode_hex(s: &str) -> Result<Vec<u8>, ParseIntError> {
+    (0..s.len())
+        .step_by(2)
+        .map(|i| u8::from_str_radix(&s[i..i + 2], 16))
+        .collect()
+}
+
+// registers an interchain query
 fn register_query(
     deps: &mut OwnedDeps<MockStorage, MockApi, WasmMockQuerier>,
     env: Env,
     info: MessageInfo,
     msg: ExecuteMsg,
-) {
-    execute(deps.as_mut(), env, info, msg).unwrap();
-    let mut reply_response = MsgRegisterInterchainQueryResponse::new();
-    reply_response.id = 1u64;
-
-    let reply_response_bytes = reply_response.write_to_bytes().unwrap();
-
-    reply(
-        deps.as_mut(),
-        mock_env(),
-        Reply {
-            id: REGISTER_INTERCHAIN_QUERY_REPLY_ID,
-            result: SubMsgResult::Ok(SubMsgResponse {
-                events: vec![],
-                data: Some(Binary(reply_response_bytes)),
-            }),
-        },
-    )
-    .unwrap();
+) -> Vec<KVKey> {
+    let reg_msgs = execute(deps.as_mut(), env, info, msg).unwrap();
+    for attr in reg_msgs.attributes {
+        if attr.key == "kv_keys" && attr.value != "" {
+            return attr
+                .value
+                .split(",")
+                .map(|k| {
+                    let kv: Vec<String> = k.split("/").map(String::from).collect();
+                    KVKey {
+                        path: kv[0].clone(),
+                        key: decode_hex(kv[1].as_str()).unwrap(),
+                        special_fields: Default::default(),
+                    }
+                })
+                .collect::<Vec<KVKey>>();
+        }
+    }
+    return vec![];
 }
 
 #[test]
@@ -93,7 +99,7 @@ fn test_query_balance() {
         denom: "uosmo".to_string(),
     };
 
-    register_query(&mut deps, mock_env(), mock_info("", &[]), msg);
+    let keys = register_query(&mut deps, mock_env(), mock_info("", &[]), msg);
 
     // protobuf encoded QueryRegisteredQueryResultResponse for balance query
     // TODO: come up with something better than using large base64 string. Good enough for sketch btw
@@ -106,18 +112,14 @@ fn test_query_balance() {
         balance_resp_bytes,
     );
 
-    let registered_query = build_registered_query_response(1, 987);
+    let registered_query = build_registered_query_response(1, keys, QueryType::KV.into(), 987);
 
     deps.querier.add_stargate_response(
         QUERY_REGISTERED_QUERY_PATH.to_string(),
         registered_query.write_to_bytes().unwrap(),
     );
 
-    let query_balance = QueryMsg::Balance {
-        zone_id: "zone".to_string(),
-        addr: "osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs".to_string(),
-        denom: "uosmo".to_string(),
-    };
+    let query_balance = QueryMsg::Balance { query_id: 1 };
     let resp: QueryBalanceResponse =
         from_binary(&query(deps.as_ref(), mock_env(), query_balance).unwrap()).unwrap();
     assert_eq!(
@@ -140,9 +142,14 @@ fn test_query_delegator_delegations() {
         connection_id: "connection".to_string(),
         update_period: 10,
         delegator: "osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs".to_string(),
+        validators: vec![
+            "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3".to_string(),
+            "osmovaloper1ej2es5fjztqjcd4pwa0zyvaevtjd2y5w37wr9t".to_string(),
+            "osmovaloper1lzhlnpahvznwfv4jmay2tgaha5kmz5qxwmj9we".to_string(),
+        ],
     };
 
-    register_query(&mut deps, mock_env(), mock_info("", &[]), msg);
+    let keys = register_query(&mut deps, mock_env(), mock_info("", &[]), msg);
 
     // protobuf encoded QueryRegisteredQueryResultResponse for balance query
     // TODO: come up with something better than using large base64 string. Good enough for sketch btw
@@ -154,17 +161,14 @@ fn test_query_delegator_delegations() {
         delegations_resp_bytes,
     );
 
-    let registered_query = build_registered_query_response(1, 987);
+    let registered_query = build_registered_query_response(1, keys, QueryType::KV.into(), 987);
 
     deps.querier.add_stargate_response(
         QUERY_REGISTERED_QUERY_PATH.to_string(),
         registered_query.write_to_bytes().unwrap(),
     );
 
-    let query_delegations = QueryMsg::GetDelegations {
-        zone_id: "zone".to_string(),
-        delegator: "osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs".to_string(),
-    };
+    let query_delegations = QueryMsg::GetDelegations { query_id: 1 };
     let resp: DelegatorDelegationsResponse =
         from_binary(&query(deps.as_ref(), mock_env(), query_delegations).unwrap()).unwrap();
 
@@ -224,7 +228,7 @@ fn test_query_transfers() {
         transfers_response.write_to_bytes().unwrap(),
     );
 
-    let registered_query = build_registered_query_response(1, 987);
+    let registered_query = build_registered_query_response(1, vec![], QueryType::TX.into(), 987);
 
     deps.querier.add_stargate_response(
         QUERY_REGISTERED_QUERY_PATH.to_string(),
@@ -232,8 +236,7 @@ fn test_query_transfers() {
     );
 
     let query_transfers = QueryMsg::GetTransfers {
-        zone_id: "zone".to_string(),
-        recipient: "osmo1stlkm9sadmy0kg3tm4l8ucytvl7xwalug85q5a".to_string(),
+        query_id: 1,
         start: 0,
         end: 0,
     };

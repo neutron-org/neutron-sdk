@@ -1,12 +1,8 @@
 use crate::error::{ContractError, ContractResult};
-use crate::storage::get_registered_query_id;
 use crate::types::{
-    create_account_balances_prefix, create_delegations_key, decode_and_convert,
-    protobuf_coin_to_std_coin, GetBalanceQueryParams, GetDelegatorDelegationsParams,
-    GetTransfersParams, COSMOS_SDK_TRANSFER_MSG_URL, QUERY_BALANCE_QUERY_TYPE,
-    QUERY_DELEGATOR_DELEGATIONS_QUERY_TYPE, QUERY_REGISTERED_QUERY_PATH,
-    QUERY_REGISTERED_QUERY_RESULT_PATH, QUERY_REGISTERED_QUERY_TRANSACTIONS_RESULT_PATH,
-    QUERY_TRANSFERS,
+    protobuf_coin_to_std_coin, QueryType, COSMOS_SDK_TRANSFER_MSG_URL, DELEGATION_KEY,
+    QUERY_REGISTERED_QUERY_PATH, QUERY_REGISTERED_QUERY_RESULT_PATH,
+    QUERY_REGISTERED_QUERY_TRANSACTIONS_RESULT_PATH,
 };
 use crate::types::{
     DelegatorDelegationsResponse, QueryBalanceResponse, Transfer, TransfersResponse,
@@ -27,6 +23,20 @@ use protobuf::Message;
 use stargate::make_stargate_query;
 use std::io::Cursor;
 use std::str::FromStr;
+
+fn parse_and_check_query_type(actual: String, expected: QueryType) -> ContractResult<QueryType> {
+    if let Some(t) = QueryType::try_from_str(&actual) {
+        if t != expected {
+            return Err(ContractError::InvalidQueryType {
+                expected,
+                actual: t.into(),
+            });
+        }
+        Ok(t)
+    } else {
+        return Err(ContractError::InvalidQueryType { expected, actual });
+    }
+}
 
 /// Queries registered query info
 fn get_registered_query(
@@ -90,56 +100,44 @@ fn get_interchain_query_transactions_search_response(
 }
 
 /// Returns balance of account on remote chain for particular denom
-pub fn query_balance(
-    deps: Deps,
-    _env: Env,
-    zone_id: String,
-    addr: String,
-    denom: String,
-) -> ContractResult<Binary> {
-    let query_data = GetBalanceQueryParams {
-        addr: addr.clone(),
-        denom: denom.clone(),
-    };
-    let registered_query_id = get_registered_query_id(
-        deps,
-        zone_id.as_str(),
-        QUERY_BALANCE_QUERY_TYPE,
-        &query_data,
-    )?;
-
+pub fn query_balance(deps: Deps, _env: Env, registered_query_id: u64) -> ContractResult<Binary> {
     let registered_query = get_registered_query(deps, registered_query_id)?;
+    let qt = parse_and_check_query_type(
+        registered_query.registered_query.query_type.clone(),
+        QueryType::KV,
+    )?;
 
     let registered_query_result = get_interchain_query_result(deps, registered_query_id)?;
 
-    let converted_addr_bytes = decode_and_convert(addr.as_str())?;
-
-    let mut balance_key = create_account_balances_prefix(converted_addr_bytes)?;
-    balance_key.extend_from_slice(denom.as_bytes());
-
     if registered_query_result.result.is_none() {
         return Err(ContractError::EmptyStargateResult {
-            query_type: QUERY_BALANCE_QUERY_TYPE.to_string(),
+            query_type: qt,
+            query_id: registered_query_id,
         });
     }
 
     #[allow(clippy::unwrap_used)]
-    for result in registered_query_result.result.unwrap().kv_results {
-        if result.key == balance_key {
+    for (index, result) in registered_query_result
+        .result
+        .unwrap()
+        .kv_results
+        .into_iter()
+        .enumerate()
+    {
+        if result.key == registered_query.registered_query.keys[index].key {
             let balance: CosmosCoin = CosmosCoin::decode(Cursor::new(result.value))?;
             let amount = Uint128::from_str(balance.amount.as_str())?;
             return Ok(to_binary(&QueryBalanceResponse {
                 last_submitted_local_height: registered_query
                     .registered_query
                     .last_submitted_result_local_height,
-                amount: Coin::new(amount.u128(), denom),
+                amount: Coin::new(amount.u128(), balance.denom),
             })?);
         }
     }
 
     Err(ContractError::BalanceNotFound {
-        denom,
-        recipient: addr,
+        query_id: registered_query_id,
     })
 }
 
@@ -147,44 +145,42 @@ pub fn query_balance(
 pub fn query_delegations(
     deps: Deps,
     _env: Env,
-    zone_id: String,
-    delegator: String,
+    registered_query_id: u64,
 ) -> ContractResult<Binary> {
-    let query_data = GetDelegatorDelegationsParams {
-        delegator: delegator.clone(),
-    };
-    let registered_query_id = get_registered_query_id(
-        deps,
-        zone_id.as_str(),
-        QUERY_DELEGATOR_DELEGATIONS_QUERY_TYPE,
-        &query_data,
-    )?;
-
     let registered_query = get_registered_query(deps, registered_query_id)?;
+    let qt = parse_and_check_query_type(
+        registered_query.registered_query.query_type.clone(),
+        QueryType::KV,
+    )?;
 
     let registered_query_result = get_interchain_query_result(deps, registered_query_id)?;
 
-    let converted_addr_bytes = decode_and_convert(delegator.as_str())?;
-
-    let delegations_key = create_delegations_key(converted_addr_bytes)?;
-
     if registered_query_result.result.is_none() {
         return Err(ContractError::EmptyStargateResult {
-            query_type: QUERY_DELEGATOR_DELEGATIONS_QUERY_TYPE.to_string(),
+            query_type: qt,
+            query_id: registered_query_id,
         });
     }
 
     let mut delegations: Vec<cosmwasm_std::Delegation> = vec![];
     #[allow(clippy::unwrap_used)]
-    for result in registered_query_result.result.unwrap().kv_results {
-        if result.key.starts_with(delegations_key.as_slice()) {
-            let delegation_sdk: Delegation = Delegation::decode(Cursor::new(result.value))?;
-            let delegation_std = cosmwasm_std::Delegation {
-                delegator: Addr::unchecked(delegation_sdk.delegator_address.as_str()),
-                validator: delegation_sdk.validator_address,
-                amount: Default::default(), // TODO: we can't get this value now, need to update the relayer
-            };
-            delegations.push(delegation_std);
+    for (index, result) in registered_query_result
+        .result
+        .unwrap()
+        .kv_results
+        .into_iter()
+        .enumerate()
+    {
+        if result.key == registered_query.registered_query.keys[index].key {
+            if result.key.starts_with(&[DELEGATION_KEY]) {
+                let delegation_sdk: Delegation = Delegation::decode(Cursor::new(result.value))?;
+                let delegation_std = cosmwasm_std::Delegation {
+                    delegator: Addr::unchecked(delegation_sdk.delegator_address.as_str()),
+                    validator: delegation_sdk.validator_address,
+                    amount: Default::default(), // TODO:
+                };
+                delegations.push(delegation_std);
+            }
         }
     }
 
@@ -200,20 +196,15 @@ pub fn query_delegations(
 pub fn query_transfer_transactions(
     deps: Deps,
     _env: Env,
-    zone_id: String,
-    recipient: String,
+    registered_query_id: u64,
     start: u64,
     end: u64,
 ) -> ContractResult<Binary> {
-    let query_data = GetTransfersParams {
-        recipient,
-        start,
-        end,
-    };
-    let registered_query_id =
-        get_registered_query_id(deps, zone_id.as_str(), QUERY_TRANSFERS, &query_data)?;
-
     let registered_query = get_registered_query(deps, registered_query_id)?;
+    parse_and_check_query_type(
+        registered_query.registered_query.query_type.clone(),
+        QueryType::TX,
+    )?;
 
     let registered_query_result =
         get_interchain_query_transactions_search_response(deps, registered_query_id, start, end)?;

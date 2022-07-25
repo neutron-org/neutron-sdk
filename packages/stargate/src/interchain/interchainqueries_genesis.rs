@@ -31,20 +31,31 @@ pub struct RegisteredQuery {
     // message fields
     // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.RegisteredQuery.id)
     pub id: u64,
-    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.RegisteredQuery.query_data)
-    pub query_data: ::std::string::String,
+    ///  defines a query type: `kv` or `tx` now
     // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.RegisteredQuery.query_type)
     pub query_type: ::std::string::String,
+    ///  is used to define KV-storage keys for which we want to get values from remote chain
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.RegisteredQuery.keys)
+    pub keys: ::std::vec::Vec<KVKey>,
+    ///  is used to define a filter for transaction search ICQ
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.RegisteredQuery.transactions_filter)
+    pub transactions_filter: ::std::string::String,
+    ///  is used to identify the chain of interest
     // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.RegisteredQuery.zone_id)
     pub zone_id: ::std::string::String,
+    ///  is IBC connection ID for getting ConsensusState to verify proofs
     // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.RegisteredQuery.connection_id)
     pub connection_id: ::std::string::String,
+    ///  is used to say how often the query must be updated
     // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.RegisteredQuery.update_period)
     pub update_period: u64,
+    ///  is used to say when the event to update the query result was emitted
     // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.RegisteredQuery.last_emitted_height)
     pub last_emitted_height: u64,
+    ///  is the last block height of the local chain when the query's result was updated
     // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.RegisteredQuery.last_submitted_result_local_height)
     pub last_submitted_result_local_height: u64,
+    ///  is the last block height of the remote chain when the query's result was updated
     // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.RegisteredQuery.last_submitted_result_remote_height)
     pub last_submitted_result_remote_height: u64,
     // special fields
@@ -64,7 +75,7 @@ impl RegisteredQuery {
     }
 
     fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
-        let mut fields = ::std::vec::Vec::with_capacity(9);
+        let mut fields = ::std::vec::Vec::with_capacity(10);
         let mut oneofs = ::std::vec::Vec::with_capacity(0);
         fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
             "id",
@@ -72,14 +83,19 @@ impl RegisteredQuery {
             |m: &mut RegisteredQuery| { &mut m.id },
         ));
         fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
-            "query_data",
-            |m: &RegisteredQuery| { &m.query_data },
-            |m: &mut RegisteredQuery| { &mut m.query_data },
-        ));
-        fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
             "query_type",
             |m: &RegisteredQuery| { &m.query_type },
             |m: &mut RegisteredQuery| { &mut m.query_type },
+        ));
+        fields.push(::protobuf::reflect::rt::v2::make_vec_simpler_accessor::<_, _>(
+            "keys",
+            |m: &RegisteredQuery| { &m.keys },
+            |m: &mut RegisteredQuery| { &mut m.keys },
+        ));
+        fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
+            "transactions_filter",
+            |m: &RegisteredQuery| { &m.transactions_filter },
+            |m: &mut RegisteredQuery| { &mut m.transactions_filter },
         ));
         fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
             "zone_id",
@@ -133,27 +149,30 @@ impl ::protobuf::Message for RegisteredQuery {
                     self.id = is.read_uint64()?;
                 },
                 18 => {
-                    self.query_data = is.read_string()?;
-                },
-                26 => {
                     self.query_type = is.read_string()?;
                 },
+                26 => {
+                    self.keys.push(is.read_message()?);
+                },
                 34 => {
-                    self.zone_id = is.read_string()?;
+                    self.transactions_filter = is.read_string()?;
                 },
                 42 => {
+                    self.zone_id = is.read_string()?;
+                },
+                50 => {
                     self.connection_id = is.read_string()?;
                 },
-                48 => {
+                56 => {
                     self.update_period = is.read_uint64()?;
                 },
-                56 => {
+                64 => {
                     self.last_emitted_height = is.read_uint64()?;
                 },
-                64 => {
+                72 => {
                     self.last_submitted_result_local_height = is.read_uint64()?;
                 },
-                72 => {
+                80 => {
                     self.last_submitted_result_remote_height = is.read_uint64()?;
                 },
                 tag => {
@@ -171,29 +190,33 @@ impl ::protobuf::Message for RegisteredQuery {
         if self.id != 0 {
             my_size += ::protobuf::rt::uint64_size(1, self.id);
         }
-        if !self.query_data.is_empty() {
-            my_size += ::protobuf::rt::string_size(2, &self.query_data);
-        }
         if !self.query_type.is_empty() {
-            my_size += ::protobuf::rt::string_size(3, &self.query_type);
+            my_size += ::protobuf::rt::string_size(2, &self.query_type);
+        }
+        for value in &self.keys {
+            let len = value.compute_size();
+            my_size += 1 + ::protobuf::rt::compute_raw_varint64_size(len) + len;
+        };
+        if !self.transactions_filter.is_empty() {
+            my_size += ::protobuf::rt::string_size(4, &self.transactions_filter);
         }
         if !self.zone_id.is_empty() {
-            my_size += ::protobuf::rt::string_size(4, &self.zone_id);
+            my_size += ::protobuf::rt::string_size(5, &self.zone_id);
         }
         if !self.connection_id.is_empty() {
-            my_size += ::protobuf::rt::string_size(5, &self.connection_id);
+            my_size += ::protobuf::rt::string_size(6, &self.connection_id);
         }
         if self.update_period != 0 {
-            my_size += ::protobuf::rt::uint64_size(6, self.update_period);
+            my_size += ::protobuf::rt::uint64_size(7, self.update_period);
         }
         if self.last_emitted_height != 0 {
-            my_size += ::protobuf::rt::uint64_size(7, self.last_emitted_height);
+            my_size += ::protobuf::rt::uint64_size(8, self.last_emitted_height);
         }
         if self.last_submitted_result_local_height != 0 {
-            my_size += ::protobuf::rt::uint64_size(8, self.last_submitted_result_local_height);
+            my_size += ::protobuf::rt::uint64_size(9, self.last_submitted_result_local_height);
         }
         if self.last_submitted_result_remote_height != 0 {
-            my_size += ::protobuf::rt::uint64_size(9, self.last_submitted_result_remote_height);
+            my_size += ::protobuf::rt::uint64_size(10, self.last_submitted_result_remote_height);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
         self.special_fields.cached_size().set(my_size as u32);
@@ -204,29 +227,32 @@ impl ::protobuf::Message for RegisteredQuery {
         if self.id != 0 {
             os.write_uint64(1, self.id)?;
         }
-        if !self.query_data.is_empty() {
-            os.write_string(2, &self.query_data)?;
-        }
         if !self.query_type.is_empty() {
-            os.write_string(3, &self.query_type)?;
+            os.write_string(2, &self.query_type)?;
+        }
+        for v in &self.keys {
+            ::protobuf::rt::write_message_field_with_cached_size(3, v, os)?;
+        };
+        if !self.transactions_filter.is_empty() {
+            os.write_string(4, &self.transactions_filter)?;
         }
         if !self.zone_id.is_empty() {
-            os.write_string(4, &self.zone_id)?;
+            os.write_string(5, &self.zone_id)?;
         }
         if !self.connection_id.is_empty() {
-            os.write_string(5, &self.connection_id)?;
+            os.write_string(6, &self.connection_id)?;
         }
         if self.update_period != 0 {
-            os.write_uint64(6, self.update_period)?;
+            os.write_uint64(7, self.update_period)?;
         }
         if self.last_emitted_height != 0 {
-            os.write_uint64(7, self.last_emitted_height)?;
+            os.write_uint64(8, self.last_emitted_height)?;
         }
         if self.last_submitted_result_local_height != 0 {
-            os.write_uint64(8, self.last_submitted_result_local_height)?;
+            os.write_uint64(9, self.last_submitted_result_local_height)?;
         }
         if self.last_submitted_result_remote_height != 0 {
-            os.write_uint64(9, self.last_submitted_result_remote_height)?;
+            os.write_uint64(10, self.last_submitted_result_remote_height)?;
         }
         os.write_unknown_fields(self.special_fields.unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -246,8 +272,9 @@ impl ::protobuf::Message for RegisteredQuery {
 
     fn clear(&mut self) {
         self.id = 0;
-        self.query_data.clear();
         self.query_type.clear();
+        self.keys.clear();
+        self.transactions_filter.clear();
         self.zone_id.clear();
         self.connection_id.clear();
         self.update_period = 0;
@@ -260,8 +287,9 @@ impl ::protobuf::Message for RegisteredQuery {
     fn default_instance() -> &'static RegisteredQuery {
         static instance: RegisteredQuery = RegisteredQuery {
             id: 0,
-            query_data: ::std::string::String::new(),
             query_type: ::std::string::String::new(),
+            keys: ::std::vec::Vec::new(),
+            transactions_filter: ::std::string::String::new(),
             zone_id: ::std::string::String::new(),
             connection_id: ::std::string::String::new(),
             update_period: 0,
@@ -291,50 +319,218 @@ impl ::protobuf::reflect::ProtobufValue for RegisteredQuery {
     type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
 }
 
+#[derive(PartialEq,Clone,Default,Debug)]
+// @@protoc_insertion_point(message:neutron.interchainadapter.interchainqueries.KVKey)
+pub struct KVKey {
+    // message fields
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.KVKey.path)
+    pub path: ::std::string::String,
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.KVKey.key)
+    pub key: ::std::vec::Vec<u8>,
+    // special fields
+    // @@protoc_insertion_point(special_field:neutron.interchainadapter.interchainqueries.KVKey.special_fields)
+    pub special_fields: ::protobuf::SpecialFields,
+}
+
+impl<'a> ::std::default::Default for &'a KVKey {
+    fn default() -> &'a KVKey {
+        <KVKey as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl KVKey {
+    pub fn new() -> KVKey {
+        ::std::default::Default::default()
+    }
+
+    fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
+        let mut fields = ::std::vec::Vec::with_capacity(2);
+        let mut oneofs = ::std::vec::Vec::with_capacity(0);
+        fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
+            "path",
+            |m: &KVKey| { &m.path },
+            |m: &mut KVKey| { &mut m.path },
+        ));
+        fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
+            "key",
+            |m: &KVKey| { &m.key },
+            |m: &mut KVKey| { &mut m.key },
+        ));
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<KVKey>(
+            "KVKey",
+            fields,
+            oneofs,
+        )
+    }
+}
+
+impl ::protobuf::Message for KVKey {
+    const NAME: &'static str = "KVKey";
+
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
+        while let Some(tag) = is.read_raw_tag_or_eof()? {
+            match tag {
+                10 => {
+                    self.path = is.read_string()?;
+                },
+                18 => {
+                    self.key = is.read_bytes()?;
+                },
+                tag => {
+                    ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u64 {
+        let mut my_size = 0;
+        if !self.path.is_empty() {
+            my_size += ::protobuf::rt::string_size(1, &self.path);
+        }
+        if !self.key.is_empty() {
+            my_size += ::protobuf::rt::bytes_size(2, &self.key);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
+        self.special_fields.cached_size().set(my_size as u32);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
+        if !self.path.is_empty() {
+            os.write_string(1, &self.path)?;
+        }
+        if !self.key.is_empty() {
+            os.write_bytes(2, &self.key)?;
+        }
+        os.write_unknown_fields(self.special_fields.unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn special_fields(&self) -> &::protobuf::SpecialFields {
+        &self.special_fields
+    }
+
+    fn mut_special_fields(&mut self) -> &mut ::protobuf::SpecialFields {
+        &mut self.special_fields
+    }
+
+    fn new() -> KVKey {
+        KVKey::new()
+    }
+
+    fn clear(&mut self) {
+        self.path.clear();
+        self.key.clear();
+        self.special_fields.clear();
+    }
+
+    fn default_instance() -> &'static KVKey {
+        static instance: KVKey = KVKey {
+            path: ::std::string::String::new(),
+            key: ::std::vec::Vec::new(),
+            special_fields: ::protobuf::SpecialFields::new(),
+        };
+        &instance
+    }
+}
+
+impl ::protobuf::MessageFull for KVKey {
+    fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("KVKey").unwrap()).clone()
+    }
+}
+
+impl ::std::fmt::Display for KVKey {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for KVKey {
+    type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
+}
+
 static file_descriptor_proto_data: &'static [u8] = b"\
     \n1interchainqueries/interchainqueries_genesis.proto\x12+neutron.interch\
-    ainadapter.interchainqueries\"\x8c\x03\n\x0fRegisteredQuery\x12\x0e\n\
-    \x02id\x18\x01\x20\x01(\x04R\x02id\x12\x1d\n\nquery_data\x18\x02\x20\x01\
-    (\tR\tqueryData\x12\x1d\n\nquery_type\x18\x03\x20\x01(\tR\tqueryType\x12\
-    \x17\n\x07zone_id\x18\x04\x20\x01(\tR\x06zoneId\x12#\n\rconnection_id\
-    \x18\x05\x20\x01(\tR\x0cconnectionId\x12#\n\rupdate_period\x18\x06\x20\
-    \x01(\x04R\x0cupdatePeriod\x12.\n\x13last_emitted_height\x18\x07\x20\x01\
-    (\x04R\x11lastEmittedHeight\x12J\n\"last_submitted_result_local_height\
-    \x18\x08\x20\x01(\x04R\x1elastSubmittedResultLocalHeight\x12L\n#last_sub\
-    mitted_result_remote_height\x18\t\x20\x01(\x04R\x1flastSubmittedResultRe\
-    moteHeightJ\xaa\x05\n\x06\x12\x04\0\0\x0e\x01\n\x08\n\x01\x0c\x12\x03\0\
-    \0\x12\n\x08\n\x01\x02\x12\x03\x01\04\n\n\n\x02\x04\0\x12\x04\x03\0\x0e\
-    \x01\n\n\n\x03\x04\0\x01\x12\x03\x03\x08\x17\n\x0b\n\x04\x04\0\x02\0\x12\
-    \x03\x04\x02\x10\n\r\n\x05\x04\0\x02\0\x04\x12\x04\x04\x02\x03\x19\n\x0c\
-    \n\x05\x04\0\x02\0\x05\x12\x03\x04\x02\x08\n\x0c\n\x05\x04\0\x02\0\x01\
-    \x12\x03\x04\t\x0b\n\x0c\n\x05\x04\0\x02\0\x03\x12\x03\x04\x0e\x0f\n\x0b\
-    \n\x04\x04\0\x02\x01\x12\x03\x05\x02\x18\n\r\n\x05\x04\0\x02\x01\x04\x12\
-    \x04\x05\x02\x04\x10\n\x0c\n\x05\x04\0\x02\x01\x05\x12\x03\x05\x02\x08\n\
-    \x0c\n\x05\x04\0\x02\x01\x01\x12\x03\x05\t\x13\n\x0c\n\x05\x04\0\x02\x01\
-    \x03\x12\x03\x05\x16\x17\n\x0b\n\x04\x04\0\x02\x02\x12\x03\x06\x02\x18\n\
-    \r\n\x05\x04\0\x02\x02\x04\x12\x04\x06\x02\x05\x18\n\x0c\n\x05\x04\0\x02\
-    \x02\x05\x12\x03\x06\x02\x08\n\x0c\n\x05\x04\0\x02\x02\x01\x12\x03\x06\t\
-    \x13\n\x0c\n\x05\x04\0\x02\x02\x03\x12\x03\x06\x16\x17\n\x0b\n\x04\x04\0\
-    \x02\x03\x12\x03\x07\x02\x15\n\r\n\x05\x04\0\x02\x03\x04\x12\x04\x07\x02\
-    \x06\x18\n\x0c\n\x05\x04\0\x02\x03\x05\x12\x03\x07\x02\x08\n\x0c\n\x05\
-    \x04\0\x02\x03\x01\x12\x03\x07\t\x10\n\x0c\n\x05\x04\0\x02\x03\x03\x12\
-    \x03\x07\x13\x14\n\x0b\n\x04\x04\0\x02\x04\x12\x03\x08\x02\x1b\n\r\n\x05\
-    \x04\0\x02\x04\x04\x12\x04\x08\x02\x07\x15\n\x0c\n\x05\x04\0\x02\x04\x05\
-    \x12\x03\x08\x02\x08\n\x0c\n\x05\x04\0\x02\x04\x01\x12\x03\x08\t\x16\n\
-    \x0c\n\x05\x04\0\x02\x04\x03\x12\x03\x08\x19\x1a\n\x0b\n\x04\x04\0\x02\
-    \x05\x12\x03\t\x02\x1b\n\r\n\x05\x04\0\x02\x05\x04\x12\x04\t\x02\x08\x1b\
-    \n\x0c\n\x05\x04\0\x02\x05\x05\x12\x03\t\x02\x08\n\x0c\n\x05\x04\0\x02\
-    \x05\x01\x12\x03\t\t\x16\n\x0c\n\x05\x04\0\x02\x05\x03\x12\x03\t\x19\x1a\
-    \n\x0b\n\x04\x04\0\x02\x06\x12\x03\n\x02!\n\r\n\x05\x04\0\x02\x06\x04\
-    \x12\x04\n\x02\t\x1b\n\x0c\n\x05\x04\0\x02\x06\x05\x12\x03\n\x02\x08\n\
-    \x0c\n\x05\x04\0\x02\x06\x01\x12\x03\n\t\x1c\n\x0c\n\x05\x04\0\x02\x06\
-    \x03\x12\x03\n\x1f\x20\n\x0b\n\x04\x04\0\x02\x07\x12\x03\x0c\x020\n\r\n\
-    \x05\x04\0\x02\x07\x04\x12\x04\x0c\x02\n!\n\x0c\n\x05\x04\0\x02\x07\x05\
-    \x12\x03\x0c\x02\x08\n\x0c\n\x05\x04\0\x02\x07\x01\x12\x03\x0c\t+\n\x0c\
-    \n\x05\x04\0\x02\x07\x03\x12\x03\x0c./\n\x0b\n\x04\x04\0\x02\x08\x12\x03\
-    \r\x021\n\r\n\x05\x04\0\x02\x08\x04\x12\x04\r\x02\x0c0\n\x0c\n\x05\x04\0\
-    \x02\x08\x05\x12\x03\r\x02\x08\n\x0c\n\x05\x04\0\x02\x08\x01\x12\x03\r\t\
-    ,\n\x0c\n\x05\x04\0\x02\x08\x03\x12\x03\r/0b\x06proto3\
+    ainadapter.interchainqueries\"\xe6\x03\n\x0fRegisteredQuery\x12\x0e\n\
+    \x02id\x18\x01\x20\x01(\x04R\x02id\x12\x1d\n\nquery_type\x18\x02\x20\x01\
+    (\tR\tqueryType\x12F\n\x04keys\x18\x03\x20\x03(\x0b22.neutron.interchain\
+    adapter.interchainqueries.KVKeyR\x04keys\x12/\n\x13transactions_filter\
+    \x18\x04\x20\x01(\tR\x12transactionsFilter\x12\x17\n\x07zone_id\x18\x05\
+    \x20\x01(\tR\x06zoneId\x12#\n\rconnection_id\x18\x06\x20\x01(\tR\x0cconn\
+    ectionId\x12#\n\rupdate_period\x18\x07\x20\x01(\x04R\x0cupdatePeriod\x12\
+    .\n\x13last_emitted_height\x18\x08\x20\x01(\x04R\x11lastEmittedHeight\
+    \x12J\n\"last_submitted_result_local_height\x18\t\x20\x01(\x04R\x1elastS\
+    ubmittedResultLocalHeight\x12L\n#last_submitted_result_remote_height\x18\
+    \n\x20\x01(\x04R\x1flastSubmittedResultRemoteHeight\"-\n\x05KVKey\x12\
+    \x12\n\x04path\x18\x01\x20\x01(\tR\x04path\x12\x10\n\x03key\x18\x02\x20\
+    \x01(\x0cR\x03keyJ\x84\x0c\n\x06\x12\x04\0\0$\x01\n\x08\n\x01\x0c\x12\
+    \x03\0\0\x12\n\x08\n\x01\x02\x12\x03\x01\04\n\n\n\x02\x04\0\x12\x04\x03\
+    \0\x1f\x01\n\n\n\x03\x04\0\x01\x12\x03\x03\x08\x17\n,\n\x04\x04\0\x02\0\
+    \x12\x03\x04\x02\x10\"\x1f\x20unique\x20id\x20of\x20registered\x20query\
+    \n\n\r\n\x05\x04\0\x02\0\x04\x12\x04\x04\x02\x03\x19\n\x0c\n\x05\x04\0\
+    \x02\0\x05\x12\x03\x04\x02\x08\n\x0c\n\x05\x04\0\x02\0\x01\x12\x03\x04\t\
+    \x0b\n\x0c\n\x05\x04\0\x02\0\x03\x12\x03\x04\x0e\x0f\n5\n\x04\x04\0\x02\
+    \x01\x12\x03\x06\x02\x18\x1a(\x20defines\x20a\x20query\x20type:\x20`kv`\
+    \x20or\x20`tx`\x20now\n\n\r\n\x05\x04\0\x02\x01\x04\x12\x04\x06\x02\x04\
+    \x10\n\x0c\n\x05\x04\0\x02\x01\x05\x12\x03\x06\x02\x08\n\x0c\n\x05\x04\0\
+    \x02\x01\x01\x12\x03\x06\t\x13\n\x0c\n\x05\x04\0\x02\x01\x03\x12\x03\x06\
+    \x16\x17\nb\n\x04\x04\0\x02\x02\x12\x03\t\x02\x1a\x1aU\x20is\x20used\x20\
+    to\x20define\x20KV-storage\x20keys\x20for\x20which\x20we\x20want\x20to\
+    \x20get\x20values\x20from\x20remote\x20chain\n\n\x0c\n\x05\x04\0\x02\x02\
+    \x04\x12\x03\t\x02\n\n\x0c\n\x05\x04\0\x02\x02\x06\x12\x03\t\x0b\x10\n\
+    \x0c\n\x05\x04\0\x02\x02\x01\x12\x03\t\x11\x15\n\x0c\n\x05\x04\0\x02\x02\
+    \x03\x12\x03\t\x18\x19\nD\n\x04\x04\0\x02\x03\x12\x03\x0c\x02!\x1a7\x20i\
+    s\x20used\x20to\x20define\x20a\x20filter\x20for\x20transaction\x20search\
+    \x20ICQ\n\n\r\n\x05\x04\0\x02\x03\x04\x12\x04\x0c\x02\t\x1a\n\x0c\n\x05\
+    \x04\0\x02\x03\x05\x12\x03\x0c\x02\x08\n\x0c\n\x05\x04\0\x02\x03\x01\x12\
+    \x03\x0c\t\x1c\n\x0c\n\x05\x04\0\x02\x03\x03\x12\x03\x0c\x1f\x20\n8\n\
+    \x04\x04\0\x02\x04\x12\x03\x0f\x02\x15\x1a+\x20is\x20used\x20to\x20ident\
+    ify\x20the\x20chain\x20of\x20interest\n\n\r\n\x05\x04\0\x02\x04\x04\x12\
+    \x04\x0f\x02\x0c!\n\x0c\n\x05\x04\0\x02\x04\x05\x12\x03\x0f\x02\x08\n\
+    \x0c\n\x05\x04\0\x02\x04\x01\x12\x03\x0f\t\x10\n\x0c\n\x05\x04\0\x02\x04\
+    \x03\x12\x03\x0f\x13\x14\nO\n\x04\x04\0\x02\x05\x12\x03\x12\x02\x1b\x1aB\
+    \x20is\x20IBC\x20connection\x20ID\x20for\x20getting\x20ConsensusState\
+    \x20to\x20verify\x20proofs\n\n\r\n\x05\x04\0\x02\x05\x04\x12\x04\x12\x02\
+    \x0f\x15\n\x0c\n\x05\x04\0\x02\x05\x05\x12\x03\x12\x02\x08\n\x0c\n\x05\
+    \x04\0\x02\x05\x01\x12\x03\x12\t\x16\n\x0c\n\x05\x04\0\x02\x05\x03\x12\
+    \x03\x12\x19\x1a\nA\n\x04\x04\0\x02\x06\x12\x03\x15\x02\x1b\x1a4\x20is\
+    \x20used\x20to\x20say\x20how\x20often\x20the\x20query\x20must\x20be\x20u\
+    pdated\n\n\r\n\x05\x04\0\x02\x06\x04\x12\x04\x15\x02\x12\x1b\n\x0c\n\x05\
+    \x04\0\x02\x06\x05\x12\x03\x15\x02\x08\n\x0c\n\x05\x04\0\x02\x06\x01\x12\
+    \x03\x15\t\x16\n\x0c\n\x05\x04\0\x02\x06\x03\x12\x03\x15\x19\x1a\nS\n\
+    \x04\x04\0\x02\x07\x12\x03\x18\x02!\x1aF\x20is\x20used\x20to\x20say\x20w\
+    hen\x20the\x20event\x20to\x20update\x20the\x20query\x20result\x20was\x20\
+    emitted\n\n\r\n\x05\x04\0\x02\x07\x04\x12\x04\x18\x02\x15\x1b\n\x0c\n\
+    \x05\x04\0\x02\x07\x05\x12\x03\x18\x02\x08\n\x0c\n\x05\x04\0\x02\x07\x01\
+    \x12\x03\x18\t\x1c\n\x0c\n\x05\x04\0\x02\x07\x03\x12\x03\x18\x1f\x20\n^\
+    \n\x04\x04\0\x02\x08\x12\x03\x1b\x020\x1aQ\x20is\x20the\x20last\x20block\
+    \x20height\x20of\x20the\x20local\x20chain\x20when\x20the\x20query's\x20r\
+    esult\x20was\x20updated\n\n\r\n\x05\x04\0\x02\x08\x04\x12\x04\x1b\x02\
+    \x18!\n\x0c\n\x05\x04\0\x02\x08\x05\x12\x03\x1b\x02\x08\n\x0c\n\x05\x04\
+    \0\x02\x08\x01\x12\x03\x1b\t+\n\x0c\n\x05\x04\0\x02\x08\x03\x12\x03\x1b.\
+    /\n_\n\x04\x04\0\x02\t\x12\x03\x1e\x022\x1aR\x20is\x20the\x20last\x20blo\
+    ck\x20height\x20of\x20the\x20remote\x20chain\x20when\x20the\x20query's\
+    \x20result\x20was\x20updated\n\n\r\n\x05\x04\0\x02\t\x04\x12\x04\x1e\x02\
+    \x1b0\n\x0c\n\x05\x04\0\x02\t\x05\x12\x03\x1e\x02\x08\n\x0c\n\x05\x04\0\
+    \x02\t\x01\x12\x03\x1e\t,\n\x0c\n\x05\x04\0\x02\t\x03\x12\x03\x1e/1\n\n\
+    \n\x02\x04\x01\x12\x04!\0$\x01\n\n\n\x03\x04\x01\x01\x12\x03!\x08\r\n\
+    \x0b\n\x04\x04\x01\x02\0\x12\x03\"\x02\x12\n\r\n\x05\x04\x01\x02\0\x04\
+    \x12\x04\"\x02!\x0f\n\x0c\n\x05\x04\x01\x02\0\x05\x12\x03\"\x02\x08\n\
+    \x0c\n\x05\x04\x01\x02\0\x01\x12\x03\"\t\r\n\x0c\n\x05\x04\x01\x02\0\x03\
+    \x12\x03\"\x10\x11\n\x0b\n\x04\x04\x01\x02\x01\x12\x03#\x02\x10\n\r\n\
+    \x05\x04\x01\x02\x01\x04\x12\x04#\x02\"\x12\n\x0c\n\x05\x04\x01\x02\x01\
+    \x05\x12\x03#\x02\x07\n\x0c\n\x05\x04\x01\x02\x01\x01\x12\x03#\x08\x0b\n\
+    \x0c\n\x05\x04\x01\x02\x01\x03\x12\x03#\x0e\x0fb\x06proto3\
 ";
 
 /// `FileDescriptorProto` object which was a source for this generated file
@@ -352,8 +548,9 @@ pub fn file_descriptor() -> &'static ::protobuf::reflect::FileDescriptor {
     file_descriptor.get(|| {
         let generated_file_descriptor = generated_file_descriptor_lazy.get(|| {
             let mut deps = ::std::vec::Vec::with_capacity(0);
-            let mut messages = ::std::vec::Vec::with_capacity(1);
+            let mut messages = ::std::vec::Vec::with_capacity(2);
             messages.push(RegisteredQuery::generated_message_descriptor_data());
+            messages.push(KVKey::generated_message_descriptor_data());
             let mut enums = ::std::vec::Vec::with_capacity(0);
             ::protobuf::reflect::GeneratedFileDescriptor::new_generated(
                 file_descriptor_proto(),

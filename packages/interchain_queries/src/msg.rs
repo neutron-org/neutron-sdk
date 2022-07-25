@@ -22,6 +22,7 @@ pub enum ExecuteMsg {
     },
     RegisterDelegatorDelegationsQuery {
         delegator: String,
+        validators: Vec<String>,
         zone_id: String,
         connection_id: String,
         update_period: u64,
@@ -31,21 +32,9 @@ pub enum ExecuteMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
-    Balance {
-        zone_id: String,
-        addr: String,
-        denom: String,
-    },
-    GetTransfers {
-        zone_id: String,
-        recipient: String,
-        start: u64,
-        end: u64,
-    },
-    GetDelegations {
-        zone_id: String,
-        delegator: String,
-    },
+    Balance { query_id: u64 },
+    GetTransfers { query_id: u64, start: u64, end: u64 },
+    GetDelegations { query_id: u64 },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

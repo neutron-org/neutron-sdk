@@ -16,6 +16,4 @@ pub mod error;
 pub mod msg;
 pub mod queries;
 pub mod register_queries;
-pub mod reply;
-pub mod storage;
 pub mod types;

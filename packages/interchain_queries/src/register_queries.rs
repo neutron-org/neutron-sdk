@@ -1,35 +1,38 @@
 use crate::error::ContractResult;
-use crate::storage::TMP_REGISTER_INTERCHAIN_QUERY_REQUEST;
 use crate::types::{
-    GetBalanceQueryParams, GetDelegatorDelegationsParams, GetTransfersParams, TmpRegisteredQuery,
-    QUERY_BALANCE_QUERY_TYPE, QUERY_DELEGATOR_DELEGATIONS_QUERY_TYPE, QUERY_TRANSFERS,
-    REGISTER_INTERCHAIN_QUERY_PATH, REGISTER_INTERCHAIN_QUERY_REPLY_ID,
+    create_account_balances_prefix, create_delegation_key, decode_and_convert, GetTransfersParams,
+    QueryType, BANK_STORE_KEY, REGISTER_INTERCHAIN_QUERY_PATH, STAKING_STORE_KEY,
 };
-use cosmwasm_std::{Binary, CosmosMsg, DepsMut, Env, Response, StdError, SubMsg};
+use cosmwasm_std::{Binary, CosmosMsg, DepsMut, Env, Response, StdError};
 use protobuf::Message;
 use schemars::_serde_json::to_string;
-use serde::Serialize;
+use stargate::interchain::interchainqueries_genesis::KVKey;
 use stargate::interchain::interchainqueries_tx::MsgRegisterInterchainQuery;
+use std::fmt::Write;
+
+pub fn encode_hex(bytes: &[u8]) -> ContractResult<String> {
+    let mut s = String::with_capacity(bytes.len() * 2);
+    for &b in bytes {
+        write!(&mut s, "{:02x}", b)?;
+    }
+    Ok(s)
+}
 
 /// Registers an interchain query
-fn register_interchain_query<T>(
-    deps: DepsMut,
+fn register_interchain_query(
+    _deps: DepsMut,
     env: Env,
     connection_id: String,
     zone_id: String,
+    query_type: QueryType,
+    kv_keys: Vec<KVKey>,
+    transactions_filter: String,
     update_period: u64,
-    query_type: &str,
-    query_data: &T,
-) -> ContractResult<Response>
-where
-    T: ?Sized + Serialize,
-{
-    let query_data_json_encoded =
-        to_string(&query_data).map_err(|e| StdError::generic_err(e.to_string()))?;
-
+) -> ContractResult<Response> {
     let mut register_msg = MsgRegisterInterchainQuery::new();
-    register_msg.query_data = query_data_json_encoded.clone();
-    register_msg.query_type = String::from(query_type);
+    register_msg.keys = kv_keys.clone();
+    register_msg.transactions_filter = transactions_filter.clone();
+    register_msg.query_type = query_type.into();
     register_msg.update_period = update_period;
     register_msg.connection_id = connection_id.clone();
     register_msg.zone_id = zone_id.clone();
@@ -43,29 +46,22 @@ where
         value: encoded_register_msg,
     };
 
-    // We need to know registered_query_id that is returned in MsgRegisterInterchainQuery execution
-    // so we temporarily save all necessary data to use it in reply handler to save returned query id
-    TMP_REGISTER_INTERCHAIN_QUERY_REQUEST.save(
-        deps.storage,
-        &TmpRegisteredQuery {
-            connection_id: connection_id.clone(),
-            zone_id: zone_id.clone(),
-            query_type: query_type.to_string(),
-            query_data: query_data_json_encoded.clone(),
-        },
-    )?;
-
     Ok(Response::new()
         .add_attribute("action", "register_interchain_query")
         .add_attribute("connection_id", connection_id.as_str())
         .add_attribute("zone_id", zone_id.as_str())
         .add_attribute("query_type", query_type)
         .add_attribute("update_period", update_period.to_string())
-        .add_attribute("query_data", query_data_json_encoded.as_str())
-        .add_submessage(SubMsg::reply_on_success(
-            msg,
-            REGISTER_INTERCHAIN_QUERY_REPLY_ID,
-        )))
+        .add_attribute("transactions_filter", transactions_filter.as_str())
+        .add_attribute(
+            "kv_keys",
+            kv_keys
+                .iter()
+                .map(|kv| Ok(kv.path.clone() + "/" + encode_hex(&kv.key)?.as_str()))
+                .collect::<ContractResult<Vec<String>>>()?
+                .join(","),
+        )
+        .add_message(msg))
 }
 
 /// Registers an interchain query to get balance of account on remote chain for particular denom
@@ -78,16 +74,24 @@ pub fn register_balance_query(
     denom: String,
     update_period: u64,
 ) -> ContractResult<Response> {
-    let query_data = GetBalanceQueryParams { addr, denom };
+    let converted_addr_bytes = decode_and_convert(addr.as_str())?;
+
+    let mut balance_key = create_account_balances_prefix(converted_addr_bytes)?;
+    balance_key.extend_from_slice(denom.as_bytes());
+
+    let mut kv_key = KVKey::new();
+    kv_key.key = balance_key;
+    kv_key.path = BANK_STORE_KEY.to_string();
 
     register_interchain_query(
         deps,
         env,
         connection_id,
         zone_id,
+        QueryType::KV,
+        vec![kv_key],
+        String::new(),
         update_period,
-        QUERY_BALANCE_QUERY_TYPE,
-        &query_data,
     )
 }
 
@@ -98,18 +102,32 @@ pub fn register_delegator_delegations_query(
     connection_id: String,
     zone_id: String,
     delegator: String,
+    validators: Vec<String>,
     update_period: u64,
 ) -> ContractResult<Response> {
-    let query_data = GetDelegatorDelegationsParams { delegator };
+    let delegator_addr = decode_and_convert(delegator.as_str())?;
+
+    let keys = validators
+        .into_iter()
+        .map(|v| {
+            let val_addr = decode_and_convert(v.as_str())?;
+            Ok(KVKey {
+                path: STAKING_STORE_KEY.to_string(),
+                key: create_delegation_key(delegator_addr.clone(), val_addr)?,
+                special_fields: Default::default(),
+            })
+        })
+        .collect::<ContractResult<Vec<KVKey>>>()?;
 
     register_interchain_query(
         deps,
         env,
         connection_id,
         zone_id,
+        QueryType::KV,
+        keys,
+        String::new(),
         update_period,
-        QUERY_DELEGATOR_DELEGATIONS_QUERY_TYPE,
-        &query_data,
     )
 }
 
@@ -127,13 +145,17 @@ pub fn register_transfers_query(
         ..Default::default()
     };
 
+    let query_data_json_encoded =
+        to_string(&query_data).map_err(|e| StdError::generic_err(e.to_string()))?;
+
     register_interchain_query(
         deps,
         env,
         connection_id,
         zone_id,
+        QueryType::TX,
+        vec![],
+        query_data_json_encoded,
         update_period,
-        QUERY_TRANSFERS,
-        &query_data,
     )
 }
