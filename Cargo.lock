@@ -376,6 +376,7 @@ dependencies = [
  "protobuf",
  "schemars",
  "serde",
+ "serde-json-wasm",
  "stargate",
  "thiserror",
 ]
@@ -434,6 +435,7 @@ dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
  "interchain_queries",
+ "interchain_txs",
  "protobuf",
  "schemars",
  "serde",

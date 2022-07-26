@@ -1,6 +1,6 @@
 use cosmwasm_std::StdError;
 use protobuf::Error as ProtobufError;
-use schemars::_serde_json;
+use serde_json_wasm;
 use thiserror::Error;
 
 pub type ContractResult<T> = Result<T, ContractError>;
@@ -18,6 +18,9 @@ pub enum ContractError {
 
     #[error("Protobuf error")]
     Protobuf(String),
+
+    #[error("Serde JSON (Wasm) error")]
+    SerdeJSONWasm(String),
 
     #[error("balance with denom '{denom:?}' for address '{recipient:?}' not found")]
     BalanceNotFound { denom: String, recipient: String },
@@ -51,8 +54,8 @@ impl From<ProtobufError> for ContractError {
     }
 }
 
-impl From<_serde_json::Error> for ContractError {
-    fn from(e: _serde_json::Error) -> Self {
-        ContractError::Protobuf(e.to_string())
+impl From<serde_json_wasm::de::Error> for ContractError {
+    fn from(e: serde_json_wasm::de::Error) -> Self {
+        ContractError::SerdeJSONWasm(e.to_string())
     }
 }

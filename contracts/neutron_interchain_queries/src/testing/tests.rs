@@ -40,6 +40,7 @@ fn build_registered_query_response(
     QueryRegisteredQueryResponse {
         registered_query: MessageField::some(RegisteredQuery {
             id,
+            owner: "".to_string(),
             query_data: "".to_string(),
             query_type: "".to_string(),
             zone_id: "".to_string(),

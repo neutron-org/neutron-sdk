@@ -14,9 +14,7 @@
 
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
-
 use cosmwasm_std::{Binary, Deps, DepsMut, Env, MessageInfo, Reply, Response, StdResult};
-
 use interchain_queries::error::{ContractError, ContractResult};
 use interchain_queries::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use interchain_queries::queries::{query_balance, query_delegations, query_transfer_transactions};
@@ -26,8 +24,7 @@ use interchain_queries::register_queries::{
 use interchain_queries::reply::register_interchain_query_reply_handler;
 use interchain_queries::sudo::sudo_check_tx_query_result;
 use interchain_queries::types::REGISTER_INTERCHAIN_QUERY_REPLY_ID;
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
+use interchain_txs::msg::SudoMsg;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -36,7 +33,7 @@ pub fn instantiate(
     _info: MessageInfo,
     _msg: InstantiateMsg,
 ) -> ContractResult<Response> {
-    //TODO
+    // TODO
     Ok(Response::default())
 }
 
@@ -98,7 +95,7 @@ pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> ContractResult<Response> {
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> ContractResult<Binary> {
     match msg {
-        //TODO: check if query.result.height is too old (for all interchain queries)
+        // TODO: check if query.result.height is too old (for all interchain queries)
         QueryMsg::Balance {
             zone_id,
             addr,
@@ -121,16 +118,6 @@ pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Respons
     Ok(Response::default())
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub enum SudoMsg {
-    CheckTxQueryResult {
-        query_id: u64,
-        height: u64,
-        data: Vec<u8>,
-    },
-}
-
 #[entry_point]
 pub fn sudo(deps: DepsMut, env: Env, msg: SudoMsg) -> ContractResult<Response> {
     match msg {
@@ -139,5 +126,6 @@ pub fn sudo(deps: DepsMut, env: Env, msg: SudoMsg) -> ContractResult<Response> {
             height,
             data,
         } => sudo_check_tx_query_result(deps, env, query_id, height, data),
+        _ => Ok(Response::default()),
     }
 }

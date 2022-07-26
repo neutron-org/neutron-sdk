@@ -26,6 +26,7 @@ backtraces = ["cosmwasm-std/backtraces"]
 cosmwasm-std = { version = "1.0.0", features=["iterator", "stargate"] }
 schemars = "0.8.10"
 serde = { version = "1.0.103", default-features = false, features = ["derive"] }
+serde-json-wasm = "0.4.1"
 protobuf = { version = "3", features = ["with-bytes"] }
 stargate = { path = "../../packages/stargate", default-features = false, version = "0.1.0"}
 cw-storage-plus = { version = "0.13.2", features = ["iterator"]}

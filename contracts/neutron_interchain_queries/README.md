@@ -18,7 +18,7 @@ git clone git@github.com:neutron-org/neutron.git
 
 Init the nodes and hermes in the Neutron dir, create a transfer channel then run hermes:
 ```
-make init && make start-rly
+make build && make init && make start-rly
 ```
 
 Clone the relayer repo next to the demo contracts: 
@@ -34,5 +34,11 @@ docker run --env-file .env.example -v $PWD/neutron/data:/data -p 9999:9999 neutr
 Inside the `neutron-contracts` directory execute `bash test_check_tx_query_result.sh` (or `NEUTRON_DIR=../somedir/ bash test_ibc_transfer.sh` if the neutron dir is not - `../neutron`).
 
 Then check for the handler logs:
+```
+cat $PWD/neutron/data/test-1.log | grep WASMDEBUG
+```
 
-
+You are looking for lines like:
+```
+WASMDEBUG: sudo_check_tx_query_result found a matching transaction
+```

@@ -3,16 +3,16 @@ use crate::queries::get_registered_query;
 use crate::types::{COSMOS_SDK_TRANSFER_MSG_URL, QUERY_TRANSFERS};
 use cosmos_sdk_proto::cosmos::bank::v1beta1::MsgSend;
 use cosmos_sdk_proto::cosmos::tx::v1beta1::{TxBody, TxRaw};
-use cosmwasm_std::{DepsMut, Env, Response, StdError};
+use cosmwasm_std::{Binary, DepsMut, Env, Response, StdError};
 use prost::Message as ProstMessage;
-use schemars::_serde_json;
 use serde::{Deserialize, Serialize};
+use serde_json_wasm;
 use std::io::Cursor;
 
 /// TransferRecipientQuery is used to parse the query_data field of a QUERY_TRANSFERS query.
 #[derive(Serialize, Deserialize)]
 struct TransferRecipientQuery {
-    #[serde(rename = "name")]
+    #[serde(rename = "transfer.recipient")]
     recipient: String,
 }
 
@@ -24,18 +24,18 @@ pub fn sudo_check_tx_query_result(
     _env: Env,
     query_id: u64,
     _height: u64,
-    data: Vec<u8>,
+    data: Binary,
 ) -> ContractResult<Response> {
     deps.api.debug(
         format!(
-            "WASMDEBUG: sudo_check_tx_query_result received: {:?} {:?}",
-            query_id, data
+            "WASMDEBUG: sudo_check_tx_query_result received; query_id: {:?}",
+            query_id,
         )
         .as_str(),
     );
 
     // Decode the transaction data
-    let tx: TxRaw = TxRaw::decode(Cursor::new(data))?;
+    let tx: TxRaw = TxRaw::decode(Cursor::new(data.as_slice()))?;
     let body: TxBody = TxBody::decode(Cursor::new(tx.body_bytes))?;
 
     // Get the registered query by ID and retrieve the raw query string
@@ -47,7 +47,16 @@ pub fn sudo_check_tx_query_result(
     match registered_query.registered_query.query_type.as_str() {
         QUERY_TRANSFERS => {
             // For transfer queries, query data looks like "{"transfer.recipient": "some_address"}"
-            let query_data: TransferRecipientQuery = _serde_json::from_str(query_string.as_str())?;
+            let query_data: TransferRecipientQuery =
+                serde_json_wasm::from_str(query_string.as_str())?;
+
+            deps.api.debug(
+                format!(
+                    "WASMDEBUG: sudo_check_tx_query_result parsed query string: {:?}",
+                    query_id
+                )
+                .as_str(),
+            );
 
             let mut matching_message_found = false;
             for message in body.messages {
@@ -59,6 +68,14 @@ pub fn sudo_check_tx_query_result(
                 // Parse a Send message and check that it has the required recipient.
                 let transfer_msg: MsgSend = MsgSend::decode(Cursor::new(message.value))?;
                 if transfer_msg.to_address == query_data.recipient {
+                    deps.api.debug(
+                        format!(
+                            "WASMDEBUG: sudo_check_tx_query_result found a matching transaction: {:?} {:?}",
+                            query_id, transfer_msg.from_address,
+                        )
+                            .as_str(),
+                    );
+
                     matching_message_found = true;
                     break;
                 }
