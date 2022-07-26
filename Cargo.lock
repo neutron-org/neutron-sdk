@@ -352,6 +352,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "ibc_transfer"
+version = "0.1.0"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cw-storage-plus",
+ "interchain_txs",
+ "schemars",
+ "serde",
+]
+
+[[package]]
 name = "interchain_queries"
 version = "0.1.0"
 dependencies = [
@@ -366,6 +378,18 @@ dependencies = [
  "serde",
  "stargate",
  "thiserror",
+]
+
+[[package]]
+name = "interchain_txs"
+version = "0.1.0"
+dependencies = [
+ "cosmos-sdk-proto",
+ "cosmwasm-std",
+ "cw-storage-plus",
+ "prost",
+ "schemars",
+ "serde",
 ]
 
 [[package]]
