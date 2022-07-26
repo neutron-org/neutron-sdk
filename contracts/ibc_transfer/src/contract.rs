@@ -21,7 +21,7 @@ pub fn instantiate(
     _info: MessageInfo,
     _msg: InstantiateMsg,
 ) -> StdResult<Response> {
-    deps.api.debug("WASMDEBUG: Instatntiate");
+    deps.api.debug("WASMDEBUG: Instantiate");
     Ok(Response::default())
 }
 
