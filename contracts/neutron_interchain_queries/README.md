@@ -42,3 +42,9 @@ You are looking for lines like:
 ```
 WASMDEBUG: sudo_check_tx_query_result found a matching transaction
 ```
+
+Also, as now duplicate transactions are ignored, you should see only successful results in relayer logs:
+
+```
+{"level":"info","ts":1658927524.0552058,"caller":"relay/relayer.go:78","msg":"proof for query_id submitted successfully","query_id":1}
+```
