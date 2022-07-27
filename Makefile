@@ -2,6 +2,7 @@
 
 schema:
 	@find contracts/* -maxdepth 0 -type d \( ! -name . \) -exec bash -c "cd '{}' && cargo schema" \;
+	@find packages/bindings -maxdepth 0 -type d \( ! -name . \) -exec bash -c "cd '{}' && cargo schema" \;
 
 test:
 	@cargo test
