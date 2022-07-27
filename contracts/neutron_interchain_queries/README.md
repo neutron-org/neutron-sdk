@@ -26,9 +26,9 @@ Clone the relayer repo next to the demo contracts:
 git@github.com:neutron-org/cosmos-query-relayer.git
 ```
 
-and run it:
+and run it (note that you have to use the absolute path to `neutron/data`):
 ```
-docker run --env-file .env.example -v $PWD/neutron/data:/data -p 9999:9999 neutron-org/cosmos-query-relayer
+docker run --env-file .env.example -v /absolute/path/to/neutron/data:/data -p 9999:9999 neutron-org/cosmos-query-relayer
 ```
 
 Inside the `neutron-contracts` directory execute `bash test_check_tx_query_result.sh` (or `NEUTRON_DIR=../somedir/ bash test_ibc_transfer.sh` if the neutron dir is not - `../neutron`).

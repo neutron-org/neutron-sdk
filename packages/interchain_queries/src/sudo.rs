@@ -116,7 +116,7 @@ pub fn sudo_tx_query_result(
         }
 
         // If you don't write specific checks for a transaction query type, all submitted results
-        // will be treated as valid and saved to state.
+        // will be treated as valid.
         _ => Ok(Response::new()),
     }
 }
