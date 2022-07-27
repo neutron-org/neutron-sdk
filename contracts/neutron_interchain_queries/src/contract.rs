@@ -17,12 +17,12 @@ use cosmwasm_std::entry_point;
 use cosmwasm_std::{Binary, Deps, DepsMut, Env, MessageInfo, Reply, Response, StdResult};
 use interchain_queries::error::{ContractError, ContractResult};
 use interchain_queries::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
-use interchain_queries::queries::{query_balance, query_delegations, query_transfer_transactions};
+use interchain_queries::queries::{query_balance, query_delegations};
 use interchain_queries::register_queries::{
     register_balance_query, register_delegator_delegations_query, register_transfers_query,
 };
 use interchain_queries::reply::register_interchain_query_reply_handler;
-use interchain_queries::sudo::sudo_check_tx_query_result;
+use interchain_queries::sudo::sudo_tx_query_result;
 use interchain_queries::types::REGISTER_INTERCHAIN_QUERY_REPLY_ID;
 use interchain_txs::msg::SudoMsg;
 
@@ -104,12 +104,6 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> ContractResult<Binary> {
         QueryMsg::GetDelegations { zone_id, delegator } => {
             query_delegations(deps, env, zone_id, delegator)
         }
-        QueryMsg::GetTransfers {
-            zone_id,
-            recipient,
-            start,
-            end,
-        } => query_transfer_transactions(deps, env, zone_id, recipient, start, end),
     }
 }
 
@@ -121,11 +115,11 @@ pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Respons
 #[entry_point]
 pub fn sudo(deps: DepsMut, env: Env, msg: SudoMsg) -> ContractResult<Response> {
     match msg {
-        SudoMsg::CheckTxQueryResult {
+        SudoMsg::TxQueryResult {
             query_id,
             height,
             data,
-        } => sudo_check_tx_query_result(deps, env, query_id, height, data),
+        } => sudo_tx_query_result(deps, env, query_id, height, data),
         _ => Ok(Response::default()),
     }
 }

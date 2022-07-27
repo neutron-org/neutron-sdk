@@ -19,7 +19,7 @@ struct TransferRecipientQuery {
 /// sudo_check_tx_query_result is an example callback that checks if a given transaction
 /// satisfies the registered transaction query. Here, we check that the provided transaction
 /// contains a Send message from a specific address.
-pub fn sudo_check_tx_query_result(
+pub fn sudo_tx_query_result(
     deps: DepsMut,
     _env: Env,
     query_id: u64,
@@ -42,6 +42,15 @@ pub fn sudo_check_tx_query_result(
     let registered_query = get_registered_query(deps.as_ref(), query_id)?;
     let query_string = registered_query.registered_query.query_data.clone();
 
+    deps.api.debug(
+        format!(
+            "WASMDEBUG: sudo_check_tx_query_result loaded query string; query_id: {:?},\
+             query_string: {:?}",
+            query_id, query_string,
+        )
+        .as_str(),
+    );
+
     // Depending of the query type, check the transaction data to see whether is satisfies
     // the original query.
     match registered_query.registered_query.query_type.as_str() {
@@ -52,7 +61,7 @@ pub fn sudo_check_tx_query_result(
 
             deps.api.debug(
                 format!(
-                    "WASMDEBUG: sudo_check_tx_query_result parsed query string: {:?}",
+                    "WASMDEBUG: sudo_check_tx_query_result parsed query string; query_id: {:?}",
                     query_id
                 )
                 .as_str(),
@@ -67,27 +76,42 @@ pub fn sudo_check_tx_query_result(
 
                 // Parse a Send message and check that it has the required recipient.
                 let transfer_msg: MsgSend = MsgSend::decode(Cursor::new(message.value))?;
+
                 if transfer_msg.to_address == query_data.recipient {
                     deps.api.debug(
                         format!(
-                            "WASMDEBUG: sudo_check_tx_query_result found a matching transaction: {:?} {:?}",
+                            "WASMDEBUG: sudo_check_tx_query_result found a matching transaction; \
+                             query_id: {:?}, from_address: {:?}",
                             query_id, transfer_msg.from_address,
                         )
-                            .as_str(),
+                        .as_str(),
                     );
 
                     matching_message_found = true;
                     break;
                 }
+
+                // Note: use `crate::types::{protobuf_coin_to_std_coin}` to cast proto
+                // coins to sdk coins.
             }
 
             // If we didn't find a Send message with the correct recipient, return an error, and
             // this query result will be rejected by Neutron: no data will be saved to state.
             match matching_message_found {
                 true => Ok(Response::new()),
-                false => Err(ContractError::Std(StdError::generic_err(
-                    "matching messages not found in transaction",
-                ))),
+                false => {
+                    deps.api.debug(
+                        format!(
+                            "WASMDEBUG: sudo_check_tx_query_result failed to find a matching \
+                             transaction; query_id: {:?}",
+                            query_id
+                        )
+                        .as_str(),
+                    );
+                    Err(ContractError::Std(StdError::generic_err(
+                        "failed to find a matching transaction message",
+                    )))
+                }
             }
         }
 

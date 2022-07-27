@@ -39,7 +39,7 @@ pub enum SudoMsg {
         counterparty_channel_id: String,
         counterparty_version: String,
     },
-    CheckTxQueryResult {
+    TxQueryResult {
         query_id: u64,
         height: u64,
         data: Binary,

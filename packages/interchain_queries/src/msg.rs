@@ -36,12 +36,6 @@ pub enum QueryMsg {
         addr: String,
         denom: String,
     },
-    GetTransfers {
-        zone_id: String,
-        recipient: String,
-        start: u64,
-        end: u64,
-    },
     GetDelegations {
         zone_id: String,
         delegator: String,

@@ -20,17 +20,14 @@ use cosmwasm_std::{
 };
 use interchain_queries::msg::{ExecuteMsg, QueryMsg};
 use interchain_queries::types::{
-    DelegatorDelegationsResponse, QueryBalanceResponse, Transfer, TransfersResponse,
-    QUERY_REGISTERED_QUERY_PATH, QUERY_REGISTERED_QUERY_TRANSACTIONS_RESULT_PATH,
+    DelegatorDelegationsResponse, QueryBalanceResponse, QUERY_REGISTERED_QUERY_PATH,
 };
 use interchain_queries::types::{
     QUERY_REGISTERED_QUERY_RESULT_PATH, REGISTER_INTERCHAIN_QUERY_REPLY_ID,
 };
 use protobuf::{Message, MessageField};
 use stargate::interchain::interchainqueries_genesis::RegisteredQuery;
-use stargate::interchain::interchainqueries_query::{
-    QueryRegisteredQueryResponse, QuerySubmittedTransactionsResponse, Transaction,
-};
+use stargate::interchain::interchainqueries_query::QueryRegisteredQueryResponse;
 use stargate::interchain::interchainqueries_tx::MsgRegisterInterchainQueryResponse;
 
 fn build_registered_query_response(
@@ -192,67 +189,6 @@ fn test_query_delegator_delegations() {
                     amount: Default::default()
                 }
             ],
-        }
-    )
-}
-
-#[test]
-fn test_query_transfers() {
-    let mut deps = dependencies(&[]);
-
-    let msg = ExecuteMsg::RegisterTransfersQuery {
-        zone_id: "zone".to_string(),
-        connection_id: "connection".to_string(),
-        update_period: 10,
-        recipient: "osmo1stlkm9sadmy0kg3tm4l8ucytvl7xwalug85q5a".to_string(),
-    };
-
-    register_query(&mut deps, mock_env(), mock_info("", &[]), msg);
-
-    // protobuf encoded QueryRegisteredQueryResultResponse for balance query
-    let transfers_response = QuerySubmittedTransactionsResponse {
-        transactions: vec![Transaction {
-            id: 100,
-            height: 4623885u64,
-            data: base64::decode("CpABCo0BChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEm0KK29zbW8xa2tnZDd6dno5dnJkOHZ5OWNyMzd5eHdkbXc5NGNydXN3NXBxemcSK29zbW8xc3Rsa205c2FkbXkwa2czdG00bDh1Y3l0dmw3eHdhbHVnODVxNWEaEQoFdW9zbW8SCDUwMDAwMDAwEmUKUQpGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQOyiHa4C7rJvMSdoQYF4VcCndaYtlP7Hn8MnpBZ/Rh1ohIECgIIfxiPBxIQCgoKBXVvc21vEgEwEKCNBhpAHBjxUTgIkKwcN/5dMYH+PeCHS9fuvj52W0RvOOUDZ5oeOv/siKybbHzYtjvjQXLu9d36jRWU5KXW9sAWUbbxmw==").unwrap(),
-            special_fields: Default::default(),
-        }],
-        special_fields: Default::default(),
-    };
-
-    deps.querier.add_stargate_response(
-        QUERY_REGISTERED_QUERY_TRANSACTIONS_RESULT_PATH.to_string(),
-        transfers_response.write_to_bytes().unwrap(),
-    );
-
-    let registered_query = build_registered_query_response(1, 987);
-
-    deps.querier.add_stargate_response(
-        QUERY_REGISTERED_QUERY_PATH.to_string(),
-        registered_query.write_to_bytes().unwrap(),
-    );
-
-    let query_transfers = QueryMsg::GetTransfers {
-        zone_id: "zone".to_string(),
-        recipient: "osmo1stlkm9sadmy0kg3tm4l8ucytvl7xwalug85q5a".to_string(),
-        start: 0,
-        end: 0,
-    };
-    let resp: TransfersResponse =
-        from_binary(&query(deps.as_ref(), mock_env(), query_transfers).unwrap()).unwrap();
-    assert_eq!(
-        resp,
-        TransfersResponse {
-            last_submitted_local_height: registered_query
-                .registered_query
-                .last_submitted_result_local_height,
-            transfers: vec![Transfer {
-                tx_id: 100,
-                sender: "osmo1kkgd7zvz9vrd8vy9cr37yxwdmw94crusw5pqzg".to_string(),
-                amount: vec![Coin::new(50000000u128, "uosmo")],
-                height: 4623885,
-                recipient: "osmo1stlkm9sadmy0kg3tm4l8ucytvl7xwalug85q5a".to_string(),
-            }]
         }
     )
 }
