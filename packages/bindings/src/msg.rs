@@ -1,4 +1,4 @@
-use crate::types::{InterchainQueryType, KVKey, ProtobufAny};
+use crate::types::ProtobufAny;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -18,9 +18,8 @@ pub enum NeutronMsg {
     },
 
     RegisterInterchainQuery {
-        query_type: InterchainQueryType,
-        keys: Vec<KVKey>,
-        transactions_filter: String,
+        query_type: String,
+        query_data: String,
         zone_id: String,
         connection_id: String,
         update_period: u64,
