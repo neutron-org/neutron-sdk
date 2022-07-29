@@ -44,6 +44,9 @@ pub enum SudoMsg {
         height: u64,
         data: Binary,
     },
+    KVQueryResult {
+        query_id: u64,
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
