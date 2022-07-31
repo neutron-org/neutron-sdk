@@ -1,7 +1,8 @@
 use crate::error::ContractResult;
 use crate::types::{
-    create_account_balances_prefix, create_delegation_key, decode_and_convert, GetTransfersParams,
-    QueryType, BANK_STORE_KEY, REGISTER_INTERCHAIN_QUERY_PATH, STAKING_STORE_KEY,
+    create_account_balances_prefix, create_delegation_key, create_validator_key,
+    decode_and_convert, GetTransfersParams, QueryType, BANK_STORE_KEY,
+    REGISTER_INTERCHAIN_QUERY_PATH, STAKING_STORE_KEY,
 };
 use cosmwasm_std::{Binary, CosmosMsg, DepsMut, Env, Response, StdError};
 use protobuf::Message;
@@ -76,7 +77,7 @@ pub fn register_balance_query(
 ) -> ContractResult<Response> {
     let converted_addr_bytes = decode_and_convert(addr.as_str())?;
 
-    let mut balance_key = create_account_balances_prefix(converted_addr_bytes)?;
+    let mut balance_key = create_account_balances_prefix(&converted_addr_bytes)?;
     balance_key.extend_from_slice(denom.as_bytes());
 
     let mut kv_key = KVKey::new();
@@ -107,17 +108,21 @@ pub fn register_delegator_delegations_query(
 ) -> ContractResult<Response> {
     let delegator_addr = decode_and_convert(delegator.as_str())?;
 
-    let keys = validators
-        .into_iter()
-        .map(|v| {
-            let val_addr = decode_and_convert(v.as_str())?;
-            Ok(KVKey {
-                path: STAKING_STORE_KEY.to_string(),
-                key: create_delegation_key(delegator_addr.clone(), val_addr)?,
-                special_fields: Default::default(),
-            })
+    let mut keys: Vec<KVKey> = Vec::with_capacity(validators.len() * 2);
+
+    for v in &validators {
+        let val_addr = decode_and_convert(v.as_str())?;
+        keys.push(KVKey {
+            path: STAKING_STORE_KEY.to_string(),
+            key: create_delegation_key(&delegator_addr, &val_addr)?,
+            special_fields: Default::default(),
+        });
+        keys.push(KVKey {
+            path: STAKING_STORE_KEY.to_string(),
+            key: create_validator_key(&val_addr)?,
+            special_fields: Default::default(),
         })
-        .collect::<ContractResult<Vec<KVKey>>>()?;
+    }
 
     register_interchain_query(
         deps,

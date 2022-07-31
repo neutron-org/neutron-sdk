@@ -15,16 +15,19 @@ use crate::contract::{execute, query};
 use crate::testing::mock_querier::WasmMockQuerier;
 use cosmwasm_std::testing::{mock_env, mock_info, MockApi, MockStorage};
 use cosmwasm_std::{from_binary, Addr, Coin, Delegation, Env, MessageInfo, OwnedDeps};
-use interchain_queries::msg::{ExecuteMsg, QueryMsg};
+use interchain_queries::msg::{
+    DelegatorDelegationsResponse, ExecuteMsg, QueryBalanceResponse, QueryMsg, Transfer,
+    TransfersResponse,
+};
 use interchain_queries::types::{
-    DelegatorDelegationsResponse, QueryBalanceResponse, Transfer, TransfersResponse,
-    QUERY_REGISTERED_QUERY_PATH, QUERY_REGISTERED_QUERY_TRANSACTIONS_RESULT_PATH,
+    Balances, QUERY_REGISTERED_QUERY_PATH, QUERY_REGISTERED_QUERY_TRANSACTIONS_RESULT_PATH,
 };
 use interchain_queries::types::{QueryType, QUERY_REGISTERED_QUERY_RESULT_PATH};
 use protobuf::{Message, MessageField};
 use stargate::interchain::interchainqueries_genesis::{KVKey, RegisteredQuery};
 use stargate::interchain::interchainqueries_query::{
-    QueryRegisteredQueryResponse, QuerySubmittedTransactionsResponse, Transaction,
+    QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse,
+    QuerySubmittedTransactionsResponse, Transaction,
 };
 
 fn build_registered_query_response(
@@ -51,6 +54,7 @@ fn build_registered_query_response(
     }
 }
 
+use stargate::interchain::interchainqueries_tx::{QueryResult, StorageValue};
 use std::num::ParseIntError;
 
 pub fn decode_hex(s: &str) -> Result<Vec<u8>, ParseIntError> {
@@ -128,7 +132,9 @@ fn test_query_balance() {
             last_submitted_local_height: registered_query
                 .registered_query
                 .last_submitted_result_local_height,
-            amount: Coin::new(8278104u128, "uosmo")
+            balances: Balances {
+                coins: vec![Coin::new(8278104u128, "uosmo")]
+            }
         }
     )
 }
@@ -151,14 +157,65 @@ fn test_query_delegator_delegations() {
 
     let keys = register_query(&mut deps, mock_env(), mock_info("", &[]), msg);
 
-    // protobuf encoded QueryRegisteredQueryResultResponse for balance query
-    // TODO: come up with something better than using large base64 string. Good enough for sketch btw
-    let delegations_response = "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";
-    let delegations_resp_bytes = base64::decode(delegations_response).unwrap();
+    let delegations_response = QueryRegisteredQueryResultResponse {
+        result: MessageField::some(QueryResult {
+            kv_results: vec![
+            StorageValue {
+                storage_prefix: "staking".to_string(),
+                key: decode_hex("311420a959e0d22e201f727137f2d7c41a5dc63b90b8141ab940697a73dd080edafeb538ad408b5cae0264").unwrap(),
+                value: base64::decode("Citvc21vMXl6NTRuY3hqOWNzcDd1bjN4bGVkMDNxNnRocnJoeTljenRrZnpzEjJvc21vdmFsb3BlcjFyMnU1cTZ0Nncwd3Nzcms2bDY2bjN0MnEzZHcydXFueTRnajJlMxoZNTE3NzYyODAwMDAwMDAwMDAwMDAwMDAwMA==").unwrap(),
+                Proof: Default::default(),
+                special_fields: Default::default(),
+            },
+            StorageValue {
+                storage_prefix: "staking".to_string(),
+                key: decode_hex("21141ab940697a73dd080edafeb538ad408b5cae0264").unwrap(),
+                value: base64::decode("CjJvc21vdmFsb3BlcjFyMnU1cTZ0Nncwd3Nzcms2bDY2bjN0MnEzZHcydXFueTRnajJlMxJDCh0vY29zbW9zLmNyeXB0by5lZDI1NTE5LlB1YktleRIiCiCaZhCbacCetQorko3LfUUJX2UEyX38qBGVri8GyH8lcCADKg0yODQ1ODYyODQwNjQzMh8yODQ1ODYyODQwNjQzMDAwMDAwMDAwMDAwMDAwMDAwOqQCChRzdHJhbmdlbG92ZS12ZW50dXJlcxIQRDBEOEI4MEYxQzVDNzBCNRocaHR0cHM6Ly9zdHJhbmdlbG92ZS52ZW50dXJlcyrbAScuLi5iZWNhdXNlIG9mIHRoZSBhdXRvbWF0ZWQgYW5kIGlycmV2b2NhYmxlIGRlY2lzaW9uLW1ha2luZyBwcm9jZXNzIHdoaWNoIHJ1bGVzIG91dCBodW1hbiBtZWRkbGluZywgdGhlIERvb21zZGF5IG1hY2hpbmUgaXMgdGVycmlmeWluZyBhbmQgc2ltcGxlIHRvIHVuZGVyc3RhbmQgYW5kIGNvbXBsZXRlbHkgY3JlZGlibGUgYW5kIGNvbnZpbmNpbmcuJyAtIERyLiBTdHJhbmdlbG92ZUoAUkwKPAoRNTAwMDAwMDAwMDAwMDAwMDASEzEwMDAwMDAwMDAwMDAwMDAwMDAaEjUwMDAwMDAwMDAwMDAwMDAwMBIMCPetyYYGEKPoosUCWgEx").unwrap(),
+                 Proof: Default::default(),
+                special_fields: Default::default(),
+            },
+//=--------------------
+            StorageValue {
+                storage_prefix: "staking".to_string(),
+                key: decode_hex("311420a959e0d22e201f727137f2d7c41a5dc63b90b814cc9598513212c12c36a1775e2233b962e4d5128e").unwrap(),
+                value: base64::decode("Citvc21vMXl6NTRuY3hqOWNzcDd1bjN4bGVkMDNxNnRocnJoeTljenRrZnpzEjJvc21vdmFsb3BlcjFlajJlczVmanp0cWpjZDRwd2Ewenl2YWV2dGpkMnk1dzM3d3I5dBoaMjk2MjAyMjEwMDAwMDAwMDAwMDAwMDAwMDA=").unwrap(),
+                Proof: Default::default(),
+                special_fields: Default::default(),
+            },
+            StorageValue {
+                storage_prefix: "staking".to_string(),
+                key: decode_hex("2114cc9598513212c12c36a1775e2233b962e4d5128e").unwrap(),
+                value: base64::decode("CjJvc21vdmFsb3BlcjFlajJlczVmanp0cWpjZDRwd2Ewenl2YWV2dGpkMnk1dzM3d3I5dBJDCh0vY29zbW9zLmNyeXB0by5lZDI1NTE5LlB1YktleRIiCiA27dgAuZV/uS9FdsILGWLBw8eYPy+ZEyv1Df2VsrjXDiADKg0zMDU0NDc3MjU5MDM4Mh8zMDU0NDc3MjU5MDM4MDAwMDAwMDAwMDAwMDAwMDAwOoEBChFGcmVucyAo8J+knSzwn6SdKRIQQzQ3ODQ1MjI2NjYyQUY0NxoSaHR0cHM6Ly9mcmVucy5hcm15IhtzZWN1cml0eUBraWRzb250aGVibG9jay54eXoqKVlvdXIgZnJpZW5kbHkgdmFsaWRhdG9yIGZvciBjb3Ntb3MgY2hhaW5zQP3HpQFKCwj3zq6PBhCfrO86UkoKOgoRNTAwMDAwMDAwMDAwMDAwMDASEjUwMDAwMDAwMDAwMDAwMDAwMBoRNTAwMDAwMDAwMDAwMDAwMDASDAjg1rSQBhDkudCDAVoDNTAw").unwrap(),
+                Proof: Default::default(),
+                special_fields: Default::default(),
+            },
+                //===================
+            StorageValue {
+                storage_prefix: "staking".to_string(),
+                key: decode_hex("311420a959e0d22e201f727137f2d7c41a5dc63b90b814f8aff987b760a6e4b2b2df48a5a3b7ed2db15006").unwrap(),
+                value: base64::decode("Citvc21vMXl6NTRuY3hqOWNzcDd1bjN4bGVkMDNxNnRocnJoeTljenRrZnpzEjJvc21vdmFsb3BlcjFsemhsbnBhaHZ6bndmdjRqbWF5MnRnYWhhNWttejVxeHdtajl3ZRoYMjE5OTIwMDAwMDAwMDAwMDAwMDAwMDAw").unwrap(),
+                Proof: Default::default(),
+                special_fields: Default::default(),
+            },
+            StorageValue {
+                storage_prefix: "staking".to_string(),
+                key: decode_hex("2114f8aff987b760a6e4b2b2df48a5a3b7ed2db15006").unwrap(),
+                value: base64::decode("CjJvc21vdmFsb3BlcjFsemhsbnBhaHZ6bndmdjRqbWF5MnRnYWhhNWttejVxeHdtajl3ZRJDCh0vY29zbW9zLmNyeXB0by5lZDI1NTE5LlB1YktleRIiCiBPXCnkQvO+pU6oGbp4ZiJBBZ7RNoLYtXYFOEdpXGH+uSADKg0zMjAxNDM4ODk4NDc2Mh8zMjAxNDM4ODk4NDc2MDAwMDAwMDAwMDAwMDAwMDAwOp8CCgtDaXRhZGVsLm9uZRIQRUJCMDNFQjRCQjRDRkNBNxoTaHR0cHM6Ly9jaXRhZGVsLm9uZSroAUNpdGFkZWwub25lIGlzIGEgbXVsdGktYXNzZXQgbm9uLWN1c3RvZGlhbCBzdGFraW5nIHBsYXRmb3JtIHRoYXQgbGV0cyBhbnlvbmUgYmVjb21lIGEgcGFydCBvZiBkZWNlbnRyYWxpemVkIGluZnJhc3RydWN0dXJlIGFuZCBlYXJuIHBhc3NpdmUgaW5jb21lLiBTdGFrZSB3aXRoIG91ciBub2RlcyBvciBhbnkgb3RoZXIgdmFsaWRhdG9yIGFjcm9zcyBtdWx0aXBsZSBuZXR3b3JrcyBpbiBhIGZldyBjbGlja3NKAFJECjoKETUwMDAwMDAwMDAwMDAwMDAwEhIyMDAwMDAwMDAwMDAwMDAwMDAaETMwMDAwMDAwMDAwMDAwMDAwEgYIkKKzhgZaATE=").unwrap(),
+                Proof: Default::default(),
+                special_fields: Default::default(),
+            }
+            ],
+            blocks: vec![],
+            height: 0,
+            revision: 0,
+            special_fields: Default::default(),
+        }),
+        special_fields: Default::default(),
+    };
 
     deps.querier.add_stargate_response(
         QUERY_REGISTERED_QUERY_RESULT_PATH.to_string(),
-        delegations_resp_bytes,
+        delegations_response.write_to_bytes().unwrap(),
     );
 
     let registered_query = build_registered_query_response(1, keys, QueryType::KV.into(), 987);
@@ -182,17 +239,17 @@ fn test_query_delegator_delegations() {
                 Delegation {
                     delegator: Addr::unchecked("osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs"),
                     validator: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3".to_string(),
-                    amount: Default::default()
+                    amount: Coin::new(5177628u128, "kek".to_string())
                 },
                 Delegation {
                     delegator: Addr::unchecked("osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs"),
                     validator: "osmovaloper1ej2es5fjztqjcd4pwa0zyvaevtjd2y5w37wr9t".to_string(),
-                    amount: Default::default()
+                    amount: Coin::new(29620221u128, "kek".to_string())
                 },
                 Delegation {
                     delegator: Addr::unchecked("osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs"),
                     validator: "osmovaloper1lzhlnpahvznwfv4jmay2tgaha5kmz5qxwmj9we".to_string(),
-                    amount: Default::default()
+                    amount: Coin::new(219920u128, "kek".to_string())
                 }
             ],
         }

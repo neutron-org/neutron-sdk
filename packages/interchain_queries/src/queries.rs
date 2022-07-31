@@ -1,28 +1,23 @@
 use crate::error::{ContractError, ContractResult};
 use crate::types::{
-    protobuf_coin_to_std_coin, QueryType, COSMOS_SDK_TRANSFER_MSG_URL, DELEGATION_KEY,
-    QUERY_REGISTERED_QUERY_PATH, QUERY_REGISTERED_QUERY_RESULT_PATH,
+    protobuf_coin_to_std_coin, Balances, Delegations, KVReconstruct, KVResult, QueryType,
+    COSMOS_SDK_TRANSFER_MSG_URL, QUERY_REGISTERED_QUERY_PATH, QUERY_REGISTERED_QUERY_RESULT_PATH,
     QUERY_REGISTERED_QUERY_TRANSACTIONS_RESULT_PATH,
 };
-use crate::types::{
-    DelegatorDelegationsResponse, QueryBalanceResponse, Transfer, TransfersResponse,
-};
 use cosmos_sdk_proto::cosmos::bank::v1beta1::MsgSend;
-use cosmos_sdk_proto::cosmos::base::v1beta1::Coin as CosmosCoin;
-use cosmos_sdk_proto::cosmos::staking::v1beta1::Delegation;
 use cosmos_sdk_proto::cosmos::tx::v1beta1::{TxBody, TxRaw};
-use cosmwasm_std::{to_binary, Addr, Binary, Coin, Deps, Env, Uint128};
+use cosmwasm_std::{to_binary, Binary, Coin, Deps, Env};
 use stargate::interchain::interchainqueries_query::{
     QueryRegisteredQueryRequest, QueryRegisteredQueryResponse, QueryRegisteredQueryResultRequest,
     QueryRegisteredQueryResultResponse, QuerySubmittedTransactionsRequest,
     QuerySubmittedTransactionsResponse,
 };
 
+use crate::msg::{DelegatorDelegationsResponse, QueryBalanceResponse, Transfer, TransfersResponse};
 use prost::Message as ProstMessage;
 use protobuf::Message;
 use stargate::make_stargate_query;
 use std::io::Cursor;
-use std::str::FromStr;
 
 fn parse_and_check_query_type(actual: String, expected: QueryType) -> ContractResult<QueryType> {
     if let Some(t) = QueryType::try_from_str(&actual) {
@@ -99,46 +94,42 @@ fn get_interchain_query_transactions_search_response(
     Ok(interchain_query_result)
 }
 
-/// Returns balance of account on remote chain for particular denom
-pub fn query_balance(deps: Deps, _env: Env, registered_query_id: u64) -> ContractResult<Binary> {
-    let registered_query = get_registered_query(deps, registered_query_id)?;
+pub fn query_kv_result<T: KVReconstruct>(
+    deps: Deps,
+    registered_query: QueryRegisteredQueryResponse,
+) -> ContractResult<T> {
     let qt = parse_and_check_query_type(
         registered_query.registered_query.query_type.clone(),
         QueryType::KV,
     )?;
 
-    let registered_query_result = get_interchain_query_result(deps, registered_query_id)?;
+    let registered_query_result =
+        get_interchain_query_result(deps, registered_query.registered_query.id)?;
 
     if registered_query_result.result.is_none() {
         return Err(ContractError::EmptyStargateResult {
             query_type: qt,
-            query_id: registered_query_id,
+            query_id: registered_query.registered_query.id,
         });
     }
 
-    #[allow(clippy::unwrap_used)]
-    for (index, result) in registered_query_result
-        .result
-        .unwrap()
-        .kv_results
-        .into_iter()
-        .enumerate()
-    {
-        if result.key == registered_query.registered_query.keys[index].key {
-            let balance: CosmosCoin = CosmosCoin::decode(Cursor::new(result.value))?;
-            let amount = Uint128::from_str(balance.amount.as_str())?;
-            return Ok(to_binary(&QueryBalanceResponse {
-                last_submitted_local_height: registered_query
-                    .registered_query
-                    .last_submitted_result_local_height,
-                amount: Coin::new(amount.u128(), balance.denom),
-            })?);
-        }
-    }
+    KVReconstruct::reconstruct(&KVResult::new(
+        registered_query_result.result.unwrap().kv_results,
+    ))
+}
 
-    Err(ContractError::BalanceNotFound {
-        query_id: registered_query_id,
-    })
+/// Returns balance of account on remote chain for particular denom
+pub fn query_balance(deps: Deps, _env: Env, registered_query_id: u64) -> ContractResult<Binary> {
+    let registered_query = get_registered_query(deps, registered_query_id)?;
+
+    let balances: Balances = query_kv_result(deps, registered_query.clone())?;
+
+    return Ok(to_binary(&QueryBalanceResponse {
+        last_submitted_local_height: registered_query
+            .registered_query
+            .last_submitted_result_local_height,
+        balances,
+    })?);
 }
 
 /// Returns delegations of particular delegator on remote chain
@@ -148,44 +139,11 @@ pub fn query_delegations(
     registered_query_id: u64,
 ) -> ContractResult<Binary> {
     let registered_query = get_registered_query(deps, registered_query_id)?;
-    let qt = parse_and_check_query_type(
-        registered_query.registered_query.query_type.clone(),
-        QueryType::KV,
-    )?;
 
-    let registered_query_result = get_interchain_query_result(deps, registered_query_id)?;
-
-    if registered_query_result.result.is_none() {
-        return Err(ContractError::EmptyStargateResult {
-            query_type: qt,
-            query_id: registered_query_id,
-        });
-    }
-
-    let mut delegations: Vec<cosmwasm_std::Delegation> = vec![];
-    #[allow(clippy::unwrap_used)]
-    for (index, result) in registered_query_result
-        .result
-        .unwrap()
-        .kv_results
-        .into_iter()
-        .enumerate()
-    {
-        if result.key == registered_query.registered_query.keys[index].key {
-            if result.key.starts_with(&[DELEGATION_KEY]) {
-                let delegation_sdk: Delegation = Delegation::decode(Cursor::new(result.value))?;
-                let delegation_std = cosmwasm_std::Delegation {
-                    delegator: Addr::unchecked(delegation_sdk.delegator_address.as_str()),
-                    validator: delegation_sdk.validator_address,
-                    amount: Default::default(), // TODO:
-                };
-                delegations.push(delegation_std);
-            }
-        }
-    }
+    let delegations: Delegations = query_kv_result(deps, registered_query.clone())?;
 
     Ok(to_binary(&DelegatorDelegationsResponse {
-        delegations,
+        delegations: delegations.delegations,
         last_submitted_local_height: registered_query
             .registered_query
             .last_submitted_result_local_height,
