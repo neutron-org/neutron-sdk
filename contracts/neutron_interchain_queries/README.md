@@ -80,7 +80,7 @@ Inside the `neutron-contracts` directory execute `bash test_kv_query_result.sh` 
 
 Then check for the handler logs:
 ```
-cat $PWD/neutron/data/test-1.log | grep WASMDEBUG
+cat ../neutron/data/test-1.log | grep WASMDEBUG
 ```
 
 You are looking for lines like:
