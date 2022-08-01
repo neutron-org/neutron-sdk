@@ -35,8 +35,9 @@ pub fn make_stargate_query<T: Message>(
         data: Binary::from(encoded_query_data),
     })
     .map_err(|serialize_err| {
-        StdError::generic_err(format!("Serializing QueryRequest: {}", serialize_err))
+        StdError::generic_err(format!("Serializing QueryRequest: {:?}", serialize_err))
     })?;
+
     match deps.querier.raw_query(&raw) {
         SystemResult::Err(system_err) => {
             return Err(StdError::generic_err(format!(

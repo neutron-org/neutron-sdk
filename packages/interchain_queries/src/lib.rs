@@ -18,4 +18,5 @@ pub mod queries;
 pub mod register_queries;
 pub mod reply;
 pub mod storage;
+pub mod sudo;
 pub mod types;
