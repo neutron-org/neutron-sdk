@@ -431,9 +431,11 @@ name = "neutron_interchain_queries"
 version = "0.1.0"
 dependencies = [
  "base64",
+ "cosmos-sdk-proto",
  "cosmwasm-schema",
  "cosmwasm-std",
  "interchain_queries",
+ "prost",
  "protobuf",
  "schemars",
  "serde",

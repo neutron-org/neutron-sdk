@@ -42,3 +42,5 @@ protobuf = { version = "3", features = ["with-bytes"] }
 
 [dev-dependencies]
 cosmwasm-schema = { version = "1.0.0", default-features = false }
+prost = "0.10"
+cosmos-sdk-proto = { version = "0.12.2", default-features = false }

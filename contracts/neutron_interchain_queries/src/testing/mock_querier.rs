@@ -17,8 +17,12 @@ use cosmwasm_std::{
     from_slice, Binary, Coin, ContractResult, CustomQuery, FullDelegation, OwnedDeps, Querier,
     QuerierResult, QueryRequest, SystemError, SystemResult, Uint128, Validator,
 };
+use interchain_queries::custom_queries::InterchainQueries;
+
 use schemars::JsonSchema;
+
 use serde::{Deserialize, Serialize};
+
 use std::collections::HashMap;
 use std::marker::PhantomData;
 
@@ -33,7 +37,7 @@ impl CustomQuery for CustomQueryWrapper {}
 
 pub fn mock_dependencies(
     contract_balance: &[Coin],
-) -> OwnedDeps<MockStorage, MockApi, WasmMockQuerier> {
+) -> OwnedDeps<MockStorage, MockApi, WasmMockQuerier, InterchainQueries> {
     let contract_addr = MOCK_CONTRACT_ADDR;
     let custom_querier: WasmMockQuerier =
         WasmMockQuerier::new(MockQuerier::new(&[(contract_addr, contract_balance)]));
@@ -47,13 +51,14 @@ pub fn mock_dependencies(
 }
 
 pub struct WasmMockQuerier {
-    base: MockQuerier<CustomQueryWrapper>,
-    stargare_responses: HashMap<String, Vec<u8>>,
+    base: MockQuerier<InterchainQueries>,
+    query_reponses: HashMap<u64, Binary>,
+    registred_queries: HashMap<u64, Binary>,
 }
 
 impl Querier for WasmMockQuerier {
     fn raw_query(&self, bin_request: &[u8]) -> QuerierResult {
-        let request: QueryRequest<CustomQueryWrapper> = match from_slice(bin_request) {
+        let request: QueryRequest<InterchainQueries> = match from_slice(bin_request) {
             Ok(v) => v,
             Err(e) => {
                 return QuerierResult::Err(SystemError::InvalidRequest {
@@ -67,18 +72,23 @@ impl Querier for WasmMockQuerier {
 }
 
 impl WasmMockQuerier {
-    pub fn handle_query(&self, request: &QueryRequest<CustomQueryWrapper>) -> QuerierResult {
+    pub fn handle_query(&self, request: &QueryRequest<InterchainQueries>) -> QuerierResult {
         match &request {
-            QueryRequest::Stargate { path, data } => {
-                if !self.stargare_responses.contains_key(path) {
-                    return SystemResult::Err(SystemError::InvalidRequest {
-                        error: format!("invalid path {}", path),
-                        request: data.clone(),
-                    });
-                }
-                SystemResult::Ok(ContractResult::Ok(Binary::from(
-                    self.stargare_responses.get(path).unwrap().clone(),
-                )))
+            QueryRequest::Custom(InterchainQueries::InterchainQueryResult { query_id }) => {
+                SystemResult::Ok(ContractResult::Ok(
+                    (*self.query_reponses.get(query_id).unwrap()).clone(),
+                ))
+            }
+            QueryRequest::Custom(InterchainQueries::RegisteredInterchainQuery { query_id }) => {
+                SystemResult::Ok(ContractResult::Ok(
+                    (*self.registred_queries.get(query_id).unwrap()).clone(),
+                ))
+            }
+            QueryRequest::Custom(InterchainQueries::RegisteredInterchainQueries {}) => {
+                todo!()
+            }
+            QueryRequest::Custom(InterchainQueries::InterchainAccountAddress { .. }) => {
+                todo!()
             }
             _ => self.base.handle_query(request),
         }
@@ -93,8 +103,11 @@ impl WasmMockQuerier {
         self.base.update_staking(denom, validators, delegations);
     }
 
-    pub fn add_stargate_response(&mut self, path: String, response: Vec<u8>) {
-        self.stargare_responses.insert(path, response);
+    pub fn add_query_response(&mut self, query_id: u64, response: Binary) {
+        self.query_reponses.insert(query_id, response);
+    }
+    pub fn add_registred_queries(&mut self, query_id: u64, response: Binary) {
+        self.registred_queries.insert(query_id, response);
     }
 }
 
@@ -109,10 +122,11 @@ pub struct TokenQuerier {
 }
 
 impl WasmMockQuerier {
-    pub fn new(base: MockQuerier<CustomQueryWrapper>) -> Self {
+    pub fn new(base: MockQuerier<InterchainQueries>) -> Self {
         WasmMockQuerier {
             base,
-            stargare_responses: HashMap::new(),
+            query_reponses: HashMap::new(),
+            registred_queries: HashMap::new(),
         }
     }
 }

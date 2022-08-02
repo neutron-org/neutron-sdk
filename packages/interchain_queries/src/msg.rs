@@ -46,6 +46,9 @@ pub enum QueryMsg {
         zone_id: String,
         delegator: String,
     },
+    GetRegisteredQuery {
+        query_id: u64,
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
