@@ -17,10 +17,9 @@ use cosmwasm_std::entry_point;
 
 use cosmwasm_std::{Binary, Deps, DepsMut, Env, MessageInfo, Reply, Response, StdResult};
 
-use interchain_queries::custom_queries::InterchainQueries;
 use interchain_queries::error::{ContractError, ContractResult};
 use interchain_queries::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
-use interchain_queries::queries::{query_balance, query_delegations, query_registered_query};
+use interchain_queries::queries::{query_balance, query_delegations, query_transfer_transactions};
 use interchain_queries::register_queries::{
     register_balance_query, register_delegator_delegations_query, register_transfers_query,
 };
@@ -96,7 +95,7 @@ pub fn reply(deps: DepsMut<InterchainQueries>, env: Env, msg: Reply) -> Contract
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> ContractResult<Binary> {
     match msg {
-        //TODO: check if query.result.height is too old (for all interchain queries)
+        // TODO: check if query.result.height is too old (for all interchain queries)
         QueryMsg::Balance {
             zone_id,
             addr,
@@ -105,7 +104,6 @@ pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> Contract
         QueryMsg::GetDelegations { zone_id, delegator } => {
             query_delegations(deps, env, zone_id, delegator)
         }
-        QueryMsg::GetTransfers { .. } => unimplemented!(),
         QueryMsg::GetRegisteredQuery { query_id } => query_registered_query(deps, query_id),
     }
 }
@@ -113,4 +111,16 @@ pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> Contract
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
     Ok(Response::default())
+}
+
+#[entry_point]
+pub fn sudo(deps: DepsMut, env: Env, msg: SudoMsg) -> ContractResult<Response> {
+    match msg {
+        SudoMsg::TxQueryResult {
+            query_id,
+            height,
+            data,
+        } => sudo_tx_query_result(deps, env, query_id, height, data),
+        _ => Ok(Response::default()),
+    }
 }
