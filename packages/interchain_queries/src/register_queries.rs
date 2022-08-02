@@ -5,7 +5,7 @@ use crate::types::{
     QUERY_BALANCE_QUERY_TYPE, QUERY_DELEGATOR_DELEGATIONS_QUERY_TYPE, QUERY_TRANSFERS,
     REGISTER_INTERCHAIN_QUERY_REPLY_ID,
 };
-use cosmwasm_std::{CosmosMsg, DepsMut, Env, Response, StdError, SubMsg};
+use cosmwasm_std::{DepsMut, Env, Response, StdError, SubMsg};
 use neutron_bindings::NeutronMsg;
 use schemars::_serde_json::to_string;
 use serde::Serialize;
@@ -54,7 +54,7 @@ where
         .add_attribute("update_period", update_period.to_string())
         .add_attribute("query_data", query_data_json_encoded.as_str())
         .add_submessage(SubMsg::reply_on_success(
-            CosmosMsg::from(register_msg),
+            register_msg,
             REGISTER_INTERCHAIN_QUERY_REPLY_ID,
         )))
 }
