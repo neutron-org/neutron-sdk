@@ -1,0 +1,143 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "NeutronMsg",
+  "description": "A number of Custom messages that can call into the Neutron bindings",
+  "oneOf": [
+    {
+      "description": "RegisterInterchainAccount registers an interchain account on remote chain",
+      "type": "object",
+      "required": [
+        "register_interchain_account"
+      ],
+      "properties": {
+        "register_interchain_account": {
+          "type": "object",
+          "required": [
+            "connection_id",
+            "interchain_account_id"
+          ],
+          "properties": {
+            "connection_id": {
+              "description": "*connection_id** is an IBC connection identifier between Neutron and remote chain",
+              "type": "string"
+            },
+            "interchain_account_id": {
+              "description": "**interchain_account_id** is an identifier of your new interchain account. Can be any string This identifier allows contracts to have multiple interchain accounts on remote chains",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "SubmitTx starts the process of executing any Cosmos-SDK *msgs* on remote chain",
+      "type": "object",
+      "required": [
+        "submit_tx"
+      ],
+      "properties": {
+        "submit_tx": {
+          "type": "object",
+          "required": [
+            "connection_id",
+            "interchain_account_id",
+            "memo",
+            "msgs"
+          ],
+          "properties": {
+            "connection_id": {
+              "description": "*connection_id** is an IBC connection identifier between Neutron and remote chain",
+              "type": "string"
+            },
+            "interchain_account_id": {
+              "description": "*interchain_account_id** is an identifier of your interchain account from which you want to execute msgs",
+              "type": "string"
+            },
+            "memo": {
+              "description": "*memo** is a memo you want to attach to your interchain transaction.It behaves like a memo in usual Cosmos transaction",
+              "type": "string"
+            },
+            "msgs": {
+              "description": "*msgs** is a list of protobuf encoded Cosmos-SDK messages you want to execute on remote chain",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ProtobufAny"
+              }
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "RegisterInterchainQuery registers an interchain query",
+      "type": "object",
+      "required": [
+        "register_interchain_query"
+      ],
+      "properties": {
+        "register_interchain_query": {
+          "type": "object",
+          "required": [
+            "connection_id",
+            "query_data",
+            "query_type",
+            "update_period",
+            "zone_id"
+          ],
+          "properties": {
+            "connection_id": {
+              "description": "*connection_id** is an IBC connection identifier between Neutron and remote chain",
+              "type": "string"
+            },
+            "query_data": {
+              "description": "*query_data** is a JSON encoded data of query;",
+              "type": "string"
+            },
+            "query_type": {
+              "description": "*query_type** is used to identify the query (i.e. /cosmos.staking.v1beta1.Query/AllDelegations)",
+              "type": "string"
+            },
+            "update_period": {
+              "description": "*update_period** is used to say how often the query must be updated.",
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "zone_id": {
+              "description": "*zone_id** is used to identify the chain of interest",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  ],
+  "definitions": {
+    "ProtobufAny": {
+      "description": "Type for wrapping any protobuf message",
+      "type": "object",
+      "required": [
+        "type_url",
+        "value"
+      ],
+      "properties": {
+        "type_url": {
+          "description": "*type_url** describes the type of the serialized message",
+          "type": "string"
+        },
+        "value": {
+          "description": "*value** must be a valid serialized protocol buffer of the above specified type",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "uint8",
+            "minimum": 0.0
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,8 +1,7 @@
 use crate::error::{ContractError, ContractResult};
 use crate::storage::{REGISTERED_INTERCHAIN_QUERIES, TMP_REGISTER_INTERCHAIN_QUERY_REQUEST};
-use cosmwasm_std::{DepsMut, Env, Reply, Response, SubMsgResult};
-use protobuf::Message;
-use stargate::interchain::interchainqueries_tx::MsgRegisterInterchainQueryResponse;
+use cosmwasm_std::{from_binary, DepsMut, Env, Reply, Response, SubMsgResult};
+use neutron_bindings::MsgRegisterInterchainQueryResponse;
 
 pub fn register_interchain_query_reply_handler(
     deps: DepsMut,
@@ -18,7 +17,7 @@ pub fn register_interchain_query_reply_handler(
                 Some(data) => data,
             };
             let register_interchain_query_response: MsgRegisterInterchainQueryResponse =
-                Message::parse_from_bytes(result_data.as_slice())?;
+                from_binary(&result_data)?;
 
             REGISTERED_INTERCHAIN_QUERIES.save(
                 deps.storage,

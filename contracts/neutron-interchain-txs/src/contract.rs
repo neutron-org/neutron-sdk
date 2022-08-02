@@ -17,19 +17,19 @@ use cosmos_sdk_proto::cosmos::staking::v1beta1::{MsgDelegate, MsgUndelegateRespo
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    from_binary, to_binary, to_vec, Binary, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Reply,
-    Response, StdError, StdResult, Storage, SubMsg,
+    from_binary, to_vec, Binary, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Reply, Response,
+    StdError, StdResult, Storage, SubMsg,
 };
 use interchain_txs::helpers::{parse_item, parse_response};
 use interchain_txs::msg::SudoMsg;
 use interchain_txs::storage::RequestPacket;
+use neutron_bindings::{NeutronMsg, ProtobufAny};
 use prost::Message;
-use prost_types::Any;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::error::ContractResult;
-use crate::msg::{ExecuteMsg, MsgSubmitTx};
+use crate::msg::ExecuteMsg;
 use crate::msg::{InstantiateMsg, MigrateMsg};
 use crate::storage::{
     IBC_SUDO_ID_RANGE_END, IBC_SUDO_ID_RANGE_START, REPLY_QUEUE_ID, SUDO_PAYLOAD,
@@ -47,8 +47,10 @@ pub fn instantiate(
     _env: Env,
     _info: MessageInfo,
     _msg: InstantiateMsg,
-) -> ContractResult<Response> {
-    Ok(Response::default())
+) -> ContractResult<Response<NeutronMsg>> {
+    let register =
+        NeutronMsg::register_interchain_account("connection-0".to_string(), "1".to_string());
+    Ok(Response::new().add_message(register))
 }
 
 #[entry_point]
@@ -57,7 +59,7 @@ pub fn execute(
     env: Env,
     _: MessageInfo,
     msg: ExecuteMsg,
-) -> StdResult<Response<MsgSubmitTx>> {
+) -> StdResult<Response<NeutronMsg>> {
     deps.api
         .debug(format!("WASMDEBUG: execute: received msg: {:?}", msg).as_str());
     match msg {
@@ -100,11 +102,11 @@ fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
 
 fn execute_delegate(
     mut deps: DepsMut,
-    env: Env,
+    _env: Env,
     from: String,
     to: String,
     amount: u128,
-) -> StdResult<Response<MsgSubmitTx>> {
+) -> StdResult<Response<NeutronMsg>> {
     let delegate_msg = MsgDelegate {
         delegator_address: from,
         validator_address: to,
@@ -120,24 +122,17 @@ fn execute_delegate(
         return Err(StdError::generic_err(format!("Encode error: {}", e)));
     }
 
-    let any_msg = Any {
+    let any_msg = ProtobufAny {
         type_url: "/cosmos.staking.v1beta1.MsgDelegate".to_string(),
         value: buf,
     };
 
-    let mut buf = Vec::new();
-    buf.reserve(any_msg.encoded_len());
-    if let Err(e) = delegate_msg.encode(&mut buf) {
-        return Err(StdError::generic_err(format!("Encode error: {}", e)));
-    }
-
-    let cosmos_msg = CosmosMsg::Custom(MsgSubmitTx {
-        from_address: env.contract.address.to_string(),
-        connection_id: "connection-0".to_string(),
-        msgs: vec![to_binary(&buf)?],
-        owner: env.contract.address.to_string(),
-        memo: "".to_string(),
-    });
+    let cosmos_msg = NeutronMsg::submit_tx(
+        "connection-0".to_string(),
+        "1".to_string(),
+        vec![any_msg],
+        "".to_string(),
+    );
 
     let submsg = msg_with_sudo_callback(
         deps.branch(),

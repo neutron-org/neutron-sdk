@@ -1,7 +1,5 @@
-use crate::interchain::interchainaccounts_tx::MsgSubmitTx;
 use cosmwasm_std::{
-    to_vec, Binary, ContractResult, CosmosMsg, Deps, Empty, QueryRequest, StdError, StdResult,
-    SystemResult,
+    to_vec, Binary, ContractResult, Deps, Empty, QueryRequest, StdError, StdResult, SystemResult,
 };
 use protobuf::Message;
 
@@ -35,8 +33,9 @@ pub fn make_stargate_query<T: Message>(
         data: Binary::from(encoded_query_data),
     })
     .map_err(|serialize_err| {
-        StdError::generic_err(format!("Serializing QueryRequest: {}", serialize_err))
+        StdError::generic_err(format!("Serializing QueryRequest: {:?}", serialize_err))
     })?;
+
     match deps.querier.raw_query(&raw) {
         SystemResult::Err(system_err) => {
             return Err(StdError::generic_err(format!(
@@ -54,16 +53,4 @@ pub fn make_stargate_query<T: Message>(
         SystemResult::Ok(ContractResult::Ok(value)) => Message::parse_from_bytes(value.as_slice())
             .map_err(|e| StdError::generic_err(format!("Protobuf parsing error: {}", e))),
     }
-}
-
-/// Composes a protobuf encoded message (to be sent via stargate) for submitting an interchain transaction
-pub fn make_stargate_tx(message: MsgSubmitTx) -> StdResult<CosmosMsg> {
-    Ok(CosmosMsg::Stargate {
-        type_url: SUBMIT_INTERCHAIN_TX_PATH.to_string(),
-        value: Binary::from(
-            message
-                .write_to_bytes()
-                .map_err(|e| StdError::generic_err(e.to_string()))?,
-        ),
-    })
 }

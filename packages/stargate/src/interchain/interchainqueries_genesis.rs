@@ -29,22 +29,34 @@ const _PROTOBUF_VERSION_CHECK: () = ::protobuf::VERSION_3_1_0;
 // @@protoc_insertion_point(message:neutron.interchainadapter.interchainqueries.RegisteredQuery)
 pub struct RegisteredQuery {
     // message fields
+    ///  The unique id of the registered query.
     // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.RegisteredQuery.id)
     pub id: u64,
+    ///  The address that registered the query.
+    // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.RegisteredQuery.owner)
+    pub owner: ::std::string::String,
+    ///  The JSON encoded data of the query.
     // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.RegisteredQuery.query_data)
     pub query_data: ::std::string::String,
+    ///  The query type identifier (i.e. /cosmos.staking.v1beta1.Query/AllDelegations).
     // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.RegisteredQuery.query_type)
     pub query_type: ::std::string::String,
+    ///  The chain of interest identifier.
     // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.RegisteredQuery.zone_id)
     pub zone_id: ::std::string::String,
+    ///  The IBC connection ID for getting ConsensusState to verify proofs.
     // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.RegisteredQuery.connection_id)
     pub connection_id: ::std::string::String,
+    ///   Parameter that defines how often the query must be updated.
     // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.RegisteredQuery.update_period)
     pub update_period: u64,
+    ///  The local height when the event to update the query result was emitted last time.
     // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.RegisteredQuery.last_emitted_height)
     pub last_emitted_height: u64,
+    ///  The local chain last block height when the query's result was updated.
     // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.RegisteredQuery.last_submitted_result_local_height)
     pub last_submitted_result_local_height: u64,
+    ///  The remote chain last block height when the query's result was updated.
     // @@protoc_insertion_point(field:neutron.interchainadapter.interchainqueries.RegisteredQuery.last_submitted_result_remote_height)
     pub last_submitted_result_remote_height: u64,
     // special fields
@@ -64,12 +76,17 @@ impl RegisteredQuery {
     }
 
     fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
-        let mut fields = ::std::vec::Vec::with_capacity(9);
+        let mut fields = ::std::vec::Vec::with_capacity(10);
         let mut oneofs = ::std::vec::Vec::with_capacity(0);
         fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
             "id",
             |m: &RegisteredQuery| { &m.id },
             |m: &mut RegisteredQuery| { &mut m.id },
+        ));
+        fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
+            "owner",
+            |m: &RegisteredQuery| { &m.owner },
+            |m: &mut RegisteredQuery| { &mut m.owner },
         ));
         fields.push(::protobuf::reflect::rt::v2::make_simpler_field_accessor::<_, _>(
             "query_data",
@@ -133,27 +150,30 @@ impl ::protobuf::Message for RegisteredQuery {
                     self.id = is.read_uint64()?;
                 },
                 18 => {
-                    self.query_data = is.read_string()?;
+                    self.owner = is.read_string()?;
                 },
                 26 => {
-                    self.query_type = is.read_string()?;
+                    self.query_data = is.read_string()?;
                 },
                 34 => {
-                    self.zone_id = is.read_string()?;
+                    self.query_type = is.read_string()?;
                 },
                 42 => {
+                    self.zone_id = is.read_string()?;
+                },
+                50 => {
                     self.connection_id = is.read_string()?;
                 },
-                48 => {
+                56 => {
                     self.update_period = is.read_uint64()?;
                 },
-                56 => {
+                64 => {
                     self.last_emitted_height = is.read_uint64()?;
                 },
-                64 => {
+                72 => {
                     self.last_submitted_result_local_height = is.read_uint64()?;
                 },
-                72 => {
+                80 => {
                     self.last_submitted_result_remote_height = is.read_uint64()?;
                 },
                 tag => {
@@ -171,29 +191,32 @@ impl ::protobuf::Message for RegisteredQuery {
         if self.id != 0 {
             my_size += ::protobuf::rt::uint64_size(1, self.id);
         }
+        if !self.owner.is_empty() {
+            my_size += ::protobuf::rt::string_size(2, &self.owner);
+        }
         if !self.query_data.is_empty() {
-            my_size += ::protobuf::rt::string_size(2, &self.query_data);
+            my_size += ::protobuf::rt::string_size(3, &self.query_data);
         }
         if !self.query_type.is_empty() {
-            my_size += ::protobuf::rt::string_size(3, &self.query_type);
+            my_size += ::protobuf::rt::string_size(4, &self.query_type);
         }
         if !self.zone_id.is_empty() {
-            my_size += ::protobuf::rt::string_size(4, &self.zone_id);
+            my_size += ::protobuf::rt::string_size(5, &self.zone_id);
         }
         if !self.connection_id.is_empty() {
-            my_size += ::protobuf::rt::string_size(5, &self.connection_id);
+            my_size += ::protobuf::rt::string_size(6, &self.connection_id);
         }
         if self.update_period != 0 {
-            my_size += ::protobuf::rt::uint64_size(6, self.update_period);
+            my_size += ::protobuf::rt::uint64_size(7, self.update_period);
         }
         if self.last_emitted_height != 0 {
-            my_size += ::protobuf::rt::uint64_size(7, self.last_emitted_height);
+            my_size += ::protobuf::rt::uint64_size(8, self.last_emitted_height);
         }
         if self.last_submitted_result_local_height != 0 {
-            my_size += ::protobuf::rt::uint64_size(8, self.last_submitted_result_local_height);
+            my_size += ::protobuf::rt::uint64_size(9, self.last_submitted_result_local_height);
         }
         if self.last_submitted_result_remote_height != 0 {
-            my_size += ::protobuf::rt::uint64_size(9, self.last_submitted_result_remote_height);
+            my_size += ::protobuf::rt::uint64_size(10, self.last_submitted_result_remote_height);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
         self.special_fields.cached_size().set(my_size as u32);
@@ -204,29 +227,32 @@ impl ::protobuf::Message for RegisteredQuery {
         if self.id != 0 {
             os.write_uint64(1, self.id)?;
         }
+        if !self.owner.is_empty() {
+            os.write_string(2, &self.owner)?;
+        }
         if !self.query_data.is_empty() {
-            os.write_string(2, &self.query_data)?;
+            os.write_string(3, &self.query_data)?;
         }
         if !self.query_type.is_empty() {
-            os.write_string(3, &self.query_type)?;
+            os.write_string(4, &self.query_type)?;
         }
         if !self.zone_id.is_empty() {
-            os.write_string(4, &self.zone_id)?;
+            os.write_string(5, &self.zone_id)?;
         }
         if !self.connection_id.is_empty() {
-            os.write_string(5, &self.connection_id)?;
+            os.write_string(6, &self.connection_id)?;
         }
         if self.update_period != 0 {
-            os.write_uint64(6, self.update_period)?;
+            os.write_uint64(7, self.update_period)?;
         }
         if self.last_emitted_height != 0 {
-            os.write_uint64(7, self.last_emitted_height)?;
+            os.write_uint64(8, self.last_emitted_height)?;
         }
         if self.last_submitted_result_local_height != 0 {
-            os.write_uint64(8, self.last_submitted_result_local_height)?;
+            os.write_uint64(9, self.last_submitted_result_local_height)?;
         }
         if self.last_submitted_result_remote_height != 0 {
-            os.write_uint64(9, self.last_submitted_result_remote_height)?;
+            os.write_uint64(10, self.last_submitted_result_remote_height)?;
         }
         os.write_unknown_fields(self.special_fields.unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -246,6 +272,7 @@ impl ::protobuf::Message for RegisteredQuery {
 
     fn clear(&mut self) {
         self.id = 0;
+        self.owner.clear();
         self.query_data.clear();
         self.query_type.clear();
         self.zone_id.clear();
@@ -260,6 +287,7 @@ impl ::protobuf::Message for RegisteredQuery {
     fn default_instance() -> &'static RegisteredQuery {
         static instance: RegisteredQuery = RegisteredQuery {
             id: 0,
+            owner: ::std::string::String::new(),
             query_data: ::std::string::String::new(),
             query_type: ::std::string::String::new(),
             zone_id: ::std::string::String::new(),
@@ -293,48 +321,65 @@ impl ::protobuf::reflect::ProtobufValue for RegisteredQuery {
 
 static file_descriptor_proto_data: &'static [u8] = b"\
     \n1interchainqueries/interchainqueries_genesis.proto\x12+neutron.interch\
-    ainadapter.interchainqueries\"\x8c\x03\n\x0fRegisteredQuery\x12\x0e\n\
-    \x02id\x18\x01\x20\x01(\x04R\x02id\x12\x1d\n\nquery_data\x18\x02\x20\x01\
-    (\tR\tqueryData\x12\x1d\n\nquery_type\x18\x03\x20\x01(\tR\tqueryType\x12\
-    \x17\n\x07zone_id\x18\x04\x20\x01(\tR\x06zoneId\x12#\n\rconnection_id\
-    \x18\x05\x20\x01(\tR\x0cconnectionId\x12#\n\rupdate_period\x18\x06\x20\
-    \x01(\x04R\x0cupdatePeriod\x12.\n\x13last_emitted_height\x18\x07\x20\x01\
-    (\x04R\x11lastEmittedHeight\x12J\n\"last_submitted_result_local_height\
-    \x18\x08\x20\x01(\x04R\x1elastSubmittedResultLocalHeight\x12L\n#last_sub\
-    mitted_result_remote_height\x18\t\x20\x01(\x04R\x1flastSubmittedResultRe\
-    moteHeightJ\xaa\x05\n\x06\x12\x04\0\0\x0e\x01\n\x08\n\x01\x0c\x12\x03\0\
-    \0\x12\n\x08\n\x01\x02\x12\x03\x01\04\n\n\n\x02\x04\0\x12\x04\x03\0\x0e\
-    \x01\n\n\n\x03\x04\0\x01\x12\x03\x03\x08\x17\n\x0b\n\x04\x04\0\x02\0\x12\
-    \x03\x04\x02\x10\n\r\n\x05\x04\0\x02\0\x04\x12\x04\x04\x02\x03\x19\n\x0c\
-    \n\x05\x04\0\x02\0\x05\x12\x03\x04\x02\x08\n\x0c\n\x05\x04\0\x02\0\x01\
-    \x12\x03\x04\t\x0b\n\x0c\n\x05\x04\0\x02\0\x03\x12\x03\x04\x0e\x0f\n\x0b\
-    \n\x04\x04\0\x02\x01\x12\x03\x05\x02\x18\n\r\n\x05\x04\0\x02\x01\x04\x12\
-    \x04\x05\x02\x04\x10\n\x0c\n\x05\x04\0\x02\x01\x05\x12\x03\x05\x02\x08\n\
-    \x0c\n\x05\x04\0\x02\x01\x01\x12\x03\x05\t\x13\n\x0c\n\x05\x04\0\x02\x01\
-    \x03\x12\x03\x05\x16\x17\n\x0b\n\x04\x04\0\x02\x02\x12\x03\x06\x02\x18\n\
-    \r\n\x05\x04\0\x02\x02\x04\x12\x04\x06\x02\x05\x18\n\x0c\n\x05\x04\0\x02\
-    \x02\x05\x12\x03\x06\x02\x08\n\x0c\n\x05\x04\0\x02\x02\x01\x12\x03\x06\t\
-    \x13\n\x0c\n\x05\x04\0\x02\x02\x03\x12\x03\x06\x16\x17\n\x0b\n\x04\x04\0\
-    \x02\x03\x12\x03\x07\x02\x15\n\r\n\x05\x04\0\x02\x03\x04\x12\x04\x07\x02\
-    \x06\x18\n\x0c\n\x05\x04\0\x02\x03\x05\x12\x03\x07\x02\x08\n\x0c\n\x05\
-    \x04\0\x02\x03\x01\x12\x03\x07\t\x10\n\x0c\n\x05\x04\0\x02\x03\x03\x12\
-    \x03\x07\x13\x14\n\x0b\n\x04\x04\0\x02\x04\x12\x03\x08\x02\x1b\n\r\n\x05\
-    \x04\0\x02\x04\x04\x12\x04\x08\x02\x07\x15\n\x0c\n\x05\x04\0\x02\x04\x05\
-    \x12\x03\x08\x02\x08\n\x0c\n\x05\x04\0\x02\x04\x01\x12\x03\x08\t\x16\n\
-    \x0c\n\x05\x04\0\x02\x04\x03\x12\x03\x08\x19\x1a\n\x0b\n\x04\x04\0\x02\
-    \x05\x12\x03\t\x02\x1b\n\r\n\x05\x04\0\x02\x05\x04\x12\x04\t\x02\x08\x1b\
-    \n\x0c\n\x05\x04\0\x02\x05\x05\x12\x03\t\x02\x08\n\x0c\n\x05\x04\0\x02\
-    \x05\x01\x12\x03\t\t\x16\n\x0c\n\x05\x04\0\x02\x05\x03\x12\x03\t\x19\x1a\
-    \n\x0b\n\x04\x04\0\x02\x06\x12\x03\n\x02!\n\r\n\x05\x04\0\x02\x06\x04\
-    \x12\x04\n\x02\t\x1b\n\x0c\n\x05\x04\0\x02\x06\x05\x12\x03\n\x02\x08\n\
-    \x0c\n\x05\x04\0\x02\x06\x01\x12\x03\n\t\x1c\n\x0c\n\x05\x04\0\x02\x06\
-    \x03\x12\x03\n\x1f\x20\n\x0b\n\x04\x04\0\x02\x07\x12\x03\x0c\x020\n\r\n\
-    \x05\x04\0\x02\x07\x04\x12\x04\x0c\x02\n!\n\x0c\n\x05\x04\0\x02\x07\x05\
-    \x12\x03\x0c\x02\x08\n\x0c\n\x05\x04\0\x02\x07\x01\x12\x03\x0c\t+\n\x0c\
-    \n\x05\x04\0\x02\x07\x03\x12\x03\x0c./\n\x0b\n\x04\x04\0\x02\x08\x12\x03\
-    \r\x021\n\r\n\x05\x04\0\x02\x08\x04\x12\x04\r\x02\x0c0\n\x0c\n\x05\x04\0\
-    \x02\x08\x05\x12\x03\r\x02\x08\n\x0c\n\x05\x04\0\x02\x08\x01\x12\x03\r\t\
-    ,\n\x0c\n\x05\x04\0\x02\x08\x03\x12\x03\r/0b\x06proto3\
+    ainadapter.interchainqueries\"\xa2\x03\n\x0fRegisteredQuery\x12\x0e\n\
+    \x02id\x18\x01\x20\x01(\x04R\x02id\x12\x14\n\x05owner\x18\x02\x20\x01(\t\
+    R\x05owner\x12\x1d\n\nquery_data\x18\x03\x20\x01(\tR\tqueryData\x12\x1d\
+    \n\nquery_type\x18\x04\x20\x01(\tR\tqueryType\x12\x17\n\x07zone_id\x18\
+    \x05\x20\x01(\tR\x06zoneId\x12#\n\rconnection_id\x18\x06\x20\x01(\tR\x0c\
+    connectionId\x12#\n\rupdate_period\x18\x07\x20\x01(\x04R\x0cupdatePeriod\
+    \x12.\n\x13last_emitted_height\x18\x08\x20\x01(\x04R\x11lastEmittedHeigh\
+    t\x12J\n\"last_submitted_result_local_height\x18\t\x20\x01(\x04R\x1elast\
+    SubmittedResultLocalHeight\x12L\n#last_submitted_result_remote_height\
+    \x18\n\x20\x01(\x04R\x1flastSubmittedResultRemoteHeightJ\xd2\n\n\x06\x12\
+    \x04\0\0\x18\x01\n\x08\n\x01\x0c\x12\x03\0\0\x12\n\x08\n\x01\x02\x12\x03\
+    \x01\04\n\n\n\x02\x04\0\x12\x04\x03\0\x18\x01\n\n\n\x03\x04\0\x01\x12\
+    \x03\x03\x08\x17\n5\n\x04\x04\0\x02\0\x12\x03\x05\x02\x10\x1a(\x20The\
+    \x20unique\x20id\x20of\x20the\x20registered\x20query.\n\n\r\n\x05\x04\0\
+    \x02\0\x04\x12\x04\x05\x02\x03\x19\n\x0c\n\x05\x04\0\x02\0\x05\x12\x03\
+    \x05\x02\x08\n\x0c\n\x05\x04\0\x02\0\x01\x12\x03\x05\t\x0b\n\x0c\n\x05\
+    \x04\0\x02\0\x03\x12\x03\x05\x0e\x0f\n5\n\x04\x04\0\x02\x01\x12\x03\x07\
+    \x02\x13\x1a(\x20The\x20address\x20that\x20registered\x20the\x20query.\n\
+    \n\r\n\x05\x04\0\x02\x01\x04\x12\x04\x07\x02\x05\x10\n\x0c\n\x05\x04\0\
+    \x02\x01\x05\x12\x03\x07\x02\x08\n\x0c\n\x05\x04\0\x02\x01\x01\x12\x03\
+    \x07\t\x0e\n\x0c\n\x05\x04\0\x02\x01\x03\x12\x03\x07\x11\x12\n2\n\x04\
+    \x04\0\x02\x02\x12\x03\t\x02\x18\x1a%\x20The\x20JSON\x20encoded\x20data\
+    \x20of\x20the\x20query.\n\n\r\n\x05\x04\0\x02\x02\x04\x12\x04\t\x02\x07\
+    \x13\n\x0c\n\x05\x04\0\x02\x02\x05\x12\x03\t\x02\x08\n\x0c\n\x05\x04\0\
+    \x02\x02\x01\x12\x03\t\t\x13\n\x0c\n\x05\x04\0\x02\x02\x03\x12\x03\t\x16\
+    \x17\n]\n\x04\x04\0\x02\x03\x12\x03\x0b\x02\x18\x1aP\x20The\x20query\x20\
+    type\x20identifier\x20(i.e.\x20/cosmos.staking.v1beta1.Query/AllDelegati\
+    ons).\n\n\r\n\x05\x04\0\x02\x03\x04\x12\x04\x0b\x02\t\x18\n\x0c\n\x05\
+    \x04\0\x02\x03\x05\x12\x03\x0b\x02\x08\n\x0c\n\x05\x04\0\x02\x03\x01\x12\
+    \x03\x0b\t\x13\n\x0c\n\x05\x04\0\x02\x03\x03\x12\x03\x0b\x16\x17\n0\n\
+    \x04\x04\0\x02\x04\x12\x03\r\x02\x15\x1a#\x20The\x20chain\x20of\x20inter\
+    est\x20identifier.\n\n\r\n\x05\x04\0\x02\x04\x04\x12\x04\r\x02\x0b\x18\n\
+    \x0c\n\x05\x04\0\x02\x04\x05\x12\x03\r\x02\x08\n\x0c\n\x05\x04\0\x02\x04\
+    \x01\x12\x03\r\t\x10\n\x0c\n\x05\x04\0\x02\x04\x03\x12\x03\r\x13\x14\nQ\
+    \n\x04\x04\0\x02\x05\x12\x03\x0f\x02\x1b\x1aD\x20The\x20IBC\x20connectio\
+    n\x20ID\x20for\x20getting\x20ConsensusState\x20to\x20verify\x20proofs.\n\
+    \n\r\n\x05\x04\0\x02\x05\x04\x12\x04\x0f\x02\r\x15\n\x0c\n\x05\x04\0\x02\
+    \x05\x05\x12\x03\x0f\x02\x08\n\x0c\n\x05\x04\0\x02\x05\x01\x12\x03\x0f\t\
+    \x16\n\x0c\n\x05\x04\0\x02\x05\x03\x12\x03\x0f\x19\x1a\nK\n\x04\x04\0\
+    \x02\x06\x12\x03\x11\x02\x1b\x1a>\x20\x20Parameter\x20that\x20defines\
+    \x20how\x20often\x20the\x20query\x20must\x20be\x20updated.\n\n\r\n\x05\
+    \x04\0\x02\x06\x04\x12\x04\x11\x02\x0f\x1b\n\x0c\n\x05\x04\0\x02\x06\x05\
+    \x12\x03\x11\x02\x08\n\x0c\n\x05\x04\0\x02\x06\x01\x12\x03\x11\t\x16\n\
+    \x0c\n\x05\x04\0\x02\x06\x03\x12\x03\x11\x19\x1a\n`\n\x04\x04\0\x02\x07\
+    \x12\x03\x13\x02!\x1aS\x20The\x20local\x20height\x20when\x20the\x20event\
+    \x20to\x20update\x20the\x20query\x20result\x20was\x20emitted\x20last\x20\
+    time.\n\n\r\n\x05\x04\0\x02\x07\x04\x12\x04\x13\x02\x11\x1b\n\x0c\n\x05\
+    \x04\0\x02\x07\x05\x12\x03\x13\x02\x08\n\x0c\n\x05\x04\0\x02\x07\x01\x12\
+    \x03\x13\t\x1c\n\x0c\n\x05\x04\0\x02\x07\x03\x12\x03\x13\x1f\x20\nU\n\
+    \x04\x04\0\x02\x08\x12\x03\x15\x020\x1aH\x20The\x20local\x20chain\x20las\
+    t\x20block\x20height\x20when\x20the\x20query's\x20result\x20was\x20updat\
+    ed.\n\n\r\n\x05\x04\0\x02\x08\x04\x12\x04\x15\x02\x13!\n\x0c\n\x05\x04\0\
+    \x02\x08\x05\x12\x03\x15\x02\x08\n\x0c\n\x05\x04\0\x02\x08\x01\x12\x03\
+    \x15\t+\n\x0c\n\x05\x04\0\x02\x08\x03\x12\x03\x15./\nV\n\x04\x04\0\x02\t\
+    \x12\x03\x17\x022\x1aI\x20The\x20remote\x20chain\x20last\x20block\x20hei\
+    ght\x20when\x20the\x20query's\x20result\x20was\x20updated.\n\n\r\n\x05\
+    \x04\0\x02\t\x04\x12\x04\x17\x02\x150\n\x0c\n\x05\x04\0\x02\t\x05\x12\
+    \x03\x17\x02\x08\n\x0c\n\x05\x04\0\x02\t\x01\x12\x03\x17\t,\n\x0c\n\x05\
+    \x04\0\x02\t\x03\x12\x03\x17/1b\x06proto3\
 ";
 
 /// `FileDescriptorProto` object which was a source for this generated file

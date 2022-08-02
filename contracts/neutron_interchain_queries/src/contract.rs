@@ -14,17 +14,18 @@
 
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
-
 use cosmwasm_std::{Binary, Deps, DepsMut, Env, MessageInfo, Reply, Response, StdResult};
-
 use interchain_queries::error::{ContractError, ContractResult};
 use interchain_queries::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
-use interchain_queries::queries::{query_balance, query_delegations, query_transfer_transactions};
+use interchain_queries::queries::{query_balance, query_delegations};
 use interchain_queries::register_queries::{
     register_balance_query, register_delegator_delegations_query, register_transfers_query,
 };
 use interchain_queries::reply::register_interchain_query_reply_handler;
+use interchain_queries::sudo::sudo_tx_query_result;
 use interchain_queries::types::REGISTER_INTERCHAIN_QUERY_REPLY_ID;
+use neutron_bindings::NeutronMsg;
+use neutron_sudo::msg::SudoMsg;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -33,7 +34,7 @@ pub fn instantiate(
     _info: MessageInfo,
     _msg: InstantiateMsg,
 ) -> ContractResult<Response> {
-    //TODO
+    // TODO
     Ok(Response::default())
 }
 
@@ -43,7 +44,7 @@ pub fn execute(
     env: Env,
     _: MessageInfo,
     msg: ExecuteMsg,
-) -> ContractResult<Response> {
+) -> ContractResult<Response<NeutronMsg>> {
     match msg {
         ExecuteMsg::RegisterBalanceQuery {
             zone_id,
@@ -95,7 +96,7 @@ pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> ContractResult<Response> {
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> ContractResult<Binary> {
     match msg {
-        //TODO: check if query.result.height is too old (for all interchain queries)
+        // TODO: check if query.result.height is too old (for all interchain queries)
         QueryMsg::Balance {
             zone_id,
             addr,
@@ -104,16 +105,22 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> ContractResult<Binary> {
         QueryMsg::GetDelegations { zone_id, delegator } => {
             query_delegations(deps, env, zone_id, delegator)
         }
-        QueryMsg::GetTransfers {
-            zone_id,
-            recipient,
-            start,
-            end,
-        } => query_transfer_transactions(deps, env, zone_id, recipient, start, end),
     }
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
     Ok(Response::default())
+}
+
+#[entry_point]
+pub fn sudo(deps: DepsMut, env: Env, msg: SudoMsg) -> ContractResult<Response> {
+    match msg {
+        SudoMsg::TxQueryResult {
+            query_id,
+            height,
+            data,
+        } => sudo_tx_query_result(deps, env, query_id, height, data),
+        _ => Ok(Response::default()),
+    }
 }

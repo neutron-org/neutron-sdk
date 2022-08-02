@@ -2,14 +2,24 @@ syntax = "proto3";
 package neutron.interchainadapter.interchainqueries;
 
 message RegisteredQuery {
+  // The unique id of the registered query.
   uint64 id = 1;
-  string query_data = 2;
-  string query_type = 3;
-  string zone_id = 4;
-  string connection_id = 5;
-  uint64 update_period = 6;
-  uint64 last_emitted_height = 7;
-
-  uint64 last_submitted_result_local_height = 8;
-  uint64 last_submitted_result_remote_height = 9;
+  // The address that registered the query.
+  string owner = 2;
+  // The JSON encoded data of the query.
+  string query_data = 3;
+  // The query type identifier (i.e. /cosmos.staking.v1beta1.Query/AllDelegations).
+  string query_type = 4;
+  // The chain of interest identifier.
+  string zone_id = 5;
+  // The IBC connection ID for getting ConsensusState to verify proofs.
+  string connection_id = 6;
+  //  Parameter that defines how often the query must be updated.
+  uint64 update_period = 7;
+  // The local height when the event to update the query result was emitted last time.
+  uint64 last_emitted_height = 8;
+  // The local chain last block height when the query's result was updated.
+  uint64 last_submitted_result_local_height = 9;
+  // The remote chain last block height when the query's result was updated.
+  uint64 last_submitted_result_remote_height = 10;
 }
