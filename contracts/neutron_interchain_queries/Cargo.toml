@@ -38,6 +38,7 @@ serde = { version = "1.0.103", default-features = false, features = ["derive"] }
 interchain_queries = { path = "../../packages/interchain_queries", default-features = false, version = "0.1.0"}
 stargate = { path = "../../packages/stargate", default-features = false, version = "0.1.0"}
 base64 = "0.13.0"
+neutron-bindings = {path = "../../packages/bindings"}
 protobuf = { version = "3", features = ["with-bytes"] }
 neutron_sudo = { path = "../../packages/neutron_sudo", default-features = false, version = "0.1.0"}
 

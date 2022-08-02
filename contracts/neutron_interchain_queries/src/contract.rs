@@ -24,6 +24,7 @@ use interchain_queries::register_queries::{
 use interchain_queries::reply::register_interchain_query_reply_handler;
 use interchain_queries::sudo::sudo_tx_query_result;
 use interchain_queries::types::REGISTER_INTERCHAIN_QUERY_REPLY_ID;
+use neutron_bindings::NeutronMsg;
 use neutron_sudo::msg::SudoMsg;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -43,7 +44,7 @@ pub fn execute(
     env: Env,
     _: MessageInfo,
     msg: ExecuteMsg,
-) -> ContractResult<Response> {
+) -> ContractResult<Response<NeutronMsg>> {
     match msg {
         ExecuteMsg::RegisterBalanceQuery {
             zone_id,
