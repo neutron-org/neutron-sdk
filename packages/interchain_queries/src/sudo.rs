@@ -1,10 +1,10 @@
-use crate::custom_queries::InterchainQueries;
 use crate::error::{ContractError, ContractResult};
 use crate::queries::get_registered_query;
 use crate::types::{COSMOS_SDK_TRANSFER_MSG_URL, QUERY_TRANSFERS};
 use cosmos_sdk_proto::cosmos::bank::v1beta1::MsgSend;
 use cosmos_sdk_proto::cosmos::tx::v1beta1::{TxBody, TxRaw};
 use cosmwasm_std::{Binary, DepsMut, Env, Response, StdError};
+use neutron_bindings::query::InterchainQueries;
 use prost::Message as ProstMessage;
 use serde::{Deserialize, Serialize};
 use serde_json_wasm;

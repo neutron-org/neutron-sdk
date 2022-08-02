@@ -1,4 +1,3 @@
-use crate::custom_queries::InterchainQueries;
 use crate::error::ContractResult;
 use crate::storage::TMP_REGISTER_INTERCHAIN_QUERY_REQUEST;
 use crate::types::{
@@ -7,6 +6,7 @@ use crate::types::{
     REGISTER_INTERCHAIN_QUERY_PATH, REGISTER_INTERCHAIN_QUERY_REPLY_ID,
 };
 use cosmwasm_std::{Binary, CosmosMsg, DepsMut, Env, Response, StdError, SubMsg};
+use neutron_bindings::query::InterchainQueries;
 use protobuf::Message;
 use schemars::_serde_json::to_string;
 use serde::Serialize;

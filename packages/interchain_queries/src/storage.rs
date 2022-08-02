@@ -1,8 +1,8 @@
-use crate::custom_queries::InterchainQueries;
 use crate::error::{ContractError, ContractResult};
 use crate::types::TmpRegisteredQuery;
 use cosmwasm_std::{Deps, StdError};
 use cw_storage_plus::{Item, Map};
+use neutron_bindings::query::InterchainQueries;
 use schemars::_serde_json::to_string;
 use serde::Serialize;
 

@@ -35,4 +35,4 @@ prost = "0.10"
 base64 = "0.13.0"
 bech32 = "0.9.0"
 thiserror = { version = "1.0" }
-
+neutron_bindings = {path = "../../packages/bindings"}

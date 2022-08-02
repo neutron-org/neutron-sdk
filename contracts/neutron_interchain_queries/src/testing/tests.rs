@@ -20,15 +20,16 @@ use cosmwasm_std::{
     from_binary, Addr, Binary, Coin, Delegation, Env, MessageInfo, OwnedDeps, Reply,
     SubMsgResponse, SubMsgResult,
 };
-use interchain_queries::custom_queries::{
-    InterchainQueries, ProofOps, QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse,
-    QueryResult, RegisteredQuery, StorageValue,
-};
 use interchain_queries::msg::{ExecuteMsg, QueryMsg};
 use interchain_queries::types::REGISTER_INTERCHAIN_QUERY_REPLY_ID;
 use interchain_queries::types::{
     create_account_balances_prefix, create_delegations_key, decode_and_convert,
     DelegatorDelegationsResponse, QueryBalanceResponse,
+};
+use neutron_bindings::query::InterchainQueries;
+use neutron_bindings::types::{
+    QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse, QueryResult, RegisteredQuery,
+    StorageValue,
 };
 use prost::Message as ProstMessage;
 use protobuf::Message;
@@ -68,7 +69,6 @@ fn build_interchain_query_balance_response(addr: Addr, denom: String, amount: St
         storage_prefix: "".to_string(),
         key: Binary(balance_key),
         value: Binary(balance_amount.encode_to_vec()),
-        proof: ProofOps { ops: vec![] },
     };
     Binary::from(
         to_string(&QueryRegisteredQueryResultResponse {
@@ -99,7 +99,6 @@ fn build_delegator_delegations_query_response(delegator: Addr, validators: Vec<A
                 storage_prefix: "".to_string(),
                 key: Binary(delegations_key.clone()),
                 value: Binary(delegation.encode_to_vec()),
-                proof: ProofOps { ops: vec![] },
             }
         })
         .collect();

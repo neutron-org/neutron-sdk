@@ -17,8 +17,8 @@ use cosmwasm_std::{
     from_slice, Binary, Coin, ContractResult, CustomQuery, FullDelegation, OwnedDeps, Querier,
     QuerierResult, QueryRequest, SystemError, SystemResult, Uint128, Validator,
 };
-use interchain_queries::custom_queries::InterchainQueries;
 
+use neutron_bindings::query::InterchainQueries;
 use schemars::JsonSchema;
 
 use serde::{Deserialize, Serialize};

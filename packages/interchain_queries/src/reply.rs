@@ -1,7 +1,7 @@
-use crate::custom_queries::InterchainQueries;
 use crate::error::{ContractError, ContractResult};
 use crate::storage::{REGISTERED_INTERCHAIN_QUERIES, TMP_REGISTER_INTERCHAIN_QUERY_REQUEST};
 use cosmwasm_std::{DepsMut, Env, Reply, Response, SubMsgResult};
+use neutron_bindings::query::InterchainQueries;
 use protobuf::Message;
 use stargate::interchain::interchainqueries_tx::MsgRegisterInterchainQueryResponse;
 

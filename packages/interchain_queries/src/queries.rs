@@ -1,6 +1,3 @@
-use crate::custom_queries::{
-    InterchainQueries, QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse,
-};
 use crate::error::{ContractError, ContractResult};
 use crate::storage::get_registered_query_id;
 use crate::types::{
@@ -12,7 +9,9 @@ use crate::types::{DelegatorDelegationsResponse, QueryBalanceResponse};
 use cosmos_sdk_proto::cosmos::base::v1beta1::Coin as CosmosCoin;
 use cosmos_sdk_proto::cosmos::staking::v1beta1::Delegation;
 use cosmwasm_std::{to_binary, Addr, Binary, Coin, Deps, Env, Uint128};
+use neutron_bindings::query::InterchainQueries;
 
+use neutron_bindings::types::{QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse};
 use prost::Message as ProstMessage;
 use std::io::Cursor;
 use std::str::FromStr;
