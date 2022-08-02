@@ -1,8 +1,5 @@
 use crate::interchain::interchainaccounts_tx::MsgSubmitTx;
-use cosmwasm_std::{
-    to_vec, Binary, ContractResult, CosmosMsg, Deps, Empty, QueryRequest, StdError, StdResult,
-    SystemResult,
-};
+use cosmwasm_std::{Binary, CosmosMsg, StdError, StdResult};
 use protobuf::Message;
 
 pub const SUBMIT_INTERCHAIN_TX_PATH: &str =

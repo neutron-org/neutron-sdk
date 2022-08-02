@@ -358,7 +358,7 @@ dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
  "cw-storage-plus",
- "interchain_txs",
+ "neutron_sudo",
  "schemars",
  "serde",
 ]
@@ -376,20 +376,9 @@ dependencies = [
  "protobuf",
  "schemars",
  "serde",
+ "serde-json-wasm",
  "stargate",
  "thiserror",
-]
-
-[[package]]
-name = "interchain_txs"
-version = "0.1.0"
-dependencies = [
- "cosmos-sdk-proto",
- "cosmwasm-std",
- "cw-storage-plus",
- "prost",
- "schemars",
- "serde",
 ]
 
 [[package]]
@@ -431,13 +420,28 @@ name = "neutron_interchain_queries"
 version = "0.1.0"
 dependencies = [
  "base64",
+ "cosmos-sdk-proto",
  "cosmwasm-schema",
  "cosmwasm-std",
  "interchain_queries",
+ "neutron_sudo",
+ "prost",
  "protobuf",
  "schemars",
  "serde",
  "stargate",
+]
+
+[[package]]
+name = "neutron_sudo"
+version = "0.1.0"
+dependencies = [
+ "cosmos-sdk-proto",
+ "cosmwasm-std",
+ "cw-storage-plus",
+ "prost",
+ "schemars",
+ "serde",
 ]
 
 [[package]]

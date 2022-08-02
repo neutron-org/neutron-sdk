@@ -1,3 +1,4 @@
+use crate::custom_queries::InterchainQueries;
 use crate::error::{ContractError, ContractResult};
 use crate::queries::get_registered_query;
 use crate::types::{COSMOS_SDK_TRANSFER_MSG_URL, QUERY_TRANSFERS};
@@ -20,7 +21,7 @@ struct TransferRecipientQuery {
 /// satisfies the registered transaction query. Here, we check that the provided transaction
 /// contains a Send message from a specific address.
 pub fn sudo_tx_query_result(
-    deps: DepsMut,
+    deps: DepsMut<InterchainQueries>,
     _env: Env,
     query_id: u64,
     _height: u64,

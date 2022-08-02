@@ -1,32 +1,24 @@
+use crate::custom_queries::{
+    InterchainQueries, QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse,
+};
 use crate::error::{ContractError, ContractResult};
 use crate::storage::get_registered_query_id;
 use crate::types::{
     create_account_balances_prefix, create_delegations_key, decode_and_convert,
-    protobuf_coin_to_std_coin, GetBalanceQueryParams, GetDelegatorDelegationsParams,
-    GetTransfersParams, COSMOS_SDK_TRANSFER_MSG_URL, QUERY_BALANCE_QUERY_TYPE,
-    QUERY_DELEGATOR_DELEGATIONS_QUERY_TYPE, QUERY_REGISTERED_QUERY_PATH,
-    QUERY_REGISTERED_QUERY_RESULT_PATH, QUERY_REGISTERED_QUERY_TRANSACTIONS_RESULT_PATH,
-    QUERY_TRANSFERS,
+    GetBalanceQueryParams, GetDelegatorDelegationsParams, QUERY_BALANCE_QUERY_TYPE,
+    QUERY_DELEGATOR_DELEGATIONS_QUERY_TYPE,
 };
 use crate::types::{DelegatorDelegationsResponse, QueryBalanceResponse};
 use cosmos_sdk_proto::cosmos::base::v1beta1::Coin as CosmosCoin;
 use cosmos_sdk_proto::cosmos::staking::v1beta1::Delegation;
-use cosmos_sdk_proto::cosmos::tx::v1beta1::{TxBody, TxRaw};
 use cosmwasm_std::{to_binary, Addr, Binary, Coin, Deps, Env, Uint128};
-use stargate::interchain::interchainqueries_query::{
-    QueryRegisteredQueryRequest, QueryRegisteredQueryResponse, QueryRegisteredQueryResultRequest,
-    QueryRegisteredQueryResultResponse, QuerySubmittedTransactionsRequest,
-    QuerySubmittedTransactionsResponse,
-};
 
 use prost::Message as ProstMessage;
-use protobuf::Message;
-use stargate::make_stargate_query;
 use std::io::Cursor;
 use std::str::FromStr;
 
 /// Queries registered query info
-fn get_registered_query(
+pub(crate) fn get_registered_query(
     deps: Deps<InterchainQueries>,
     interchain_query_id: u64,
 ) -> ContractResult<QueryRegisteredQueryResponse> {
