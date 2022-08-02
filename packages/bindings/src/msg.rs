@@ -114,3 +114,11 @@ impl From<NeutronMsg> for CosmosMsg<NeutronMsg> {
 }
 
 impl CustomMsg for NeutronMsg {}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+/// Describes response structure for **RegisterInterchainQuery** msg
+pub struct MsgRegisterInterchainQueryResponse {
+    /// **id** is an identifier of newly registered interchain query
+    pub id: u64,
+}

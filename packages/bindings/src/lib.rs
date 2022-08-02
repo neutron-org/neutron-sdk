@@ -1,7 +1,7 @@
 mod msg;
 mod types;
 
-pub use msg::NeutronMsg;
+pub use msg::{MsgRegisterInterchainQueryResponse, NeutronMsg};
 pub use types::ProtobufAny;
 
 // This is a signal, such that any contract that imports these helpers will only run on the
