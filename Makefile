@@ -13,9 +13,6 @@ clippy:
 fmt:
 	@cargo fmt -- --check
 
-proto-gen:
-	@./build_proto.sh
-
 build: schema clippy test fmt
 	@./build_release.sh
 	@./check_contracts.sh

@@ -14,17 +14,20 @@
 
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
+
 use cosmwasm_std::{Binary, Deps, DepsMut, Env, MessageInfo, Reply, Response, StdResult};
+
 use interchain_queries::error::{ContractError, ContractResult};
 use interchain_queries::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
-use interchain_queries::queries::{query_balance, query_delegations};
+use interchain_queries::queries::{query_balance, query_delegations, query_registered_query};
 use interchain_queries::register_queries::{
     register_balance_query, register_delegator_delegations_query, register_transfers_query,
 };
 use interchain_queries::reply::register_interchain_query_reply_handler;
 use interchain_queries::sudo::sudo_tx_query_result;
 use interchain_queries::types::REGISTER_INTERCHAIN_QUERY_REPLY_ID;
-use neutron_bindings::NeutronMsg;
+use neutron_bindings::msg::NeutronMsg;
+use neutron_bindings::query::InterchainQueries;
 use neutron_sudo::msg::SudoMsg;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -34,13 +37,13 @@ pub fn instantiate(
     _info: MessageInfo,
     _msg: InstantiateMsg,
 ) -> ContractResult<Response> {
-    // TODO
+    //TODO
     Ok(Response::default())
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
-    deps: DepsMut,
+    deps: DepsMut<InterchainQueries>,
     env: Env,
     _: MessageInfo,
     msg: ExecuteMsg,
@@ -84,7 +87,7 @@ pub fn execute(
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> ContractResult<Response> {
+pub fn reply(deps: DepsMut<InterchainQueries>, env: Env, msg: Reply) -> ContractResult<Response> {
     // Save registered query id to work with it in query handlers
     if msg.id == REGISTER_INTERCHAIN_QUERY_REPLY_ID {
         register_interchain_query_reply_handler(deps, env, msg)
@@ -94,7 +97,7 @@ pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> ContractResult<Response> {
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> ContractResult<Binary> {
+pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> ContractResult<Binary> {
     match msg {
         // TODO: check if query.result.height is too old (for all interchain queries)
         QueryMsg::Balance {
@@ -105,6 +108,7 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> ContractResult<Binary> {
         QueryMsg::GetDelegations { zone_id, delegator } => {
             query_delegations(deps, env, zone_id, delegator)
         }
+        QueryMsg::GetRegisteredQuery { query_id } => query_registered_query(deps, query_id),
     }
 }
 
@@ -114,7 +118,7 @@ pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Respons
 }
 
 #[entry_point]
-pub fn sudo(deps: DepsMut, env: Env, msg: SudoMsg) -> ContractResult<Response> {
+pub fn sudo(deps: DepsMut<InterchainQueries>, env: Env, msg: SudoMsg) -> ContractResult<Response> {
     match msg {
         SudoMsg::TxQueryResult {
             query_id,

@@ -8,18 +8,20 @@ This monorepository contains the source code of smart contracts and packages for
 
 The following packages are maintained here:
 
-| Package            | Reference                                                                              | Description                                                                                     |
-|--------------------|----------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
-| Interchain Queries | https://github.com/neutron-org/neutron-contracts/tree/main/packages/interchain_queries | Queries, messages and helper methods and for interacting with Neutron Interchain Queries Module |
-| Stargate           | https://github.com/neutron-org/neutron-contracts/tree/main/packages/stargate           | Structures and helper methods for interacting with Neutron blockchain via Stargate              |
+| Package                    | Reference                                                                              | Description                                                                                     |
+|----------------------------|----------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
+| Neutron Interchain Queries | https://github.com/neutron-org/neutron-contracts/tree/main/packages/interchain_queries | Queries, messages and helper methods and for interacting with Neutron Interchain Queries Module |
+| Neutron Bindings           | https://github.com/neutron-org/neutron-contracts/tree/main/packages/bindings           | Structures and helper methods for interacting with Neutron blockchain                           |
+| Neutron Sudo               | https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron_sudo       | Structures for Sudo Contract callbacks from Neutron blockchain                                  |
 
 ### Contracts
 
 The following contracts are maintained here:
 
-| Contract                            | Reference                                                                                       | Description                                                                                                                                                                   |
-|-------------------------------------|-------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Neutron Interchain Queries Contract | https://github.com/neutron-org/neutron-contracts/tree/main/contracts/neutron-interchain-queries | The contract provides a convenient interface for interacting with [Interchain Queries Module](https://github.com/neutron-org/neutron/tree/master/x/interchainqueries). |
+| Contract                                    | Reference                                                                                       | Description                                                                                                                                                                                                                                                                                              |
+|---------------------------------------------|-------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Neutron Interchain Queries Example Contract | https://github.com/neutron-org/neutron-contracts/tree/main/contracts/neutron-interchain-queries | The contract shows how to properly work with [Interchain Queries Module](https://github.com/neutron-org/neutron/tree/master/x/interchainqueries) using [Interchain Queries Package](https://github.com/neutron-org/neutron-contracts/tree/main/packages/interchain_queries) via CosmWasm smart-contract. |
+| Neutron IBC Transfer Example Contract       | https://github.com/neutron-org/neutron-contracts/tree/main/contracts/ibc_transfer               | The contract shows how to properly use [Neutron Sudo Package](https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron_sudo) to handle a callback from IBC transfer                                                                                                                   |
 
 ## Development
 
@@ -67,10 +69,6 @@ This performs several optimizations which can significantly reduce the final siz
 ## Documentation
 
 Check you the documentation at <LINK_TO_DOCS_PAGE>.
-
-## Codegen
-
-To process .proto files(`make proto-gen`)
 
 ## License
 

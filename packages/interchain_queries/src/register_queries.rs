@@ -6,13 +6,14 @@ use crate::types::{
     REGISTER_INTERCHAIN_QUERY_REPLY_ID,
 };
 use cosmwasm_std::{DepsMut, Env, Response, StdError, SubMsg};
-use neutron_bindings::NeutronMsg;
+use neutron_bindings::msg::NeutronMsg;
+use neutron_bindings::query::InterchainQueries;
 use schemars::_serde_json::to_string;
 use serde::Serialize;
 
 /// Registers an interchain query
 fn register_interchain_query<T>(
-    deps: DepsMut,
+    deps: DepsMut<InterchainQueries>,
     _env: Env,
     connection_id: String,
     zone_id: String,
@@ -61,7 +62,7 @@ where
 
 /// Registers an interchain query to get balance of account on remote chain for particular denom
 pub fn register_balance_query(
-    deps: DepsMut,
+    deps: DepsMut<InterchainQueries>,
     env: Env,
     connection_id: String,
     zone_id: String,
@@ -84,7 +85,7 @@ pub fn register_balance_query(
 
 /// Registers an interchain query to get delegations of particular delegator on remote chain
 pub fn register_delegator_delegations_query(
-    deps: DepsMut,
+    deps: DepsMut<InterchainQueries>,
     env: Env,
     connection_id: String,
     zone_id: String,
@@ -106,7 +107,7 @@ pub fn register_delegator_delegations_query(
 
 /// Registers an interchain query to get transfer events to a recipient on a remote chain
 pub fn register_transfers_query(
-    deps: DepsMut,
+    deps: DepsMut<InterchainQueries>,
     env: Env,
     connection_id: String,
     zone_id: String,
