@@ -4,6 +4,7 @@ use crate::types::{COSMOS_SDK_TRANSFER_MSG_URL, QUERY_TRANSFERS};
 use cosmos_sdk_proto::cosmos::bank::v1beta1::MsgSend;
 use cosmos_sdk_proto::cosmos::tx::v1beta1::{TxBody, TxRaw};
 use cosmwasm_std::{Binary, DepsMut, Env, Response, StdError};
+use neutron_bindings::query::InterchainQueries;
 use prost::Message as ProstMessage;
 use serde::{Deserialize, Serialize};
 use serde_json_wasm;
@@ -20,7 +21,7 @@ struct TransferRecipientQuery {
 /// satisfies the registered transaction query. Here, we check that the provided transaction
 /// contains a Send message from a specific address.
 pub fn sudo_tx_query_result(
-    deps: DepsMut,
+    deps: DepsMut<InterchainQueries>,
     _env: Env,
     query_id: u64,
     _height: u64,
