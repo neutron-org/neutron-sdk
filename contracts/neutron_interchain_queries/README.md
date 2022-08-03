@@ -16,7 +16,7 @@ Clone the Neutron repo next to the demo contracts:
 git clone git@github.com:neutron-org/neutron.git
 ```
 
-Init the nodes and hermes in the Neutron dir, create a transfer channel then run hermes:
+Init the nodes and hermes in the Neutron dir and run hermes:
 ```
 make build && make init && make start-rly
 ```
@@ -61,7 +61,7 @@ Clone the Neutron repo next to the demo contracts:
 git clone git@github.com:neutron-org/neutron.git
 ```
 
-Init the nodes and hermes in the Neutron dir, create a transfer channel then run hermes:
+Init the nodes and hermes in the Neutron dir and run hermes:
 ```
 make build && make init && make start-rly
 ```
