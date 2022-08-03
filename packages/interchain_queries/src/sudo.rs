@@ -121,3 +121,25 @@ pub fn sudo_tx_query_result(
         _ => Ok(Response::new()),
     }
 }
+
+/// sudo_check_kv_query_result is an example callback that processes a KV query result.
+/// Note that only the query id is provided, so you need to read the query result from
+/// state.
+pub fn sudo_kv_query_result(
+    deps: DepsMut<InterchainQueries>,
+    _env: Env,
+    query_id: u64,
+) -> ContractResult<Response> {
+    deps.api.debug(
+        format!(
+            "WASMDEBUG: sudo_kv_query_result received; query_id: {:?}",
+            query_id,
+        )
+        .as_str(),
+    );
+
+    // TODO: provide an actual example. Currently to many things are going to change
+    // after @pro0n00gler's PRs to implement this.
+
+    Ok(Response::default())
+}
