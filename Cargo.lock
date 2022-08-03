@@ -372,6 +372,7 @@ dependencies = [
  "cosmos-sdk-proto",
  "cosmwasm-std",
  "cw-storage-plus",
+ "neutron_bindings",
  "prost",
  "protobuf",
  "schemars",
@@ -416,14 +417,27 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "349d5a591cd28b49e1d1037471617a32ddcda5731b99419008085f72d5a53836"
 
 [[package]]
+name = "neutron_bindings"
+version = "1.0.0"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "schemars",
+ "serde",
+]
+
+[[package]]
 name = "neutron_interchain_queries"
 version = "0.1.0"
 dependencies = [
  "base64",
+ "cosmos-sdk-proto",
  "cosmwasm-schema",
  "cosmwasm-std",
  "interchain_queries",
+ "neutron_bindings",
  "neutron_sudo",
+ "prost",
  "protobuf",
  "schemars",
  "serde",

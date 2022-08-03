@@ -2,6 +2,7 @@ use crate::error::{ContractError, ContractResult};
 use crate::types::TmpRegisteredQuery;
 use cosmwasm_std::{Deps, StdError};
 use cw_storage_plus::{Item, Map};
+use neutron_bindings::query::InterchainQueries;
 use schemars::_serde_json::to_string;
 use serde::Serialize;
 
@@ -15,7 +16,7 @@ pub const REGISTERED_INTERCHAIN_QUERIES: Map<(&str, &str, &str), u64> =
 
 /// Returns registered query id by zone_id, query_type and query_data
 pub fn get_registered_query_id<T>(
-    deps: Deps,
+    deps: Deps<InterchainQueries>,
     zone_id: &str,
     query_type: &str,
     query_data: &T,
