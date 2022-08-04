@@ -1,5 +1,5 @@
 [package]
-name = "neutron-bindings"
+name = "neutron_bindings"
 version = "1.0.0"
 edition = "2021"
 authors = ["Mikhail Mozhaev <misha.m@p2p.org>"]
