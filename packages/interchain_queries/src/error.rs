@@ -1,6 +1,6 @@
 use crate::types::QueryType;
 use cosmwasm_std::StdError;
-use protobuf::Error as ProtobufError;
+use serde_json_wasm;
 use thiserror::Error;
 
 pub type ContractResult<T> = Result<T, ContractError>;
@@ -25,11 +25,8 @@ pub enum ContractError {
     #[error("balance query with query_id '{query_id:?}' not found")]
     BalanceNotFound { query_id: u64 },
 
-    #[error("empty stargate result for query type '{query_type:?}' and id '{query_id:?}' ")]
-    EmptyStargateResult {
-        query_type: QueryType,
-        query_id: u64,
-    },
+    #[error("Serde JSON (Wasm) error")]
+    SerdeJSONWasm(String),
 
     #[error("interchain query for {zone_id:?} {query_type:?} {query_data_json_encoded:?} is not registered")]
     InterchainQueryIsNotRegistered {
@@ -54,8 +51,8 @@ pub enum ContractError {
     InvalidQueryType { expected: QueryType, actual: String },
 }
 
-impl From<ProtobufError> for ContractError {
-    fn from(e: ProtobufError) -> Self {
-        ContractError::Protobuf(e.to_string())
+impl From<serde_json_wasm::de::Error> for ContractError {
+    fn from(e: serde_json_wasm::de::Error) -> Self {
+        ContractError::SerdeJSONWasm(e.to_string())
     }
 }

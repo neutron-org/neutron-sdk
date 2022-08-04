@@ -1,10 +1,19 @@
 [package]
-name = "interchain_queries"
+name = "ibc_transfer"
 version = "0.1.0"
-authors = ["cosmos-team <cosmos-team@p2p.org>"]
 edition = "2021"
 
+
+exclude = [
+  # Those files are rust-optimizer artifacts. You might want to commit them for convenience but they should not be part of the source code publication.
+  "contract.wasm",
+  "hash.txt",
+]
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+crate-type = ["cdylib", "rlib"]
 
 [profile.release]
 opt-level = 3
@@ -21,16 +30,14 @@ overflow-checks = true
 # for quicker tests, cargo test --lib
 # for more explicit tests, cargo test --features=backtraces
 backtraces = ["cosmwasm-std/backtraces"]
+library = []
 
 [dependencies]
-cosmwasm-std = { version = "1.0.0", features=["iterator"] }
+cosmwasm-std = { version = "1.0.0", features = ["staking", "stargate"] }
 schemars = "0.8.10"
 serde = { version = "1.0.103", default-features = false, features = ["derive"] }
-serde-json-wasm = "0.4.1"
-neutron_bindings = {path = "../../packages/bindings"}
 cw-storage-plus = { version = "0.13.2", features = ["iterator"]}
-cosmos-sdk-proto = { version = "0.12.2", default-features = false }
-prost = "0.10"
-base64 = "0.13.0"
-bech32 = "0.9.0"
-thiserror = { version = "1.0" }
+neutron_sudo = { path = "../../packages/neutron_sudo", default-features = false, version = "0.1.0"}
+
+[dev-dependencies]
+cosmwasm-schema = { version = "1.0.0", default-features = false }

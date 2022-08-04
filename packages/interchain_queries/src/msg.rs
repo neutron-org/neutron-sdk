@@ -1,5 +1,4 @@
 use crate::types::Balances;
-use cosmwasm_std::Coin;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -33,14 +32,6 @@ pub enum ExecuteMsg {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub enum QueryMsg {
-    Balance { query_id: u64 },
-    GetTransfers { query_id: u64, start: u64, end: u64 },
-    GetDelegations { query_id: u64 },
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
 pub struct QueryBalanceResponse {
     pub balances: Balances,
     pub last_submitted_local_height: u64,
@@ -55,19 +46,10 @@ pub struct DelegatorDelegationsResponse {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub struct Transfer {
-    pub tx_id: u64,
-    pub sender: String,
-    pub recipient: String,
-    pub amount: Vec<Coin>,
-    pub height: u64,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct TransfersResponse {
-    pub transfers: Vec<Transfer>,
-    pub last_submitted_local_height: u64,
+pub enum QueryMsg {
+    Balance { query_id: u64 },
+    GetDelegations { query_id: u64 },
+    GetRegisteredQuery { query_id: u64 },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

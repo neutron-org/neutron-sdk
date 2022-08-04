@@ -2,11 +2,10 @@ use crate::error::{ContractError, ContractResult};
 use cosmos_sdk_proto::cosmos::base::v1beta1::Coin as CosmosCoin;
 use cosmos_sdk_proto::cosmos::staking::v1beta1::{Delegation, Validator};
 use cosmwasm_std::{Addr, Coin, Decimal, Uint128};
+use neutron_bindings::types::StorageValue;
 use prost::Message as ProstMessage;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use stargate::interchain::interchainqueries_tx::StorageValue;
-use std::io::Cursor;
 use std::ops::Mul;
 use std::str::FromStr;
 
@@ -34,6 +33,7 @@ impl QueryType {
     }
 }
 
+#[allow(clippy::from_over_into)]
 impl Into<String> for QueryType {
     fn into(self) -> String {
         match self {
@@ -177,7 +177,7 @@ impl KVReconstruct for Balances {
         let mut coins: Vec<Coin> = vec![];
 
         for kv in &storage_values.0 {
-            let balance: CosmosCoin = CosmosCoin::decode(Cursor::new(kv.value.clone()))?;
+            let balance: CosmosCoin = CosmosCoin::decode(kv.value.as_slice())?;
             let amount = Uint128::from_str(balance.amount.as_str())?;
             coins.push(Coin::new(amount.u128(), balance.denom));
         }
@@ -196,7 +196,7 @@ impl KVReconstruct for Delegations {
         let mut delegations: Vec<cosmwasm_std::Delegation> = vec![];
 
         for chunk in storage_values.0.chunks(2) {
-            let delegation_sdk: Delegation = Delegation::decode(Cursor::new(&chunk[0].value))?;
+            let delegation_sdk: Delegation = Delegation::decode(chunk[0].value.as_slice())?;
             let mut delegation_std = cosmwasm_std::Delegation {
                 delegator: Addr::unchecked(delegation_sdk.delegator_address.as_str()),
                 validator: delegation_sdk.validator_address,
@@ -207,7 +207,7 @@ impl KVReconstruct for Delegations {
                 Uint128::new(1_000_000_000_000_000_000u128),
             );
 
-            let validator: Validator = Validator::decode(Cursor::new(&chunk[1].value.clone()))?;
+            let validator: Validator = Validator::decode(chunk[1].value.as_slice())?;
             let m = share.mul(Uint128::from_str(&validator.tokens)?);
             let tokens = m.multiply_ratio(
                 1_000_000_000_000_000_000u128,

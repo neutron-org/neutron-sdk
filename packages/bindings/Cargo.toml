@@ -1,0 +1,28 @@
+[package]
+name = "neutron_bindings"
+version = "1.0.0"
+edition = "2021"
+authors = ["Mikhail Mozhaev <misha.m@p2p.org>"]
+license = "Apache-2.0"
+description = "Bindings for CustomMsg and CustomQuery for the Neutron blockchain"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[profile.release]
+opt-level = 3
+debug = false
+rpath = false
+lto = true
+debug-assertions = false
+codegen-units = 1
+panic = 'abort'
+incremental = false
+overflow-checks = true
+
+[dependencies]
+cosmwasm-std = { version = "1.0.0", features = ["staking"] }
+schemars = "0.8.10"
+serde = { version = "1.0.103", default-features = false, features = ["derive"] }
+
+[dev-dependencies]
+cosmwasm-schema = "1.0.0"

@@ -2,6 +2,7 @@
 
 schema:
 	@find contracts/* -maxdepth 0 -type d \( ! -name . \) -exec bash -c "cd '{}' && cargo schema" \;
+	@find packages/bindings -maxdepth 0 -type d \( ! -name . \) -exec bash -c "cd '{}' && cargo schema" \;
 
 test:
 	@cargo test
@@ -11,9 +12,6 @@ clippy:
 
 fmt:
 	@cargo fmt -- --check
-
-proto-gen:
-	@./build_proto.sh
 
 build: schema clippy test fmt
 	@./build_release.sh

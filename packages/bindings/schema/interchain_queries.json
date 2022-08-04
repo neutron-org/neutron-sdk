@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "InterchainQueries",
+  "description": "The queries to interact with neutron specific blockchain modules.",
+  "oneOf": [
+    {
+      "description": "Query a result of registered interchain query on remote chain",
+      "type": "object",
+      "required": [
+        "interchain_query_result"
+      ],
+      "properties": {
+        "interchain_query_result": {
+          "type": "object",
+          "required": [
+            "query_id"
+          ],
+          "properties": {
+            "query_id": {
+              "description": "*query_id** is an ID registered interchain query",
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "Query a registered interchain account address for a specific connection_id Every contract may have as many interchain accounts as necessary.",
+      "type": "object",
+      "required": [
+        "interchain_account_address"
+      ],
+      "properties": {
+        "interchain_account_address": {
+          "type": "object",
+          "required": [
+            "connection_id",
+            "interchain_account_id",
+            "owner_address"
+          ],
+          "properties": {
+            "connection_id": {
+              "description": "*connection_id** is an IBC connection identifier between Neutron and remote chain",
+              "type": "string"
+            },
+            "interchain_account_id": {
+              "description": "**interchain_account_id** is an identifier of your interchain account. Can be any string This identifier allows contracts to have multiple interchain accounts on remote chains",
+              "type": "string"
+            },
+            "owner_address": {
+              "description": "*owner_address** is an address of contract which registered interchain account",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "Query all registered interchain queries on all remote chains",
+      "type": "object",
+      "required": [
+        "registered_interchain_queries"
+      ],
+      "properties": {
+        "registered_interchain_queries": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "Query registered interchain query with a specific queiry_id",
+      "type": "object",
+      "required": [
+        "registered_interchain_query"
+      ],
+      "properties": {
+        "registered_interchain_query": {
+          "type": "object",
+          "required": [
+            "query_id"
+          ],
+          "properties": {
+            "query_id": {
+              "description": "*query_id** is an ID registered interchain query",
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  ]
+}
