@@ -13,7 +13,6 @@ use neutron_bindings::query::InterchainQueries;
 
 use neutron_bindings::types::{QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse};
 use prost::Message as ProstMessage;
-use std::io::Cursor;
 use std::str::FromStr;
 
 /// Queries registered query info
@@ -72,7 +71,7 @@ pub fn query_balance(
     #[allow(clippy::unwrap_used)]
     for result in registered_query_result.result.kv_results {
         if result.key == balance_key {
-            let balance: CosmosCoin = CosmosCoin::decode(Cursor::new(result.value.as_ref()))?;
+            let balance: CosmosCoin = CosmosCoin::decode(result.value.as_slice())?;
             let amount = Uint128::from_str(balance.amount.as_str())?;
             return Ok(to_binary(&QueryBalanceResponse {
                 last_submitted_local_height: registered_query
@@ -118,8 +117,7 @@ pub fn query_delegations(
     #[allow(clippy::unwrap_used)]
     for result in registered_query_result.result.kv_results {
         if result.key.starts_with(delegations_key.as_slice()) {
-            let delegation_sdk: Delegation =
-                Delegation::decode(Cursor::new(result.value.as_ref()))?;
+            let delegation_sdk: Delegation = Delegation::decode(result.value.as_slice())?;
             let delegation_std = cosmwasm_std::Delegation {
                 delegator: Addr::unchecked(delegation_sdk.delegator_address.as_str()),
                 validator: delegation_sdk.validator_address,

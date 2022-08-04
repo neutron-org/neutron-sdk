@@ -26,6 +26,7 @@ use interchain_queries::register_queries::{
 use interchain_queries::reply::register_interchain_query_reply_handler;
 use interchain_queries::sudo::{sudo_kv_query_result, sudo_tx_query_result};
 use interchain_queries::types::REGISTER_INTERCHAIN_QUERY_REPLY_ID;
+use neutron_bindings::msg::NeutronMsg;
 use neutron_bindings::query::InterchainQueries;
 use neutron_sudo::msg::SudoMsg;
 
@@ -46,7 +47,7 @@ pub fn execute(
     env: Env,
     _: MessageInfo,
     msg: ExecuteMsg,
-) -> ContractResult<Response> {
+) -> ContractResult<Response<NeutronMsg>> {
     match msg {
         ExecuteMsg::RegisterBalanceQuery {
             zone_id,

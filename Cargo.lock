@@ -374,11 +374,9 @@ dependencies = [
  "cw-storage-plus",
  "neutron_bindings",
  "prost",
- "protobuf",
  "schemars",
  "serde",
  "serde-json-wasm",
- "stargate",
  "thiserror",
 ]
 
@@ -438,10 +436,8 @@ dependencies = [
  "neutron_bindings",
  "neutron_sudo",
  "prost",
- "protobuf",
  "schemars",
  "serde",
- "stargate",
 ]
 
 [[package]]
@@ -484,12 +480,6 @@ checksum = "2819ce041d2ee131036f4fc9d6ae7ae125a3a40e97ba64d04fe799ad9dabbb44"
 dependencies = [
  "libc",
 ]
-
-[[package]]
-name = "once_cell"
-version = "1.13.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "18a6dbe30758c9f83eb00cbea4ac95966305f5a7772f3f42ebfc7fc7eddbd8e1"
 
 [[package]]
 name = "opaque-debug"
@@ -554,27 +544,6 @@ checksum = "2d0a014229361011dc8e69c8a1ec6c2e8d0f2af7c91e3ea3f5b2170298461e68"
 dependencies = [
  "bytes",
  "prost",
-]
-
-[[package]]
-name = "protobuf"
-version = "3.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4ee4a7d8b91800c8f167a6268d1a1026607368e1adc84e98fe044aeb905302f7"
-dependencies = [
- "bytes",
- "once_cell",
- "protobuf-support",
- "thiserror",
-]
-
-[[package]]
-name = "protobuf-support"
-version = "3.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8ca157fe12fc7ee2e315f2f735e27df41b3d97cdd70ea112824dac1ffb08ee1c"
-dependencies = [
- "thiserror",
 ]
 
 [[package]]
@@ -749,16 +718,6 @@ checksum = "44d01ac02a6ccf3e07db148d2be087da624fea0221a16152ed01f0496a6b0a27"
 dependencies = [
  "base64ct",
  "der",
-]
-
-[[package]]
-name = "stargate"
-version = "0.1.0"
-dependencies = [
- "cosmwasm-std",
- "protobuf",
- "schemars",
- "serde",
 ]
 
 [[package]]

@@ -17,7 +17,7 @@ use cosmos_sdk_proto::cosmos::base::v1beta1::Coin as CosmosCoin;
 use cosmos_sdk_proto::cosmos::staking::v1beta1::Delegation as DelegationSdk;
 use cosmwasm_std::testing::{mock_env, mock_info, MockApi, MockStorage};
 use cosmwasm_std::{
-    from_binary, Addr, Binary, Coin, Delegation, Env, MessageInfo, OwnedDeps, Reply,
+    from_binary, to_binary, Addr, Binary, Coin, Delegation, Env, MessageInfo, OwnedDeps, Reply,
     SubMsgResponse, SubMsgResult,
 };
 use interchain_queries::msg::{ExecuteMsg, QueryMsg};
@@ -26,16 +26,15 @@ use interchain_queries::types::{
     create_account_balances_prefix, create_delegations_key, decode_and_convert,
     DelegatorDelegationsResponse, QueryBalanceResponse,
 };
+use neutron_bindings::msg::MsgRegisterInterchainQueryResponse;
 use neutron_bindings::query::InterchainQueries;
 use neutron_bindings::types::{
     QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse, QueryResult, RegisteredQuery,
     StorageValue,
 };
 use prost::Message as ProstMessage;
-use protobuf::Message;
 
 use schemars::_serde_json::to_string;
-use stargate::interchain::interchainqueries_tx::MsgRegisterInterchainQueryResponse;
 
 pub fn build_registered_query_response(id: u64, last_submitted_result_local_height: u64) -> Binary {
     Binary::from(
@@ -124,10 +123,9 @@ fn register_query(
     msg: ExecuteMsg,
 ) {
     execute(deps.as_mut(), env, info, msg).unwrap();
-    let mut reply_response = MsgRegisterInterchainQueryResponse::new();
-    reply_response.id = 1u64;
+    let reply_response = MsgRegisterInterchainQueryResponse { id: 1 };
 
-    let reply_response_bytes = reply_response.write_to_bytes().unwrap();
+    let reply_response_bytes = to_binary(&reply_response).unwrap();
 
     reply(
         deps.as_mut(),
@@ -136,7 +134,7 @@ fn register_query(
             id: REGISTER_INTERCHAIN_QUERY_REPLY_ID,
             result: SubMsgResult::Ok(SubMsgResponse {
                 events: vec![],
-                data: Some(Binary(reply_response_bytes)),
+                data: Some(reply_response_bytes),
             }),
         },
     )

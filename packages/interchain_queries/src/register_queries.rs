@@ -3,46 +3,37 @@ use crate::storage::TMP_REGISTER_INTERCHAIN_QUERY_REQUEST;
 use crate::types::{
     GetBalanceQueryParams, GetDelegatorDelegationsParams, GetTransfersParams, TmpRegisteredQuery,
     QUERY_BALANCE_QUERY_TYPE, QUERY_DELEGATOR_DELEGATIONS_QUERY_TYPE, QUERY_TRANSFERS,
-    REGISTER_INTERCHAIN_QUERY_PATH, REGISTER_INTERCHAIN_QUERY_REPLY_ID,
+    REGISTER_INTERCHAIN_QUERY_REPLY_ID,
 };
-use cosmwasm_std::{Binary, CosmosMsg, DepsMut, Env, Response, StdError, SubMsg};
+use cosmwasm_std::{DepsMut, Env, Response, StdError, SubMsg};
+use neutron_bindings::msg::NeutronMsg;
 use neutron_bindings::query::InterchainQueries;
-use protobuf::Message;
 use schemars::_serde_json::to_string;
 use serde::Serialize;
-use stargate::interchain::interchainqueries_tx::MsgRegisterInterchainQuery;
 
 /// Registers an interchain query
 fn register_interchain_query<T>(
     deps: DepsMut<InterchainQueries>,
-    env: Env,
+    _env: Env,
     connection_id: String,
     zone_id: String,
     update_period: u64,
     query_type: &str,
     query_data: &T,
-) -> ContractResult<Response>
+) -> ContractResult<Response<NeutronMsg>>
 where
     T: ?Sized + Serialize,
 {
     let query_data_json_encoded =
         to_string(&query_data).map_err(|e| StdError::generic_err(e.to_string()))?;
 
-    let mut register_msg = MsgRegisterInterchainQuery::new();
-    register_msg.query_data = query_data_json_encoded.clone();
-    register_msg.query_type = String::from(query_type);
-    register_msg.update_period = update_period;
-    register_msg.connection_id = connection_id.clone();
-    register_msg.zone_id = zone_id.clone();
-    register_msg.sender = env.contract.address.to_string();
-
-    let encoded_msg_bytes = register_msg.write_to_bytes()?;
-    let encoded_register_msg = Binary::from(encoded_msg_bytes);
-
-    let msg: CosmosMsg = CosmosMsg::Stargate {
-        type_url: REGISTER_INTERCHAIN_QUERY_PATH.to_string(),
-        value: encoded_register_msg,
-    };
+    let register_msg = NeutronMsg::register_interchain_query(
+        String::from(query_type),
+        query_data_json_encoded.clone(),
+        zone_id.clone(),
+        connection_id.clone(),
+        update_period,
+    );
 
     // We need to know registered_query_id that is returned in MsgRegisterInterchainQuery execution
     // so we temporarily save all necessary data to use it in reply handler to save returned query id
@@ -64,7 +55,7 @@ where
         .add_attribute("update_period", update_period.to_string())
         .add_attribute("query_data", query_data_json_encoded.as_str())
         .add_submessage(SubMsg::reply_on_success(
-            msg,
+            register_msg,
             REGISTER_INTERCHAIN_QUERY_REPLY_ID,
         )))
 }
@@ -78,7 +69,7 @@ pub fn register_balance_query(
     addr: String,
     denom: String,
     update_period: u64,
-) -> ContractResult<Response> {
+) -> ContractResult<Response<NeutronMsg>> {
     let query_data = GetBalanceQueryParams { addr, denom };
 
     register_interchain_query(
@@ -100,7 +91,7 @@ pub fn register_delegator_delegations_query(
     zone_id: String,
     delegator: String,
     update_period: u64,
-) -> ContractResult<Response> {
+) -> ContractResult<Response<NeutronMsg>> {
     let query_data = GetDelegatorDelegationsParams { delegator };
 
     register_interchain_query(
@@ -122,7 +113,7 @@ pub fn register_transfers_query(
     zone_id: String,
     recipient: String,
     update_period: u64,
-) -> ContractResult<Response> {
+) -> ContractResult<Response<NeutronMsg>> {
     let query_data = GetTransfersParams {
         recipient,
         ..Default::default()
