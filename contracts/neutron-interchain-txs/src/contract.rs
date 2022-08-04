@@ -13,7 +13,9 @@
 // limitations under the License.
 
 use cosmos_sdk_proto::cosmos::base::v1beta1::Coin;
-use cosmos_sdk_proto::cosmos::staking::v1beta1::{MsgDelegate, MsgUndelegateResponse};
+use cosmos_sdk_proto::cosmos::staking::v1beta1::{
+    MsgDelegate, MsgUndelegate, MsgUndelegateResponse,
+};
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
@@ -32,7 +34,7 @@ use crate::error::ContractResult;
 use crate::msg::ExecuteMsg;
 use crate::msg::{InstantiateMsg, MigrateMsg};
 use crate::storage::{
-    IBC_SUDO_ID_RANGE_END, IBC_SUDO_ID_RANGE_START, REPLY_QUEUE_ID, SUDO_PAYLOAD,
+    Config, CONFIG, IBC_SUDO_ID_RANGE_END, IBC_SUDO_ID_RANGE_START, REPLY_QUEUE_ID, SUDO_PAYLOAD,
 };
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -43,13 +45,23 @@ pub struct SudoPayload {
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
-    _deps: DepsMut,
+    deps: DepsMut,
     _env: Env,
     _info: MessageInfo,
-    _msg: InstantiateMsg,
+    msg: InstantiateMsg,
 ) -> ContractResult<Response<NeutronMsg>> {
-    let register =
-        NeutronMsg::register_interchain_account("connection-0".to_string(), "1".to_string());
+    let register = NeutronMsg::register_interchain_account(
+        msg.connection_id.clone(),
+        msg.interchain_account_id.clone(),
+    );
+    CONFIG.save(
+        deps.storage,
+        &Config {
+            connection_id: msg.connection_id,
+            interchain_account_id: msg.interchain_account_id,
+            denom: msg.denom,
+        },
+    )?;
     Ok(Response::new().add_message(register))
 }
 
@@ -63,7 +75,16 @@ pub fn execute(
     deps.api
         .debug(format!("WASMDEBUG: execute: received msg: {:?}", msg).as_str());
     match msg {
-        ExecuteMsg::Delegate { from, to, amount } => execute_delegate(deps, env, from, to, amount),
+        ExecuteMsg::Delegate {
+            delegator,
+            validator,
+            amount,
+        } => execute_delegate(deps, env, delegator, validator, amount),
+        ExecuteMsg::Undelegate {
+            delegator,
+            validator,
+            amount,
+        } => execute_undelegate(deps, env, delegator, validator, amount),
     }
 }
 
@@ -103,13 +124,14 @@ fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
 fn execute_delegate(
     mut deps: DepsMut,
     _env: Env,
-    from: String,
-    to: String,
+    delegator: String,
+    validator: String,
     amount: u128,
 ) -> StdResult<Response<NeutronMsg>> {
+    let config = CONFIG.load(deps.storage)?;
     let delegate_msg = MsgDelegate {
-        delegator_address: from,
-        validator_address: to,
+        delegator_address: delegator,
+        validator_address: validator,
         amount: Some(Coin {
             denom: "stake".to_string(),
             amount: amount.to_string(),
@@ -128,8 +150,54 @@ fn execute_delegate(
     };
 
     let cosmos_msg = NeutronMsg::submit_tx(
-        "connection-0".to_string(),
-        "1".to_string(),
+        config.connection_id,
+        config.interchain_account_id,
+        vec![any_msg],
+        "".to_string(),
+    );
+
+    let submsg = msg_with_sudo_callback(
+        deps.branch(),
+        cosmos_msg,
+        SudoPayload {
+            message: "message".to_string(),
+        },
+    )?;
+
+    Ok(Response::default().add_submessages(vec![submsg]))
+}
+
+fn execute_undelegate(
+    mut deps: DepsMut,
+    _env: Env,
+    delegator: String,
+    validator: String,
+    amount: u128,
+) -> StdResult<Response<NeutronMsg>> {
+    let config = CONFIG.load(deps.storage)?;
+    let delegate_msg = MsgUndelegate {
+        delegator_address: delegator,
+        validator_address: validator,
+        amount: Some(Coin {
+            denom: "stake".to_string(),
+            amount: amount.to_string(),
+        }),
+    };
+    let mut buf = Vec::new();
+    buf.reserve(delegate_msg.encoded_len());
+
+    if let Err(e) = delegate_msg.encode(&mut buf) {
+        return Err(StdError::generic_err(format!("Encode error: {}", e)));
+    }
+
+    let any_msg = ProtobufAny {
+        type_url: "/cosmos.staking.v1beta1.MsgUndelegate".to_string(),
+        value: buf,
+    };
+
+    let cosmos_msg = NeutronMsg::submit_tx(
+        config.connection_id,
+        config.interchain_account_id,
         vec![any_msg],
         "".to_string(),
     );
@@ -176,38 +244,32 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: String) -> StdResu
     deps.api
         .debug(format!("WASMDEBUG: sudo_response: sudo payload: {:?}", payload).as_str());
     // handle response
-    Ok(Response::default())
-}
-
-fn _sudo_response(_request: RequestPacket, data: String) -> StdResult<Response> {
-    let mut res = Response::new();
     let parsed_data = parse_response(data)?;
+
     for item in parsed_data {
         let item_type = item.msg_type.as_str();
-        // //TODO: cover all possible msg_types and handle them properly
         match item_type {
             "/cosmos.staking.v1beta1.MsgUndelegate" => {
                 let out: MsgUndelegateResponse = parse_item(&item.data)?;
-                let completion_time = out.completion_time;
-                match completion_time {
-                    Some(c) => {
-                        res.data = Some(Binary::from(
-                            (item.msg_type + " " + &c.seconds.to_string()).as_bytes(),
-                        ));
-                    }
-                    None => {
-                        res.data = Some(Binary::from(
-                            (item.msg_type + " no completion time").as_bytes(),
-                        ));
-                    }
-                }
+                let completion_time = out
+                    .completion_time
+                    .ok_or_else(|| StdError::generic_err("failed to get completion time"))?;
+                deps.api
+                    .debug(format!("Undelegation completion time: {:?}", completion_time).as_str());
             }
             _ => {
-                res.data = Some(Binary::from("unknown request".as_bytes()));
+                deps.api.debug(
+                    format!(
+                        "This type of acknowledgement is not implemented: {:?}",
+                        payload
+                    )
+                    .as_str(),
+                );
             }
         }
     }
-    Ok(res)
+
+    Ok(Response::default())
 }
 
 fn sudo_timeout(deps: DepsMut, _env: Env, request: RequestPacket) -> StdResult<Response> {
@@ -216,7 +278,6 @@ fn sudo_timeout(deps: DepsMut, _env: Env, request: RequestPacket) -> StdResult<R
     Ok(Response::default())
 }
 
-/// Here you can handle error
 fn sudo_error(deps: Deps, _request: RequestPacket, details: String) -> StdResult<Response> {
     deps.api
         .debug(format!("WASMDEBUG: sudo error: {}", details).as_str());

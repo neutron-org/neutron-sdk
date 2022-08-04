@@ -6,14 +6,23 @@ use serde::{Deserialize, Serialize};
 pub struct MigrateMsg {}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct InstantiateMsg {}
+pub struct InstantiateMsg {
+    pub connection_id: String,
+    pub interchain_account_id: String,
+    pub denom: String,
+}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
     Delegate {
-        from: String,
-        to: String,
+        delegator: String,
+        validator: String,
+        amount: u128,
+    },
+    Undelegate {
+        delegator: String,
+        validator: String,
         amount: u128,
     },
 }
