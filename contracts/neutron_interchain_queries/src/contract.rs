@@ -24,7 +24,7 @@ use interchain_queries::register_queries::{
     register_balance_query, register_delegator_delegations_query, register_transfers_query,
 };
 use interchain_queries::reply::register_interchain_query_reply_handler;
-use interchain_queries::sudo::sudo_tx_query_result;
+use interchain_queries::sudo::{sudo_kv_query_result, sudo_tx_query_result};
 use interchain_queries::types::REGISTER_INTERCHAIN_QUERY_REPLY_ID;
 use neutron_bindings::msg::NeutronMsg;
 use neutron_bindings::query::InterchainQueries;
@@ -125,6 +125,7 @@ pub fn sudo(deps: DepsMut<InterchainQueries>, env: Env, msg: SudoMsg) -> Contrac
             height,
             data,
         } => sudo_tx_query_result(deps, env, query_id, height, data),
+        SudoMsg::KVQueryResult { query_id } => sudo_kv_query_result(deps, env, query_id),
         _ => Ok(Response::default()),
     }
 }

@@ -44,4 +44,8 @@ pub enum SudoMsg {
         height: u64,
         data: Binary,
     },
+    #[serde(rename = "kv_query_result")]
+    KVQueryResult {
+        query_id: u64,
+    },
 }
