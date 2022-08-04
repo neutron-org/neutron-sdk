@@ -86,14 +86,14 @@ pub struct ProtobufAny {
     pub type_url: String,
 
     ///  **value** must be a valid serialized protocol buffer of the above specified type
-    pub value: Vec<u8>,
+    pub value: Binary,
 }
 
 impl ProtobufAny {
     /// Helper to create new ProtobufAny type:
     /// * **type_url** describes the type of the serialized message
     /// * **value** must be a valid serialized protocol buffer of the above specified type
-    pub fn new(type_url: String, value: Vec<u8>) -> Self {
+    pub fn new(type_url: String, value: Binary) -> Self {
         ProtobufAny { type_url, value }
     }
 }
@@ -109,7 +109,7 @@ pub struct KVKey {
     pub path: String,
 
     /// **key** is a key you want to read from the storage
-    pub key: Vec<u8>,
+    pub key: Binary,
 }
 
 impl KVKey {
@@ -123,7 +123,7 @@ impl KVKey {
 
         Some(KVKey {
             path: split[0].to_string(),
-            key: decode_hex(split[1])?,
+            key: Binary(decode_hex(split[1])?),
         })
     }
 }

@@ -4,7 +4,7 @@ use crate::helpers::{
 };
 use crate::sudo::TransferRecipientQuery;
 use crate::types::{QueryType, BANK_STORE_KEY, STAKING_STORE_KEY};
-use cosmwasm_std::{DepsMut, Env, Response, StdError};
+use cosmwasm_std::{attr, Attribute, Binary, DepsMut, Env, Response, StdError};
 use neutron_bindings::msg::NeutronMsg;
 use neutron_bindings::query::InterchainQueries;
 use neutron_bindings::types::{KVKey, KVKeys};
@@ -31,15 +31,25 @@ fn register_interchain_query(
         update_period,
     );
 
+    let mut attrs: Vec<Attribute> = vec![
+        attr("action", "register_interchain_query"),
+        attr("connection_id", connection_id.as_str()),
+        attr("zone_id", zone_id.as_str()),
+        attr("query_type", query_type),
+        attr("update_period", update_period.to_string()),
+    ];
+
+    if !transactions_filter.is_empty() {
+        attrs.push(attr("transactions_filter", transactions_filter.as_str()))
+    }
+
+    if !kv_keys.is_empty() {
+        attrs.push(attr("kv_keys", KVKeys(kv_keys)))
+    }
+
     Ok(Response::new()
-        .add_attribute("action", "register_interchain_query")
-        .add_attribute("connection_id", connection_id.as_str())
-        .add_attribute("zone_id", zone_id.as_str())
-        .add_attribute("query_type", query_type)
-        .add_attribute("update_period", update_period.to_string())
-        .add_attribute("transactions_filter", transactions_filter.as_str())
-        .add_attribute("kv_keys", KVKeys(kv_keys))
-        .add_message(register_msg))
+        .add_message(register_msg)
+        .add_attributes(attrs))
 }
 
 /// Registers an interchain query to get balance of account on remote chain for particular denom
@@ -65,7 +75,7 @@ pub fn register_balance_query(
 
     let kv_key = KVKey {
         path: BANK_STORE_KEY.to_string(),
-        key: balance_key,
+        key: Binary(balance_key),
     };
 
     register_interchain_query(
@@ -104,11 +114,11 @@ pub fn register_delegator_delegations_query(
         let val_addr = decode_and_convert(v.as_str())?;
         keys.push(KVKey {
             path: STAKING_STORE_KEY.to_string(),
-            key: create_delegation_key(&delegator_addr, &val_addr)?,
+            key: Binary(create_delegation_key(&delegator_addr, &val_addr)?),
         });
         keys.push(KVKey {
             path: STAKING_STORE_KEY.to_string(),
-            key: create_validator_key(&val_addr)?,
+            key: Binary(create_validator_key(&val_addr)?),
         })
     }
 
