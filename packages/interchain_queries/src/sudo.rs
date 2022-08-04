@@ -11,9 +11,9 @@ use serde_json_wasm;
 
 /// TransferRecipientQuery is used to parse the query_data field of a QUERY_TRANSFERS query.
 #[derive(Serialize, Deserialize)]
-struct TransferRecipientQuery {
+pub struct TransferRecipientQuery {
     #[serde(rename = "transfer.recipient")]
-    recipient: String,
+    pub recipient: String,
 }
 
 /// sudo_check_tx_query_result is an example callback that checks if a given transaction

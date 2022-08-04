@@ -13,6 +13,7 @@
 // limitations under the License.
 
 pub mod error;
+pub mod helpers;
 pub mod msg;
 pub mod queries;
 pub mod register_queries;

@@ -18,15 +18,16 @@ use cosmwasm_std::testing::{mock_env, mock_info, MockApi, MockStorage};
 use cosmwasm_std::{
     from_binary, to_binary, Addr, Binary, Coin, Delegation, Env, MessageInfo, OwnedDeps,
 };
+use interchain_queries::helpers::{create_account_balances_prefix, decode_and_convert};
 use interchain_queries::msg::{
     DelegatorDelegationsResponse, ExecuteMsg, QueryBalanceResponse, QueryMsg,
 };
-use interchain_queries::types::Balances;
-use interchain_queries::types::{create_account_balances_prefix, decode_and_convert, QueryType};
-use neutron_bindings::query::InterchainQueries;
+use interchain_queries::types::{Balances, QueryType};
+use neutron_bindings::query::{
+    InterchainQueries, QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse,
+};
 use neutron_bindings::types::{
-    decode_hex, KVKey, KVKeys, QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse,
-    QueryResult, RegisteredQuery, StorageValue,
+    decode_hex, InterchainQueryResult, KVKey, KVKeys, RegisteredQuery, StorageValue,
 };
 use prost::Message as ProstMessage;
 
@@ -74,7 +75,7 @@ fn build_interchain_query_balance_response(addr: Addr, denom: String, amount: St
     };
     Binary::from(
         to_string(&QueryRegisteredQueryResultResponse {
-            result: QueryResult {
+            result: InterchainQueryResult {
                 kv_results: vec![s],
                 height: 123456,
                 revision: 2,
@@ -160,7 +161,7 @@ fn test_query_delegator_delegations() {
     let keys = register_query(&mut deps, mock_env(), mock_info("", &[]), msg);
 
     let delegations_response = QueryRegisteredQueryResultResponse {
-        result: QueryResult {
+        result: InterchainQueryResult {
             kv_results: vec![
                 StorageValue {
                     storage_prefix: "staking".to_string(),

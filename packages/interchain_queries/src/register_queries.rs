@@ -1,8 +1,9 @@
 use crate::error::ContractResult;
-use crate::types::{
-    create_account_balances_prefix, create_delegation_key, create_validator_key,
-    decode_and_convert, GetTransfersParams, QueryType, BANK_STORE_KEY, STAKING_STORE_KEY,
+use crate::helpers::{
+    create_account_balances_prefix, create_delegation_key, create_validator_key, decode_and_convert,
 };
+use crate::sudo::TransferRecipientQuery;
+use crate::types::{QueryType, BANK_STORE_KEY, STAKING_STORE_KEY};
 use cosmwasm_std::{DepsMut, Env, Response, StdError};
 use neutron_bindings::msg::NeutronMsg;
 use neutron_bindings::query::InterchainQueries;
@@ -10,7 +11,7 @@ use neutron_bindings::types::{KVKey, KVKeys};
 use schemars::_serde_json::to_string;
 
 #[allow(clippy::too_many_arguments)]
-/// Registers an interchain query
+/// Registers an interchain query with provided params
 fn register_interchain_query(
     _deps: DepsMut<InterchainQueries>,
     _env: Env,
@@ -42,6 +43,12 @@ fn register_interchain_query(
 }
 
 /// Registers an interchain query to get balance of account on remote chain for particular denom
+///
+/// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
+/// * **zone_id** is used to identify the chain of interest;
+/// * **addr** address of an account on remote chain for which you want to get balances;
+/// * **denom** denomination of the coin for which you want to get balance;
+/// **update_period** is used to say how often the query must be updated.
 pub fn register_balance_query(
     deps: DepsMut<InterchainQueries>,
     env: Env,
@@ -53,7 +60,7 @@ pub fn register_balance_query(
 ) -> ContractResult<Response<NeutronMsg>> {
     let converted_addr_bytes = decode_and_convert(addr.as_str())?;
 
-    let mut balance_key = create_account_balances_prefix(&converted_addr_bytes)?;
+    let mut balance_key = create_account_balances_prefix(converted_addr_bytes)?;
     balance_key.extend_from_slice(denom.as_bytes());
 
     let kv_key = KVKey {
@@ -73,7 +80,13 @@ pub fn register_balance_query(
     )
 }
 
-/// Registers an interchain query to get delegations of particular delegator on remote chain
+/// Registers an interchain query to get delegations of particular delegator on remote chain.
+///
+/// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
+/// * **zone_id** is used to identify the chain of interest;
+/// * **delegator** is an address of an account on remote chain for which you want to get list of delegations;
+/// * **validators** is a list of validators addresses for which you want to get delegations from particular **delegator**;
+/// * **update_period** is used to say how often the query must be updated.
 pub fn register_delegator_delegations_query(
     deps: DepsMut<InterchainQueries>,
     env: Env,
@@ -111,7 +124,12 @@ pub fn register_delegator_delegations_query(
     )
 }
 
-/// Registers an interchain query to get transfer events to a recipient on a remote chain
+/// Registers an interchain query to get transfer events to a recipient on a remote chain.
+///
+/// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
+/// * **zone_id** is used to identify the chain of interest;
+/// * **recipient** is an address of an account on remote chain for which you want to get list of transfer transactions;
+/// * **update_period** is used to say how often the query must be updated.
 pub fn register_transfers_query(
     deps: DepsMut<InterchainQueries>,
     env: Env,
@@ -120,10 +138,7 @@ pub fn register_transfers_query(
     recipient: String,
     update_period: u64,
 ) -> ContractResult<Response<NeutronMsg>> {
-    let query_data = GetTransfersParams {
-        recipient,
-        ..Default::default()
-    };
+    let query_data = TransferRecipientQuery { recipient };
 
     let query_data_json_encoded =
         to_string(&query_data).map_err(|e| StdError::generic_err(e.to_string()))?;

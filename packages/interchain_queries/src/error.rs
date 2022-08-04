@@ -19,30 +19,11 @@ pub enum ContractError {
     #[error("Prost protobuf error")]
     ProstProtobuf(#[from] prost::DecodeError),
 
-    #[error("Protobuf error")]
-    Protobuf(String),
-
-    #[error("balance query with query_id '{query_id:?}' not found")]
-    BalanceNotFound { query_id: u64 },
-
     #[error("Serde JSON (Wasm) error")]
     SerdeJSONWasm(String),
 
-    #[error("interchain query for {zone_id:?} {query_type:?} {query_data_json_encoded:?} is not registered")]
-    InterchainQueryIsNotRegistered {
-        zone_id: String,
-        query_type: String,
-        query_data_json_encoded: String,
-    },
-
     #[error("address length should be max {max:?} bytes, got {actual:?}")]
     MaxAddrLength { max: usize, actual: usize },
-
-    #[error("no result data in register interchain query response")]
-    EmptyInterchainQueryResult,
-
-    #[error("register interchain query failed: {0}")]
-    RegisterInterchainQueryFailed(String),
 
     #[error("invalid reply id: {0}")]
     InvalidReplyID(u64),

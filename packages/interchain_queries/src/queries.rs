@@ -1,13 +1,26 @@
+// Copyright 2022 Neutron Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 use crate::error::{ContractError, ContractResult};
-use crate::types::{Balances, Delegations, KVReconstruct, KVResult, QueryType};
+use crate::types::{Balances, Delegations, KVReconstruct, QueryType};
 use neutron_bindings::query::InterchainQueries;
 
 use cosmwasm_std::{to_binary, Binary, Deps, Env};
-use neutron_bindings::types::{QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse};
+use neutron_bindings::query::{QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse};
 
 use crate::msg::{DelegatorDelegationsResponse, QueryBalanceResponse};
 
-fn check_query_type(actual: String, expected: QueryType) -> ContractResult<QueryType> {
+/// Parse **actual** query type, checks that it's valid and assert it with **expected** query type
+pub fn check_query_type(actual: String, expected: QueryType) -> ContractResult<QueryType> {
     if let Some(t) = QueryType::try_from_str(&actual) {
         if t != expected {
             return Err(ContractError::InvalidQueryType {
@@ -46,22 +59,18 @@ fn get_interchain_query_result(
     Ok(res)
 }
 
+/// Reads submitted raw KV values for Interchain Query with **query_id** from the storage and reconstructs the result
 pub fn query_kv_result<T: KVReconstruct>(
     deps: Deps<InterchainQueries>,
-    registered_query: QueryRegisteredQueryResponse,
+    query_id: u64,
 ) -> ContractResult<T> {
-    check_query_type(
-        registered_query.registered_query.query_type.clone(),
-        QueryType::KV,
-    )?;
+    let registered_query_result = get_interchain_query_result(deps, query_id)?;
 
-    let registered_query_result =
-        get_interchain_query_result(deps, registered_query.registered_query.id)?;
-
-    KVReconstruct::reconstruct(&KVResult::new(registered_query_result.result.kv_results))
+    KVReconstruct::reconstruct(&registered_query_result.result.kv_results)
 }
 
 /// Returns balance of account on remote chain for particular denom
+/// * ***registered_query_id*** is an identifier of the corresponding registered interchain query
 pub fn query_balance(
     deps: Deps<InterchainQueries>,
     _env: Env,
@@ -69,7 +78,9 @@ pub fn query_balance(
 ) -> ContractResult<Binary> {
     let registered_query = get_registered_query(deps, registered_query_id)?;
 
-    let balances: Balances = query_kv_result(deps, registered_query.clone())?;
+    check_query_type(registered_query.registered_query.query_type, QueryType::KV)?;
+
+    let balances: Balances = query_kv_result(deps, registered_query.registered_query.id)?;
 
     Ok(to_binary(&QueryBalanceResponse {
         last_submitted_local_height: registered_query
@@ -80,6 +91,7 @@ pub fn query_balance(
 }
 
 /// Returns delegations of particular delegator on remote chain
+/// * ***registered_query_id*** is an identifier of the corresponding registered interchain query
 pub fn query_delegations(
     deps: Deps<InterchainQueries>,
     _env: Env,
@@ -87,7 +99,9 @@ pub fn query_delegations(
 ) -> ContractResult<Binary> {
     let registered_query = get_registered_query(deps, registered_query_id)?;
 
-    let delegations: Delegations = query_kv_result(deps, registered_query.clone())?;
+    check_query_type(registered_query.registered_query.query_type, QueryType::KV)?;
+
+    let delegations: Delegations = query_kv_result(deps, registered_query.registered_query.id)?;
 
     Ok(to_binary(&DelegatorDelegationsResponse {
         delegations: delegations.delegations,
@@ -97,6 +111,7 @@ pub fn query_delegations(
     })?)
 }
 
+/// Queries registered interchain query by **query_id**
 pub fn query_registered_query(
     deps: Deps<InterchainQueries>,
     query_id: u64,

@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use cosmwasm_std::Binary;
 
-/// encode_hex encodes bytes slice into hex string
+/// Encodes bytes slice into hex string
 pub fn encode_hex(bytes: &[u8]) -> String {
     let mut s = String::with_capacity(bytes.len() * 2);
     for &b in bytes {
@@ -12,39 +12,12 @@ pub fn encode_hex(bytes: &[u8]) -> String {
     s
 }
 
-/// decode_hex decodes hex string into bytes vec
+/// Decodes hex string into bytes vec
 pub fn decode_hex(s: &str) -> Option<Vec<u8>> {
     (0..s.len())
         .step_by(2)
         .map(|i| u8::from_str_radix(&s[i..i + 2], 16).ok())
         .collect()
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct QueryRegisteredQueriesResponse {
-    /// **registered_queries** is a list of registered queries
-    pub registered_queries: Vec<RegisteredQuery>,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct QueryRegisteredQueryResponse {
-    /// **registered_query** is a registered query
-    pub registered_query: RegisteredQuery,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct QueryRegisteredQueryResultResponse {
-    pub result: QueryResult,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct QueryInterchainAccountAddressResponse {
-    /// **interchain_account_address** is a interchain account address on the remote chain
-    pub interchain_account_address: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -79,7 +52,7 @@ pub struct RegisteredQuery {
 /// QueryResult is a result data for a registered query
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub struct QueryResult {
+pub struct InterchainQueryResult {
     /// **kv_results** is a raw key-value pairs of query result
     pub kv_results: Vec<StorageValue>,
 
@@ -93,9 +66,15 @@ pub struct QueryResult {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
+/// Describes value in the Cosmos-SDK KV-storage on remote chain
 pub struct StorageValue {
+    /// **storage_prefix** is a path to the storage (storage prefix) where you want to read value by key (usually name of cosmos-sdk module: 'staking', 'bank', etc.)
     pub storage_prefix: String,
+
+    /// **key** is a key under which the **value** is stored in the storage on remote chain
     pub key: Binary,
+
+    /// **value** is a value which is stored under the **key** in the storage on remote chain
     pub value: Binary,
 }
 
@@ -124,12 +103,18 @@ const KV_KEYS_DELIMITER: &str = ";";
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
+/// Describes a KV key for which you want to get value from the storage on remote chain
 pub struct KVKey {
+    /// **path** is a path to the storage (storage prefix) where you want to read value by key (usually name of cosmos-sdk module: 'staking', 'bank', etc.)
     pub path: String,
+
+    /// **key** is a key you want to read from the storage
     pub key: Vec<u8>,
 }
 
 impl KVKey {
+    /// Creates KVKey from string
+    /// Returns None on failure
     pub fn from_string<S: AsRef<str>>(s: S) -> Option<KVKey> {
         let split: Vec<&str> = s.as_ref().split(KV_PATH_KEY_DELIMITER).collect();
         if split.len() < 2 {
@@ -162,6 +147,8 @@ impl Into<String> for &KVKey {
 pub struct KVKeys(pub Vec<KVKey>);
 
 impl KVKeys {
+    /// Creates KVKeys from string
+    /// Returns None on failure
     pub fn from_string<S: AsRef<str>>(s: S) -> Option<KVKeys> {
         let split = s.as_ref().split(KV_KEYS_DELIMITER);
 

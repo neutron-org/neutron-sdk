@@ -125,6 +125,7 @@
   ],
   "definitions": {
     "KVKey": {
+      "description": "Describes a KV key for which you want to get value from the storage on remote chain",
       "type": "object",
       "required": [
         "key",
@@ -132,6 +133,7 @@
       ],
       "properties": {
         "key": {
+          "description": "*key** is a key you want to read from the storage",
           "type": "array",
           "items": {
             "type": "integer",
@@ -140,6 +142,7 @@
           }
         },
         "path": {
+          "description": "*path** is a path to the storage (storage prefix) where you want to read value by key (usually name of cosmos-sdk module: 'staking', 'bank', etc.)",
           "type": "string"
         }
       }
