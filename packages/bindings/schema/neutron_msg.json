@@ -121,6 +121,70 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "description": "RegisterInterchainQuery updates an interchain query",
+      "type": "object",
+      "required": [
+        "update_interchain_query"
+      ],
+      "properties": {
+        "update_interchain_query": {
+          "type": "object",
+          "required": [
+            "query_id"
+          ],
+          "properties": {
+            "new_query_data": {
+              "description": "*new_query_data** is new data(basicly query itself) we want to be performed",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "new_update_period": {
+              "description": "*new_update_period** is a new update period of the query",
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "query_id": {
+              "description": "*query_id** is ID of the query we want to update",
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "RemoveInterchainQuery removes as interchain query",
+      "type": "object",
+      "required": [
+        "remove_interchain_query"
+      ],
+      "properties": {
+        "remove_interchain_query": {
+          "type": "object",
+          "required": [
+            "query_id"
+          ],
+          "properties": {
+            "query_id": {
+              "description": "*query_id** is ID of the query we want to remove",
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
     }
   ],
   "definitions": {

@@ -28,6 +28,14 @@ pub enum ExecuteMsg {
         connection_id: String,
         update_period: u64,
     },
+    UpdateInterchainQuery {
+        query_id: u64,
+        new_query_data: Option<String>,
+        new_update_period: Option<u64>,
+    },
+    RemoveInterchainQuery {
+        query_id: u64,
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

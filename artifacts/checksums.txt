@@ -1,3 +1,7 @@
 b8b8650aa62de7172b201b2a8e4e9df37757cb634dbf2e4a7f9b9e353ba5ea46  ibc_transfer.wasm
+<<<<<<< HEAD
 a0c59cc8b9946737a36482120308f5fed541bc8012e474d08e24c1009f41751f  neutron_interchain_queries.wasm
 f749ad20727695ec8745dbdf7a23b818cff0b36aeee4be3381192c490be12943  reflect.wasm
+=======
+44fcbd0ac950484bc18f083a48df584fbcecddbab247b796aad44a6b590ef9e9  neutron_interchain_queries.wasm
+>>>>>>> crud bindings implemented

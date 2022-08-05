@@ -22,6 +22,7 @@ use interchain_queries::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use interchain_queries::queries::{query_balance, query_delegations, query_registered_query};
 use interchain_queries::register_queries::{
     register_balance_query, register_delegator_delegations_query, register_transfers_query,
+    remove_interchain_query, update_interchain_query,
 };
 use interchain_queries::sudo::{sudo_kv_query_result, sudo_tx_query_result};
 use neutron_bindings::msg::NeutronMsg;
@@ -83,6 +84,12 @@ pub fn execute(
             recipient,
             update_period,
         } => register_transfers_query(deps, env, connection_id, zone_id, recipient, update_period),
+        ExecuteMsg::UpdateInterchainQuery {
+            query_id,
+            new_query_data,
+            new_update_period,
+        } => update_interchain_query(query_id, new_query_data, new_update_period),
+        ExecuteMsg::RemoveInterchainQuery { query_id } => remove_interchain_query(query_id),
     }
 }
 
