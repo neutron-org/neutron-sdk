@@ -1,9 +1,12 @@
 use crate::error::ContractResult;
 use crate::helpers::{
-    create_account_balances_prefix, create_delegation_key, create_validator_key, decode_and_convert,
+    create_account_balances_prefix, create_delegation_key, create_params_store_key,
+    create_validator_key, decode_and_convert,
 };
 use crate::sudo::TransferRecipientQuery;
-use crate::types::{QueryType, BANK_STORE_KEY, STAKING_STORE_KEY};
+use crate::types::{
+    QueryType, BANK_STORE_KEY, KEY_BOND_DENOM, PARAMS_STORE_KEY, STAKING_STORE_KEY,
+};
 use cosmwasm_std::{attr, Attribute, Binary, DepsMut, Env, Response, StdError};
 use neutron_bindings::msg::NeutronMsg;
 use neutron_bindings::query::InterchainQueries;
@@ -108,14 +111,27 @@ pub fn register_delegator_delegations_query(
 ) -> ContractResult<Response<NeutronMsg>> {
     let delegator_addr = decode_and_convert(delegator.as_str())?;
 
-    let mut keys: Vec<KVKey> = Vec::with_capacity(validators.len() * 2);
+    // Allocate memory for such KV keys as:
+    // * staking module params to get staking denomination
+    // * validators structures to calculate amount of delegated tokens
+    // * delegations structures to get info about delegations itself
+    let mut keys: Vec<KVKey> = Vec::with_capacity(validators.len() * 2 + 1);
+
+    // create KV key to get BondDenom from staking module params
+    keys.push(KVKey {
+        path: PARAMS_STORE_KEY.to_string(),
+        key: Binary(create_params_store_key(STAKING_STORE_KEY, KEY_BOND_DENOM)),
+    });
 
     for v in &validators {
+        // create delegation key to get delegation structure
         let val_addr = decode_and_convert(v.as_str())?;
         keys.push(KVKey {
             path: STAKING_STORE_KEY.to_string(),
             key: Binary(create_delegation_key(&delegator_addr, &val_addr)?),
         });
+
+        // create validator key to get validator structure
         keys.push(KVKey {
             path: STAKING_STORE_KEY.to_string(),
             key: Binary(create_validator_key(&val_addr)?),

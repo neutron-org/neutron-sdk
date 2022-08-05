@@ -1,7 +1,7 @@
 use crate::error::ContractResult;
 use cosmos_sdk_proto::cosmos::base::v1beta1::Coin as CosmosCoin;
 use cosmos_sdk_proto::cosmos::staking::v1beta1::{Delegation, Validator};
-use cosmwasm_std::{Addr, Coin, Decimal, Uint128};
+use cosmwasm_std::{from_binary, Addr, Coin, Decimal, Uint128};
 use neutron_bindings::types::StorageValue;
 use prost::Message as ProstMessage;
 use schemars::JsonSchema;
@@ -35,6 +35,16 @@ pub const BANK_STORE_KEY: &str = "bank";
 
 /// Name of the standard **staking** Cosmos-SDK module
 pub const STAKING_STORE_KEY: &str = "staking";
+
+/// Key for bond denomination param of Cosmos-SDK staking module
+/// https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/staking/types/params.go#L39
+pub const KEY_BOND_DENOM: &str = "BondDenom";
+
+/// Name of the standard **params** Cosmos-SDK module
+pub const PARAMS_STORE_KEY: &str = "params";
+
+/// Default delimiter of **params** Cosmos-SDK module
+pub const PARAMS_STORE_DELIMITER: &str = "/";
 
 #[derive(Serialize, Deserialize, Copy, Clone, Debug, PartialEq, JsonSchema)]
 /// Describes possible interchain query types
@@ -126,7 +136,11 @@ impl KVReconstruct for Delegations {
     fn reconstruct(storage_values: &[StorageValue]) -> ContractResult<Delegations> {
         let mut delegations: Vec<cosmwasm_std::Delegation> = vec![];
 
-        for chunk in storage_values.chunks(2) {
+        // first StorageValue is denom
+        let denom: String = from_binary(&storage_values[0].value)?;
+
+        // the rest are delegations and validators alternately
+        for chunk in storage_values[1..].chunks(2) {
             let delegation_sdk: Delegation = Delegation::decode(chunk[0].value.as_slice())?;
             let mut delegation_std = cosmwasm_std::Delegation {
                 delegator: Addr::unchecked(delegation_sdk.delegator_address.as_str()),
@@ -146,7 +160,7 @@ impl KVReconstruct for Delegations {
                 1_000_000_000_000_000_000u128,
                 Uint128::from_str(&validator.delegator_shares)?,
             );
-            delegation_std.amount = Coin::new(tokens.u128(), "kek".to_string());
+            delegation_std.amount = Coin::new(tokens.u128(), &denom);
 
             delegations.push(delegation_std);
         }

@@ -164,6 +164,11 @@ fn test_query_delegator_delegations() {
         result: InterchainQueryResult {
             kv_results: vec![
                 StorageValue {
+                    storage_prefix: "params".to_string(),
+                    key: Binary::from(base64::decode("c3Rha2luZy9Cb25kRGVub20=").unwrap()),
+                    value: Binary::from(base64::decode("InVvc21vIg==").unwrap()),
+                },
+                StorageValue {
                     storage_prefix: "staking".to_string(),
                     key: Binary::from(decode_hex("311420a959e0d22e201f727137f2d7c41a5dc63b90b8141ab940697a73dd080edafeb538ad408b5cae0264").unwrap()),
                     value: Binary::from(base64::decode("Citvc21vMXl6NTRuY3hqOWNzcDd1bjN4bGVkMDNxNnRocnJoeTljenRrZnpzEjJvc21vdmFsb3BlcjFyMnU1cTZ0Nncwd3Nzcms2bDY2bjN0MnEzZHcydXFueTRnajJlMxoZNTE3NzYyODAwMDAwMDAwMDAwMDAwMDAwMA==").unwrap()),
@@ -217,17 +222,17 @@ fn test_query_delegator_delegations() {
                 Delegation {
                     delegator: Addr::unchecked("osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs"),
                     validator: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3".to_string(),
-                    amount: Coin::new(5177628u128, "kek".to_string())
+                    amount: Coin::new(5177628u128, "uosmo".to_string())
                 },
                 Delegation {
                     delegator: Addr::unchecked("osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs"),
                     validator: "osmovaloper1ej2es5fjztqjcd4pwa0zyvaevtjd2y5w37wr9t".to_string(),
-                    amount: Coin::new(29620221u128, "kek".to_string())
+                    amount: Coin::new(29620221u128, "uosmo".to_string())
                 },
                 Delegation {
                     delegator: Addr::unchecked("osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs"),
                     validator: "osmovaloper1lzhlnpahvznwfv4jmay2tgaha5kmz5qxwmj9we".to_string(),
-                    amount: Coin::new(219920u128, "kek".to_string())
+                    amount: Coin::new(219920u128, "uosmo".to_string())
                 }
             ],
         }

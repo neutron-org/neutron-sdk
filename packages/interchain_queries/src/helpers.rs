@@ -1,5 +1,18 @@
 use crate::error::{ContractError, ContractResult};
-use crate::types::{AddressBytes, BALANCES_PREFIX, DELEGATION_KEY, MAX_ADDR_LEN, VALIDATORS_KEY};
+use crate::types::{
+    AddressBytes, BALANCES_PREFIX, DELEGATION_KEY, MAX_ADDR_LEN, PARAMS_STORE_DELIMITER,
+    VALIDATORS_KEY,
+};
+
+/// Creates KV key to get **module** param by **key**
+pub fn create_params_store_key(module: &str, key: &str) -> Vec<u8> {
+    let mut s = String::with_capacity(module.len() + 1 + key.len());
+    s.push_str(module);
+    s.push_str(PARAMS_STORE_DELIMITER);
+    s.push_str(key);
+
+    s.into_bytes()
+}
 
 /// Decodes a bech32 encoded string and converts to base64 encoded bytes
 /// https://github.com/cosmos/cosmos-sdk/blob/ad9e5620fb3445c716e9de45cfcdb56e8f1745bf/types/bech32/bech32.go#L20
