@@ -66,33 +66,33 @@ impl Querier for WasmMockQuerier {
     }
 }
 
-impl WasmMockQuerier {
-    pub fn handle_query(&self, request: &QueryRequest<CustomQueryWrapper>) -> QuerierResult {
-        match &request {
-            QueryRequest::Stargate { path, data } => {
-                if !self.stargare_responses.contains_key(path) {
-                    return SystemResult::Err(SystemError::InvalidRequest {
-                        error: format!("invalid path {}", path),
-                        request: data.clone(),
-                    });
-                }
-                SystemResult::Ok(ContractResult::Ok(Binary::from(
-                    self.stargare_responses.get(path).unwrap().clone(),
-                )))
-            }
-            _ => self.base.handle_query(request),
-        }
-    }
+// impl WasmMockQuerier {
+//     pub fn handle_query(&self, request: &QueryRequest<CustomQueryWrapper>) -> QuerierResult {
+//         match &request {
+//             QueryRequest::Stargate { path, data } => {
+//                 if !self.stargare_responses.contains_key(path) {
+//                     return SystemResult::Err(SystemError::InvalidRequest {
+//                         error: format!("invalid path {}", path),
+//                         request: data.clone(),
+//                     });
+//                 }
+//                 SystemResult::Ok(ContractResult::Ok(Binary::from(
+//                     self.stargare_responses.get(path).unwrap().clone(),
+//                 )))
+//             }
+//             _ => self.base.handle_query(request),
+//         }
+//     }
 
-    pub fn _update_staking(
-        &mut self,
-        denom: &str,
-        validators: &[Validator],
-        delegations: &[FullDelegation],
-    ) {
-        self.base.update_staking(denom, validators, delegations);
-    }
-}
+//     pub fn _update_staking(
+//         &mut self,
+//         denom: &str,
+//         validators: &[Validator],
+//         delegations: &[FullDelegation],
+//     ) {
+//         self.base.update_staking(denom, validators, delegations);
+//     }
+// }
 
 #[derive(Clone, Default)]
 pub struct BalanceQuerier {

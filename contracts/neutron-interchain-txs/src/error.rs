@@ -21,9 +21,6 @@ pub enum ContractError {
     #[error("balance with denom '{denom:?}' for address '{recipient:?}' not found")]
     BalanceNotFound { denom: String, recipient: String },
 
-    #[error("empty stargate result for query type '{query_type:?}'")]
-    EmptyStargateResult { query_type: String },
-
     #[error("interchain query for {zone_id:?} {query_type:?} {query_data_json_encoded:?} is not registered")]
     InterchainQueryIsNotRegistered {
         zone_id: String,

@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::env::current_dir;
-use std::fs::create_dir_all;
-
 use cosmwasm_schema::{export_schema, remove_schemas, schema_for};
 use interchain_txs::msg::{InstantiateMsg, MigrateMsg, SudoMsg};
+use neutron_interchain_txs::contract::QueryMsg;
+use std::env::current_dir;
+use std::fs::create_dir_all;
 
 fn main() {
     let mut out_dir = current_dir().unwrap();
@@ -27,4 +27,5 @@ fn main() {
     export_schema(&schema_for!(InstantiateMsg), &out_dir);
     export_schema(&schema_for!(MigrateMsg), &out_dir);
     export_schema(&schema_for!(SudoMsg), &out_dir);
+    export_schema(&schema_for!(QueryMsg), &out_dir);
 }
