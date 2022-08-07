@@ -164,7 +164,7 @@ impl KVReconstruct for Delegations {
             let validator_tokens = Decimal::from_atomics(Uint128::from_str(&validator.tokens)?, 0)?;
 
             // https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/staking/keeper/querier.go#L463
-            // delegated_tokens = quotient(delegation.shares * validator.tokens / delegator.shares);
+            // delegated_tokens = quotient(delegation.shares * validator.tokens / validator.total_shares);
             let delegated_tokens = delegation_shares
                 .checked_mul(validator_tokens)?
                 .div(delegator_shares)
