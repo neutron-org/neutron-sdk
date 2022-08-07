@@ -164,12 +164,11 @@
         },
         "value": {
           "description": "*value** must be a valid serialized protocol buffer of the above specified type",
-          "type": "array",
-          "items": {
-            "type": "integer",
-            "format": "uint8",
-            "minimum": 0.0
-          }
+          "allOf": [
+            {
+              "$ref": "#/definitions/Binary"
+            }
+          ]
         }
       }
     }

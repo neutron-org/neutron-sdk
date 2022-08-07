@@ -6,8 +6,11 @@ use neutron_bindings::types::StorageValue;
 use prost::Message as ProstMessage;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use std::ops::Mul;
+use std::ops::Div;
 use std::str::FromStr;
+
+const DECIMAL_PLACES: u32 = 18;
+const DECIMAL_FRACTIONAL: u128 = 10u128.pow(DECIMAL_PLACES);
 
 const QUERY_TYPE_KV_VALUE: &str = "kv";
 const QUERY_TYPE_TX_VALUE: &str = "tx";
@@ -148,19 +151,28 @@ impl KVReconstruct for Delegations {
                 amount: Default::default(),
             };
 
-            // TODO: make sure math is ok
-            let share = Decimal::from_ratio(
-                Uint128::from_str(&delegation_sdk.shares)?,
-                Uint128::new(1_000_000_000_000_000_000u128),
-            );
-
             let validator: Validator = Validator::decode(chunk[1].value.as_slice())?;
-            let m = share.mul(Uint128::from_str(&validator.tokens)?);
-            let tokens = m.multiply_ratio(
-                1_000_000_000_000_000_000u128,
+
+            let delegation_shares =
+                Decimal::from_atomics(Uint128::from_str(&delegation_sdk.shares)?, DECIMAL_PLACES)?;
+
+            let delegator_shares = Decimal::from_atomics(
                 Uint128::from_str(&validator.delegator_shares)?,
-            );
-            delegation_std.amount = Coin::new(tokens.u128(), &denom);
+                DECIMAL_PLACES,
+            )?;
+
+            let validator_tokens = Decimal::from_atomics(Uint128::from_str(&validator.tokens)?, 0)?;
+
+            // https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/staking/keeper/querier.go#L463
+            // delegated_tokens = quotient(delegation.shares * validator.tokens / delegator.shares);
+            let delegated_tokens = delegation_shares
+                .checked_mul(validator_tokens)?
+                .div(delegator_shares)
+                .atomics()
+                .u128()
+                .div(DECIMAL_FRACTIONAL);
+
+            delegation_std.amount = Coin::new(delegated_tokens, &denom);
 
             delegations.push(delegation_std);
         }

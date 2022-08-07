@@ -1,5 +1,5 @@
 use crate::types::QueryType;
-use cosmwasm_std::StdError;
+use cosmwasm_std::{DecimalRangeExceeded, OverflowError, StdError};
 use serde_json_wasm;
 use thiserror::Error;
 
@@ -30,6 +30,12 @@ pub enum ContractError {
 
     #[error("invalid query type: expected '{expected:?}' got {actual:?}")]
     InvalidQueryType { expected: QueryType, actual: String },
+
+    #[error("Decimal range exceeded")]
+    DecimalRangeExceeded(#[from] DecimalRangeExceeded),
+
+    #[error("Overflow error")]
+    OverflowError(#[from] OverflowError),
 }
 
 impl From<serde_json_wasm::de::Error> for ContractError {
