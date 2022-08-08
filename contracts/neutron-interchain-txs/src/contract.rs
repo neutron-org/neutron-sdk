@@ -19,14 +19,15 @@ use cosmos_sdk_proto::cosmos::staking::v1beta1::{
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    from_binary, to_binary, to_vec, Binary, CosmosMsg, Deps, DepsMut, Env, MessageInfo,
-    QueryRequest, Reply, Response, StdError, StdResult, Storage, SubMsg,
+    from_binary, to_binary, to_vec, Binary, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Reply,
+    Response, StdError, StdResult, Storage, SubMsg,
 };
 use interchain_txs::helpers::{parse_item, parse_response};
 use interchain_txs::msg::SudoMsg;
 use interchain_txs::storage::RequestPacket;
 use neutron_bindings::msg::NeutronMsg;
 use neutron_bindings::query::InterchainQueries;
+
 use neutron_bindings::types::QueryInterchainAccountAddressResponse;
 use neutron_bindings::ProtobufAny;
 use prost::Message;
@@ -43,7 +44,8 @@ use crate::storage::{
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
-    InterchainAccountAddress {},
+    Ica {},
+    Config {},
 }
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -96,26 +98,30 @@ pub fn execute(
     }
 }
 
-#[entry_point]
+#[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> ContractResult<Binary> {
     match msg {
-        QueryMsg::InterchainAccountAddress {} => query_interchain_address(deps, env),
+        QueryMsg::Ica {} => query_interchain_address(deps, env),
+        QueryMsg::Config {} => query_config(deps),
     }
+}
+
+pub fn query_config(deps: Deps<InterchainQueries>) -> ContractResult<Binary> {
+    let config = CONFIG.load(deps.storage)?;
+    Ok(to_binary(&config)?)
 }
 
 pub fn query_interchain_address(deps: Deps<InterchainQueries>, env: Env) -> ContractResult<Binary> {
     let config = CONFIG.load(deps.storage)?;
-    let data: QueryInterchainAccountAddressResponse = deps.querier.query(&QueryRequest::<
-        InterchainQueries,
-    >::Custom(
-        InterchainQueries::InterchainAccountAddress {
-            owner_address: env.contract.address.to_string(),
-            interchain_account_id: config.interchain_account_id,
-            connection_id: config.connection_id,
-        },
-    ))?;
+    let query = InterchainQueries::InterchainAccountAddress {
+        owner_address: env.contract.address.to_string(),
+        interchain_account_id: config.interchain_account_id,
+        connection_id: config.connection_id,
+    };
 
-    Ok(to_binary(&data)?)
+    let res: QueryInterchainAccountAddressResponse = deps.querier.query(&query.into())?;
+
+    Ok(to_binary(&res)?)
 }
 
 pub fn get_next_id(store: &mut dyn Storage) -> StdResult<u64> {

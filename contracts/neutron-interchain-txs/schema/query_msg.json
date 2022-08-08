@@ -5,10 +5,22 @@
     {
       "type": "object",
       "required": [
-        "interchain_account_address"
+        "ica"
       ],
       "properties": {
-        "interchain_account_address": {
+        "ica": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "config"
+      ],
+      "properties": {
+        "config": {
           "type": "object"
         }
       },

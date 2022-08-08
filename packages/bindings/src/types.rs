@@ -26,7 +26,7 @@ pub struct QueryRegisteredQueryResultResponse {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct QueryInterchainAccountAddressResponse {
-    /// **interchain_account_address** is a interchain account address on the remote chain
+    /// **interchain_account_address** is an interchain account address on the remote chain
     pub interchain_account_address: String,
 }
 
