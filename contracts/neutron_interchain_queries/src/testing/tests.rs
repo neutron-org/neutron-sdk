@@ -165,36 +165,59 @@ fn test_query_delegator_delegations() {
             // response for `RegisterDelegatorDelegationsQuery` with necessary KV values to test reconstruction logic.
             // The values are taken from osmosis network
             kv_results: vec![
+                // params value of staking module for key 'staking/BondDenom'
+                // value: uosmo
                 StorageValue {
                     storage_prefix: "params".to_string(),
                     key: Binary::from(base64::decode("c3Rha2luZy9Cb25kRGVub20=").unwrap()),
                     value: Binary::from(base64::decode("InVvc21vIg==").unwrap()),
                 },
+                // delegation
+                // from: osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs
+                // to: osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3
+                // delegation_shares: "5177628000000000000000000"
                 StorageValue {
                     storage_prefix: "staking".to_string(),
                     key: Binary::from(decode_hex("311420a959e0d22e201f727137f2d7c41a5dc63b90b8141ab940697a73dd080edafeb538ad408b5cae0264").unwrap()),
                     value: Binary::from(base64::decode("Citvc21vMXl6NTRuY3hqOWNzcDd1bjN4bGVkMDNxNnRocnJoeTljenRrZnpzEjJvc21vdmFsb3BlcjFyMnU1cTZ0Nncwd3Nzcms2bDY2bjN0MnEzZHcydXFueTRnajJlMxoZNTE3NzYyODAwMDAwMDAwMDAwMDAwMDAwMA==").unwrap()),
                 },
+                // validator: osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3
+                // delegator_shares: "2845862840643000000000000000000"
+                // total tokens: "2845862840643"
                 StorageValue {
                     storage_prefix: "staking".to_string(),
                     key: Binary::from(decode_hex("21141ab940697a73dd080edafeb538ad408b5cae0264").unwrap()),
                     value: Binary::from(base64::decode("CjJvc21vdmFsb3BlcjFyMnU1cTZ0Nncwd3Nzcms2bDY2bjN0MnEzZHcydXFueTRnajJlMxJDCh0vY29zbW9zLmNyeXB0by5lZDI1NTE5LlB1YktleRIiCiCaZhCbacCetQorko3LfUUJX2UEyX38qBGVri8GyH8lcCADKg0yODQ1ODYyODQwNjQzMh8yODQ1ODYyODQwNjQzMDAwMDAwMDAwMDAwMDAwMDAwOqQCChRzdHJhbmdlbG92ZS12ZW50dXJlcxIQRDBEOEI4MEYxQzVDNzBCNRocaHR0cHM6Ly9zdHJhbmdlbG92ZS52ZW50dXJlcyrbAScuLi5iZWNhdXNlIG9mIHRoZSBhdXRvbWF0ZWQgYW5kIGlycmV2b2NhYmxlIGRlY2lzaW9uLW1ha2luZyBwcm9jZXNzIHdoaWNoIHJ1bGVzIG91dCBodW1hbiBtZWRkbGluZywgdGhlIERvb21zZGF5IG1hY2hpbmUgaXMgdGVycmlmeWluZyBhbmQgc2ltcGxlIHRvIHVuZGVyc3RhbmQgYW5kIGNvbXBsZXRlbHkgY3JlZGlibGUgYW5kIGNvbnZpbmNpbmcuJyAtIERyLiBTdHJhbmdlbG92ZUoAUkwKPAoRNTAwMDAwMDAwMDAwMDAwMDASEzEwMDAwMDAwMDAwMDAwMDAwMDAaEjUwMDAwMDAwMDAwMDAwMDAwMBIMCPetyYYGEKPoosUCWgEx").unwrap()),
                 },
+                // delegation
+                // from: osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs
+                // to: osmovaloper1ej2es5fjztqjcd4pwa0zyvaevtjd2y5w37wr9t
+                // delegation_shares: "29620221000000000000000000"
                 StorageValue {
                     storage_prefix: "staking".to_string(),
                     key: Binary::from(decode_hex("311420a959e0d22e201f727137f2d7c41a5dc63b90b814cc9598513212c12c36a1775e2233b962e4d5128e").unwrap()),
                     value: Binary::from(base64::decode("Citvc21vMXl6NTRuY3hqOWNzcDd1bjN4bGVkMDNxNnRocnJoeTljenRrZnpzEjJvc21vdmFsb3BlcjFlajJlczVmanp0cWpjZDRwd2Ewenl2YWV2dGpkMnk1dzM3d3I5dBoaMjk2MjAyMjEwMDAwMDAwMDAwMDAwMDAwMDA=").unwrap()),
                 },
+                // validator: osmovaloper1ej2es5fjztqjcd4pwa0zyvaevtjd2y5w37wr9t
+                // delegator_shares: "3054477259038000000000000000000"
+                // total tokens: "3054477259038"
                 StorageValue {
                     storage_prefix: "staking".to_string(),
                     key: Binary::from(decode_hex("2114cc9598513212c12c36a1775e2233b962e4d5128e").unwrap()),
                     value: Binary::from(base64::decode("CjJvc21vdmFsb3BlcjFlajJlczVmanp0cWpjZDRwd2Ewenl2YWV2dGpkMnk1dzM3d3I5dBJDCh0vY29zbW9zLmNyeXB0by5lZDI1NTE5LlB1YktleRIiCiA27dgAuZV/uS9FdsILGWLBw8eYPy+ZEyv1Df2VsrjXDiADKg0zMDU0NDc3MjU5MDM4Mh8zMDU0NDc3MjU5MDM4MDAwMDAwMDAwMDAwMDAwMDAwOoEBChFGcmVucyAo8J+knSzwn6SdKRIQQzQ3ODQ1MjI2NjYyQUY0NxoSaHR0cHM6Ly9mcmVucy5hcm15IhtzZWN1cml0eUBraWRzb250aGVibG9jay54eXoqKVlvdXIgZnJpZW5kbHkgdmFsaWRhdG9yIGZvciBjb3Ntb3MgY2hhaW5zQP3HpQFKCwj3zq6PBhCfrO86UkoKOgoRNTAwMDAwMDAwMDAwMDAwMDASEjUwMDAwMDAwMDAwMDAwMDAwMBoRNTAwMDAwMDAwMDAwMDAwMDASDAjg1rSQBhDkudCDAVoDNTAw").unwrap()),
                 },
+                // delegation
+                // from: osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs
+                // to: osmovaloper1lzhlnpahvznwfv4jmay2tgaha5kmz5qxwmj9we
+                // delegation_shares: "219920000000000000000000"
                 StorageValue {
                     storage_prefix: "staking".to_string(),
                     key: Binary::from(decode_hex("311420a959e0d22e201f727137f2d7c41a5dc63b90b814f8aff987b760a6e4b2b2df48a5a3b7ed2db15006").unwrap()),
                     value: Binary::from(base64::decode("Citvc21vMXl6NTRuY3hqOWNzcDd1bjN4bGVkMDNxNnRocnJoeTljenRrZnpzEjJvc21vdmFsb3BlcjFsemhsbnBhaHZ6bndmdjRqbWF5MnRnYWhhNWttejVxeHdtajl3ZRoYMjE5OTIwMDAwMDAwMDAwMDAwMDAwMDAw").unwrap()),
                 },
+                // validator: osmovaloper1lzhlnpahvznwfv4jmay2tgaha5kmz5qxwmj9we
+                // delegator_shares: "3201438898476000000000000000000"
+                // total tokens: "3201438898476"
                 StorageValue {
                     storage_prefix: "staking".to_string(),
                     key: Binary::from(decode_hex("2114f8aff987b760a6e4b2b2df48a5a3b7ed2db15006").unwrap()),
