@@ -51,6 +51,7 @@ pub enum QueryMsg {
     IcaContract {
         interchain_account_id: String,
     },
+    LastAckState {},
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -136,6 +137,7 @@ pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> Contract
         QueryMsg::IcaContract {
             interchain_account_id,
         } => query_interchain_address_contract(deps, env, interchain_account_id),
+        QueryMsg::LastAckState {} => query_last_ack_state(deps),
     }
 }
 
@@ -385,6 +387,10 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
     let payload = read_sudo_payload(deps.storage, seq_id)?;
     deps.api
         .debug(format!("WASMDEBUG: sudo_response: sudo payload: {:?}", payload).as_str());
+
+    // write into last state
+    LAST_ACK_STATE.save(deps.storage, &Some(LastSudoState::Ack(payload.message.to_string())))?;
+
     // handle response
     let parsed_data = parse_response(data)?;
 
