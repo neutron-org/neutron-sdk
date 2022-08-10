@@ -35,7 +35,6 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::error::ContractResult;
-use crate::msg::ExecuteMsg;
 use crate::msg::{InstantiateMsg, MigrateMsg};
 use crate::storage::{
     Config, CONFIG, IBC_SUDO_ID_RANGE_END, IBC_SUDO_ID_RANGE_START, REPLY_QUEUE_ID, SUDO_PAYLOAD,
@@ -47,6 +46,25 @@ pub enum QueryMsg {
     Ica {},
     Config {},
 }
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+struct OpenAckVersion {
+    version: String,
+    controller_connection_id: String,
+    host_connection_id: String,
+    address: String,
+    encoding: String,
+    tx_type: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum ExecuteMsg {
+    Delegate { validator: String, amount: u128 },
+    Undelegate { validator: String, amount: u128 },
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct SudoPayload {
@@ -70,6 +88,7 @@ pub fn instantiate(
             connection_id: msg.connection_id,
             interchain_account_id: msg.interchain_account_id,
             denom: msg.denom,
+            interchain_address: None,
         },
     )?;
     Ok(Response::new().add_message(register))
@@ -85,16 +104,12 @@ pub fn execute(
     deps.api
         .debug(format!("WASMDEBUG: execute: received msg: {:?}", msg).as_str());
     match msg {
-        ExecuteMsg::Delegate {
-            delegator,
-            validator,
-            amount,
-        } => execute_delegate(deps, env, delegator, validator, amount),
-        ExecuteMsg::Undelegate {
-            delegator,
-            validator,
-            amount,
-        } => execute_undelegate(deps, env, delegator, validator, amount),
+        ExecuteMsg::Delegate { validator, amount } => {
+            execute_delegate(deps, env, validator, amount)
+        }
+        ExecuteMsg::Undelegate { validator, amount } => {
+            execute_undelegate(deps, env, validator, amount)
+        }
     }
 }
 
@@ -160,11 +175,14 @@ fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
 fn execute_delegate(
     mut deps: DepsMut,
     _env: Env,
-    delegator: String,
     validator: String,
     amount: u128,
 ) -> StdResult<Response<NeutronMsg>> {
     let config = CONFIG.load(deps.storage)?;
+    let delegator = config
+        .interchain_address
+        .ok_or_else(|| StdError::generic_err("Interchain account is not created yet"))?;
+
     let delegate_msg = MsgDelegate {
         delegator_address: delegator,
         validator_address: validator,
@@ -206,11 +224,13 @@ fn execute_delegate(
 fn execute_undelegate(
     mut deps: DepsMut,
     _env: Env,
-    delegator: String,
     validator: String,
     amount: u128,
 ) -> StdResult<Response<NeutronMsg>> {
     let config = CONFIG.load(deps.storage)?;
+    let delegator = config
+        .interchain_address
+        .ok_or_else(|| StdError::generic_err("Interchain account is not created yet"))?;
     let delegate_msg = MsgUndelegate {
         delegator_address: delegator,
         validator_address: validator,
@@ -255,13 +275,44 @@ pub fn sudo(deps: DepsMut, env: Env, msg: SudoMsg) -> StdResult<Response> {
         SudoMsg::Response { request, data } => sudo_response(deps, request, data),
         SudoMsg::Error { request, details } => sudo_error(deps.as_ref(), request, details),
         SudoMsg::Timeout { request } => sudo_timeout(deps, env, request),
-        _ => Ok(Response::default()),
+        SudoMsg::OpenAck {
+            port_id,
+            channel_id,
+            counterparty_channel_id,
+            counterparty_version,
+        } => sudo_open_ack(
+            deps,
+            env,
+            port_id,
+            channel_id,
+            counterparty_channel_id,
+            counterparty_version,
+        ),
     }
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
     Ok(Response::default())
+}
+
+fn sudo_open_ack(
+    deps: DepsMut,
+    _env: Env,
+    _port_id: String,
+    _channel_id: String,
+    _counterparty_channel_id: String,
+    counterparty_version: String,
+) -> StdResult<Response> {
+    let mut config = CONFIG.load(deps.storage)?;
+    let parsed_version: Result<OpenAckVersion, _> =
+        serde_json_wasm::from_str(counterparty_version.as_str());
+    if let Ok(parsed_version) = parsed_version {
+        config.interchain_address = Some(parsed_version.address);
+        CONFIG.save(deps.storage, &config)?;
+        return Ok(Response::default());
+    }
+    Err(StdError::generic_err("Can't parse counterparty_version"))
 }
 
 fn sudo_response(deps: DepsMut, request: RequestPacket, data: String) -> StdResult<Response> {

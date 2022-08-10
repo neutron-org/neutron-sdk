@@ -6,6 +6,7 @@ pub struct Config {
     pub connection_id: String,
     pub interchain_account_id: String,
     pub denom: String,
+    pub interchain_address: Option<String>,
 }
 
 pub const IBC_SUDO_ID_RANGE_START: u64 = 1_000_000_000;

@@ -35,6 +35,7 @@ library = []
 cosmwasm-std = { version = "1.0.0", features = ["staking"] }
 schemars = "0.8.10"
 serde = { version = "1.0.103", default-features = false, features = ["derive"] }
+serde-json-wasm = { version = "0.4.1" }
 cw-storage-plus = { version = "0.13.2", features = ["iterator"]}
 interchain_txs = { path = "../../packages/interchain_txs", default-features = false, version = "0.1.0"}
 cosmos-sdk-proto = { version = "0.12.2", default-features = false }
