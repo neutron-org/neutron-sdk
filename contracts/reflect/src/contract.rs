@@ -1,14 +1,13 @@
+use crate::query::{ChainResponse, InterchainQueries, QueryMsg};
 use cosmwasm_std::{
     entry_point, to_binary, to_vec, Binary, ContractResult, Deps, DepsMut, Env, MessageInfo,
     QueryRequest, Response, StdError, StdResult, SystemResult,
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-
-use crate::query::{ChainResponse, InterchainQueries, QueryMsg};
-
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct InstantiateMsg {}
+use neutron_sudo::msg::SudoMsg;
 
 #[entry_point]
 pub fn instantiate(
@@ -60,4 +59,9 @@ fn query_with_payload(
         ))),
         SystemResult::Ok(ContractResult::Ok(value)) => Ok(ChainResponse { data: value }),
     }
+}
+
+#[entry_point]
+pub fn sudo(_deps: DepsMut, _env: Env, _msg: SudoMsg) -> StdResult<Response> {
+    Ok(Response::default())
 }
