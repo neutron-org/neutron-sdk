@@ -19,7 +19,3 @@ pub mod contract;
 mod error;
 mod msg;
 mod storage;
-
-#[allow(clippy::unwrap_used)]
-#[cfg(test)]
-mod testing;
