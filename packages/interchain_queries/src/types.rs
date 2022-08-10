@@ -1,152 +1,182 @@
-use crate::error::{ContractError, ContractResult};
-use cosmwasm_std::{Coin, Uint128};
+use crate::error::ContractResult;
+use cosmos_sdk_proto::cosmos::base::v1beta1::Coin as CosmosCoin;
+use cosmos_sdk_proto::cosmos::staking::v1beta1::{Delegation, Validator};
+use cosmwasm_std::{from_binary, Addr, Coin, Decimal, Uint128};
+use neutron_bindings::types::StorageValue;
+use prost::Message as ProstMessage;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use std::ops::Div;
 use std::str::FromStr;
 
-pub const DEFAULT_UPDATE_PERIOD: u64 = 10;
+const DECIMAL_PLACES: u32 = 18;
+const DECIMAL_FRACTIONAL: u128 = 10u128.pow(DECIMAL_PLACES);
 
-pub const QUERY_BALANCE_QUERY_TYPE: &str = "x/bank/GetBalance";
-pub const QUERY_DELEGATOR_DELEGATIONS_QUERY_TYPE: &str = "x/staking/DelegatorDelegations";
-pub const QUERY_TRANSFERS: &str = "x/tx/RecipientTransactions";
+const QUERY_TYPE_KV_VALUE: &str = "kv";
+const QUERY_TYPE_TX_VALUE: &str = "tx";
 
-pub const REGISTER_INTERCHAIN_QUERY_REPLY_ID: u64 = 1;
-
-pub const REGISTER_INTERCHAIN_QUERY_PATH: &str =
-    "/neutron.interchainadapter.interchainqueries.MsgRegisterInterchainQuery";
-
-pub const QUERY_REGISTERED_QUERY_RESULT_PATH: &str =
-    "/neutron.interchainadapter.interchainqueries.Query/QueryResult";
-
-pub const QUERY_REGISTERED_QUERY_PATH: &str =
-    "/neutron.interchainadapter.interchainqueries.Query/RegisteredQuery";
-
-pub const QUERY_REGISTERED_QUERY_TRANSACTIONS_RESULT_PATH: &str =
-    "/neutron.interchainadapter.interchainqueries.Query/QueryTransactions";
-
+/// Protobuf type url of standard Cosmos SDK bank transfer message
 pub const COSMOS_SDK_TRANSFER_MSG_URL: &str = "/cosmos.bank.v1beta1.MsgSend";
 
-const BALANCES_PREFIX: u8 = 0x02;
-const DELEGATION_KEY: u8 = 0x31;
+/// Storage prefix for account balances store
+/// https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/bank/types/key.go#L27
+pub const BALANCES_PREFIX: u8 = 0x02;
 
-const MAX_ADDR_LEN: usize = 255;
+/// Key for delegations in the **staking** module's storage
+/// https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/staking/types/keys.go#L39
+pub const DELEGATION_KEY: u8 = 0x31;
 
-/// Decodes a bech32 encoded string and converts to base64 encoded bytes
-/// https://github.com/cosmos/cosmos-sdk/blob/ad9e5620fb3445c716e9de45cfcdb56e8f1745bf/types/bech32/bech32.go#L20
-pub fn decode_and_convert(decoded: &str) -> ContractResult<Vec<u8>> {
-    let (_hrp, bytes, _variant) = bech32::decode(decoded)?;
+/// Key for validators in the **staking** module's storage
+/// https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/staking/types/keys.go#L35
+pub const VALIDATORS_KEY: u8 = 0x21;
 
-    Ok(bech32::convert_bits(bytes.as_slice(), 5, 8, false)?)
+/// Maximum length of address
+pub const MAX_ADDR_LEN: usize = 255;
+
+/// Name of the standard **bank** Cosmos-SDK module
+pub const BANK_STORE_KEY: &str = "bank";
+
+/// Name of the standard **staking** Cosmos-SDK module
+pub const STAKING_STORE_KEY: &str = "staking";
+
+/// Key for bond denomination param of Cosmos-SDK staking module
+/// https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/staking/types/params.go#L39
+pub const KEY_BOND_DENOM: &str = "BondDenom";
+
+/// Name of the standard **params** Cosmos-SDK module
+pub const PARAMS_STORE_KEY: &str = "params";
+
+/// Default delimiter of **params** Cosmos-SDK module
+pub const PARAMS_STORE_DELIMITER: &str = "/";
+
+#[derive(Serialize, Deserialize, Copy, Clone, Debug, PartialEq, JsonSchema)]
+/// Describes possible interchain query types
+pub enum QueryType {
+    #[serde(rename = "kv")]
+    /// **kv** is an interchain query type to query KV values from remote chain
+    KV,
+
+    /// **tx** is an interchain query type to query transactions from remote chain
+    #[serde(rename = "tx")]
+    TX,
 }
 
-/// Prefixes the address bytes with its length
-pub fn length_prefix(bz: Vec<u8>) -> ContractResult<Vec<u8>> {
-    let bz_length = bz.len();
-
-    if bz_length == 0 {
-        return Ok(vec![]);
+impl QueryType {
+    /// Tries to parse query type from string
+    /// Returns **None** if string is invalid query type
+    pub fn try_from_str(s: &str) -> Option<QueryType> {
+        match s {
+            QUERY_TYPE_KV_VALUE => Some(QueryType::KV),
+            QUERY_TYPE_TX_VALUE => Some(QueryType::TX),
+            _ => None,
+        }
     }
+}
 
-    if bz_length > MAX_ADDR_LEN {
-        return Err(ContractError::MaxAddrLength {
-            max: MAX_ADDR_LEN,
-            actual: bz_length,
-        });
+#[allow(clippy::from_over_into)]
+impl Into<String> for QueryType {
+    fn into(self) -> String {
+        match self {
+            QueryType::KV => QUERY_TYPE_KV_VALUE.to_string(),
+            QueryType::TX => QUERY_TYPE_TX_VALUE.to_string(),
+        }
     }
-
-    let mut p: Vec<u8> = vec![bz_length as u8];
-    p.extend_from_slice(bz.as_slice());
-
-    Ok(p)
 }
 
-// https://github.com/cosmos/cosmos-sdk/blob/ad9e5620fb3445c716e9de45cfcdb56e8f1745bf/x/bank/types/key.go#L55
-pub fn create_account_balances_prefix(addr: Vec<u8>) -> ContractResult<Vec<u8>> {
-    let mut prefix: Vec<u8> = vec![BALANCES_PREFIX];
-    prefix.extend_from_slice(length_prefix(addr)?.as_slice());
+/// Bytes representations of Bech32 address
+pub type AddressBytes = Vec<u8>;
 
-    Ok(prefix)
-}
-
-// https://github.com/cosmos/cosmos-sdk/blob/ad9e5620fb3445c716e9de45cfcdb56e8f1745bf/x/staking/types/keys.go#L181
-pub fn create_delegations_key(delegator_address: Vec<u8>) -> ContractResult<Vec<u8>> {
-    let mut key: Vec<u8> = vec![DELEGATION_KEY];
-    key.extend_from_slice(length_prefix(delegator_address)?.as_slice());
-
-    Ok(key)
-}
-
-// only used in reply logic
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct TmpRegisteredQuery {
-    pub connection_id: String,
-    pub zone_id: String,
-    pub query_type: String,
-    pub query_data: String,
+/// A **data structure** that can be reconstructed from slice of **StorageValue** structures.
+/// Neutron provides `KVReconstruct` for many primitive and standard Cosmos-SDK types and query responses.
+/// The complete list is [here][TODO_LINK]. All of these can be deserialized using Neutron out of the box.
+///
+/// Third-party projects may provide `KVReconstruct` implementations for types that they introduce.
+/// For example if some query is not implemented in Neutron standard library, developers can create their own type/query and implement `KVReconstruct` for it.
+///
+///
+/// Usually used together with `query_kv_result` function. For example, there is an Interchain Query with some `query_id` to query balance from remote chain.
+/// And there is an implemented `KVReconstruct` for `Balance` structure.
+/// So you can easily get reconstructed response for the query just in one line:
+/// ```rust ignore
+/// let balances: Balances = query_kv_result(deps, query_id)?;
+/// ```
+///
+/// Anyone can implement `KVReconstruct` for any type and use `query_kv_result` without any problems.
+pub trait KVReconstruct: Sized {
+    /// Reconstructs this value from the slice of **StorageValue**'s.
+    fn reconstruct(kvs: &[StorageValue]) -> ContractResult<Self>;
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct GetBalanceQueryParams {
-    pub addr: String,
-    pub denom: String,
+/// A structure that can be reconstructed from **StorageValues**'s for the **Balance Interchain Query**.
+/// Contains coins that are held by some account on remote chain.
+pub struct Balances {
+    pub coins: Vec<Coin>,
+}
+
+impl KVReconstruct for Balances {
+    fn reconstruct(storage_values: &[StorageValue]) -> ContractResult<Balances> {
+        let mut coins: Vec<Coin> = vec![];
+
+        for kv in storage_values {
+            let balance: CosmosCoin = CosmosCoin::decode(kv.value.as_slice())?;
+            let amount = Uint128::from_str(balance.amount.as_str())?;
+            coins.push(Coin::new(amount.u128(), balance.denom));
+        }
+
+        Ok(Balances { coins })
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct GetDelegatorDelegationsParams {
-    pub delegator: String,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema, Default)]
-#[serde(rename_all = "snake_case")]
-pub struct GetTransfersParams {
-    #[serde(rename = "transfer.recipient")]
-    pub recipient: String,
-
-    #[serde(skip_serializing)]
-    pub start: u64,
-
-    #[serde(skip_serializing)]
-    pub end: u64,
-}
-
-pub fn protobuf_coin_to_std_coin(
-    coin: cosmos_sdk_proto::cosmos::base::v1beta1::Coin,
-) -> ContractResult<Coin> {
-    Ok(Coin::new(
-        Uint128::from_str(coin.amount.as_str())?.u128(),
-        coin.denom,
-    ))
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct QueryBalanceResponse {
-    pub amount: Coin,
-    pub last_submitted_local_height: u64,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct DelegatorDelegationsResponse {
+/// A structure that can be reconstructed from **StorageValues**'s for the **Delegator Delegation Interchain Query**.
+/// Contains delegations which some delegator has on remote chain.
+pub struct Delegations {
     pub delegations: Vec<cosmwasm_std::Delegation>,
-    pub last_submitted_local_height: u64,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct Transfer {
-    pub tx_id: u64,
-    pub sender: String,
-    pub recipient: String,
-    pub amount: Vec<Coin>,
-    pub height: u64,
-}
+impl KVReconstruct for Delegations {
+    fn reconstruct(storage_values: &[StorageValue]) -> ContractResult<Delegations> {
+        let mut delegations: Vec<cosmwasm_std::Delegation> = vec![];
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct TransfersResponse {
-    pub transfers: Vec<Transfer>,
-    pub last_submitted_local_height: u64,
+        // first StorageValue is denom
+        let denom: String = from_binary(&storage_values[0].value)?;
+
+        // the rest are delegations and validators alternately
+        for chunk in storage_values[1..].chunks(2) {
+            let delegation_sdk: Delegation = Delegation::decode(chunk[0].value.as_slice())?;
+            let mut delegation_std = cosmwasm_std::Delegation {
+                delegator: Addr::unchecked(delegation_sdk.delegator_address.as_str()),
+                validator: delegation_sdk.validator_address,
+                amount: Default::default(),
+            };
+
+            let validator: Validator = Validator::decode(chunk[1].value.as_slice())?;
+
+            let delegation_shares =
+                Decimal::from_atomics(Uint128::from_str(&delegation_sdk.shares)?, DECIMAL_PLACES)?;
+
+            let delegator_shares = Decimal::from_atomics(
+                Uint128::from_str(&validator.delegator_shares)?,
+                DECIMAL_PLACES,
+            )?;
+
+            let validator_tokens = Decimal::from_atomics(Uint128::from_str(&validator.tokens)?, 0)?;
+
+            // https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/staking/keeper/querier.go#L463
+            // delegated_tokens = quotient(delegation.shares * validator.tokens / validator.total_shares);
+            let delegated_tokens = delegation_shares
+                .checked_mul(validator_tokens)?
+                .div(delegator_shares)
+                .atomics()
+                .u128()
+                .div(DECIMAL_FRACTIONAL);
+
+            delegation_std.amount = Coin::new(delegated_tokens, &denom);
+
+            delegations.push(delegation_std);
+        }
+
+        Ok(Delegations { delegations })
+    }
 }
