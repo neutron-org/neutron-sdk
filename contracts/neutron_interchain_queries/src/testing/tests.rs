@@ -162,6 +162,8 @@ fn test_query_delegator_delegations() {
 
     let delegations_response = QueryRegisteredQueryResultResponse {
         result: InterchainQueryResult {
+            // response for `RegisterDelegatorDelegationsQuery` with necessary KV values to test reconstruction logic.
+            // The values are taken from osmosis network
             kv_results: vec![
                 StorageValue {
                     storage_prefix: "params".to_string(),

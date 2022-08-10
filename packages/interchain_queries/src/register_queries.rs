@@ -61,7 +61,7 @@ fn register_interchain_query(
 /// * **zone_id** is used to identify the chain of interest;
 /// * **addr** address of an account on remote chain for which you want to get balances;
 /// * **denom** denomination of the coin for which you want to get balance;
-/// **update_period** is used to say how often the query must be updated.
+/// * **update_period** is used to say how often the query must be updated.
 pub fn register_balance_query(
     deps: DepsMut<InterchainQueries>,
     env: Env,

@@ -49,7 +49,7 @@ pub struct RegisteredQuery {
     pub last_submitted_result_remote_height: u64,
 }
 
-/// QueryResult is a result data for a registered query
+/// InterchainQueryResult is a result data for a registered query
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct InterchainQueryResult {
@@ -99,7 +99,7 @@ impl ProtobufAny {
 }
 
 const KV_PATH_KEY_DELIMITER: &str = "/";
-const KV_KEYS_DELIMITER: &str = ";";
+const KV_KEYS_DELIMITER: &str = ",";
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
