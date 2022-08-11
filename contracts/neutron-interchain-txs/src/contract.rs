@@ -36,10 +36,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::ContractResult;
 use crate::msg::{InstantiateMsg, MigrateMsg};
-use crate::storage::{
-    IBC_SUDO_ID_RANGE_END, IBC_SUDO_ID_RANGE_START, INTERCHAIN_ACCOUNTS, REPLY_QUEUE_ID,
-    SUDO_PAYLOAD,
-};
+use crate::storage::{IBC_SUDO_ID_RANGE_END, IBC_SUDO_ID_RANGE_START, INTERCHAIN_ACCOUNTS, LAST_ACK_STATE, LastSudoState, REPLY_QUEUE_ID, SUDO_PAYLOAD};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -324,7 +321,7 @@ fn execute_undelegate(
 pub fn sudo(deps: DepsMut, env: Env, msg: SudoMsg) -> StdResult<Response> {
     match msg {
         SudoMsg::Response { request, data } => sudo_response(deps, request, data),
-        SudoMsg::Error { request, details } => sudo_error(deps.as_ref(), request, details),
+        SudoMsg::Error { request, details } => sudo_error(deps, request, details),
         SudoMsg::Timeout { request } => sudo_timeout(deps, env, request),
         SudoMsg::OpenAck {
             port_id,
@@ -389,7 +386,10 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
         .debug(format!("WASMDEBUG: sudo_response: sudo payload: {:?}", payload).as_str());
 
     // write into last state
-    LAST_ACK_STATE.save(deps.storage, &Some(LastSudoState::Ack(payload.message.to_string())))?;
+    LAST_ACK_STATE.save(
+        deps.storage,
+        &Some(LastSudoState::Ack(payload.message.to_string())),
+    )?;
 
     // handle response
     let parsed_data = parse_response(data)?;
@@ -423,12 +423,16 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
 fn sudo_timeout(deps: DepsMut, _env: Env, request: RequestPacket) -> StdResult<Response> {
     deps.api
         .debug(format!("WASMDEBUG: sudo timeout request: {:?}", request).as_str());
+    // write into last state
+    LAST_ACK_STATE.save(deps.storage, &Some(LastSudoState::Timeout))?;
     Ok(Response::default())
 }
 
-fn sudo_error(deps: Deps, _request: RequestPacket, details: String) -> StdResult<Response> {
+fn sudo_error(deps: DepsMut, _request: RequestPacket, details: String) -> StdResult<Response> {
     deps.api
         .debug(format!("WASMDEBUG: sudo error: {}", details).as_str());
+    // write into last state
+    LAST_ACK_STATE.save(deps.storage, &Some(LastSudoState::Error))?;
     Ok(Response::default())
 }
 

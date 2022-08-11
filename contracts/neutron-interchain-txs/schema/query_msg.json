@@ -45,6 +45,18 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "last_ack_state"
+      ],
+      "properties": {
+        "last_ack_state": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
     }
   ]
 }
