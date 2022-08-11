@@ -36,7 +36,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::ContractResult;
 use crate::msg::{InstantiateMsg, MigrateMsg};
-use crate::storage::{IBC_SUDO_ID_RANGE_END, IBC_SUDO_ID_RANGE_START, INTERCHAIN_ACCOUNTS, LAST_ACK_STATE, LastSudoState, REPLY_QUEUE_ID, SUDO_PAYLOAD};
+use crate::storage::{
+    LastSudoState, IBC_SUDO_ID_RANGE_END, IBC_SUDO_ID_RANGE_START, INTERCHAIN_ACCOUNTS,
+    LAST_ACK_STATE, REPLY_QUEUE_ID, SUDO_PAYLOAD,
+};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -164,6 +167,11 @@ pub fn query_interchain_address_contract(
     let address = INTERCHAIN_ACCOUNTS.load(deps.storage, key)?;
 
     Ok(to_binary(&address)?)
+}
+
+pub fn query_last_ack_state(deps: Deps<InterchainQueries>) -> ContractResult<Binary> {
+    let res = LAST_ACK_STATE.load(deps.storage)?;
+    Ok(to_binary(&res)?)
 }
 
 pub fn get_next_id(store: &mut dyn Storage) -> StdResult<u64> {

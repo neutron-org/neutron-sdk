@@ -1,4 +1,6 @@
 use cw_storage_plus::{Item, Map};
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 pub const IBC_SUDO_ID_RANGE_START: u64 = 1_000_000_000;
 pub const IBC_SUDO_ID_RANGE_SIZE: u64 = 1_000_000;
@@ -11,6 +13,9 @@ pub const INTERCHAIN_ACCOUNTS: Map<String, Option<(String, String)>> =
 
 // interchain operations ack/err/timeout state to query later
 pub const LAST_ACK_STATE: Item<Option<LastSudoState>> = Item::new("last_ack_state");
+
+#[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema, Debug)]
+#[serde(rename_all = "snake_case")]
 pub enum LastSudoState {
     Ack(String),
     Error,
