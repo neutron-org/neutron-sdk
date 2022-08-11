@@ -23,10 +23,10 @@ use cosmwasm_std::{
     Response, StdError, StdResult, Storage, SubMsg,
 };
 use interchain_txs::helpers::{parse_item, parse_response};
-use interchain_txs::msg::SudoMsg;
-use interchain_txs::storage::RequestPacket;
 use neutron_bindings::msg::NeutronMsg;
 use neutron_bindings::query::InterchainQueries;
+use neutron_sudo::msg::RequestPacket;
+use neutron_sudo::msg::SudoMsg;
 
 use neutron_bindings::query::QueryInterchainAccountAddressResponse;
 use neutron_bindings::ProtobufAny;
@@ -337,6 +337,7 @@ pub fn sudo(deps: DepsMut, env: Env, msg: SudoMsg) -> StdResult<Response> {
             counterparty_channel_id,
             counterparty_version,
         ),
+        _ => Ok(Response::default()),
     }
 }
 
@@ -369,7 +370,7 @@ fn sudo_open_ack(
     Err(StdError::generic_err("Can't parse counterparty_version"))
 }
 
-fn sudo_response(deps: DepsMut, request: RequestPacket, data: String) -> StdResult<Response> {
+fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResult<Response> {
     deps.api.debug(
         format!(
             "WASMDEBUG: sudo_response: sudo received: {:?} {:?}",

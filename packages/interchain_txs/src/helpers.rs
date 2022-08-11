@@ -4,8 +4,8 @@ use prost::{DecodeError, Message};
 
 use std::io::Cursor;
 
-pub fn parse_response(data: String) -> StdResult<Vec<MsgData>> {
-    let result = Binary::from_base64(&data)?;
+pub fn parse_response(data: Binary) -> StdResult<Vec<MsgData>> {
+    let result = Binary::from_base64(&data.to_string())?;
     let msg_data: Result<TxMsgData, DecodeError> =
         TxMsgData::decode(Cursor::new(result.as_slice()));
     match msg_data {

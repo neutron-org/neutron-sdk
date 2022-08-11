@@ -16,7 +16,7 @@
           ],
           "properties": {
             "data": {
-              "type": "string"
+              "$ref": "#/definitions/Binary"
             },
             "request": {
               "$ref": "#/definitions/RequestPacket"
@@ -101,16 +101,78 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "tx_query_result"
+      ],
+      "properties": {
+        "tx_query_result": {
+          "type": "object",
+          "required": [
+            "data",
+            "height",
+            "query_id"
+          ],
+          "properties": {
+            "data": {
+              "$ref": "#/definitions/Binary"
+            },
+            "height": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "query_id": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "kv_query_result"
+      ],
+      "properties": {
+        "kv_query_result": {
+          "type": "object",
+          "required": [
+            "query_id"
+          ],
+          "properties": {
+            "query_id": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
     }
   ],
   "definitions": {
+    "Binary": {
+      "description": "Binary is a wrapper around Vec<u8> to add base64 de/serialization with serde. It also adds some helper methods to help encode inline.\n\nThis is only needed as serde-json-{core,wasm} has a horrible encoding for Vec<u8>",
+      "type": "string"
+    },
     "RequestPacket": {
       "type": "object",
       "properties": {
         "data": {
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Binary"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "destination_channel": {

@@ -25,4 +25,5 @@ prost = "0.10"
 cw-storage-plus = { version = "0.13.2", features = ["iterator"]}
 serde = { version = "1.0.103", default-features = false, features = ["derive"] }
 schemars = "0.8.10"
+neutron_sudo = {path = "../neutron_sudo"}
 
