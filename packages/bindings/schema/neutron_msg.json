@@ -1,0 +1,176 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "NeutronMsg",
+  "description": "A number of Custom messages that can call into the Neutron bindings",
+  "oneOf": [
+    {
+      "description": "RegisterInterchainAccount registers an interchain account on remote chain",
+      "type": "object",
+      "required": [
+        "register_interchain_account"
+      ],
+      "properties": {
+        "register_interchain_account": {
+          "type": "object",
+          "required": [
+            "connection_id",
+            "interchain_account_id"
+          ],
+          "properties": {
+            "connection_id": {
+              "description": "*connection_id** is an IBC connection identifier between Neutron and remote chain",
+              "type": "string"
+            },
+            "interchain_account_id": {
+              "description": "**interchain_account_id** is an identifier of your new interchain account. Can be any string This identifier allows contracts to have multiple interchain accounts on remote chains",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "SubmitTx starts the process of executing any Cosmos-SDK *msgs* on remote chain",
+      "type": "object",
+      "required": [
+        "submit_t_x"
+      ],
+      "properties": {
+        "submit_t_x": {
+          "type": "object",
+          "required": [
+            "connection_id",
+            "interchain_account_id",
+            "memo",
+            "msgs"
+          ],
+          "properties": {
+            "connection_id": {
+              "description": "*connection_id** is an IBC connection identifier between Neutron and remote chain",
+              "type": "string"
+            },
+            "interchain_account_id": {
+              "description": "*interchain_account_id** is an identifier of your interchain account from which you want to execute msgs",
+              "type": "string"
+            },
+            "memo": {
+              "description": "*memo** is a memo you want to attach to your interchain transaction.It behaves like a memo in usual Cosmos transaction",
+              "type": "string"
+            },
+            "msgs": {
+              "description": "*msgs** is a list of protobuf encoded Cosmos-SDK messages you want to execute on remote chain",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ProtobufAny"
+              }
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "RegisterInterchainQuery registers an interchain query",
+      "type": "object",
+      "required": [
+        "register_interchain_query"
+      ],
+      "properties": {
+        "register_interchain_query": {
+          "type": "object",
+          "required": [
+            "connection_id",
+            "keys",
+            "query_type",
+            "transactions_filter",
+            "update_period",
+            "zone_id"
+          ],
+          "properties": {
+            "connection_id": {
+              "description": "*connection_id** is an IBC connection identifier between Neutron and remote chain",
+              "type": "string"
+            },
+            "keys": {
+              "description": "*keys** is the KV-storage keys for which we want to get values from remote chain",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/KVKey"
+              }
+            },
+            "query_type": {
+              "description": "*query_type** is a query type identifier ('tx' or 'kv' for now)",
+              "type": "string"
+            },
+            "transactions_filter": {
+              "description": "*transactions_filter** is the filter for transaction search ICQ",
+              "type": "string"
+            },
+            "update_period": {
+              "description": "*update_period** is used to say how often the query must be updated.",
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "zone_id": {
+              "description": "*zone_id** is used to identify the chain of interest",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  ],
+  "definitions": {
+    "Binary": {
+      "description": "Binary is a wrapper around Vec<u8> to add base64 de/serialization with serde. It also adds some helper methods to help encode inline.\n\nThis is only needed as serde-json-{core,wasm} has a horrible encoding for Vec<u8>",
+      "type": "string"
+    },
+    "KVKey": {
+      "description": "Describes a KV key for which you want to get value from the storage on remote chain",
+      "type": "object",
+      "required": [
+        "key",
+        "path"
+      ],
+      "properties": {
+        "key": {
+          "description": "*key** is a key you want to read from the storage",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Binary"
+            }
+          ]
+        },
+        "path": {
+          "description": "*path** is a path to the storage (storage prefix) where you want to read value by key (usually name of cosmos-sdk module: 'staking', 'bank', etc.)",
+          "type": "string"
+        }
+      }
+    },
+    "ProtobufAny": {
+      "description": "Type for wrapping any protobuf message",
+      "type": "object",
+      "required": [
+        "type_url",
+        "value"
+      ],
+      "properties": {
+        "type_url": {
+          "description": "*type_url** describes the type of the serialized message",
+          "type": "string"
+        },
+        "value": {
+          "description": "*value** must be a valid serialized protocol buffer of the above specified type",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Binary"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

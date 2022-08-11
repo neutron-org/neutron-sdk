@@ -11,19 +11,13 @@
         "balance": {
           "type": "object",
           "required": [
-            "addr",
-            "denom",
-            "zone_id"
+            "query_id"
           ],
           "properties": {
-            "addr": {
-              "type": "string"
-            },
-            "denom": {
-              "type": "string"
-            },
-            "zone_id": {
-              "type": "string"
+            "query_id": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
             }
           }
         }
@@ -39,15 +33,35 @@
         "get_delegations": {
           "type": "object",
           "required": [
-            "delegator",
-            "zone_id"
+            "query_id"
           ],
           "properties": {
-            "delegator": {
-              "type": "string"
-            },
-            "zone_id": {
-              "type": "string"
+            "query_id": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "get_registered_query"
+      ],
+      "properties": {
+        "get_registered_query": {
+          "type": "object",
+          "required": [
+            "query_id"
+          ],
+          "properties": {
+            "query_id": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
             }
           }
         }
