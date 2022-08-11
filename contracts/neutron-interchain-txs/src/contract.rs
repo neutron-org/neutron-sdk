@@ -37,14 +37,20 @@ use serde::{Deserialize, Serialize};
 use crate::error::ContractResult;
 use crate::msg::{InstantiateMsg, MigrateMsg};
 use crate::storage::{
-    Config, CONFIG, IBC_SUDO_ID_RANGE_END, IBC_SUDO_ID_RANGE_START, REPLY_QUEUE_ID, SUDO_PAYLOAD,
+    IBC_SUDO_ID_RANGE_END, IBC_SUDO_ID_RANGE_START, INTERCHAIN_ACCOUNTS, REPLY_QUEUE_ID,
+    SUDO_PAYLOAD,
 };
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
-    Ica {},
-    Config {},
+    Ica {
+        interchain_account_id: String,
+        connection_id: String,
+    },
+    IcaContract {
+        interchain_account_id: String,
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -61,8 +67,20 @@ struct OpenAckVersion {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
-    Delegate { validator: String, amount: u128 },
-    Undelegate { validator: String, amount: u128 },
+    Register {
+        connection_id: String,
+        interchain_account_id: String,
+    },
+    Delegate {
+        interchain_account_id: String,
+        validator: String,
+        amount: u128,
+    },
+    Undelegate {
+        interchain_account_id: String,
+        validator: String,
+        amount: u128,
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -73,25 +91,12 @@ pub struct SudoPayload {
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
-    deps: DepsMut,
+    _deps: DepsMut,
     _env: Env,
     _info: MessageInfo,
-    msg: InstantiateMsg,
+    _msg: InstantiateMsg,
 ) -> ContractResult<Response<NeutronMsg>> {
-    let register = NeutronMsg::register_interchain_account(
-        msg.connection_id.clone(),
-        msg.interchain_account_id.clone(),
-    );
-    CONFIG.save(
-        deps.storage,
-        &Config {
-            connection_id: msg.connection_id,
-            interchain_account_id: msg.interchain_account_id,
-            denom: msg.denom,
-            interchain_address: None,
-        },
-    )?;
-    Ok(Response::new().add_message(register))
+    Ok(Response::default())
 }
 
 #[entry_point]
@@ -104,39 +109,62 @@ pub fn execute(
     deps.api
         .debug(format!("WASMDEBUG: execute: received msg: {:?}", msg).as_str());
     match msg {
-        ExecuteMsg::Delegate { validator, amount } => {
-            execute_delegate(deps, env, validator, amount)
-        }
-        ExecuteMsg::Undelegate { validator, amount } => {
-            execute_undelegate(deps, env, validator, amount)
-        }
+        ExecuteMsg::Register {
+            connection_id,
+            interchain_account_id,
+        } => execute_register_ica(deps, env, connection_id, interchain_account_id),
+        ExecuteMsg::Delegate {
+            validator,
+            interchain_account_id,
+            amount,
+        } => execute_delegate(deps, env, interchain_account_id, validator, amount),
+        ExecuteMsg::Undelegate {
+            validator,
+            interchain_account_id,
+            amount,
+        } => execute_undelegate(deps, env, interchain_account_id, validator, amount),
     }
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> ContractResult<Binary> {
     match msg {
-        QueryMsg::Ica {} => query_interchain_address(deps, env),
-        QueryMsg::Config {} => query_config(deps),
+        QueryMsg::Ica {
+            interchain_account_id,
+            connection_id,
+        } => query_interchain_address(deps, env, interchain_account_id, connection_id),
+        QueryMsg::IcaContract {
+            interchain_account_id,
+        } => query_interchain_address_contract(deps, env, interchain_account_id),
     }
 }
 
-pub fn query_config(deps: Deps<InterchainQueries>) -> ContractResult<Binary> {
-    let config = CONFIG.load(deps.storage)?;
-    Ok(to_binary(&config)?)
-}
-
-pub fn query_interchain_address(deps: Deps<InterchainQueries>, env: Env) -> ContractResult<Binary> {
-    let config = CONFIG.load(deps.storage)?;
+pub fn query_interchain_address(
+    deps: Deps<InterchainQueries>,
+    env: Env,
+    interchain_account_id: String,
+    connection_id: String,
+) -> ContractResult<Binary> {
     let query = InterchainQueries::InterchainAccountAddress {
         owner_address: env.contract.address.to_string(),
-        interchain_account_id: config.interchain_account_id,
-        connection_id: config.connection_id,
+        interchain_account_id,
+        connection_id,
     };
 
     let res: QueryInterchainAccountAddressResponse = deps.querier.query(&query.into())?;
-
     Ok(to_binary(&res)?)
+}
+
+pub fn query_interchain_address_contract(
+    deps: Deps<InterchainQueries>,
+    env: Env,
+    interchain_account_id: String,
+) -> ContractResult<Binary> {
+    let key =
+        "icacontroller-".to_string() + env.contract.address.as_str() + "." + &interchain_account_id;
+    let address = INTERCHAIN_ACCOUNTS.load(deps.storage, key)?;
+
+    Ok(to_binary(&address)?)
 }
 
 pub fn get_next_id(store: &mut dyn Storage) -> StdResult<u64> {
@@ -172,15 +200,32 @@ fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
     Ok(SubMsg::reply_on_success(msg, id))
 }
 
+fn execute_register_ica(
+    deps: DepsMut,
+    env: Env,
+    connection_id: String,
+    interchain_account_id: String,
+) -> StdResult<Response<NeutronMsg>> {
+    let register =
+        NeutronMsg::register_interchain_account(connection_id, interchain_account_id.clone());
+    let key =
+        "icacontroller-".to_string() + env.contract.address.as_str() + "." + &interchain_account_id;
+    INTERCHAIN_ACCOUNTS.save(deps.storage, key, &None)?;
+    Ok(Response::new().add_message(register))
+}
+
 fn execute_delegate(
     mut deps: DepsMut,
-    _env: Env,
+    env: Env,
+    interchain_account_id: String,
     validator: String,
     amount: u128,
 ) -> StdResult<Response<NeutronMsg>> {
-    let config = CONFIG.load(deps.storage)?;
-    let delegator = config
-        .interchain_address
+    let key =
+        "icacontroller-".to_string() + env.contract.address.as_str() + "." + &interchain_account_id;
+
+    let (delegator, connection_id) = INTERCHAIN_ACCOUNTS
+        .load(deps.storage, key)?
         .ok_or_else(|| StdError::generic_err("Interchain account is not created yet"))?;
 
     let delegate_msg = MsgDelegate {
@@ -200,12 +245,12 @@ fn execute_delegate(
 
     let any_msg = ProtobufAny {
         type_url: "/cosmos.staking.v1beta1.MsgDelegate".to_string(),
-        value: to_binary(&buf)?,
+        value: Binary::from(buf),
     };
 
     let cosmos_msg = NeutronMsg::submit_tx(
-        config.connection_id,
-        config.interchain_account_id,
+        connection_id,
+        interchain_account_id,
         vec![any_msg],
         "".to_string(),
     );
@@ -223,14 +268,18 @@ fn execute_delegate(
 
 fn execute_undelegate(
     mut deps: DepsMut,
-    _env: Env,
+    env: Env,
+    interchain_account_id: String,
     validator: String,
     amount: u128,
 ) -> StdResult<Response<NeutronMsg>> {
-    let config = CONFIG.load(deps.storage)?;
-    let delegator = config
-        .interchain_address
+    let key =
+        "icacontroller-".to_string() + env.contract.address.as_str() + "." + &interchain_account_id;
+
+    let (delegator, connection_id) = INTERCHAIN_ACCOUNTS
+        .load(deps.storage, key)?
         .ok_or_else(|| StdError::generic_err("Interchain account is not created yet"))?;
+
     let delegate_msg = MsgUndelegate {
         delegator_address: delegator,
         validator_address: validator,
@@ -248,12 +297,12 @@ fn execute_undelegate(
 
     let any_msg = ProtobufAny {
         type_url: "/cosmos.staking.v1beta1.MsgUndelegate".to_string(),
-        value: to_binary(&buf)?,
+        value: Binary::from(buf),
     };
 
     let cosmos_msg = NeutronMsg::submit_tx(
-        config.connection_id,
-        config.interchain_account_id,
+        connection_id,
+        interchain_account_id,
         vec![any_msg],
         "".to_string(),
     );
@@ -299,17 +348,22 @@ pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Respons
 fn sudo_open_ack(
     deps: DepsMut,
     _env: Env,
-    _port_id: String,
+    port_id: String,
     _channel_id: String,
     _counterparty_channel_id: String,
     counterparty_version: String,
 ) -> StdResult<Response> {
-    let mut config = CONFIG.load(deps.storage)?;
     let parsed_version: Result<OpenAckVersion, _> =
         serde_json_wasm::from_str(counterparty_version.as_str());
     if let Ok(parsed_version) = parsed_version {
-        config.interchain_address = Some(parsed_version.address);
-        CONFIG.save(deps.storage, &config)?;
+        INTERCHAIN_ACCOUNTS.save(
+            deps.storage,
+            port_id,
+            &Some((
+                parsed_version.address,
+                parsed_version.controller_connection_id,
+            )),
+        )?;
         return Ok(Response::default());
     }
     Err(StdError::generic_err("Can't parse counterparty_version"))

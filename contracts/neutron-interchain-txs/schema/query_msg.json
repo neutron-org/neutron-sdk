@@ -9,7 +9,19 @@
       ],
       "properties": {
         "ica": {
-          "type": "object"
+          "type": "object",
+          "required": [
+            "connection_id",
+            "interchain_account_id"
+          ],
+          "properties": {
+            "connection_id": {
+              "type": "string"
+            },
+            "interchain_account_id": {
+              "type": "string"
+            }
+          }
         }
       },
       "additionalProperties": false
@@ -17,11 +29,19 @@
     {
       "type": "object",
       "required": [
-        "config"
+        "ica_contract"
       ],
       "properties": {
-        "config": {
-          "type": "object"
+        "ica_contract": {
+          "type": "object",
+          "required": [
+            "interchain_account_id"
+          ],
+          "properties": {
+            "interchain_account_id": {
+              "type": "string"
+            }
+          }
         }
       },
       "additionalProperties": false
