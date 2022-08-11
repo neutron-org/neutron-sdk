@@ -81,8 +81,9 @@
           "type": "object",
           "required": [
             "connection_id",
-            "query_data",
+            "keys",
             "query_type",
+            "transactions_filter",
             "update_period",
             "zone_id"
           ],
@@ -91,12 +92,19 @@
               "description": "*connection_id** is an IBC connection identifier between Neutron and remote chain",
               "type": "string"
             },
-            "query_data": {
-              "description": "*query_data** is a JSON encoded data of query;",
-              "type": "string"
+            "keys": {
+              "description": "*keys** is the KV-storage keys for which we want to get values from remote chain",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/KVKey"
+              }
             },
             "query_type": {
-              "description": "*query_type** is used to identify the query (i.e. /cosmos.staking.v1beta1.Query/AllDelegations)",
+              "description": "*query_type** is a query type identifier ('tx' or 'kv' for now)",
+              "type": "string"
+            },
+            "transactions_filter": {
+              "description": "*transactions_filter** is the filter for transaction search ICQ",
               "type": "string"
             },
             "update_period": {
@@ -116,6 +124,32 @@
     }
   ],
   "definitions": {
+    "Binary": {
+      "description": "Binary is a wrapper around Vec<u8> to add base64 de/serialization with serde. It also adds some helper methods to help encode inline.\n\nThis is only needed as serde-json-{core,wasm} has a horrible encoding for Vec<u8>",
+      "type": "string"
+    },
+    "KVKey": {
+      "description": "Describes a KV key for which you want to get value from the storage on remote chain",
+      "type": "object",
+      "required": [
+        "key",
+        "path"
+      ],
+      "properties": {
+        "key": {
+          "description": "*key** is a key you want to read from the storage",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Binary"
+            }
+          ]
+        },
+        "path": {
+          "description": "*path** is a path to the storage (storage prefix) where you want to read value by key (usually name of cosmos-sdk module: 'staking', 'bank', etc.)",
+          "type": "string"
+        }
+      }
+    },
     "ProtobufAny": {
       "description": "Type for wrapping any protobuf message",
       "type": "object",
@@ -130,12 +164,11 @@
         },
         "value": {
           "description": "*value** must be a valid serialized protocol buffer of the above specified type",
-          "type": "array",
-          "items": {
-            "type": "integer",
-            "format": "uint8",
-            "minimum": 0.0
-          }
+          "allOf": [
+            {
+              "$ref": "#/definitions/Binary"
+            }
+          ]
         }
       }
     }

@@ -634,6 +634,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "reflect"
+version = "0.1.0"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "neutron_sudo",
+ "schemars",
+ "serde",
+]
+
+[[package]]
 name = "rfc6979"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

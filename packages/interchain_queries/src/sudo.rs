@@ -1,6 +1,6 @@
 use crate::error::{ContractError, ContractResult};
 use crate::queries::get_registered_query;
-use crate::types::{COSMOS_SDK_TRANSFER_MSG_URL, QUERY_TRANSFERS};
+use crate::types::COSMOS_SDK_TRANSFER_MSG_URL;
 use cosmos_sdk_proto::cosmos::bank::v1beta1::MsgSend;
 use cosmos_sdk_proto::cosmos::tx::v1beta1::{TxBody, TxRaw};
 use cosmwasm_std::{Binary, DepsMut, Env, Response, StdError};
@@ -11,9 +11,9 @@ use serde_json_wasm;
 
 /// TransferRecipientQuery is used to parse the query_data field of a QUERY_TRANSFERS query.
 #[derive(Serialize, Deserialize)]
-struct TransferRecipientQuery {
+pub struct TransferRecipientQuery {
     #[serde(rename = "transfer.recipient")]
-    recipient: String,
+    pub recipient: String,
 }
 
 /// sudo_check_tx_query_result is an example callback that checks if a given transaction
@@ -40,24 +40,28 @@ pub fn sudo_tx_query_result(
 
     // Get the registered query by ID and retrieve the raw query string
     let registered_query = get_registered_query(deps.as_ref(), query_id)?;
-    let query_string = registered_query.registered_query.query_data.clone();
+    let transactions_filter = registered_query.registered_query.transactions_filter;
 
     deps.api.debug(
         format!(
             "WASMDEBUG: sudo_check_tx_query_result loaded query string; query_id: {:?},\
-             query_string: {:?}",
-            query_id, query_string,
+             transactions_filter: {:?}",
+            query_id, transactions_filter,
         )
         .as_str(),
     );
 
+    #[allow(clippy::match_single_binding)]
     // Depending of the query type, check the transaction data to see whether is satisfies
     // the original query.
     match registered_query.registered_query.query_type.as_str() {
-        QUERY_TRANSFERS => {
+        // If you don't write specific checks for a transaction query type, all submitted results
+        // will be treated as valid.
+        // TODO: come up with solution to determine transactions filter type
+        _ => {
             // For transfer queries, query data looks like "{"transfer.recipient": "some_address"}"
             let query_data: TransferRecipientQuery =
-                serde_json_wasm::from_str(query_string.as_str())?;
+                serde_json_wasm::from_str(transactions_filter.as_str())?;
 
             deps.api.debug(
                 format!(
@@ -114,10 +118,6 @@ pub fn sudo_tx_query_result(
                 }
             }
         }
-
-        // If you don't write specific checks for a transaction query type, all submitted results
-        // will be treated as valid.
-        _ => Ok(Response::new()),
     }
 }
 

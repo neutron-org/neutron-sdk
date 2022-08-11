@@ -1,4 +1,4 @@
-use crate::types::ProtobufAny;
+use crate::types::{KVKey, ProtobufAny};
 use cosmwasm_std::{CosmosMsg, CustomMsg};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -35,11 +35,14 @@ pub enum NeutronMsg {
 
     /// RegisterInterchainQuery registers an interchain query
     RegisterInterchainQuery {
-        /// **query_type** is used to identify the query (i.e. /cosmos.staking.v1beta1.Query/AllDelegations)
+        /// **query_type** is a query type identifier ('tx' or 'kv' for now)
         query_type: String,
 
-        /// **query_data** is a JSON encoded data of query;
-        query_data: String,
+        /// **keys** is the KV-storage keys for which we want to get values from remote chain
+        keys: Vec<KVKey>,
+
+        /// **transactions_filter** is the filter for transaction search ICQ
+        transactions_filter: String,
 
         /// **zone_id** is used to identify the chain of interest
         zone_id: String,
@@ -86,21 +89,24 @@ impl NeutronMsg {
     }
 
     /// Basic helper to define a register interchain query message:
-    /// * **query_type** is used to identify the query (i.e. /cosmos.staking.v1beta1.Query/AllDelegations);
-    /// * **query_data** is a JSON encoded data of query;
+    /// * **query_type** is a query type identifier ('tx' or 'kv' for now)
+    /// * **keys** is the KV-storage keys for which we want to get values from remote chain
+    /// * **transactions_filter** is the filter for transaction search ICQ
     /// * **zone_id** is used to identify the chain of interest
     /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
     /// * **update_period** is used to say how often the query must be updated.
     pub fn register_interchain_query(
         query_type: String,
-        query_data: String,
+        keys: Vec<KVKey>,
+        transactions_filter: String,
         zone_id: String,
         connection_id: String,
         update_period: u64,
     ) -> Self {
         NeutronMsg::RegisterInterchainQuery {
             query_type,
-            query_data,
+            keys,
+            transactions_filter,
             zone_id,
             connection_id,
             update_period,

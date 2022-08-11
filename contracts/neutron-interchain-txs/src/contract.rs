@@ -28,7 +28,7 @@ use interchain_txs::storage::RequestPacket;
 use neutron_bindings::msg::NeutronMsg;
 use neutron_bindings::query::InterchainQueries;
 
-use neutron_bindings::types::QueryInterchainAccountAddressResponse;
+use neutron_bindings::query::QueryInterchainAccountAddressResponse;
 use neutron_bindings::ProtobufAny;
 use prost::Message;
 use schemars::JsonSchema;
@@ -200,7 +200,7 @@ fn execute_delegate(
 
     let any_msg = ProtobufAny {
         type_url: "/cosmos.staking.v1beta1.MsgDelegate".to_string(),
-        value: buf,
+        value: to_binary(&buf)?,
     };
 
     let cosmos_msg = NeutronMsg::submit_tx(
@@ -248,7 +248,7 @@ fn execute_undelegate(
 
     let any_msg = ProtobufAny {
         type_url: "/cosmos.staking.v1beta1.MsgUndelegate".to_string(),
-        value: buf,
+        value: to_binary(&buf)?,
     };
 
     let cosmos_msg = NeutronMsg::submit_tx(

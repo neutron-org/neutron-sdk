@@ -1,3 +1,4 @@
+use crate::types::{InterchainQueryResult, RegisteredQuery};
 use cosmwasm_std::CustomQuery;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -34,6 +35,33 @@ pub enum InterchainQueries {
         /// **query_id** is an ID registered interchain query
         query_id: u64,
     },
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct QueryRegisteredQueriesResponse {
+    /// **registered_queries** is a list of registered queries
+    pub registered_queries: Vec<RegisteredQuery>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct QueryRegisteredQueryResponse {
+    /// **registered_query** is a registered query
+    pub registered_query: RegisteredQuery,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct QueryRegisteredQueryResultResponse {
+    pub result: InterchainQueryResult,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct QueryInterchainAccountAddressResponse {
+    /// **interchain_account_address** is a interchain account address on the remote chain
+    pub interchain_account_address: String,
 }
 
 impl CustomQuery for InterchainQueries {}
