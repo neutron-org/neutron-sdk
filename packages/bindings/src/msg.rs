@@ -55,10 +55,10 @@ pub enum NeutronMsg {
 
     /// RegisterInterchainQuery updates an interchain query
     UpdateInterchainQuery {
-        /// **query_id** is ID of the query we want to update
+        /// **query_id** is the ID of the query we want to update
         query_id: u64,
 
-        /// **new_query_data** is new data(basicly query itself) we want to be performed
+        /// **new_query_data** is the new query to run
         new_query_data: Option<String>,
 
         /// **new_update_period** is a new update period of the query
