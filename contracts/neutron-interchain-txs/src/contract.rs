@@ -19,8 +19,8 @@ use cosmos_sdk_proto::cosmos::staking::v1beta1::{
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    from_binary, to_binary, to_vec, Binary, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Reply,
-    Response, StdError, StdResult, Storage, SubMsg,
+    from_binary, to_binary, to_vec, Binary, CosmosMsg, CustomQuery, Deps, DepsMut, Env,
+    MessageInfo, Reply, Response, StdError, StdResult, Storage, SubMsg,
 };
 use interchain_txs::helpers::{parse_item, parse_response};
 use neutron_bindings::msg::NeutronMsg;
@@ -44,11 +44,11 @@ use crate::storage::{
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
-    Ica {
+    InterchainAccountAddress {
         interchain_account_id: String,
         connection_id: String,
     },
-    IcaContract {
+    InterchainAccountAddressFromContract {
         interchain_account_id: String,
     },
 }
@@ -129,11 +129,11 @@ pub fn execute(
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> ContractResult<Binary> {
     match msg {
-        QueryMsg::Ica {
+        QueryMsg::InterchainAccountAddress {
             interchain_account_id,
             connection_id,
         } => query_interchain_address(deps, env, interchain_account_id, connection_id),
-        QueryMsg::IcaContract {
+        QueryMsg::InterchainAccountAddressFromContract {
             interchain_account_id,
         } => query_interchain_address_contract(deps, env, interchain_account_id),
     }
@@ -160,11 +160,7 @@ pub fn query_interchain_address_contract(
     env: Env,
     interchain_account_id: String,
 ) -> ContractResult<Binary> {
-    let key =
-        "icacontroller-".to_string() + env.contract.address.as_str() + "." + &interchain_account_id;
-    let address = INTERCHAIN_ACCOUNTS.load(deps.storage, key)?;
-
-    Ok(to_binary(&address)?)
+    Ok(to_binary(&get_ica(deps, env, &interchain_account_id)?)?)
 }
 
 pub fn get_next_id(store: &mut dyn Storage) -> StdResult<u64> {
@@ -221,13 +217,7 @@ fn execute_delegate(
     validator: String,
     amount: u128,
 ) -> StdResult<Response<NeutronMsg>> {
-    let key =
-        "icacontroller-".to_string() + env.contract.address.as_str() + "." + &interchain_account_id;
-
-    let (delegator, connection_id) = INTERCHAIN_ACCOUNTS
-        .load(deps.storage, key)?
-        .ok_or_else(|| StdError::generic_err("Interchain account is not created yet"))?;
-
+    let (delegator, connection_id) = get_ica(deps.as_ref(), env, &interchain_account_id)?;
     let delegate_msg = MsgDelegate {
         delegator_address: delegator,
         validator_address: validator,
@@ -273,13 +263,7 @@ fn execute_undelegate(
     validator: String,
     amount: u128,
 ) -> StdResult<Response<NeutronMsg>> {
-    let key =
-        "icacontroller-".to_string() + env.contract.address.as_str() + "." + &interchain_account_id;
-
-    let (delegator, connection_id) = INTERCHAIN_ACCOUNTS
-        .load(deps.storage, key)?
-        .ok_or_else(|| StdError::generic_err("Interchain account is not created yet"))?;
-
+    let (delegator, connection_id) = get_ica(deps.as_ref(), env, &interchain_account_id)?;
     let delegate_msg = MsgUndelegate {
         delegator_address: delegator,
         validator_address: validator,
@@ -458,6 +442,19 @@ fn prepare_sudo_payload(mut deps: DepsMut, _env: Env, msg: Reply) -> StdResult<R
     let seq_id = parse_sequence(deps.as_ref(), msg)?;
     save_sudo_payload(deps.branch().storage, seq_id, payload)?;
     Ok(Response::new())
+}
+
+fn get_ica(
+    deps: Deps<impl CustomQuery>,
+    env: Env,
+    interchain_account_id: &String,
+) -> Result<(String, String), StdError> {
+    let key =
+        "icacontroller-".to_string() + env.contract.address.as_str() + "." + interchain_account_id;
+
+    INTERCHAIN_ACCOUNTS
+        .load(deps.storage, key)?
+        .ok_or_else(|| StdError::generic_err("Interchain account is not created yet"))
 }
 
 #[entry_point]
