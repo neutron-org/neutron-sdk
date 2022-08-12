@@ -1,4 +1,4 @@
-use cw_storage_plus::{Item, Map};
+use cw_storage_plus::Map;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -12,7 +12,7 @@ pub const INTERCHAIN_ACCOUNTS: Map<String, Option<(String, String)>> =
     Map::new("interchain_accounts");
 
 // interchain operations ack/err/timeout state to query later
-pub const LAST_ACK_STATE: Item<Option<LastSudoState>> = Item::new("last_ack_state");
+pub const LAST_ACK_STATE: Map<String, Option<LastSudoState>> = Map::new("last_ack_state");
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema, Debug)]
 #[serde(rename_all = "snake_case")]

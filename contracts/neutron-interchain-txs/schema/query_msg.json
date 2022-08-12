@@ -53,7 +53,15 @@
       ],
       "properties": {
         "last_ack_state": {
-          "type": "object"
+          "type": "object",
+          "required": [
+            "interchain_account_id"
+          ],
+          "properties": {
+            "interchain_account_id": {
+              "type": "string"
+            }
+          }
         }
       },
       "additionalProperties": false

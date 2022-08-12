@@ -51,7 +51,9 @@ pub enum QueryMsg {
     IcaContract {
         interchain_account_id: String,
     },
-    LastAckState {},
+    LastAckState {
+        interchain_account_id: String,
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -88,6 +90,7 @@ pub enum ExecuteMsg {
 #[serde(rename_all = "snake_case")]
 pub struct SudoPayload {
     pub message: String,
+    pub connection_key: String,
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -137,7 +140,9 @@ pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> Contract
         QueryMsg::IcaContract {
             interchain_account_id,
         } => query_interchain_address_contract(deps, env, interchain_account_id),
-        QueryMsg::LastAckState {} => query_last_ack_state(deps),
+        QueryMsg::LastAckState {
+            interchain_account_id,
+        } => query_last_ack_state(deps, env, interchain_account_id),
     }
 }
 
@@ -162,15 +167,20 @@ pub fn query_interchain_address_contract(
     env: Env,
     interchain_account_id: String,
 ) -> ContractResult<Binary> {
-    let key =
-        "icacontroller-".to_string() + env.contract.address.as_str() + "." + &interchain_account_id;
+    let key = connection_key(env.contract.address.to_string(), interchain_account_id);
     let address = INTERCHAIN_ACCOUNTS.load(deps.storage, key)?;
 
     Ok(to_binary(&address)?)
 }
 
-pub fn query_last_ack_state(deps: Deps<InterchainQueries>) -> ContractResult<Binary> {
-    let res = LAST_ACK_STATE.load(deps.storage)?;
+pub fn query_last_ack_state(
+    deps: Deps<InterchainQueries>,
+    env: Env,
+    interchain_account_id: String,
+) -> ContractResult<Binary> {
+    let key = connection_key(env.contract.address.to_string(), interchain_account_id);
+    let res = LAST_ACK_STATE.load(deps.storage, key)?;
+
     Ok(to_binary(&res)?)
 }
 
@@ -215,8 +225,7 @@ fn execute_register_ica(
 ) -> StdResult<Response<NeutronMsg>> {
     let register =
         NeutronMsg::register_interchain_account(connection_id, interchain_account_id.clone());
-    let key =
-        "icacontroller-".to_string() + env.contract.address.as_str() + "." + &interchain_account_id;
+    let key = connection_key(env.contract.address.to_string(), interchain_account_id);
     INTERCHAIN_ACCOUNTS.save(deps.storage, key, &None)?;
     Ok(Response::new().add_message(register))
 }
@@ -228,8 +237,10 @@ fn execute_delegate(
     validator: String,
     amount: u128,
 ) -> StdResult<Response<NeutronMsg>> {
-    let key =
-        "icacontroller-".to_string() + env.contract.address.as_str() + "." + &interchain_account_id;
+    let key = connection_key(
+        env.contract.address.to_string(),
+        interchain_account_id.clone(),
+    );
 
     let (delegator, connection_id) = INTERCHAIN_ACCOUNTS
         .load(deps.storage, key)?
@@ -257,7 +268,7 @@ fn execute_delegate(
 
     let cosmos_msg = NeutronMsg::submit_tx(
         connection_id,
-        interchain_account_id,
+        interchain_account_id.clone(),
         vec![any_msg],
         "".to_string(),
     );
@@ -266,6 +277,7 @@ fn execute_delegate(
         deps.branch(),
         cosmos_msg,
         SudoPayload {
+            connection_key: connection_key(env.contract.address.to_string(), interchain_account_id),
             message: "message".to_string(),
         },
     )?;
@@ -280,8 +292,10 @@ fn execute_undelegate(
     validator: String,
     amount: u128,
 ) -> StdResult<Response<NeutronMsg>> {
-    let key =
-        "icacontroller-".to_string() + env.contract.address.as_str() + "." + &interchain_account_id;
+    let key = connection_key(
+        env.contract.address.to_string(),
+        interchain_account_id.clone(),
+    );
 
     let (delegator, connection_id) = INTERCHAIN_ACCOUNTS
         .load(deps.storage, key)?
@@ -309,7 +323,7 @@ fn execute_undelegate(
 
     let cosmos_msg = NeutronMsg::submit_tx(
         connection_id,
-        interchain_account_id,
+        interchain_account_id.clone(),
         vec![any_msg],
         "".to_string(),
     );
@@ -318,6 +332,7 @@ fn execute_undelegate(
         deps.branch(),
         cosmos_msg,
         SudoPayload {
+            connection_key: connection_key(env.contract.address.to_string(), interchain_account_id),
             message: "message".to_string(),
         },
     )?;
@@ -396,6 +411,7 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
     // write into last state
     LAST_ACK_STATE.save(
         deps.storage,
+        payload.connection_key.to_string(),
         &Some(LastSudoState::Ack(payload.message.to_string())),
     )?;
 
@@ -432,15 +448,31 @@ fn sudo_timeout(deps: DepsMut, _env: Env, request: RequestPacket) -> StdResult<R
     deps.api
         .debug(format!("WASMDEBUG: sudo timeout request: {:?}", request).as_str());
     // write into last state
-    LAST_ACK_STATE.save(deps.storage, &Some(LastSudoState::Timeout))?;
+    let seq_id = request
+        .sequence
+        .ok_or_else(|| StdError::generic_err("sequence not found"))?;
+    let payload = read_sudo_payload(deps.storage, seq_id)?;
+    LAST_ACK_STATE.save(
+        deps.storage,
+        payload.connection_key,
+        &Some(LastSudoState::Timeout),
+    )?;
     Ok(Response::default())
 }
 
-fn sudo_error(deps: DepsMut, _request: RequestPacket, details: String) -> StdResult<Response> {
+fn sudo_error(deps: DepsMut, request: RequestPacket, details: String) -> StdResult<Response> {
     deps.api
         .debug(format!("WASMDEBUG: sudo error: {}", details).as_str());
+    let seq_id = request
+        .sequence
+        .ok_or_else(|| StdError::generic_err("sequence not found"))?;
+    let payload = read_sudo_payload(deps.storage, seq_id)?;
     // write into last state
-    LAST_ACK_STATE.save(deps.storage, &Some(LastSudoState::Error))?;
+    LAST_ACK_STATE.save(
+        deps.storage,
+        payload.connection_key,
+        &Some(LastSudoState::Error),
+    )?;
     Ok(Response::default())
 }
 
@@ -487,4 +519,8 @@ pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> StdResult<Response> {
             msg.id
         ))),
     }
+}
+
+fn connection_key(contract_address: String, interchain_account_id: String) -> String {
+    "icacontroller-".to_string() + &contract_address + "." + &interchain_account_id
 }
