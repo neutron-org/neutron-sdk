@@ -35,7 +35,6 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::error::ContractResult;
-use crate::msg::{InstantiateMsg, MigrateMsg};
 use crate::storage::{
     IBC_SUDO_ID_RANGE_END, IBC_SUDO_ID_RANGE_START, INTERCHAIN_ACCOUNTS, REPLY_QUEUE_ID,
     SUDO_PAYLOAD,
@@ -63,6 +62,12 @@ struct OpenAckVersion {
     encoding: String,
     tx_type: String,
 }
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct MigrateMsg {}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct InstantiateMsg {}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]

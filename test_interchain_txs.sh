@@ -35,7 +35,7 @@ RES=$(${BIN} tx wasm execute $CONTRACT_ADDRESS "{\"register\": {\"connection_id\
 echo $RES
 sleep 10
 
-RES=$(curl http://127.0.0.1:1316/wasm/contract/$CONTRACT_ADDRESS/smart/eyJpY2FfY29udHJhY3QiOnsiaW50ZXJjaGFpbl9hY2NvdW50X2lkIjoidGVzdCJ9fQ\=\=\?encoding\=base64 | jq -r ".result.smart")
+RES=$(curl http://127.0.0.1:1316/wasm/contract/$CONTRACT_ADDRESS/smart/eyJpbnRlcmNoYWluX2FjY291bnRfYWRkcmVzc19mcm9tX2NvbnRyYWN0Ijp7ImludGVyY2hhaW5fYWNjb3VudF9pZCI6InRlc3QifX0\=?encoding\=base64 | jq -r ".result.smart")
 echo $RES
 ICA_ADDRESS=$(echo $RES | base64 --decode | jq -r ".[0]")
 echo $ICA_ADDRESS
