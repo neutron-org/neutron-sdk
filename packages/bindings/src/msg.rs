@@ -58,8 +58,8 @@ pub enum NeutronMsg {
         /// **query_id** is the ID of the query we want to update
         query_id: u64,
 
-        /// **new_query_data** is the new query to run
-        new_query_data: Option<String>,
+        /// **new_keys** is the new query keys to retrive
+        new_keys: Option<Vec<KVKey>>,
 
         /// **new_update_period** is a new update period of the query
         new_update_period: Option<u64>,
@@ -132,16 +132,16 @@ impl NeutronMsg {
 
     /// Basic helper to define a update interchain query message:
     /// * **query_id** is ID of the query we want to update
-    /// * **new_query_data** is a JSON encoded data of query;
+    /// * **new_keys** is encoded keys to query;
     /// * **new_update_period** is used to say how often the query must be updated.
     pub fn update_interchain_query(
         query_id: u64,
-        new_query_data: Option<String>,
+        new_keys: Option<Vec<KVKey>>,
         new_update_period: Option<u64>,
     ) -> Self {
         NeutronMsg::UpdateInterchainQuery {
             query_id,
-            new_query_data,
+            new_keys,
             new_update_period,
         }
     }

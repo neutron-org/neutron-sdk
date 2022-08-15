@@ -183,21 +183,20 @@ pub fn register_transfers_query(
 
 pub fn update_interchain_query(
     query_id: u64,
-    new_query_data: Option<String>,
+    new_keys: Option<Vec<KVKey>>,
     new_update_period: Option<u64>,
 ) -> ContractResult<Response<NeutronMsg>> {
     let mut attributes = vec![
         attr("action", "update_interchain_query"),
         attr("query_id", query_id.to_string()),
     ];
-    if let Some(query_data) = new_query_data.clone() {
-        attributes.push(attr("new_query_data", query_data))
+    if let Some(keys) = new_keys.clone() {
+        attributes.push(attr("new_keys", KVKeys(keys)))
     }
     if let Some(update_period) = new_update_period {
         attributes.push(attr("new_update_period", update_period.to_string()))
     }
-    let update_msg =
-        NeutronMsg::update_interchain_query(query_id, new_query_data, new_update_period);
+    let update_msg = NeutronMsg::update_interchain_query(query_id, new_keys, new_update_period);
     Ok(Response::new()
         .add_message(update_msg)
         .add_attributes(attributes))

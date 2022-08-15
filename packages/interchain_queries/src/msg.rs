@@ -1,4 +1,5 @@
 use crate::types::Balances;
+use neutron_bindings::types::KVKey;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -30,7 +31,7 @@ pub enum ExecuteMsg {
     },
     UpdateInterchainQuery {
         query_id: u64,
-        new_query_data: Option<String>,
+        new_keys: Option<Vec<KVKey>>,
         new_update_period: Option<u64>,
     },
     RemoveInterchainQuery {

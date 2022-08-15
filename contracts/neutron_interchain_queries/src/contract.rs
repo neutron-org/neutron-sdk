@@ -86,9 +86,9 @@ pub fn execute(
         } => register_transfers_query(deps, env, connection_id, zone_id, recipient, update_period),
         ExecuteMsg::UpdateInterchainQuery {
             query_id,
-            new_query_data,
+            new_keys,
             new_update_period,
-        } => update_interchain_query(query_id, new_query_data, new_update_period),
+        } => update_interchain_query(query_id, new_keys, new_update_period),
         ExecuteMsg::RemoveInterchainQuery { query_id } => remove_interchain_query(query_id),
     }
 }

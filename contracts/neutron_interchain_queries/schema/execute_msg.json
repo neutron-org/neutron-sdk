@@ -127,11 +127,14 @@
             "query_id"
           ],
           "properties": {
-            "new_query_data": {
+            "new_keys": {
               "type": [
-                "string",
+                "array",
                 "null"
-              ]
+              ],
+              "items": {
+                "$ref": "#/definitions/KVKey"
+              }
             },
             "new_update_period": {
               "type": [
@@ -173,5 +176,33 @@
       },
       "additionalProperties": false
     }
-  ]
+  ],
+  "definitions": {
+    "Binary": {
+      "description": "Binary is a wrapper around Vec<u8> to add base64 de/serialization with serde. It also adds some helper methods to help encode inline.\n\nThis is only needed as serde-json-{core,wasm} has a horrible encoding for Vec<u8>",
+      "type": "string"
+    },
+    "KVKey": {
+      "description": "Describes a KV key for which you want to get value from the storage on remote chain",
+      "type": "object",
+      "required": [
+        "key",
+        "path"
+      ],
+      "properties": {
+        "key": {
+          "description": "*key** is a key you want to read from the storage",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Binary"
+            }
+          ]
+        },
+        "path": {
+          "description": "*path** is a path to the storage (storage prefix) where you want to read value by key (usually name of cosmos-sdk module: 'staking', 'bank', etc.)",
+          "type": "string"
+        }
+      }
+    }
+  }
 }

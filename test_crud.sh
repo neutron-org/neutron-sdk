@@ -26,7 +26,7 @@ echo $RES
 
 ${BIN} q interchainqueries registered-queries  --chain-id ${CHAINID}  --home ${HOME} --node tcp://127.0.0.1:16657
 
-RES=$(${BIN} tx wasm execute $ICQ_CONTRACT_ADDRESS '{"update_interchain_query":{"query_id":1,"new_query_data":"{\"addr\":\"neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh\",\"denom\":\"newstake\"}"}}' --from ${KEY}  -y --chain-id ${CHAINID} --output json --broadcast-mode=block --gas-prices 0.0025stake --gas 1000000 --keyring-backend test --home ${HOME} --node tcp://127.0.0.1:16657)
+RES=$(${BIN} tx wasm execute $ICQ_CONTRACT_ADDRESS '{"update_interchain_query":{"query_id":1,"new_keys":[{"path":"staking","key":"AhTzV/fuS4r96weXQrLQCkGAufddAnN0YWtl"}]}}' --from ${KEY}  -y --chain-id ${CHAINID} --output json --broadcast-mode=block --gas-prices 0.0025stake --gas 1000000 --keyring-backend test --home ${HOME} --node tcp://127.0.0.1:16657)
 echo $RES
 
 ${BIN} q interchainqueries registered-queries  --chain-id ${CHAINID}  --home ${HOME} --node tcp://127.0.0.1:16657

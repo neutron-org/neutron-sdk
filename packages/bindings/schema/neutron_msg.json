@@ -135,12 +135,15 @@
             "query_id"
           ],
           "properties": {
-            "new_query_data": {
-              "description": "*new_query_data** is new data(basicly query itself) we want to be performed",
+            "new_keys": {
+              "description": "*new_keys** is the new query keys to retrive",
               "type": [
-                "string",
+                "array",
                 "null"
-              ]
+              ],
+              "items": {
+                "$ref": "#/definitions/KVKey"
+              }
             },
             "new_update_period": {
               "description": "*new_update_period** is a new update period of the query",
@@ -152,7 +155,7 @@
               "minimum": 0.0
             },
             "query_id": {
-              "description": "*query_id** is ID of the query we want to update",
+              "description": "*query_id** is the ID of the query we want to update",
               "type": "integer",
               "format": "uint64",
               "minimum": 0.0
