@@ -13,5 +13,6 @@
 // limitations under the License.
 
 pub mod helpers;
+pub mod interchain;
 pub mod msg;
 pub mod storage;

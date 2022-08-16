@@ -36,7 +36,7 @@ pub fn parse_sequence(deps: Deps, msg: Reply) -> StdResult<u64> {
             .iter()
             .find(|e| e.ty == "send_packet")
             .and_then(|e| e.attributes.iter().find(|a| a.key == "packet_sequence"))
-            .ok_or_else(|| StdError::generic_err("failed to find packet_sequence atribute"))?
+            .ok_or_else(|| StdError::generic_err("failed to find packet_sequence attribute"))?
             .value
             .clone(),
     )
