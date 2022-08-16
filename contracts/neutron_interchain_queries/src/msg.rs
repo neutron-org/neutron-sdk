@@ -1,3 +1,4 @@
+use crate::state::Transfer;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -35,6 +36,13 @@ pub enum QueryMsg {
     Balance { query_id: u64 },
     GetDelegations { query_id: u64 },
     GetRegisteredQuery { query_id: u64 },
+    GetRecipientTxs { recipient: String },
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct GetRecipientTxsResponse {
+    pub transfers: Vec<Transfer>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

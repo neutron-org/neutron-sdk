@@ -43,3 +43,4 @@ serde-json-wasm = "0.4.1"
 cosmos-sdk-proto = { version = "0.12.2", default-features = false }
 prost = "0.10"
 cosmwasm-schema = { version = "1.0.0", default-features = false }
+cw-storage-plus = { version = "0.13.2", features = ["iterator"]}

@@ -14,14 +14,15 @@
 
 use cosmos_sdk_proto::cosmos::bank::v1beta1::MsgSend;
 use cosmos_sdk_proto::cosmos::tx::v1beta1::{TxBody, TxRaw};
-use cosmwasm_std::from_binary;
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::{
     entry_point, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult,
 };
+use cosmwasm_std::{from_binary, to_binary};
 use prost::Message as ProstMessage;
 
-use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
+use crate::msg::{ExecuteMsg, GetRecipientTxsResponse, InstantiateMsg, MigrateMsg, QueryMsg};
+use crate::state::{Transfer, RECIPIENT_TXS};
 use interchain_queries::error::{ContractError, ContractResult};
 use interchain_queries::queries::{query_balance, query_delegations, query_registered_query};
 use interchain_queries::register_queries::{
@@ -100,7 +101,15 @@ pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> Contract
         QueryMsg::Balance { query_id } => query_balance(deps, env, query_id),
         QueryMsg::GetDelegations { query_id } => query_delegations(deps, env, query_id),
         QueryMsg::GetRegisteredQuery { query_id } => query_registered_query(deps, query_id),
+        QueryMsg::GetRecipientTxs { recipient } => query_recipient_txs(deps, recipient),
     }
+}
+
+fn query_recipient_txs(deps: Deps<InterchainQueries>, recipient: String) -> ContractResult<Binary> {
+    let txs = RECIPIENT_TXS
+        .load(deps.storage, &recipient)
+        .unwrap_or_default();
+    Ok(to_binary(&GetRecipientTxsResponse { transfers: txs })?)
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -121,9 +130,8 @@ pub fn sudo(deps: DepsMut<InterchainQueries>, env: Env, msg: SudoMsg) -> Contrac
     }
 }
 
-/// sudo_check_tx_query_result is an example callback that checks if a given transaction
-/// satisfies the registered transaction query. Here, we check that the provided transaction
-/// contains a Send message from a specific address.
+/// sudo_check_tx_query_result is an example callback for transaction query results that stores the
+/// deposits received as a result on the registered query in the contract's state.
 pub fn sudo_tx_query_result(
     deps: DepsMut<InterchainQueries>,
     _env: Env,
@@ -159,11 +167,11 @@ pub fn sudo_tx_query_result(
 
     #[allow(clippy::match_single_binding)]
     // Depending of the query type, check the transaction data to see whether is satisfies
-    // the original query.
+    // the original query. If you don't write specific checks for a transaction query type,
+    // all submitted results will be treated as valid.
+    //
+    // TODO: come up with solution to determine transactions filter type
     match registered_query.registered_query.query_type.as_str() {
-        // If you don't write specific checks for a transaction query type, all submitted results
-        // will be treated as valid.
-        // TODO: come up with solution to determine transactions filter type
         _ => {
             // For transfer queries, query data looks like "{"transfer.recipient": "some_address"}"
             let query_data: TransferRecipientQuery =
@@ -177,7 +185,9 @@ pub fn sudo_tx_query_result(
                 .as_str(),
             );
 
-            let mut matching_message_found = false;
+            let mut deposits: Vec<Transfer> = RECIPIENT_TXS
+                .load(deps.storage, query_data.recipient.as_str())
+                .unwrap_or_default();
             for message in body.messages {
                 // Skip all messages in this transaction that are not Send messages.
                 if message.type_url != *COSMOS_SDK_TRANSFER_MSG_URL.to_string() {
@@ -186,7 +196,6 @@ pub fn sudo_tx_query_result(
 
                 // Parse a Send message and check that it has the required recipient.
                 let transfer_msg: MsgSend = MsgSend::decode(message.value.as_slice())?;
-
                 if transfer_msg.to_address == query_data.recipient {
                     deps.api.debug(
                         format!(
@@ -196,40 +205,41 @@ pub fn sudo_tx_query_result(
                         )
                         .as_str(),
                     );
-
-                    matching_message_found = true;
-                    break;
+                    for coin in transfer_msg.amount {
+                        deposits.push(Transfer {
+                            sender: transfer_msg.from_address.clone(),
+                            amount: coin.amount,
+                            denom: coin.denom,
+                            recipient: query_data.recipient.clone(),
+                        });
+                    }
                 }
-
-                // Note: use `crate::types::{protobuf_coin_to_std_coin}` to cast proto
-                // coins to sdk coins.
             }
 
             // If we didn't find a Send message with the correct recipient, return an error, and
             // this query result will be rejected by Neutron: no data will be saved to state.
-            match matching_message_found {
-                true => Ok(Response::new()),
-                false => {
-                    deps.api.debug(
-                        format!(
-                            "WASMDEBUG: sudo_check_tx_query_result failed to find a matching \
-                             transaction; query_id: {:?}",
-                            query_id
-                        )
-                        .as_str(),
-                    );
-                    Err(ContractError::Std(StdError::generic_err(
-                        "failed to find a matching transaction message",
-                    )))
-                }
+            if deposits.is_empty() {
+                deps.api.debug(
+                    format!(
+                        "WASMDEBUG: sudo_check_tx_query_result failed to find a matching \
+                         transaction; query_id: {:?}",
+                        query_id
+                    )
+                    .as_str(),
+                );
+                Err(ContractError::Std(StdError::generic_err(
+                    "failed to find a matching transaction message",
+                )))
+            } else {
+                RECIPIENT_TXS.save(deps.storage, query_data.recipient.as_str(), &deposits)?;
+                Ok(Response::new())
             }
         }
     }
 }
 
-/// sudo_check_kv_query_result is an example callback that processes a KV query result.
-/// Note that only the query id is provided, so you need to read the query result from
-/// state.
+/// sudo_kv_query_result is the contract's callback for KV query results. Note that only the query
+/// id is provided, so you need to read the query result from the state.
 pub fn sudo_kv_query_result(
     deps: DepsMut<InterchainQueries>,
     _env: Env,

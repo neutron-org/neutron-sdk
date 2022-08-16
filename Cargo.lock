@@ -432,6 +432,7 @@ dependencies = [
  "cosmos-sdk-proto",
  "cosmwasm-schema",
  "cosmwasm-std",
+ "cw-storage-plus",
  "interchain_queries",
  "neutron_bindings",
  "neutron_sudo",
