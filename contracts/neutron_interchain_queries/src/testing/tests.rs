@@ -12,6 +12,7 @@
 
 use super::mock_querier::mock_dependencies as dependencies;
 use crate::contract::{execute, query};
+use crate::msg::{ExecuteMsg, QueryMsg};
 use crate::testing::mock_querier::WasmMockQuerier;
 use cosmos_sdk_proto::cosmos::base::v1beta1::Coin as CosmosCoin;
 use cosmwasm_std::testing::{mock_env, mock_info, MockApi, MockStorage};
@@ -19,9 +20,7 @@ use cosmwasm_std::{
     from_binary, to_binary, Addr, Binary, Coin, Delegation, Env, MessageInfo, OwnedDeps,
 };
 use interchain_queries::helpers::{create_account_balances_prefix, decode_and_convert};
-use interchain_queries::msg::{
-    DelegatorDelegationsResponse, ExecuteMsg, QueryBalanceResponse, QueryMsg,
-};
+use interchain_queries::queries::{DelegatorDelegationsResponse, QueryBalanceResponse};
 use interchain_queries::types::{Balances, QueryType};
 use neutron_bindings::query::{
     InterchainQueries, QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse,

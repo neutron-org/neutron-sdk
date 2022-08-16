@@ -39,8 +39,7 @@ interchain_queries = { path = "../../packages/interchain_queries", default-featu
 base64 = "0.13.0"
 neutron_sudo = { path = "../../packages/neutron_sudo", default-features = false, version = "0.1.0"}
 neutron_bindings = {path = "../../packages/bindings"}
-
-[dev-dependencies]
-cosmwasm-schema = { version = "1.0.0", default-features = false }
-prost = "0.10"
+serde-json-wasm = "0.4.1"
 cosmos-sdk-proto = { version = "0.12.2", default-features = false }
+prost = "0.10"
+cosmwasm-schema = { version = "1.0.0", default-features = false }

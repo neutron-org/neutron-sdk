@@ -1,4 +1,3 @@
-use crate::types::Balances;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -28,20 +27,6 @@ pub enum ExecuteMsg {
         connection_id: String,
         update_period: u64,
     },
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct QueryBalanceResponse {
-    pub balances: Balances,
-    pub last_submitted_local_height: u64,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct DelegatorDelegationsResponse {
-    pub delegations: Vec<cosmwasm_std::Delegation>,
-    pub last_submitted_local_height: u64,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
