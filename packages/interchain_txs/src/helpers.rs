@@ -4,6 +4,7 @@ use prost::{DecodeError, Message};
 
 use std::io::Cursor;
 
+/// Parse acknowledgement into Vec<MsgData> structure
 pub fn parse_response(data: Binary) -> StdResult<Vec<MsgData>> {
     let result = Binary::from_base64(&data.to_string())?;
     let msg_data: Result<TxMsgData, DecodeError> =
@@ -19,6 +20,7 @@ pub fn parse_response(data: Binary) -> StdResult<Vec<MsgData>> {
     }
 }
 
+/// Parse protobuff any item into T structure
 pub fn parse_item<T: prost::Message + Default>(item: &Vec<u8>) -> StdResult<T> {
     let res = T::decode(Cursor::new(item));
     match res {
@@ -27,6 +29,7 @@ pub fn parse_item<T: prost::Message + Default>(item: &Vec<u8>) -> StdResult<T> {
     }
 }
 
+/// Parse sequence number from reply
 pub fn parse_sequence(deps: Deps, msg: Reply) -> StdResult<u64> {
     let seq_id = str::parse(
         &msg.result
