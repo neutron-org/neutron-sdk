@@ -5,10 +5,10 @@
     {
       "type": "object",
       "required": [
-        "ica"
+        "interchain_account_address"
       ],
       "properties": {
-        "ica": {
+        "interchain_account_address": {
           "type": "object",
           "required": [
             "connection_id",
@@ -29,10 +29,10 @@
     {
       "type": "object",
       "required": [
-        "ica_contract"
+        "interchain_account_address_from_contract"
       ],
       "properties": {
-        "ica_contract": {
+        "interchain_account_address_from_contract": {
           "type": "object",
           "required": [
             "interchain_account_id"
