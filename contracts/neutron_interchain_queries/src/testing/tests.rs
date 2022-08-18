@@ -18,8 +18,9 @@ use crate::testing::mock_querier::WasmMockQuerier;
 use cosmos_sdk_proto::cosmos::base::v1beta1::Coin as CosmosCoin;
 use cosmwasm_std::testing::{mock_env, mock_info, MockApi, MockStorage};
 use cosmwasm_std::{
-    from_binary, to_binary, Addr, Binary, Coin, Delegation, Env, MessageInfo, OwnedDeps,
+    from_binary, to_binary, Addr, Binary, Coin, Delegation, Env, MessageInfo, OwnedDeps, StdError,
 };
+use interchain_queries::error::ContractError;
 use interchain_queries::helpers::{create_account_balances_prefix, decode_and_convert};
 use interchain_queries::queries::{DelegatorDelegationsResponse, QueryBalanceResponse};
 use interchain_queries::register_queries::TransferRecipientQuery;
@@ -280,21 +281,21 @@ fn test_query_delegator_delegations() {
 fn test_sudo_tx_query_result_callback() {
     let mut deps = dependencies(&[]);
     let env = mock_env();
-    let addr: String = "neutron1fj6yqrkpw6fmp7f7jhj57dujfpwal4m25dafzx".to_string();
+    let watched_addr: String = "neutron1fj6yqrkpw6fmp7f7jhj57dujfpwal4m25dafzx".to_string();
     let query_id: u64 = 1u64;
     let height: u64 = 1u64;
     let msg = ExecuteMsg::RegisterTransfersQuery {
         zone_id: "zone".to_string(),
         connection_id: "connection".to_string(),
         update_period: 1u64,
-        recipient: addr.clone(),
+        recipient: watched_addr.clone(),
     };
     execute(deps.as_mut(), env.clone(), mock_info("", &[]), msg).unwrap();
     let registered_query = build_registered_query_response(
         1,
         QueryParam::TransactionsFilter(
             to_string(&TransferRecipientQuery {
-                recipient: addr.clone(),
+                recipient: watched_addr.clone(),
             })
             .unwrap(),
         ),
@@ -303,19 +304,68 @@ fn test_sudo_tx_query_result_callback() {
     );
     deps.querier.add_registred_queries(1, registered_query);
 
-    // simulate neutron's SudoTxQueryResult call
+    // simulate neutron's SudoTxQueryResult call with the following payload:
+    // a sending from neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf to watched_addr of 10000 stake
     let data: Binary = Binary::from(base64::decode("CpMBCpABChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEnAKLm5ldXRyb24xMGg5c3RjNXY2bnRnZXlnZjV4Zjk0NW5qcXE1aDMycjU0cmY3a2YSLm5ldXRyb24xZmo2eXFya3B3NmZtcDdmN2poajU3ZHVqZnB3YWw0bTI1ZGFmengaDgoFc3Rha2USBTEwMDAwEmcKUApGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQJPYibh+Zef13ZkulPqI27rV5xswZ0H/vh1Tnymp1RHPhIECgIIARgAEhMKDQoFc3Rha2USBDEwMDAQwJoMGkAIiXNJXmA57KhyaWpKcLLr3602A5+hlvv/b4PgcDDm9y0qikC+biNZXin1dEMpHOvX9DwOWJ9utv6EKljiSyfT").unwrap());
-    sudo_tx_query_result(deps.as_mut(), env, query_id, height, data).unwrap();
+    sudo_tx_query_result(deps.as_mut(), env.clone(), query_id, height, data).unwrap();
 
     // ensure the callback has worked and contract's state has changed
-    let txs = RECIPIENT_TXS.load(&deps.storage, &addr).unwrap();
+    let txs = RECIPIENT_TXS.load(&deps.storage, &watched_addr).unwrap();
     assert_eq!(
         txs,
         Vec::from([Transfer {
-            recipient: addr,
+            recipient: watched_addr.clone(),
             sender: "neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf".to_string(),
             denom: "stake".to_string(),
             amount: "10000".to_string(),
         }])
-    )
+    );
+
+    // simulate neutron's SudoTxQueryResult call with the following payload:
+    // a sending from neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf to another addr of 10000 stake
+    let data: Binary = Binary::from(base64::decode("CpMBCpABChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEnAKLm5ldXRyb24xMGg5c3RjNXY2bnRnZXlnZjV4Zjk0NW5qcXE1aDMycjU0cmY3a2YSLm5ldXRyb24xNHV4dnUyMmxocmF6eXhhZGFxdjVkNmxzd3UwcDI3NmxsN2hya2waDgoFc3Rha2USBTEwMDAwEmcKUApGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQJPYibh+Zef13ZkulPqI27rV5xswZ0H/vh1Tnymp1RHPhIECgIIARgAEhMKDQoFc3Rha2USBDEwMDAQwJoMGkBEv2CW/0gIrankNl4aGs9LXy2BKA6kAWyl4MUxmXnbnjRpgaNbQIyo4i7nUgVsuOpqzAdudM2M53OSU0Dmo5tF").unwrap());
+    let res = sudo_tx_query_result(deps.as_mut(), env.clone(), query_id, height, data);
+
+    // ensure the callback has returned an error and contract's state hasn't changed
+    assert_eq!(
+        res.unwrap_err(),
+        ContractError::Std(StdError::generic_err(
+            "failed to find a matching transaction message",
+        ))
+    );
+    let txs = RECIPIENT_TXS.load(&deps.storage, &watched_addr).unwrap();
+    assert_eq!(
+        txs,
+        Vec::from([Transfer {
+            recipient: watched_addr.clone(),
+            sender: "neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf".to_string(),
+            denom: "stake".to_string(),
+            amount: "10000".to_string(),
+        }])
+    );
+
+    // simulate neutron's SudoTxQueryResult call with the following payload:
+    // a sending from neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf to watched_addr of 10000 stake
+    let data: Binary = Binary::from(base64::decode("CpMBCpABChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEnAKLm5ldXRyb24xMGg5c3RjNXY2bnRnZXlnZjV4Zjk0NW5qcXE1aDMycjU0cmY3a2YSLm5ldXRyb24xZmo2eXFya3B3NmZtcDdmN2poajU3ZHVqZnB3YWw0bTI1ZGFmengaDgoFc3Rha2USBTEwMDAwEmcKUApGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQJPYibh+Zef13ZkulPqI27rV5xswZ0H/vh1Tnymp1RHPhIECgIIARgAEhMKDQoFc3Rha2USBDEwMDAQwJoMGkAIiXNJXmA57KhyaWpKcLLr3602A5+hlvv/b4PgcDDm9y0qikC+biNZXin1dEMpHOvX9DwOWJ9utv6EKljiSyfT").unwrap());
+    sudo_tx_query_result(deps.as_mut(), env, query_id, height, data).unwrap();
+
+    // ensure the callback has worked and contract's state has changed again
+    let txs = RECIPIENT_TXS.load(&deps.storage, &watched_addr).unwrap();
+    assert_eq!(
+        txs,
+        Vec::from([
+            Transfer {
+                recipient: watched_addr.clone(),
+                sender: "neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf".to_string(),
+                denom: "stake".to_string(),
+                amount: "10000".to_string(),
+            },
+            Transfer {
+                recipient: watched_addr,
+                sender: "neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf".to_string(),
+                denom: "stake".to_string(),
+                amount: "10000".to_string(),
+            }
+        ])
+    );
 }
