@@ -34,58 +34,40 @@ use prost::Message as ProstMessage;
 
 use schemars::_serde_json::to_string;
 
-fn build_registered_kv_query_response(
-    id: u64,
-    keys: Vec<KVKey>,
-    query_type: String,
-    last_submitted_result_local_height: u64,
-) -> Binary {
-    Binary::from(
-        to_string(&QueryRegisteredQueryResponse {
-            registered_query: RegisteredQuery {
-                id,
-                owner: "".to_string(),
-                keys,
-                query_type,
-                transactions_filter: "".to_string(),
-                zone_id: "".to_string(),
-                connection_id: "".to_string(),
-                update_period: 0,
-                last_emitted_height: 0,
-                last_submitted_result_local_height,
-                last_submitted_result_remote_height: 0,
-            },
-        })
-        .unwrap()
-        .as_bytes(),
-    )
+enum QueryParam {
+    Keys(Vec<KVKey>),
+    TransactionsFilter(String),
 }
 
-fn build_registered_tx_query_response(
+fn build_registered_query_response(
     id: u64,
-    transactions_filter: String,
+    param: QueryParam,
     query_type: String,
     last_submitted_result_local_height: u64,
 ) -> Binary {
-    Binary::from(
-        to_string(&QueryRegisteredQueryResponse {
-            registered_query: RegisteredQuery {
-                id,
-                owner: "".to_string(),
-                keys: vec![],
-                query_type,
-                transactions_filter,
-                zone_id: "".to_string(),
-                connection_id: "".to_string(),
-                update_period: 0,
-                last_emitted_height: 0,
-                last_submitted_result_local_height,
-                last_submitted_result_remote_height: 0,
-            },
-        })
-        .unwrap()
-        .as_bytes(),
-    )
+    let mut resp = QueryRegisteredQueryResponse {
+        registered_query: RegisteredQuery {
+            id,
+            owner: "".to_string(),
+            keys: vec![],
+            query_type,
+            transactions_filter: "".to_string(),
+            zone_id: "".to_string(),
+            connection_id: "".to_string(),
+            update_period: 0,
+            last_emitted_height: 0,
+            last_submitted_result_local_height,
+            last_submitted_result_remote_height: 0,
+        },
+    };
+    match param {
+        QueryParam::Keys(keys) => resp.registered_query.keys = keys,
+        QueryParam::TransactionsFilter(transactions_filter) => {
+            resp.registered_query.transactions_filter = transactions_filter
+        }
+    }
+
+    Binary::from(to_string(&resp).unwrap().as_bytes())
 }
 
 fn build_interchain_query_balance_response(addr: Addr, denom: String, amount: String) -> Binary {
@@ -145,7 +127,8 @@ fn test_query_balance() {
 
     let keys = register_query(&mut deps, mock_env(), mock_info("", &[]), msg);
 
-    let registered_query = build_registered_kv_query_response(1, keys.0, QueryType::KV.into(), 987);
+    let registered_query =
+        build_registered_query_response(1, QueryParam::Keys(keys.0), QueryType::KV.into(), 987);
 
     deps.querier.add_registred_queries(1, registered_query);
     deps.querier.add_query_response(
@@ -257,7 +240,8 @@ fn test_query_delegator_delegations() {
         },
     };
 
-    let registered_query = build_registered_kv_query_response(1, keys.0, QueryType::KV.into(), 987);
+    let registered_query =
+        build_registered_query_response(1, QueryParam::Keys(keys.0), QueryType::KV.into(), 987);
 
     deps.querier
         .add_query_response(1, to_binary(&delegations_response).unwrap());
@@ -306,12 +290,14 @@ fn test_sudo_tx_query_result_callback() {
         recipient: addr.clone(),
     };
     execute(deps.as_mut(), env.clone(), mock_info("", &[]), msg).unwrap();
-    let registered_query = build_registered_tx_query_response(
+    let registered_query = build_registered_query_response(
         1,
-        to_string(&TransferRecipientQuery {
-            recipient: addr.clone(),
-        })
-        .unwrap(),
+        QueryParam::TransactionsFilter(
+            to_string(&TransferRecipientQuery {
+                recipient: addr.clone(),
+            })
+            .unwrap(),
+        ),
         QueryType::TX.into(),
         0,
     );
