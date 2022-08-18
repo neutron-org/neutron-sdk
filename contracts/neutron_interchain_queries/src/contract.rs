@@ -185,9 +185,7 @@ pub fn sudo_tx_query_result(
                 .as_str(),
             );
 
-            let mut deposits: Vec<Transfer> = RECIPIENT_TXS
-                .load(deps.storage, query_data.recipient.as_str())
-                .unwrap_or_default();
+            let mut deposits: Vec<Transfer> = vec![];
             for message in body.messages {
                 // Skip all messages in this transaction that are not Send messages.
                 if message.type_url != *COSMOS_SDK_TRANSFER_MSG_URL.to_string() {
@@ -231,7 +229,15 @@ pub fn sudo_tx_query_result(
                     "failed to find a matching transaction message",
                 )))
             } else {
-                RECIPIENT_TXS.save(deps.storage, query_data.recipient.as_str(), &deposits)?;
+                let mut stored_deposits: Vec<Transfer> = RECIPIENT_TXS
+                    .load(deps.storage, query_data.recipient.as_str())
+                    .unwrap_or_default();
+                stored_deposits.extend(deposits);
+                RECIPIENT_TXS.save(
+                    deps.storage,
+                    query_data.recipient.as_str(),
+                    &stored_deposits,
+                )?;
                 Ok(Response::new())
             }
         }
