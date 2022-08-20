@@ -188,6 +188,10 @@ fn execute_send(mut deps: DepsMut, to: String, amount: u128) -> StdResult<Respon
 pub fn sudo(deps: DepsMut, _env: Env, msg: SudoMsg) -> StdResult<Response> {
     match msg {
         SudoMsg::Response { request, data } => sudo_response(deps, request, data),
+        SudoMsg::ChanClose {
+            port_id,
+            channel_id,
+        } => sudo_chan_close(deps, port_id, channel_id),
         _ => todo!(),
     }
 }
@@ -210,6 +214,19 @@ fn sudo_response(deps: DepsMut, req: RequestPacket, data: Binary) -> StdResult<R
         SudoPayload::HandlerPayload1(t1) => sudo_callback1(deps.as_ref(), t1),
         SudoPayload::HandlerPayload2(t2) => sudo_callback2(deps.as_ref(), t2),
     }
+    // at this place we can safely remove the data under (channel_id, seq_id) key
+    // but it costs an extra gas, so its on you how to use the storage
+}
+
+fn sudo_chan_close(deps: DepsMut, port_id: String, channel_id: String) -> StdResult<Response> {
+    deps.api.debug(
+        format!(
+            "WASMDEBUG: sudo_chan_close: sudo received: {:?} {:?}",
+            port_id, channel_id
+        )
+        .as_str(),
+    );
+    Ok(Response::default())
     // at this place we can safely remove the data under (channel_id, seq_id) key
     // but it costs an extra gas, so its on you how to use the storage
 }
