@@ -17,16 +17,18 @@ use cosmwasm_std::entry_point;
 
 use cosmwasm_std::{Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
 
-use interchain_queries::error::ContractResult;
-use interchain_queries::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
-use interchain_queries::queries::{query_balance, query_delegations, query_registered_query};
-use interchain_queries::register_queries::{
+use neutron_sdk::bindings::msg::NeutronMsg;
+use neutron_sdk::bindings::query::InterchainQueries;
+use neutron_sdk::errors::error::ContractResult;
+use neutron_sdk::interchain_queries::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
+use neutron_sdk::interchain_queries::queries::{
+    query_balance, query_delegations, query_registered_query,
+};
+use neutron_sdk::interchain_queries::register_queries::{
     register_balance_query, register_delegator_delegations_query, register_transfers_query,
 };
-use interchain_queries::sudo::{sudo_kv_query_result, sudo_tx_query_result};
-use neutron_bindings::msg::NeutronMsg;
-use neutron_bindings::query::InterchainQueries;
-use neutron_sudo::msg::SudoMsg;
+use neutron_sdk::interchain_queries::sudo::{sudo_kv_query_result, sudo_tx_query_result};
+use neutron_sdk::sudo::msg::SudoMsg;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(

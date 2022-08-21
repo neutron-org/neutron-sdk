@@ -1,10 +1,10 @@
-use crate::error::{ContractError, ContractResult};
-use crate::queries::get_registered_query;
-use crate::types::COSMOS_SDK_TRANSFER_MSG_URL;
+use crate::bindings::query::InterchainQueries;
+use crate::errors::error::{ContractError, ContractResult};
+use crate::interchain_queries::queries::get_registered_query;
+use crate::interchain_queries::types::COSMOS_SDK_TRANSFER_MSG_URL;
 use cosmos_sdk_proto::cosmos::bank::v1beta1::MsgSend;
 use cosmos_sdk_proto::cosmos::tx::v1beta1::{TxBody, TxRaw};
 use cosmwasm_std::{Binary, DepsMut, Env, Response, StdError};
-use neutron_bindings::query::InterchainQueries;
 use prost::Message as ProstMessage;
 use serde::{Deserialize, Serialize};
 use serde_json_wasm;
@@ -96,7 +96,7 @@ pub fn sudo_tx_query_result(
                 }
 
                 // Note: use `crate::types::{protobuf_coin_to_std_coin}` to cast proto
-                // coins to sdk coins.
+                // coins to neutron-sdk coins.
             }
 
             // If we didn't find a Send message with the correct recipient, return an error, and

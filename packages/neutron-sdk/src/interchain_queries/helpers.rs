@@ -1,5 +1,5 @@
-use crate::error::{ContractError, ContractResult};
-use crate::types::{
+use crate::errors::error::{ContractError, ContractResult};
+use crate::interchain_queries::types::{
     AddressBytes, BALANCES_PREFIX, DELEGATION_KEY, MAX_ADDR_LEN, PARAMS_STORE_DELIMITER,
     VALIDATORS_KEY,
 };

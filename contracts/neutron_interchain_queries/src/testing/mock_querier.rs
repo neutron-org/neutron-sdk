@@ -18,7 +18,7 @@ use cosmwasm_std::{
     QuerierResult, QueryRequest, SystemError, SystemResult, Uint128, Validator,
 };
 
-use neutron_bindings::query::InterchainQueries;
+use neutron_sdk::bindings::query::InterchainQueries;
 use schemars::JsonSchema;
 
 use serde::{Deserialize, Serialize};

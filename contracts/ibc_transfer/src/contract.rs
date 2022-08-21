@@ -2,7 +2,7 @@ use cosmwasm_std::{
     coin, entry_point, Binary, CosmosMsg, Deps, DepsMut, Env, IbcMsg, IbcTimeout, IbcTimeoutBlock,
     MessageInfo, Reply, Response, StdError, StdResult, SubMsg,
 };
-use neutron_sudo::msg::{RequestPacket, SudoMsg};
+use neutron_sdk::sudo::msg::{RequestPacket, SudoMsg};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 

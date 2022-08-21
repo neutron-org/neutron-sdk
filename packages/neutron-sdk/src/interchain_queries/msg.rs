@@ -1,4 +1,4 @@
-use crate::types::Balances;
+use crate::interchain_queries::types::Balances;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 

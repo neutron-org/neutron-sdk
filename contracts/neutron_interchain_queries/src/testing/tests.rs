@@ -18,17 +18,19 @@ use cosmwasm_std::testing::{mock_env, mock_info, MockApi, MockStorage};
 use cosmwasm_std::{
     from_binary, to_binary, Addr, Binary, Coin, Delegation, Env, MessageInfo, OwnedDeps,
 };
-use interchain_queries::helpers::{create_account_balances_prefix, decode_and_convert};
-use interchain_queries::msg::{
-    DelegatorDelegationsResponse, ExecuteMsg, QueryBalanceResponse, QueryMsg,
-};
-use interchain_queries::types::{Balances, QueryType};
-use neutron_bindings::query::{
+use neutron_sdk::bindings::query::{
     InterchainQueries, QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse,
 };
-use neutron_bindings::types::{
+use neutron_sdk::bindings::types::{
     decode_hex, InterchainQueryResult, KVKey, KVKeys, RegisteredQuery, StorageValue,
 };
+use neutron_sdk::interchain_queries::helpers::{
+    create_account_balances_prefix, decode_and_convert,
+};
+use neutron_sdk::interchain_queries::msg::{
+    DelegatorDelegationsResponse, ExecuteMsg, QueryBalanceResponse, QueryMsg,
+};
+use neutron_sdk::interchain_queries::types::{Balances, QueryType};
 use prost::Message as ProstMessage;
 
 use schemars::_serde_json::to_string;

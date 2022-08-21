@@ -1,8 +1,8 @@
-use crate::error::ContractResult;
+use crate::bindings::types::StorageValue;
+use crate::errors::error::ContractResult;
 use cosmos_sdk_proto::cosmos::base::v1beta1::Coin as CosmosCoin;
 use cosmos_sdk_proto::cosmos::staking::v1beta1::{Delegation, Validator};
 use cosmwasm_std::{from_binary, Addr, Coin, Decimal, Uint128};
-use neutron_bindings::types::StorageValue;
 use prost::Message as ProstMessage;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};

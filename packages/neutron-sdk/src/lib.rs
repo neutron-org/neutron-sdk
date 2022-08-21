@@ -10,10 +10,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-pub use types::ProtobufAny;
-pub mod msg;
-pub mod query;
-pub mod types;
+pub mod bindings;
+pub mod errors;
+pub mod interchain_queries;
+pub mod sudo;
 
 // This is a signal, such that any contract that imports these helpers will only run on the
 // neutron blockchain

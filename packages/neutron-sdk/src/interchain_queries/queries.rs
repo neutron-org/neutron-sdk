@@ -10,28 +10,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::error::{ContractError, ContractResult};
-use crate::types::{Balances, Delegations, KVReconstruct, QueryType};
-use neutron_bindings::query::InterchainQueries;
+use crate::bindings::query::InterchainQueries;
+use crate::errors::error::{ContractError, ContractResult};
+use crate::interchain_queries::types::{Balances, Delegations, KVReconstruct, QueryType};
 
+use crate::bindings::query::{QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse};
 use cosmwasm_std::{to_binary, Binary, Deps, Env};
-use neutron_bindings::query::{QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse};
 
-use crate::msg::{DelegatorDelegationsResponse, QueryBalanceResponse};
+use crate::interchain_queries::msg::{DelegatorDelegationsResponse, QueryBalanceResponse};
 
 /// Parse **actual** query type, checks that it's valid and assert it with **expected** query type
 pub fn check_query_type(actual: String, expected: QueryType) -> ContractResult<QueryType> {
     if let Some(t) = QueryType::try_from_str(&actual) {
         if t != expected {
             return Err(ContractError::InvalidQueryType {
-                expected,
-                actual: t.into(),
+                query_type: t.into(),
             });
         }
         return Ok(t);
     }
 
-    Err(ContractError::InvalidQueryType { expected, actual })
+    Err(ContractError::InvalidQueryType { query_type: actual })
 }
 
 /// Queries registered query info

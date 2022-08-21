@@ -1,4 +1,4 @@
-use crate::types::{InterchainQueryResult, RegisteredQuery};
+use crate::bindings::types::{InterchainQueryResult, RegisteredQuery};
 use cosmwasm_std::CustomQuery;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
