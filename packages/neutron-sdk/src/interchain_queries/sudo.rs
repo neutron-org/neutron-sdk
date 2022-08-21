@@ -1,5 +1,5 @@
 use crate::bindings::query::InterchainQueries;
-use crate::errors::error::{ContractError, ContractResult};
+use crate::errors::error::{NeutronError, NeutronResult};
 use crate::interchain_queries::queries::get_registered_query;
 use crate::interchain_queries::types::COSMOS_SDK_TRANSFER_MSG_URL;
 use cosmos_sdk_proto::cosmos::bank::v1beta1::MsgSend;
@@ -25,7 +25,7 @@ pub fn sudo_tx_query_result(
     query_id: u64,
     _height: u64,
     data: Binary,
-) -> ContractResult<Response> {
+) -> NeutronResult<Response> {
     deps.api.debug(
         format!(
             "WASMDEBUG: sudo_check_tx_query_result received; query_id: {:?}",
@@ -112,7 +112,7 @@ pub fn sudo_tx_query_result(
                         )
                         .as_str(),
                     );
-                    Err(ContractError::Std(StdError::generic_err(
+                    Err(NeutronError::Std(StdError::generic_err(
                         "failed to find a matching transaction message",
                     )))
                 }
@@ -128,7 +128,7 @@ pub fn sudo_kv_query_result(
     deps: DepsMut<InterchainQueries>,
     _env: Env,
     query_id: u64,
-) -> ContractResult<Response> {
+) -> NeutronResult<Response> {
     deps.api.debug(
         format!(
             "WASMDEBUG: sudo_kv_query_result received; query_id: {:?}",

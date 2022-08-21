@@ -1,9 +1,9 @@
 use crate::bindings::msg::NeutronMsg;
 use crate::bindings::query::InterchainQueries;
 use crate::bindings::types::{KVKey, KVKeys};
-use crate::errors::error::ContractResult;
+use crate::errors::error::NeutronResult;
 use crate::interchain_queries::helpers::{
-    create_account_balances_prefix, create_delegation_key, create_params_store_key,
+    create_account_denom_balance_key, create_delegation_key, create_params_store_key,
     create_validator_key, decode_and_convert,
 };
 use crate::interchain_queries::sudo::TransferRecipientQuery;
@@ -24,7 +24,7 @@ fn register_interchain_query(
     kv_keys: Vec<KVKey>,
     transactions_filter: String,
     update_period: u64,
-) -> ContractResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response<NeutronMsg>> {
     let register_msg = NeutronMsg::register_interchain_query(
         query_type.into(),
         kv_keys.clone(),
@@ -70,11 +70,10 @@ pub fn register_balance_query(
     addr: String,
     denom: String,
     update_period: u64,
-) -> ContractResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response<NeutronMsg>> {
     let converted_addr_bytes = decode_and_convert(addr.as_str())?;
 
-    let mut balance_key = create_account_balances_prefix(converted_addr_bytes)?;
-    balance_key.extend_from_slice(denom.as_bytes());
+    let balance_key = create_account_denom_balance_key(converted_addr_bytes, denom)?;
 
     let kv_key = KVKey {
         path: BANK_STORE_KEY.to_string(),
@@ -108,7 +107,7 @@ pub fn register_delegator_delegations_query(
     delegator: String,
     validators: Vec<String>,
     update_period: u64,
-) -> ContractResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response<NeutronMsg>> {
     let delegator_addr = decode_and_convert(delegator.as_str())?;
 
     // Allocate memory for such KV keys as:
@@ -163,7 +162,7 @@ pub fn register_transfers_query(
     zone_id: String,
     recipient: String,
     update_period: u64,
-) -> ContractResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response<NeutronMsg>> {
     let query_data = TransferRecipientQuery { recipient };
 
     let query_data_json_encoded =

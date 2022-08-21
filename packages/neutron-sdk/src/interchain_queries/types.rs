@@ -1,5 +1,5 @@
 use crate::bindings::types::StorageValue;
-use crate::errors::error::ContractResult;
+use crate::errors::error::NeutronResult;
 use cosmos_sdk_proto::cosmos::base::v1beta1::Coin as CosmosCoin;
 use cosmos_sdk_proto::cosmos::staking::v1beta1::{Delegation, Validator};
 use cosmwasm_std::{from_binary, Addr, Coin, Decimal, Uint128};
@@ -104,7 +104,7 @@ pub type AddressBytes = Vec<u8>;
 /// Anyone can implement `KVReconstruct` for any type and use `query_kv_result` without any problems.
 pub trait KVReconstruct: Sized {
     /// Reconstructs this value from the slice of **StorageValue**'s.
-    fn reconstruct(kvs: &[StorageValue]) -> ContractResult<Self>;
+    fn reconstruct(kvs: &[StorageValue]) -> NeutronResult<Self>;
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -115,7 +115,7 @@ pub struct Balances {
 }
 
 impl KVReconstruct for Balances {
-    fn reconstruct(storage_values: &[StorageValue]) -> ContractResult<Balances> {
+    fn reconstruct(storage_values: &[StorageValue]) -> NeutronResult<Balances> {
         let mut coins: Vec<Coin> = vec![];
 
         for kv in storage_values {
@@ -136,7 +136,7 @@ pub struct Delegations {
 }
 
 impl KVReconstruct for Delegations {
-    fn reconstruct(storage_values: &[StorageValue]) -> ContractResult<Delegations> {
+    fn reconstruct(storage_values: &[StorageValue]) -> NeutronResult<Delegations> {
         let mut delegations: Vec<cosmwasm_std::Delegation> = vec![];
 
         // first StorageValue is denom
@@ -178,5 +178,72 @@ impl KVReconstruct for Delegations {
         }
 
         Ok(Delegations { delegations })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::bindings::types::StorageValue;
+    use crate::interchain_queries::helpers::{
+        create_account_denom_balance_key, decode_and_convert,
+    };
+    use crate::interchain_queries::types::{Balances, KVReconstruct};
+    use cosmos_sdk_proto::cosmos::base::v1beta1::Coin;
+    use cosmwasm_std::{Binary, Uint128};
+    use prost::Message as ProstMessage;
+
+    #[test]
+    fn test_balance_reconstruct() {
+        struct TestCase {
+            addr: String,
+            coins: Vec<(String, Uint128)>,
+        }
+        let test_cases: Vec<TestCase> = vec![
+            TestCase {
+                addr: "osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs".to_string(),
+                coins: vec![("uosmo".to_string(), Uint128::from(100u128))],
+            },
+            TestCase {
+                addr: "osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs".to_string(),
+                coins: vec![
+                    ("uosmo".to_string(), Uint128::from(100u128)),
+                    ("uatom".to_string(), Uint128::from(500u128)),
+                    ("uluna".to_string(), Uint128::from(80u128)),
+                ],
+            },
+            TestCase {
+                addr: "osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs".to_string(),
+                coins: vec![],
+            },
+        ];
+
+        for ts in test_cases.iter() {
+            let mut st_values: Vec<StorageValue> = vec![];
+
+            let converted_addr_bytes = decode_and_convert(ts.addr.as_str()).unwrap();
+            for coin in &ts.coins {
+                let balance_key =
+                    create_account_denom_balance_key(converted_addr_bytes.clone(), &coin.0)
+                        .unwrap();
+
+                let balance_amount = Coin {
+                    denom: coin.0.clone(),
+                    amount: coin.1.to_string(),
+                };
+                let s = StorageValue {
+                    storage_prefix: "".to_string(),
+                    key: Binary(balance_key),
+                    value: Binary(balance_amount.encode_to_vec()),
+                };
+                st_values.push(s);
+            }
+
+            let balances = Balances::reconstruct(&st_values).unwrap();
+            assert_eq!(balances.coins.len(), ts.coins.len());
+            for (i, coin) in balances.coins.iter().enumerate() {
+                assert_eq!(coin.denom, ts.coins[i].0);
+                assert_eq!(coin.amount, ts.coins[i].1)
+            }
+        }
     }
 }

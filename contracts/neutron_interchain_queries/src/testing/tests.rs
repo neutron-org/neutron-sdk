@@ -25,7 +25,7 @@ use neutron_sdk::bindings::types::{
     decode_hex, InterchainQueryResult, KVKey, KVKeys, RegisteredQuery, StorageValue,
 };
 use neutron_sdk::interchain_queries::helpers::{
-    create_account_balances_prefix, decode_and_convert,
+    create_account_denom_balance_key, decode_and_convert,
 };
 use neutron_sdk::interchain_queries::msg::{
     DelegatorDelegationsResponse, ExecuteMsg, QueryBalanceResponse, QueryMsg,
@@ -65,8 +65,7 @@ fn build_registered_query_response(
 fn build_interchain_query_balance_response(addr: Addr, denom: String, amount: String) -> Binary {
     let converted_addr_bytes = decode_and_convert(addr.as_str()).unwrap();
 
-    let mut balance_key = create_account_balances_prefix(&converted_addr_bytes).unwrap();
-    balance_key.extend_from_slice(denom.as_bytes());
+    let balance_key = create_account_denom_balance_key(converted_addr_bytes, &denom).unwrap();
 
     let balance_amount = CosmosCoin { denom, amount };
 

@@ -19,16 +19,16 @@ use cosmwasm_std::{Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult}
 
 use neutron_sdk::bindings::msg::NeutronMsg;
 use neutron_sdk::bindings::query::InterchainQueries;
-use neutron_sdk::errors::error::ContractResult;
 use neutron_sdk::interchain_queries::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use neutron_sdk::interchain_queries::queries::{
     query_balance, query_delegations, query_registered_query,
 };
-use neutron_sdk::interchain_queries::register_queries::{
+use neutron_sdk::interchain_queries::sudo::{sudo_kv_query_result, sudo_tx_query_result};
+use neutron_sdk::interchain_queries::{
     register_balance_query, register_delegator_delegations_query, register_transfers_query,
 };
-use neutron_sdk::interchain_queries::sudo::{sudo_kv_query_result, sudo_tx_query_result};
 use neutron_sdk::sudo::msg::SudoMsg;
+use neutron_sdk::NeutronResult;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -36,7 +36,7 @@ pub fn instantiate(
     _env: Env,
     _info: MessageInfo,
     _msg: InstantiateMsg,
-) -> ContractResult<Response> {
+) -> NeutronResult<Response> {
     //TODO
     Ok(Response::default())
 }
@@ -47,7 +47,7 @@ pub fn execute(
     env: Env,
     _: MessageInfo,
     msg: ExecuteMsg,
-) -> ContractResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response<NeutronMsg>> {
     match msg {
         ExecuteMsg::RegisterBalanceQuery {
             zone_id,
@@ -89,7 +89,7 @@ pub fn execute(
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> ContractResult<Binary> {
+pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> NeutronResult<Binary> {
     match msg {
         //TODO: check if query.result.height is too old (for all interchain queries)
         QueryMsg::Balance { query_id } => query_balance(deps, env, query_id),
@@ -104,7 +104,7 @@ pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Respons
 }
 
 #[entry_point]
-pub fn sudo(deps: DepsMut<InterchainQueries>, env: Env, msg: SudoMsg) -> ContractResult<Response> {
+pub fn sudo(deps: DepsMut<InterchainQueries>, env: Env, msg: SudoMsg) -> NeutronResult<Response> {
     match msg {
         SudoMsg::TxQueryResult {
             query_id,

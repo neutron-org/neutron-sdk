@@ -11,9 +11,11 @@
 // limitations under the License.
 
 pub mod bindings;
-pub mod errors;
+mod errors;
 pub mod interchain_queries;
 pub mod sudo;
+
+pub use errors::error::{NeutronError, NeutronResult};
 
 // This is a signal, such that any contract that imports these helpers will only run on the
 // neutron blockchain
