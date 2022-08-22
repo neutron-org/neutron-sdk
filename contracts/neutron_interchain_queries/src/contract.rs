@@ -27,7 +27,7 @@ use interchain_queries::error::{ContractError, ContractResult};
 use interchain_queries::queries::{query_balance, query_delegations, query_registered_query};
 use interchain_queries::register_queries::{
     register_balance_query, register_delegator_delegations_query, register_transfers_query,
-    TransferRecipientQuery,
+    remove_interchain_query, update_interchain_query, TransferRecipientQuery,
 };
 use interchain_queries::types::COSMOS_SDK_TRANSFER_MSG_URL;
 use neutron_bindings::msg::NeutronMsg;
@@ -91,6 +91,12 @@ pub fn execute(
             recipient,
             update_period,
         } => register_transfers_query(deps, env, connection_id, zone_id, recipient, update_period),
+        ExecuteMsg::UpdateInterchainQuery {
+            query_id,
+            new_keys,
+            new_update_period,
+        } => update_interchain_query(query_id, new_keys, new_update_period),
+        ExecuteMsg::RemoveInterchainQuery { query_id } => remove_interchain_query(query_id),
     }
 }
 
