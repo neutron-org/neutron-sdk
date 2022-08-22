@@ -10,14 +10,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::bindings::query::InterchainQueries;
-use crate::errors::error::{NeutronError, NeutronResult};
+use crate::bindings::query::{
+    InterchainQueries, QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse,
+};
 use crate::interchain_queries::types::{Balances, Delegations, KVReconstruct, QueryType};
-
-use crate::bindings::query::{QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse};
+use crate::{NeutronError, NeutronResult};
 use cosmwasm_std::{to_binary, Binary, Deps, Env};
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
-use crate::interchain_queries::msg::{DelegatorDelegationsResponse, QueryBalanceResponse};
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct QueryBalanceResponse {
+    pub balances: Balances,
+    pub last_submitted_local_height: u64,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct DelegatorDelegationsResponse {
+    pub delegations: Vec<cosmwasm_std::Delegation>,
+    pub last_submitted_local_height: u64,
+}
 
 /// Parse **actual** query type, checks that it's valid and assert it with **expected** query type
 pub fn check_query_type(actual: String, expected: QueryType) -> NeutronResult<QueryType> {
@@ -34,7 +48,7 @@ pub fn check_query_type(actual: String, expected: QueryType) -> NeutronResult<Qu
 }
 
 /// Queries registered query info
-pub(crate) fn get_registered_query(
+fn get_registered_query(
     deps: Deps<InterchainQueries>,
     interchain_query_id: u64,
 ) -> NeutronResult<QueryRegisteredQueryResponse> {

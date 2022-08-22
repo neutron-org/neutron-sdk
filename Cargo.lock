@@ -422,10 +422,12 @@ dependencies = [
  "cosmos-sdk-proto",
  "cosmwasm-schema",
  "cosmwasm-std",
+ "cw-storage-plus",
  "neutron-sdk",
  "prost",
  "schemars",
  "serde",
+ "serde-json-wasm",
 ]
 
 [[package]]

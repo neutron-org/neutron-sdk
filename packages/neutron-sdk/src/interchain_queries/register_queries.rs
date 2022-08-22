@@ -6,12 +6,19 @@ use crate::interchain_queries::helpers::{
     create_account_denom_balance_key, create_delegation_key, create_params_store_key,
     create_validator_key, decode_and_convert,
 };
-use crate::interchain_queries::sudo::TransferRecipientQuery;
 use crate::interchain_queries::types::{
     QueryType, BANK_STORE_KEY, KEY_BOND_DENOM, PARAMS_STORE_KEY, STAKING_STORE_KEY,
 };
 use cosmwasm_std::{attr, Attribute, Binary, DepsMut, Env, Response, StdError};
 use schemars::_serde_json::to_string;
+use serde::{Deserialize, Serialize};
+
+/// TransferRecipientQuery represents the request model for transfers query registration.
+#[derive(Serialize, Deserialize)]
+pub struct TransferRecipientQuery {
+    #[serde(rename = "transfer.recipient")]
+    pub recipient: String,
+}
 
 #[allow(clippy::too_many_arguments)]
 /// Registers an interchain query with provided params

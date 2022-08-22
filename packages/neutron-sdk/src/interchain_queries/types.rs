@@ -1,5 +1,6 @@
 use crate::bindings::types::StorageValue;
 use crate::errors::error::NeutronResult;
+use crate::NeutronError;
 use cosmos_sdk_proto::cosmos::base::v1beta1::Coin as CosmosCoin;
 use cosmos_sdk_proto::cosmos::staking::v1beta1::{Delegation, Validator};
 use cosmwasm_std::{from_binary, Addr, Coin, Decimal, Uint128};
@@ -140,17 +141,40 @@ impl KVReconstruct for Delegations {
         let mut delegations: Vec<cosmwasm_std::Delegation> = vec![];
 
         // first StorageValue is denom
+        if storage_values[0].value.is_empty() {
+            // Incoming denom cannot be empty, it should always be configured on chain.
+            // If we receive empty denom, that means incoming data structure is corrupted
+            // and we cannot build `cosmwasm_std::Delegation`'s using this data.
+            return Err(NeutronError::InvalidQueryResultFormat(
+                "denom is empty".into(),
+            ));
+        }
         let denom: String = from_binary(&storage_values[0].value)?;
 
         // the rest are delegations and validators alternately
         for chunk in storage_values[1..].chunks(2) {
+            if chunk[0].value.is_empty() {
+                // Incoming delegation can actually be empty, this just means that delegation
+                // is not present on remote chain, which is to be expected. So, if it doesn't
+                // exist, we can safely skip this and following chunk.
+                continue;
+            }
             let delegation_sdk: Delegation = Delegation::decode(chunk[0].value.as_slice())?;
+
             let mut delegation_std = cosmwasm_std::Delegation {
                 delegator: Addr::unchecked(delegation_sdk.delegator_address.as_str()),
                 validator: delegation_sdk.validator_address,
                 amount: Default::default(),
             };
 
+            if chunk[1].value.is_empty() {
+                // At this point, incoming validator cannot be empty, that would be invalid,
+                // because delegation is already defined, so, building `cosmwasm_std::Delegation`
+                // from this data is impossible, incoming data is corrupted.post
+                return Err(NeutronError::InvalidQueryResultFormat(
+                    "validator is empty".into(),
+                ));
+            }
             let validator: Validator = Validator::decode(chunk[1].value.as_slice())?;
 
             let delegation_shares =
@@ -191,6 +215,7 @@ mod tests {
     use crate::interchain_queries::types::{
         Balances, Delegations, KVReconstruct, KEY_BOND_DENOM, STAKING_STORE_KEY,
     };
+    use crate::{NeutronError, NeutronResult};
     use cosmos_sdk_proto::cosmos::base::v1beta1::Coin;
     use cosmos_sdk_proto::cosmos::staking::v1beta1::{Delegation, Validator};
     use cosmwasm_std::{
@@ -259,7 +284,7 @@ mod tests {
             stake_denom: String,
             delegations: Vec<Delegation>,
             validators: Vec<Validator>,
-            expected_delegations: Vec<StdDelegation>,
+            expected_result: NeutronResult<Delegations>,
         }
         let test_cases: Vec<TestCase> = vec![
             TestCase {
@@ -284,11 +309,13 @@ mod tests {
                     commission: None,
                     min_self_delegation: "".to_string(),
                 }],
-                expected_delegations: vec![StdDelegation {
-                    delegator: Addr::unchecked("osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs"),
-                    validator: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3".to_string(),
-                    amount: StdCoin::new(1000000000000000000u128, "stake"),
-                }],
+                expected_result: Ok(Delegations {
+                    delegations: vec![StdDelegation {
+                        delegator: Addr::unchecked("osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs"),
+                        validator: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3".to_string(),
+                        amount: StdCoin::new(1000000000000000000u128, "stake"),
+                    }],
+                }),
             },
             TestCase {
                 stake_denom: "stake".to_string(),
@@ -338,24 +365,55 @@ mod tests {
                         min_self_delegation: "".to_string(),
                     },
                 ],
-                expected_delegations: vec![
-                    StdDelegation {
-                        delegator: Addr::unchecked("osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs"),
-                        validator: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3".to_string(),
-                        amount: StdCoin::new(1000000000000000000u128, "stake"),
-                    },
-                    StdDelegation {
-                        delegator: Addr::unchecked("osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs"),
-                        validator: "osmovaloper1lzhlnpahvznwfv4jmay2tgaha5kmz5qxwmj9we".to_string(),
-                        amount: StdCoin::new(1000000000000000000u128, "stake"),
-                    },
-                ],
+                expected_result: Ok(Delegations {
+                    delegations: vec![
+                        StdDelegation {
+                            delegator: Addr::unchecked(
+                                "osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs",
+                            ),
+                            validator: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3"
+                                .to_string(),
+                            amount: StdCoin::new(1000000000000000000u128, "stake"),
+                        },
+                        StdDelegation {
+                            delegator: Addr::unchecked(
+                                "osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs",
+                            ),
+                            validator: "osmovaloper1lzhlnpahvznwfv4jmay2tgaha5kmz5qxwmj9we"
+                                .to_string(),
+                            amount: StdCoin::new(1000000000000000000u128, "stake"),
+                        },
+                    ],
+                }),
             },
             TestCase {
                 stake_denom: "stake".to_string(),
                 delegations: vec![],
                 validators: vec![],
-                expected_delegations: vec![],
+                expected_result: Ok(Delegations {
+                    delegations: vec![],
+                }),
+            },
+            TestCase {
+                stake_denom: Default::default(),
+                delegations: vec![],
+                validators: vec![],
+                expected_result: Err(NeutronError::InvalidQueryResultFormat(
+                    "denom is empty".into(),
+                )),
+            },
+            TestCase {
+                stake_denom: "stake".to_string(),
+                delegations: vec![Delegation {
+                    delegator_address: "osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs".to_string(),
+                    validator_address: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3"
+                        .to_string(),
+                    shares: "1000000000000000000".to_string(),
+                }],
+                validators: vec![],
+                expected_result: Err(NeutronError::InvalidQueryResultFormat(
+                    "validator is empty".into(),
+                )),
             },
         ];
 
@@ -364,7 +422,12 @@ mod tests {
             let mut st_values: Vec<StorageValue> = vec![StorageValue {
                 storage_prefix: STAKING_STORE_KEY.to_string(),
                 key: Binary(create_params_store_key(STAKING_STORE_KEY, KEY_BOND_DENOM)),
-                value: to_binary(&ts.stake_denom).unwrap(),
+                value: {
+                    if ts.stake_denom.is_empty() {
+                        return Default::default();
+                    }
+                    to_binary(&ts.stake_denom).unwrap()
+                },
             }];
 
             for (i, d) in ts.delegations.iter().enumerate() {
@@ -377,20 +440,19 @@ mod tests {
                     value: Binary::from(d.encode_to_vec()),
                 });
 
-                st_values.push(StorageValue {
-                    storage_prefix: STAKING_STORE_KEY.to_string(),
-                    key: Binary(create_validator_key(&val_addr).unwrap()),
-                    value: Binary::from(ts.validators[i].encode_to_vec()),
-                });
+                if let Some(v) = ts.validators.get(i) {
+                    st_values.push(StorageValue {
+                        storage_prefix: STAKING_STORE_KEY.to_string(),
+                        key: Binary(create_validator_key(&val_addr).unwrap()),
+                        value: Binary::from(v.encode_to_vec()),
+                    });
+                }
             }
 
             // test reconstruction
-            let delegations: Delegations = Delegations::reconstruct(&st_values).unwrap();
-            assert_eq!(delegations.delegations.len(), ts.delegations.len());
+            let delegations = Delegations::reconstruct(&st_values);
 
-            for (i, ed) in ts.expected_delegations.iter().enumerate() {
-                assert_eq!(ed.clone(), delegations.delegations[i]);
-            }
+            assert_eq!(delegations, ts.expected_result)
         }
     }
 }
