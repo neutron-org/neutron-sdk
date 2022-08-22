@@ -36,6 +36,9 @@ pub enum ContractError {
 
     #[error("Overflow error")]
     OverflowError(#[from] OverflowError),
+
+    #[error("Invalid query result format: {0}")]
+    InvalidQueryResultFormat(String),
 }
 
 impl From<serde_json_wasm::de::Error> for ContractError {
