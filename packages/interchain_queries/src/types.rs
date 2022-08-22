@@ -141,6 +141,7 @@ impl KVReconstruct for Delegations {
 
         // first StorageValue is denom
         if storage_values[0].value.is_empty() {
+            // denom is empty → incoming data structure is corrupted
             return Err(ContractError::InvalidQueryResultFormat(
                 "denom is empty".into(),
             ));
@@ -150,6 +151,7 @@ impl KVReconstruct for Delegations {
         // the rest are delegations and validators alternately
         for chunk in storage_values[1..].chunks(2) {
             if chunk[0].value.is_empty() {
+                // delegation is empty → there are no delegations
                 continue;
             }
             let delegation_sdk: Delegation = Delegation::decode(chunk[0].value.as_slice())?;
@@ -161,6 +163,7 @@ impl KVReconstruct for Delegations {
             };
 
             if chunk[1].value.is_empty() {
+                // validator is empty, but delegation is not → incoming data structure is corrupted
                 return Err(ContractError::InvalidQueryResultFormat(
                     "validator is empty".into(),
                 ));
