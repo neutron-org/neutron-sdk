@@ -185,11 +185,17 @@ impl KVReconstruct for Delegations {
 mod tests {
     use crate::bindings::types::StorageValue;
     use crate::interchain_queries::helpers::{
-        create_account_denom_balance_key, decode_and_convert,
+        create_account_denom_balance_key, create_delegation_key, create_params_store_key,
+        create_validator_key, decode_and_convert,
     };
-    use crate::interchain_queries::types::{Balances, KVReconstruct};
+    use crate::interchain_queries::types::{
+        Balances, Delegations, KVReconstruct, KEY_BOND_DENOM, STAKING_STORE_KEY,
+    };
     use cosmos_sdk_proto::cosmos::base::v1beta1::Coin;
-    use cosmwasm_std::{Binary, Uint128};
+    use cosmos_sdk_proto::cosmos::staking::v1beta1::{Delegation, Validator};
+    use cosmwasm_std::{
+        to_binary, Addr, Binary, Coin as StdCoin, Delegation as StdDelegation, Uint128,
+    };
     use prost::Message as ProstMessage;
 
     #[test]
@@ -243,6 +249,147 @@ mod tests {
             for (i, coin) in balances.coins.iter().enumerate() {
                 assert_eq!(coin.denom, ts.coins[i].0);
                 assert_eq!(coin.amount, ts.coins[i].1)
+            }
+        }
+    }
+
+    #[test]
+    fn test_delegations_reconstruct() {
+        struct TestCase {
+            stake_denom: String,
+            delegations: Vec<Delegation>,
+            validators: Vec<Validator>,
+            expected_delegations: Vec<StdDelegation>,
+        }
+        let test_cases: Vec<TestCase> = vec![
+            TestCase {
+                stake_denom: "stake".to_string(),
+                delegations: vec![Delegation {
+                    delegator_address: "osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs".to_string(),
+                    validator_address: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3"
+                        .to_string(),
+                    shares: "1000000000000000000".to_string(),
+                }],
+                validators: vec![Validator {
+                    operator_address: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3"
+                        .to_string(),
+                    consensus_pubkey: None,
+                    jailed: false,
+                    status: 0,
+                    tokens: "1000000000000000000".to_string(),
+                    delegator_shares: "1000000000000000000".to_string(),
+                    description: None,
+                    unbonding_height: 0,
+                    unbonding_time: None,
+                    commission: None,
+                    min_self_delegation: "".to_string(),
+                }],
+                expected_delegations: vec![StdDelegation {
+                    delegator: Addr::unchecked("osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs"),
+                    validator: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3".to_string(),
+                    amount: StdCoin::new(1000000000000000000u128, "stake"),
+                }],
+            },
+            TestCase {
+                stake_denom: "stake".to_string(),
+                delegations: vec![
+                    Delegation {
+                        delegator_address: "osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs"
+                            .to_string(),
+                        validator_address: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3"
+                            .to_string(),
+                        shares: "1000000000000000000".to_string(),
+                    },
+                    Delegation {
+                        delegator_address: "osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs"
+                            .to_string(),
+                        validator_address: "osmovaloper1lzhlnpahvznwfv4jmay2tgaha5kmz5qxwmj9we"
+                            .to_string(),
+                        shares: "1000000000000000000".to_string(),
+                    },
+                ],
+                validators: vec![
+                    Validator {
+                        operator_address: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3"
+                            .to_string(),
+                        consensus_pubkey: None,
+                        jailed: false,
+                        status: 0,
+                        tokens: "1000000000000000000".to_string(),
+                        delegator_shares: "1000000000000000000".to_string(),
+                        description: None,
+                        unbonding_height: 0,
+                        unbonding_time: None,
+                        commission: None,
+                        min_self_delegation: "".to_string(),
+                    },
+                    Validator {
+                        operator_address: "osmovaloper1lzhlnpahvznwfv4jmay2tgaha5kmz5qxwmj9we"
+                            .to_string(),
+                        consensus_pubkey: None,
+                        jailed: false,
+                        status: 0,
+                        tokens: "1000000000000000000".to_string(),
+                        delegator_shares: "1000000000000000000".to_string(),
+                        description: None,
+                        unbonding_height: 0,
+                        unbonding_time: None,
+                        commission: None,
+                        min_self_delegation: "".to_string(),
+                    },
+                ],
+                expected_delegations: vec![
+                    StdDelegation {
+                        delegator: Addr::unchecked("osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs"),
+                        validator: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3".to_string(),
+                        amount: StdCoin::new(1000000000000000000u128, "stake"),
+                    },
+                    StdDelegation {
+                        delegator: Addr::unchecked("osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs"),
+                        validator: "osmovaloper1lzhlnpahvznwfv4jmay2tgaha5kmz5qxwmj9we".to_string(),
+                        amount: StdCoin::new(1000000000000000000u128, "stake"),
+                    },
+                ],
+            },
+            TestCase {
+                stake_denom: "stake".to_string(),
+                delegations: vec![],
+                validators: vec![],
+                expected_delegations: vec![],
+            },
+        ];
+
+        for ts in &test_cases {
+            // prepare storage values
+            let mut st_values: Vec<StorageValue> = vec![StorageValue {
+                storage_prefix: STAKING_STORE_KEY.to_string(),
+                key: Binary(create_params_store_key(STAKING_STORE_KEY, KEY_BOND_DENOM)),
+                value: to_binary(&ts.stake_denom).unwrap(),
+            }];
+
+            for (i, d) in ts.delegations.iter().enumerate() {
+                let delegator_addr = decode_and_convert(&d.delegator_address).unwrap();
+                let val_addr = decode_and_convert(&d.validator_address).unwrap();
+
+                st_values.push(StorageValue {
+                    storage_prefix: STAKING_STORE_KEY.to_string(),
+                    key: Binary(create_delegation_key(&delegator_addr, &val_addr).unwrap()),
+                    value: Binary::from(d.encode_to_vec()),
+                });
+
+                st_values.push(StorageValue {
+                    storage_prefix: STAKING_STORE_KEY.to_string(),
+                    key: Binary(create_validator_key(&val_addr).unwrap()),
+                    value: Binary::from(ts.validators[i].encode_to_vec()),
+                });
+            }
+
+            // test reconstruction
+            let delegations: Delegations = Delegations::reconstruct(&st_values).unwrap();
+            assert_eq!(delegations.delegations.len(), ts.delegations.len());
+
+            for (i, ed) in ts.expected_delegations.iter().enumerate() {
+                assert_eq!(ed.clone(), delegations.delegations[i]);
             }
         }
     }
