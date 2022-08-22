@@ -189,8 +189,12 @@ pub fn read_reply_payload(store: &mut dyn Storage, id: u64) -> StdResult<SudoPay
     from_binary(&Binary(data))
 }
 
-pub fn read_sudo_payload(store: &mut dyn Storage, seq_id: u64) -> StdResult<SudoPayload> {
-    let data = SUDO_PAYLOAD.load(store, seq_id)?;
+pub fn read_sudo_payload(
+    store: &mut dyn Storage,
+    channel_id: String,
+    seq_id: u64,
+) -> StdResult<SudoPayload> {
+    let data = SUDO_PAYLOAD.load(store, (channel_id, seq_id))?;
     from_binary(&Binary(data))
 }
 
@@ -372,8 +376,10 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
     let seq_id = request
         .sequence
         .ok_or_else(|| StdError::generic_err("sequence not found"))?;
-
-    let payload = read_sudo_payload(deps.storage, seq_id)?;
+    let channel_id = request
+        .source_channel
+        .ok_or_else(|| StdError::generic_err("channel_id not found"))?;
+    let payload = read_sudo_payload(deps.storage, channel_id, seq_id)?;
     deps.api
         .debug(format!("WASMDEBUG: sudo_response: sudo payload: {:?}", payload).as_str());
     // handle response
@@ -419,35 +425,57 @@ fn sudo_error(deps: Deps, _request: RequestPacket, details: String) -> StdResult
 
 pub fn save_sudo_payload(
     store: &mut dyn Storage,
+    channel_id: String,
     seq_id: u64,
     payload: SudoPayload,
 ) -> StdResult<()> {
-    SUDO_PAYLOAD.save(store, seq_id, &to_vec(&payload)?)
+    SUDO_PAYLOAD.save(store, (channel_id, seq_id), &to_vec(&payload)?)
 }
 
-fn parse_sequence(deps: Deps, msg: Reply) -> StdResult<u64> {
-    let seq_id = str::parse(
-        &msg.result
-            .into_result()
-            .map_err(StdError::generic_err)?
-            .events
-            .iter()
-            .find(|e| e.ty == "send_packet")
-            .and_then(|e| e.attributes.iter().find(|a| a.key == "packet_sequence"))
-            .ok_or_else(|| StdError::generic_err("failed to find packet_sequence atribute"))?
-            .value
-            .clone(),
-    )
-    .map_err(|_e| StdError::generic_err("parse int error"))?;
-    deps.api
-        .debug(format!("WASMDEBUG: parse_sequence: reply result: {:?}", seq_id).as_str());
-    Ok(seq_id)
+fn parse_sequence(deps: Deps, msg: Reply) -> StdResult<(String, u64)> {
+    let mut may_seq_id: Option<u64> = None;
+    let mut may_channel_id: Option<String> = None;
+    for attr in msg
+        .result
+        .into_result()
+        .map_err(StdError::generic_err)?
+        .events
+        .iter()
+        .find(|e| e.ty == "send_packet")
+        .ok_or_else(|| StdError::generic_err("failed to find packet_sequence attribute"))?
+        .attributes
+        .iter()
+    {
+        if attr.key == "packet_sequence" {
+            may_seq_id = Some(
+                str::parse(&attr.value).map_err(|_e| StdError::generic_err("parse int error"))?,
+            );
+        }
+        if attr.key == "packet_src_channel" {
+            may_channel_id = Some(attr.value.clone())
+        }
+        if let (Some(seq_id), Some(channel_id)) = (may_seq_id, &may_channel_id) {
+            deps.api.debug(
+                format!(
+                    "WASMDEBUG: parse_sequence: reply result: {:?} {:?}",
+                    channel_id, seq_id
+                )
+                .as_str(),
+            );
+            return Ok((channel_id.clone(), seq_id));
+        }
+    }
+
+    Err(StdError::generic_err(format!(
+        "failed to find channel_id or seq_id: {:?} {:?}",
+        may_channel_id, may_seq_id
+    )))
 }
 
 fn prepare_sudo_payload(mut deps: DepsMut, _env: Env, msg: Reply) -> StdResult<Response> {
     let payload = read_reply_payload(deps.storage, msg.id)?;
-    let seq_id = parse_sequence(deps.as_ref(), msg)?;
-    save_sudo_payload(deps.branch().storage, seq_id, payload)?;
+    let (channel_id, seq_id) = parse_sequence(deps.as_ref(), msg)?;
+    save_sudo_payload(deps.branch().storage, channel_id, seq_id, payload)?;
     Ok(Response::new())
 }
 
