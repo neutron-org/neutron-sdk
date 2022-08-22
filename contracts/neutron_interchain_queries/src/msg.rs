@@ -1,4 +1,4 @@
-use crate::types::Balances;
+use crate::state::Transfer;
 use neutron_bindings::types::KVKey;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -41,24 +41,17 @@ pub enum ExecuteMsg {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub struct QueryBalanceResponse {
-    pub balances: Balances,
-    pub last_submitted_local_height: u64,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct DelegatorDelegationsResponse {
-    pub delegations: Vec<cosmwasm_std::Delegation>,
-    pub last_submitted_local_height: u64,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
     Balance { query_id: u64 },
     GetDelegations { query_id: u64 },
     GetRegisteredQuery { query_id: u64 },
+    GetRecipientTxs { recipient: String },
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct GetRecipientTxsResponse {
+    pub transfers: Vec<Transfer>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

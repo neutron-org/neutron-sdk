@@ -12,12 +12,25 @@
 
 use crate::error::{ContractError, ContractResult};
 use crate::types::{Balances, Delegations, KVReconstruct, QueryType};
-use neutron_bindings::query::InterchainQueries;
-
 use cosmwasm_std::{to_binary, Binary, Deps, Env};
+use neutron_bindings::query::InterchainQueries;
 use neutron_bindings::query::{QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse};
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
-use crate::msg::{DelegatorDelegationsResponse, QueryBalanceResponse};
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct QueryBalanceResponse {
+    pub balances: Balances,
+    pub last_submitted_local_height: u64,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct DelegatorDelegationsResponse {
+    pub delegations: Vec<cosmwasm_std::Delegation>,
+    pub last_submitted_local_height: u64,
+}
 
 /// Parse **actual** query type, checks that it's valid and assert it with **expected** query type
 pub fn check_query_type(actual: String, expected: QueryType) -> ContractResult<QueryType> {
@@ -35,7 +48,7 @@ pub fn check_query_type(actual: String, expected: QueryType) -> ContractResult<Q
 }
 
 /// Queries registered query info
-pub(crate) fn get_registered_query(
+fn get_registered_query(
     deps: Deps<InterchainQueries>,
     interchain_query_id: u64,
 ) -> ContractResult<QueryRegisteredQueryResponse> {

@@ -1,4 +1,4 @@
-use crate::error::ContractResult;
+use crate::error::{ContractError, ContractResult};
 use cosmos_sdk_proto::cosmos::base::v1beta1::Coin as CosmosCoin;
 use cosmos_sdk_proto::cosmos::staking::v1beta1::{Delegation, Validator};
 use cosmwasm_std::{from_binary, Addr, Coin, Decimal, Uint128};
@@ -140,17 +140,40 @@ impl KVReconstruct for Delegations {
         let mut delegations: Vec<cosmwasm_std::Delegation> = vec![];
 
         // first StorageValue is denom
+        if storage_values[0].value.is_empty() {
+            // Incoming denom cannot be empty, it should always be configured on chain.
+            // If we receive empty denom, that means incoming data structure is corrupted
+            // and we cannot build `cosmwasm_std::Delegation`'s using this data.
+            return Err(ContractError::InvalidQueryResultFormat(
+                "denom is empty".into(),
+            ));
+        }
         let denom: String = from_binary(&storage_values[0].value)?;
 
         // the rest are delegations and validators alternately
         for chunk in storage_values[1..].chunks(2) {
+            if chunk[0].value.is_empty() {
+                // Incoming delegation can actually be empty, this just means that delegation
+                // is not present on remote chain, which is to be expected. So, if it doesn't
+                // exist, we can safely skip this and following chunk.
+                continue;
+            }
             let delegation_sdk: Delegation = Delegation::decode(chunk[0].value.as_slice())?;
+
             let mut delegation_std = cosmwasm_std::Delegation {
                 delegator: Addr::unchecked(delegation_sdk.delegator_address.as_str()),
                 validator: delegation_sdk.validator_address,
                 amount: Default::default(),
             };
 
+            if chunk[1].value.is_empty() {
+                // At this point, incoming validator cannot be empty, that would be invalid,
+                // because delegation is already defined, so, building `cosmwasm_std::Delegation`
+                // from this data is impossible, incoming data is corrupted.post
+                return Err(ContractError::InvalidQueryResultFormat(
+                    "validator is empty".into(),
+                ));
+            }
             let validator: Validator = Validator::decode(chunk[1].value.as_slice())?;
 
             let delegation_shares =
