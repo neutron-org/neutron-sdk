@@ -141,7 +141,9 @@ impl KVReconstruct for Delegations {
 
         // first StorageValue is denom
         if storage_values[0].value.is_empty() {
-            // denom is empty → incoming data structure is corrupted
+            // Incoming denom cannot be empty, it should always be configured on chain.
+            // If we receive empty denom, that means incoming data structure is corrupted
+            // and we cannot build `cosmwasm_std::Delegation`'s using this data.
             return Err(ContractError::InvalidQueryResultFormat(
                 "denom is empty".into(),
             ));
@@ -151,7 +153,9 @@ impl KVReconstruct for Delegations {
         // the rest are delegations and validators alternately
         for chunk in storage_values[1..].chunks(2) {
             if chunk[0].value.is_empty() {
-                // delegation is empty → there are no delegations
+                // Incoming delegation can actually be empty, this just means that delegation
+                // is not present on remote chain, which is to be expected. So, if it doesn't
+                // exist, we can safely skip this and following chunk.
                 continue;
             }
             let delegation_sdk: Delegation = Delegation::decode(chunk[0].value.as_slice())?;
@@ -163,7 +167,9 @@ impl KVReconstruct for Delegations {
             };
 
             if chunk[1].value.is_empty() {
-                // validator is empty, but delegation is not → incoming data structure is corrupted
+                // At this point, incoming validator cannot be empty, that would be invalid,
+                // because delegation is already defined, so, building `cosmwasm_std::Delegation`
+                // from this data is impossible, incoming data is corrupted.post
                 return Err(ContractError::InvalidQueryResultFormat(
                     "validator is empty".into(),
                 ));
