@@ -19,8 +19,8 @@ use cosmos_sdk_proto::cosmos::staking::v1beta1::{
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    from_binary, to_binary, to_vec, Binary, CosmosMsg, CustomQuery, Deps, DepsMut, Env,
-    MessageInfo, Reply, Response, StdError, StdResult, Storage, SubMsg,
+    to_binary, Binary, CosmosMsg, CustomQuery, Deps, DepsMut, Env, MessageInfo, Reply, Response,
+    StdError, StdResult, SubMsg,
 };
 use interchain_txs::helpers::{parse_item, parse_response};
 use neutron_bindings::msg::NeutronMsg;
@@ -36,8 +36,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::error::ContractResult;
 use crate::storage::{
-    IBC_SUDO_ID_RANGE_END, IBC_SUDO_ID_RANGE_START, INTERCHAIN_ACCOUNTS, REPLY_QUEUE_ID,
-    SUDO_PAYLOAD,
+    read_reply_payload, read_sudo_payload, save_reply_payload, save_sudo_payload, SudoPayload,
+    IBC_SUDO_ID_RANGE_END, IBC_SUDO_ID_RANGE_START, INTERCHAIN_ACCOUNTS,
 };
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -88,12 +88,6 @@ pub enum ExecuteMsg {
         validator: String,
         amount: u128,
     },
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct SudoPayload {
-    pub message: String,
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -168,34 +162,6 @@ pub fn query_interchain_address_contract(
     interchain_account_id: String,
 ) -> ContractResult<Binary> {
     Ok(to_binary(&get_ica(deps, env, &interchain_account_id)?)?)
-}
-
-pub fn get_next_id(store: &mut dyn Storage) -> StdResult<u64> {
-    REPLY_QUEUE_ID
-        .keys(store, None, None, cosmwasm_std::Order::Descending)
-        .next()
-        .unwrap_or(Ok(IBC_SUDO_ID_RANGE_START))
-        .map(|id| id + 1)
-}
-
-pub fn save_reply_payload(store: &mut dyn Storage, payload: SudoPayload) -> StdResult<u64> {
-    let id = get_next_id(store)?;
-    REPLY_QUEUE_ID.save(store, id, &to_vec(&payload)?)?;
-    Ok(id)
-}
-
-pub fn read_reply_payload(store: &mut dyn Storage, id: u64) -> StdResult<SudoPayload> {
-    let data = REPLY_QUEUE_ID.load(store, id)?;
-    from_binary(&Binary(data))
-}
-
-pub fn read_sudo_payload(
-    store: &mut dyn Storage,
-    channel_id: String,
-    seq_id: u64,
-) -> StdResult<SudoPayload> {
-    let data = SUDO_PAYLOAD.load(store, (channel_id, seq_id))?;
-    from_binary(&Binary(data))
 }
 
 fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
@@ -421,15 +387,6 @@ fn sudo_error(deps: Deps, _request: RequestPacket, details: String) -> StdResult
     deps.api
         .debug(format!("WASMDEBUG: sudo error: {}", details).as_str());
     Ok(Response::default())
-}
-
-pub fn save_sudo_payload(
-    store: &mut dyn Storage,
-    channel_id: String,
-    seq_id: u64,
-    payload: SudoPayload,
-) -> StdResult<()> {
-    SUDO_PAYLOAD.save(store, (channel_id, seq_id), &to_vec(&payload)?)
 }
 
 fn parse_sequence(deps: Deps, msg: Reply) -> StdResult<(String, u64)> {
