@@ -22,7 +22,7 @@ use cosmwasm_std::{
     to_binary, Binary, CosmosMsg, CustomQuery, Deps, DepsMut, Env, MessageInfo, Reply, Response,
     StdError, StdResult, SubMsg,
 };
-use interchain_txs::helpers::{parse_item, parse_response};
+use interchain_txs::helpers::{parse_item, parse_response, parse_sequence};
 use neutron_bindings::msg::NeutronMsg;
 use neutron_bindings::query::InterchainQueries;
 use neutron_sudo::msg::RequestPacket;
@@ -387,46 +387,6 @@ fn sudo_error(deps: Deps, _request: RequestPacket, details: String) -> StdResult
     deps.api
         .debug(format!("WASMDEBUG: sudo error: {}", details).as_str());
     Ok(Response::default())
-}
-
-fn parse_sequence(deps: Deps, msg: Reply) -> StdResult<(String, u64)> {
-    let mut may_seq_id: Option<u64> = None;
-    let mut may_channel_id: Option<String> = None;
-    for attr in msg
-        .result
-        .into_result()
-        .map_err(StdError::generic_err)?
-        .events
-        .iter()
-        .find(|e| e.ty == "send_packet")
-        .ok_or_else(|| StdError::generic_err("failed to find packet_sequence attribute"))?
-        .attributes
-        .iter()
-    {
-        if attr.key == "packet_sequence" {
-            may_seq_id = Some(
-                str::parse(&attr.value).map_err(|_e| StdError::generic_err("parse int error"))?,
-            );
-        }
-        if attr.key == "packet_src_channel" {
-            may_channel_id = Some(attr.value.clone())
-        }
-        if let (Some(seq_id), Some(channel_id)) = (may_seq_id, &may_channel_id) {
-            deps.api.debug(
-                format!(
-                    "WASMDEBUG: parse_sequence: reply result: {:?} {:?}",
-                    channel_id, seq_id
-                )
-                .as_str(),
-            );
-            return Ok((channel_id.clone(), seq_id));
-        }
-    }
-
-    Err(StdError::generic_err(format!(
-        "failed to find channel_id or seq_id: {:?} {:?}",
-        may_channel_id, may_seq_id
-    )))
 }
 
 fn prepare_sudo_payload(mut deps: DepsMut, _env: Env, msg: Reply) -> StdResult<Response> {

@@ -358,6 +358,7 @@ dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
  "cw-storage-plus",
+ "interchain_txs",
  "neutron_sudo",
  "schemars",
  "serde",
