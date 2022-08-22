@@ -49,6 +49,30 @@ pub const PARAMS_STORE_KEY: &str = "params";
 /// Default delimiter of **params** Cosmos-SDK module
 pub const PARAMS_STORE_DELIMITER: &str = "/";
 
+pub const RECIPIENT_FIELD: &str = "transfer.recipient";
+
+#[derive(Serialize, Deserialize, PartialEq, Eq)]
+pub enum TransactionFilterOp {
+    Eq,
+    Lt,
+    Gt,
+    Lte,
+    Gte,
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum TransactionFilterValue {
+    String(String),
+    Int(u128),
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct TransactionFilterItem {
+    pub field: String,
+    pub op: TransactionFilterOp,
+    pub value: TransactionFilterValue,
+}
+
 #[derive(Serialize, Deserialize, Copy, Clone, Debug, PartialEq, JsonSchema)]
 /// Describes possible interchain query types
 pub enum QueryType {

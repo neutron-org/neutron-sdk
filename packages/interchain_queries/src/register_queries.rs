@@ -4,6 +4,10 @@ use crate::helpers::{
     create_validator_key, decode_and_convert,
 };
 use crate::types::{
+    TransactionFilterItem, TransactionFilterOp, TransactionFilterValue, RECIPIENT_FIELD,
+};
+
+use crate::types::{
     QueryType, BANK_STORE_KEY, KEY_BOND_DENOM, PARAMS_STORE_KEY, STAKING_STORE_KEY,
 };
 use cosmwasm_std::{attr, Attribute, Binary, DepsMut, Env, Response, StdError};
@@ -11,14 +15,6 @@ use neutron_bindings::msg::NeutronMsg;
 use neutron_bindings::query::InterchainQueries;
 use neutron_bindings::types::{KVKey, KVKeys};
 use schemars::_serde_json::to_string;
-use serde::{Deserialize, Serialize};
-
-/// TransferRecipientQuery represents the request model for transfers query registration.
-#[derive(Serialize, Deserialize)]
-pub struct TransferRecipientQuery {
-    #[serde(rename = "transfer.recipient")]
-    pub recipient: String,
-}
 
 #[allow(clippy::too_many_arguments)]
 /// Registers an interchain query with provided params
@@ -171,8 +167,11 @@ pub fn register_transfers_query(
     recipient: String,
     update_period: u64,
 ) -> ContractResult<Response<NeutronMsg>> {
-    let query_data = TransferRecipientQuery { recipient };
-
+    let query_data: Vec<TransactionFilterItem> = vec![TransactionFilterItem {
+        field: RECIPIENT_FIELD.to_string(),
+        op: TransactionFilterOp::Eq,
+        value: TransactionFilterValue::String(recipient),
+    }];
     let query_data_json_encoded =
         to_string(&query_data).map_err(|e| StdError::generic_err(e.to_string()))?;
 

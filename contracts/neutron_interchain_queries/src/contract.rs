@@ -27,9 +27,12 @@ use interchain_queries::error::{ContractError, ContractResult};
 use interchain_queries::queries::{query_balance, query_delegations, query_registered_query};
 use interchain_queries::register_queries::{
     register_balance_query, register_delegator_delegations_query, register_transfers_query,
-    remove_interchain_query, update_interchain_query, TransferRecipientQuery,
+    remove_interchain_query, update_interchain_query,
 };
-use interchain_queries::types::COSMOS_SDK_TRANSFER_MSG_URL;
+use interchain_queries::types::{
+    TransactionFilterItem, TransactionFilterOp, TransactionFilterValue,
+    COSMOS_SDK_TRANSFER_MSG_URL, RECIPIENT_FIELD,
+};
 use neutron_bindings::msg::NeutronMsg;
 use neutron_bindings::query::{InterchainQueries, QueryRegisteredQueryResponse};
 use neutron_sudo::msg::SudoMsg;
@@ -179,8 +182,8 @@ pub fn sudo_tx_query_result(
     // TODO: come up with solution to determine transactions filter type
     match registered_query.registered_query.query_type.as_str() {
         _ => {
-            // For transfer queries, query data looks like "{"transfer.recipient": "some_address"}"
-            let query_data: TransferRecipientQuery =
+            // For transfer queries, query data looks like `[{"field:"transfer.recipient", "op":"eq", "value":"some_address"}]`
+            let query_data: Vec<TransactionFilterItem> =
                 serde_json_wasm::from_str(transactions_filter.as_str())?;
 
             deps.api.debug(
@@ -191,7 +194,17 @@ pub fn sudo_tx_query_result(
                 .as_str(),
             );
 
+            let recipient = query_data
+                .iter()
+                .find(|x| x.field == RECIPIENT_FIELD && x.op == TransactionFilterOp::Eq)
+                .map(|x| match &x.value {
+                    TransactionFilterValue::String(v) => v.as_str(),
+                    _ => "",
+                })
+                .unwrap_or("");
+
             let mut deposits: Vec<Transfer> = vec![];
+
             for message in body.messages {
                 // Skip all messages in this transaction that are not Send messages.
                 if message.type_url != *COSMOS_SDK_TRANSFER_MSG_URL.to_string() {
@@ -200,7 +213,7 @@ pub fn sudo_tx_query_result(
 
                 // Parse a Send message and check that it has the required recipient.
                 let transfer_msg: MsgSend = MsgSend::decode(message.value.as_slice())?;
-                if transfer_msg.to_address == query_data.recipient {
+                if transfer_msg.to_address == recipient {
                     deps.api.debug(
                         format!(
                             "WASMDEBUG: sudo_check_tx_query_result found a matching transaction; \
@@ -214,7 +227,7 @@ pub fn sudo_tx_query_result(
                             sender: transfer_msg.from_address.clone(),
                             amount: coin.amount,
                             denom: coin.denom,
-                            recipient: query_data.recipient.clone(),
+                            recipient: recipient.to_string(),
                         });
                     }
                 }
@@ -236,14 +249,10 @@ pub fn sudo_tx_query_result(
                 )))
             } else {
                 let mut stored_deposits: Vec<Transfer> = RECIPIENT_TXS
-                    .load(deps.storage, query_data.recipient.as_str())
+                    .load(deps.storage, recipient)
                     .unwrap_or_default();
                 stored_deposits.extend(deposits);
-                RECIPIENT_TXS.save(
-                    deps.storage,
-                    query_data.recipient.as_str(),
-                    &stored_deposits,
-                )?;
+                RECIPIENT_TXS.save(deps.storage, recipient, &stored_deposits)?;
                 Ok(Response::new())
             }
         }

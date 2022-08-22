@@ -23,8 +23,10 @@ use cosmwasm_std::{
 use interchain_queries::error::ContractError;
 use interchain_queries::helpers::{create_account_balances_prefix, decode_and_convert};
 use interchain_queries::queries::{DelegatorDelegationsResponse, QueryBalanceResponse};
-use interchain_queries::register_queries::TransferRecipientQuery;
-use interchain_queries::types::{Balances, QueryType};
+use interchain_queries::types::{
+    Balances, QueryType, TransactionFilterItem, TransactionFilterOp, TransactionFilterValue,
+    RECIPIENT_FIELD,
+};
 use neutron_bindings::query::{
     InterchainQueries, QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse,
 };
@@ -294,9 +296,11 @@ fn test_sudo_tx_query_result_callback() {
     let registered_query = build_registered_query_response(
         1,
         QueryParam::TransactionsFilter(
-            to_string(&TransferRecipientQuery {
-                recipient: watched_addr.clone(),
-            })
+            to_string(&vec![&TransactionFilterItem {
+                field: RECIPIENT_FIELD.to_string(),
+                op: TransactionFilterOp::Eq,
+                value: TransactionFilterValue::String(watched_addr.clone()),
+            }])
             .unwrap(),
         ),
         QueryType::TX.into(),
