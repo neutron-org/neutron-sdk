@@ -18,8 +18,7 @@ pub enum NeutronMsg {
     },
 
     /// SubmitTx starts the process of executing any Cosmos-SDK *msgs* on remote chain
-    #[serde(rename = "submit_tx")]
-    SubmitTX {
+    SubmitTx {
         /// **connection_id** is an IBC connection identifier between Neutron and remote chain
         connection_id: String,
 
@@ -80,7 +79,7 @@ impl NeutronMsg {
         msgs: Vec<ProtobufAny>,
         memo: String,
     ) -> Self {
-        NeutronMsg::SubmitTX {
+        NeutronMsg::SubmitTx {
             connection_id,
             interchain_account_id,
             msgs,
