@@ -1,4 +1,5 @@
 use crate::state::Transfer;
+use neutron_bindings::types::KVKey;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -27,6 +28,14 @@ pub enum ExecuteMsg {
         zone_id: String,
         connection_id: String,
         update_period: u64,
+    },
+    UpdateInterchainQuery {
+        query_id: u64,
+        new_keys: Option<Vec<KVKey>>,
+        new_update_period: Option<u64>,
+    },
+    RemoveInterchainQuery {
+        query_id: u64,
     },
 }
 
