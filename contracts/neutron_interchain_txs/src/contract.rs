@@ -30,6 +30,7 @@ use neutron_sudo::msg::SudoMsg;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use neutron_bindings::query::QueryInterchainAccountAddressResponse;
 use neutron_bindings::ProtobufAny;
 use prost::Message;
@@ -43,23 +44,6 @@ use crate::storage::{
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub enum QueryMsg {
-    /// this query goes to neutron and get stored ICA with a specific query
-    InterchainAccountAddress {
-        interchain_account_id: String,
-        connection_id: String,
-    },
-    // this query returns ICA from contract store, which saved from acknowledgement
-    InterchainAccountAddressFromContract {
-        interchain_account_id: String,
-    },
-    AcknowledgementResult {
-        interchain_account_id: String,
-    },
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
 struct OpenAckVersion {
     version: String,
     controller_connection_id: String,
@@ -67,32 +51,6 @@ struct OpenAckVersion {
     address: String,
     encoding: String,
     tx_type: String,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct MigrateMsg {}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct InstantiateMsg {}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub enum ExecuteMsg {
-    Register {
-        connection_id: String,
-        interchain_account_id: String,
-    },
-    Delegate {
-        interchain_account_id: String,
-        validator: String,
-        amount: u128,
-    },
-    Undelegate {
-        interchain_account_id: String,
-        validator: String,
-        amount: u128,
-    },
-    CleanAckResults {},
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]

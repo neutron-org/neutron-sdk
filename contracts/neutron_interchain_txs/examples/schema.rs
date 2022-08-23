@@ -14,7 +14,7 @@
 
 use cosmwasm_schema::{export_schema, remove_schemas, schema_for};
 use neutron_bindings::query::QueryInterchainAccountAddressResponse;
-use neutron_interchain_txs::contract::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
+use neutron_interchain_txs::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use neutron_sudo::msg::SudoMsg;
 use std::env::current_dir;
 use std::fs::create_dir_all;
