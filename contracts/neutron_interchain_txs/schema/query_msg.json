@@ -3,6 +3,7 @@
   "title": "QueryMsg",
   "oneOf": [
     {
+      "description": "this query goes to neutron and get stored ICA with a specific query",
       "type": "object",
       "required": [
         "interchain_account_address"

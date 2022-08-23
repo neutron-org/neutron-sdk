@@ -1,5 +1,3 @@
-# Validators Registry
-
 CURRENT_DIR = $(shell pwd)
 CURRENT_DIR_RELATIVE = $(notdir $(shell pwd))
 

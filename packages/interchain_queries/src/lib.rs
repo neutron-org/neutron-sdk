@@ -14,8 +14,6 @@
 
 pub mod error;
 pub mod helpers;
-pub mod msg;
 pub mod queries;
 pub mod register_queries;
-pub mod sudo;
 pub mod types;

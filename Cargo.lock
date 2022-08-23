@@ -358,6 +358,7 @@ dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
  "cw-storage-plus",
+ "interchain_txs",
  "neutron_sudo",
  "schemars",
  "serde",
@@ -445,12 +446,14 @@ dependencies = [
  "cosmos-sdk-proto",
  "cosmwasm-schema",
  "cosmwasm-std",
+ "cw-storage-plus",
  "interchain_queries",
  "neutron_bindings",
  "neutron_sudo",
  "prost",
  "schemars",
  "serde",
+ "serde-json-wasm",
 ]
 
 [[package]]

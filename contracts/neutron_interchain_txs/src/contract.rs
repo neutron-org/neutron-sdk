@@ -19,10 +19,10 @@ use cosmos_sdk_proto::cosmos::staking::v1beta1::{
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    from_binary, to_binary, to_vec, Binary, CosmosMsg, CustomQuery, Deps, DepsMut, Env,
-    MessageInfo, Reply, Response, StdError, StdResult, Storage, SubMsg,
+    to_binary, Binary, CosmosMsg, CustomQuery, Deps, DepsMut, Env, MessageInfo, Reply, Response,
+    StdError, StdResult, SubMsg,
 };
-use interchain_txs::helpers::{parse_item, parse_response};
+use interchain_txs::helpers::{parse_item, parse_response, parse_sequence};
 use neutron_bindings::msg::NeutronMsg;
 use neutron_bindings::query::InterchainQueries;
 use neutron_sudo::msg::RequestPacket;
@@ -36,17 +36,20 @@ use prost::Message;
 
 use crate::error::ContractResult;
 use crate::storage::{
-    AcknowledgementResult, ACKNOWLEDGEMENT_RESULTS, IBC_SUDO_ID_RANGE_END, IBC_SUDO_ID_RANGE_START,
-    INTERCHAIN_ACCOUNTS, REPLY_QUEUE_ID, SUDO_PAYLOAD,
+    read_reply_payload, read_sudo_payload, save_reply_payload, save_sudo_payload,
+    AcknowledgementResult, SudoPayload, ACKNOWLEDGEMENT_RESULTS, IBC_SUDO_ID_RANGE_END,
+    IBC_SUDO_ID_RANGE_START, INTERCHAIN_ACCOUNTS,
 };
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
+    /// this query goes to neutron and get stored ICA with a specific query
     InterchainAccountAddress {
         interchain_account_id: String,
         connection_id: String,
     },
+    // this query returns ICA from contract store, which saved from acknowledgement
     InterchainAccountAddressFromContract {
         interchain_account_id: String,
     },
@@ -89,13 +92,6 @@ pub enum ExecuteMsg {
         validator: String,
         amount: u128,
     },
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct SudoPayload {
-    pub message: String,
-    pub connection_key: String,
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -183,30 +179,6 @@ pub fn query_acknowledgement_result(
     let key = connection_key(env.contract.address.to_string(), &interchain_account_id);
     let res = ACKNOWLEDGEMENT_RESULTS.may_load(deps.storage, key)?;
     Ok(to_binary(&res)?)
-}
-
-pub fn get_next_id(store: &mut dyn Storage) -> StdResult<u64> {
-    REPLY_QUEUE_ID
-        .keys(store, None, None, cosmwasm_std::Order::Descending)
-        .next()
-        .unwrap_or(Ok(IBC_SUDO_ID_RANGE_START))
-        .map(|id| id + 1)
-}
-
-pub fn save_reply_payload(store: &mut dyn Storage, payload: SudoPayload) -> StdResult<u64> {
-    let id = get_next_id(store)?;
-    REPLY_QUEUE_ID.save(store, id, &to_vec(&payload)?)?;
-    Ok(id)
-}
-
-pub fn read_reply_payload(store: &mut dyn Storage, id: u64) -> StdResult<SudoPayload> {
-    let data = REPLY_QUEUE_ID.load(store, id)?;
-    from_binary(&Binary(data))
-}
-
-pub fn read_sudo_payload(store: &mut dyn Storage, seq_id: u64) -> StdResult<SudoPayload> {
-    let data = SUDO_PAYLOAD.load(store, seq_id)?;
-    from_binary(&Binary(data))
 }
 
 fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
@@ -394,8 +366,10 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
     let seq_id = request
         .sequence
         .ok_or_else(|| StdError::generic_err("sequence not found"))?;
-
-    let payload = read_sudo_payload(deps.storage, seq_id)?;
+    let channel_id = request
+        .source_channel
+        .ok_or_else(|| StdError::generic_err("channel_id not found"))?;
+    let payload = read_sudo_payload(deps.storage, channel_id, seq_id)?;
     deps.api
         .debug(format!("WASMDEBUG: sudo_response: sudo payload: {:?}", payload).as_str());
 
@@ -446,7 +420,10 @@ fn sudo_timeout(deps: DepsMut, _env: Env, request: RequestPacket) -> StdResult<R
     let seq_id = request
         .sequence
         .ok_or_else(|| StdError::generic_err("sequence not found"))?;
-    let payload = read_sudo_payload(deps.storage, seq_id)?;
+    let channel_id = request
+        .source_channel
+        .ok_or_else(|| StdError::generic_err("channel_id not found"))?;
+    let payload = read_sudo_payload(deps.storage, channel_id, seq_id)?;
 
     ACKNOWLEDGEMENT_RESULTS.save(
         deps.storage,
@@ -463,7 +440,10 @@ fn sudo_error(deps: DepsMut, request: RequestPacket, details: String) -> StdResu
     let seq_id = request
         .sequence
         .ok_or_else(|| StdError::generic_err("sequence not found"))?;
-    let payload = read_sudo_payload(deps.storage, seq_id)?;
+    let channel_id = request
+        .source_channel
+        .ok_or_else(|| StdError::generic_err("channel_id not found"))?;
+    let payload = read_sudo_payload(deps.storage, channel_id, seq_id)?;
 
     ACKNOWLEDGEMENT_RESULTS.save(
         deps.storage,
@@ -474,37 +454,10 @@ fn sudo_error(deps: DepsMut, request: RequestPacket, details: String) -> StdResu
     Ok(Response::default())
 }
 
-pub fn save_sudo_payload(
-    store: &mut dyn Storage,
-    seq_id: u64,
-    payload: SudoPayload,
-) -> StdResult<()> {
-    SUDO_PAYLOAD.save(store, seq_id, &to_vec(&payload)?)
-}
-
-fn parse_sequence(deps: Deps, msg: Reply) -> StdResult<u64> {
-    let seq_id = str::parse(
-        &msg.result
-            .into_result()
-            .map_err(StdError::generic_err)?
-            .events
-            .iter()
-            .find(|e| e.ty == "send_packet")
-            .and_then(|e| e.attributes.iter().find(|a| a.key == "packet_sequence"))
-            .ok_or_else(|| StdError::generic_err("failed to find packet_sequence atribute"))?
-            .value
-            .clone(),
-    )
-    .map_err(|_e| StdError::generic_err("parse int error"))?;
-    deps.api
-        .debug(format!("WASMDEBUG: parse_sequence: reply result: {:?}", seq_id).as_str());
-    Ok(seq_id)
-}
-
 fn prepare_sudo_payload(mut deps: DepsMut, _env: Env, msg: Reply) -> StdResult<Response> {
     let payload = read_reply_payload(deps.storage, msg.id)?;
-    let seq_id = parse_sequence(deps.as_ref(), msg)?;
-    save_sudo_payload(deps.branch().storage, seq_id, payload)?;
+    let (channel_id, seq_id) = parse_sequence(deps.as_ref(), msg)?;
+    save_sudo_payload(deps.branch().storage, channel_id, seq_id, payload)?;
     Ok(Response::new())
 }
 

@@ -1,0 +1,397 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "QueryMsg",
+  "oneOf": [
+    {
+      "type": "object",
+      "required": [
+        "reflect"
+      ],
+      "properties": {
+        "reflect": {
+          "$ref": "#/definitions/QueryRequest_for_InterchainQueries"
+        }
+      },
+      "additionalProperties": false
+    }
+  ],
+  "definitions": {
+    "BankQuery": {
+      "oneOf": [
+        {
+          "description": "This calls into the native bank module for one denomination Return value is BalanceResponse",
+          "type": "object",
+          "required": [
+            "balance"
+          ],
+          "properties": {
+            "balance": {
+              "type": "object",
+              "required": [
+                "address",
+                "denom"
+              ],
+              "properties": {
+                "address": {
+                  "type": "string"
+                },
+                "denom": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "description": "This calls into the native bank module for all denominations. Note that this may be much more expensive than Balance and should be avoided if possible. Return value is AllBalanceResponse.",
+          "type": "object",
+          "required": [
+            "all_balances"
+          ],
+          "properties": {
+            "all_balances": {
+              "type": "object",
+              "required": [
+                "address"
+              ],
+              "properties": {
+                "address": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Binary": {
+      "description": "Binary is a wrapper around Vec<u8> to add base64 de/serialization with serde. It also adds some helper methods to help encode inline.\n\nThis is only needed as serde-json-{core,wasm} has a horrible encoding for Vec<u8>",
+      "type": "string"
+    },
+    "InterchainQueries": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "interchain_query_result"
+          ],
+          "properties": {
+            "interchain_query_result": {
+              "type": "object",
+              "required": [
+                "query_id"
+              ],
+              "properties": {
+                "query_id": {
+                  "type": "integer",
+                  "format": "uint64",
+                  "minimum": 0.0
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "interchain_account_address"
+          ],
+          "properties": {
+            "interchain_account_address": {
+              "type": "object",
+              "required": [
+                "connection_id",
+                "interchain_account_id",
+                "owner_address"
+              ],
+              "properties": {
+                "connection_id": {
+                  "type": "string"
+                },
+                "interchain_account_id": {
+                  "type": "string"
+                },
+                "owner_address": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "registered_interchain_queries"
+          ],
+          "properties": {
+            "registered_interchain_queries": {
+              "type": "object"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "registered_interchain_query"
+          ],
+          "properties": {
+            "registered_interchain_query": {
+              "type": "object",
+              "required": [
+                "query_id"
+              ],
+              "properties": {
+                "query_id": {
+                  "type": "integer",
+                  "format": "uint64",
+                  "minimum": 0.0
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "QueryRequest_for_InterchainQueries": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "bank"
+          ],
+          "properties": {
+            "bank": {
+              "$ref": "#/definitions/BankQuery"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "custom"
+          ],
+          "properties": {
+            "custom": {
+              "$ref": "#/definitions/InterchainQueries"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "staking"
+          ],
+          "properties": {
+            "staking": {
+              "$ref": "#/definitions/StakingQuery"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "wasm"
+          ],
+          "properties": {
+            "wasm": {
+              "$ref": "#/definitions/WasmQuery"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "StakingQuery": {
+      "oneOf": [
+        {
+          "description": "Returns the denomination that can be bonded (if there are multiple native tokens on the chain)",
+          "type": "object",
+          "required": [
+            "bonded_denom"
+          ],
+          "properties": {
+            "bonded_denom": {
+              "type": "object"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "description": "AllDelegations will return all delegations by the delegator",
+          "type": "object",
+          "required": [
+            "all_delegations"
+          ],
+          "properties": {
+            "all_delegations": {
+              "type": "object",
+              "required": [
+                "delegator"
+              ],
+              "properties": {
+                "delegator": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "description": "Delegation will return more detailed info on a particular delegation, defined by delegator/validator pair",
+          "type": "object",
+          "required": [
+            "delegation"
+          ],
+          "properties": {
+            "delegation": {
+              "type": "object",
+              "required": [
+                "delegator",
+                "validator"
+              ],
+              "properties": {
+                "delegator": {
+                  "type": "string"
+                },
+                "validator": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "description": "Returns all validators in the currently active validator set.\n\nThe query response type is `AllValidatorsResponse`.",
+          "type": "object",
+          "required": [
+            "all_validators"
+          ],
+          "properties": {
+            "all_validators": {
+              "type": "object"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "description": "Returns the validator at the given address. Returns None if the validator is not part of the currently active validator set.\n\nThe query response type is `ValidatorResponse`.",
+          "type": "object",
+          "required": [
+            "validator"
+          ],
+          "properties": {
+            "validator": {
+              "type": "object",
+              "required": [
+                "address"
+              ],
+              "properties": {
+                "address": {
+                  "description": "The validator's address (e.g. (e.g. cosmosvaloper1...))",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "WasmQuery": {
+      "oneOf": [
+        {
+          "description": "this queries the public API of another contract at a known address (with known ABI) Return value is whatever the contract returns (caller should know), wrapped in a ContractResult that is JSON encoded.",
+          "type": "object",
+          "required": [
+            "smart"
+          ],
+          "properties": {
+            "smart": {
+              "type": "object",
+              "required": [
+                "contract_addr",
+                "msg"
+              ],
+              "properties": {
+                "contract_addr": {
+                  "type": "string"
+                },
+                "msg": {
+                  "description": "msg is the json-encoded QueryMsg struct",
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/Binary"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "description": "this queries the raw kv-store of the contract. returns the raw, unparsed data stored at that key, which may be an empty vector if not present",
+          "type": "object",
+          "required": [
+            "raw"
+          ],
+          "properties": {
+            "raw": {
+              "type": "object",
+              "required": [
+                "contract_addr",
+                "key"
+              ],
+              "properties": {
+                "contract_addr": {
+                  "type": "string"
+                },
+                "key": {
+                  "description": "Key is the raw key used in the contracts Storage",
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/Binary"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "description": "returns a ContractInfoResponse with metadata on the contract from the runtime",
+          "type": "object",
+          "required": [
+            "contract_info"
+          ],
+          "properties": {
+            "contract_info": {
+              "type": "object",
+              "required": [
+                "contract_addr"
+              ],
+              "properties": {
+                "contract_addr": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

@@ -13,8 +13,6 @@ ADDRESS_1=neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2
 ADDRESS_2=neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf
 ADMIN=neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2
 
-
-#TARGET_ADDRESS=neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u
 VAL2=neutronvaloper1qnk2n4nlkpw9xfqntladh74w6ujtulwnqshepx
 
 # Upload the queries contract

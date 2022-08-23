@@ -11,17 +11,19 @@
 // limitations under the License.
 
 use super::mock_querier::mock_dependencies as dependencies;
-use crate::contract::{execute, query};
+use crate::contract::{execute, query, sudo_tx_query_result};
+use crate::msg::{ExecuteMsg, QueryMsg};
+use crate::state::{Transfer, RECIPIENT_TXS};
 use crate::testing::mock_querier::WasmMockQuerier;
 use cosmos_sdk_proto::cosmos::base::v1beta1::Coin as CosmosCoin;
 use cosmwasm_std::testing::{mock_env, mock_info, MockApi, MockStorage};
 use cosmwasm_std::{
-    from_binary, to_binary, Addr, Binary, Coin, Delegation, Env, MessageInfo, OwnedDeps,
+    from_binary, to_binary, Addr, Binary, Coin, Delegation, Env, MessageInfo, OwnedDeps, StdError,
 };
+use interchain_queries::error::ContractError;
 use interchain_queries::helpers::{create_account_balances_prefix, decode_and_convert};
-use interchain_queries::msg::{
-    DelegatorDelegationsResponse, ExecuteMsg, QueryBalanceResponse, QueryMsg,
-};
+use interchain_queries::queries::{DelegatorDelegationsResponse, QueryBalanceResponse};
+use interchain_queries::register_queries::TransferRecipientQuery;
 use interchain_queries::types::{Balances, QueryType};
 use neutron_bindings::query::{
     InterchainQueries, QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse,
@@ -33,31 +35,40 @@ use prost::Message as ProstMessage;
 
 use schemars::_serde_json::to_string;
 
+enum QueryParam {
+    Keys(Vec<KVKey>),
+    TransactionsFilter(String),
+}
+
 fn build_registered_query_response(
     id: u64,
-    keys: Vec<KVKey>,
+    param: QueryParam,
     query_type: String,
     last_submitted_result_local_height: u64,
 ) -> Binary {
-    Binary::from(
-        to_string(&QueryRegisteredQueryResponse {
-            registered_query: RegisteredQuery {
-                id,
-                owner: "".to_string(),
-                keys,
-                query_type,
-                transactions_filter: "".to_string(),
-                zone_id: "".to_string(),
-                connection_id: "".to_string(),
-                update_period: 0,
-                last_emitted_height: 0,
-                last_submitted_result_local_height,
-                last_submitted_result_remote_height: 0,
-            },
-        })
-        .unwrap()
-        .as_bytes(),
-    )
+    let mut resp = QueryRegisteredQueryResponse {
+        registered_query: RegisteredQuery {
+            id,
+            owner: "".to_string(),
+            keys: vec![],
+            query_type,
+            transactions_filter: "".to_string(),
+            zone_id: "".to_string(),
+            connection_id: "".to_string(),
+            update_period: 0,
+            last_emitted_height: 0,
+            last_submitted_result_local_height,
+            last_submitted_result_remote_height: 0,
+        },
+    };
+    match param {
+        QueryParam::Keys(keys) => resp.registered_query.keys = keys,
+        QueryParam::TransactionsFilter(transactions_filter) => {
+            resp.registered_query.transactions_filter = transactions_filter
+        }
+    }
+
+    Binary::from(to_string(&resp).unwrap().as_bytes())
 }
 
 fn build_interchain_query_balance_response(addr: Addr, denom: String, amount: String) -> Binary {
@@ -117,7 +128,8 @@ fn test_query_balance() {
 
     let keys = register_query(&mut deps, mock_env(), mock_info("", &[]), msg);
 
-    let registered_query = build_registered_query_response(1, keys.0, QueryType::KV.into(), 987);
+    let registered_query =
+        build_registered_query_response(1, QueryParam::Keys(keys.0), QueryType::KV.into(), 987);
 
     deps.querier.add_registred_queries(1, registered_query);
     deps.querier.add_query_response(
@@ -229,7 +241,8 @@ fn test_query_delegator_delegations() {
         },
     };
 
-    let registered_query = build_registered_query_response(1, keys.0, QueryType::KV.into(), 987);
+    let registered_query =
+        build_registered_query_response(1, QueryParam::Keys(keys.0), QueryType::KV.into(), 987);
 
     deps.querier
         .add_query_response(1, to_binary(&delegations_response).unwrap());
@@ -262,4 +275,97 @@ fn test_query_delegator_delegations() {
             ],
         }
     )
+}
+
+#[test]
+fn test_sudo_tx_query_result_callback() {
+    let mut deps = dependencies(&[]);
+    let env = mock_env();
+    let watched_addr: String = "neutron1fj6yqrkpw6fmp7f7jhj57dujfpwal4m25dafzx".to_string();
+    let query_id: u64 = 1u64;
+    let height: u64 = 1u64;
+    let msg = ExecuteMsg::RegisterTransfersQuery {
+        zone_id: "zone".to_string(),
+        connection_id: "connection".to_string(),
+        update_period: 1u64,
+        recipient: watched_addr.clone(),
+    };
+    execute(deps.as_mut(), env.clone(), mock_info("", &[]), msg).unwrap();
+    let registered_query = build_registered_query_response(
+        1,
+        QueryParam::TransactionsFilter(
+            to_string(&TransferRecipientQuery {
+                recipient: watched_addr.clone(),
+            })
+            .unwrap(),
+        ),
+        QueryType::TX.into(),
+        0,
+    );
+    deps.querier.add_registred_queries(1, registered_query);
+
+    // simulate neutron's SudoTxQueryResult call with the following payload:
+    // a sending from neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf to watched_addr of 10000 stake
+    let data: Binary = Binary::from(base64::decode("CpMBCpABChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEnAKLm5ldXRyb24xMGg5c3RjNXY2bnRnZXlnZjV4Zjk0NW5qcXE1aDMycjU0cmY3a2YSLm5ldXRyb24xZmo2eXFya3B3NmZtcDdmN2poajU3ZHVqZnB3YWw0bTI1ZGFmengaDgoFc3Rha2USBTEwMDAwEmcKUApGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQJPYibh+Zef13ZkulPqI27rV5xswZ0H/vh1Tnymp1RHPhIECgIIARgAEhMKDQoFc3Rha2USBDEwMDAQwJoMGkAIiXNJXmA57KhyaWpKcLLr3602A5+hlvv/b4PgcDDm9y0qikC+biNZXin1dEMpHOvX9DwOWJ9utv6EKljiSyfT").unwrap());
+    sudo_tx_query_result(deps.as_mut(), env.clone(), query_id, height, data).unwrap();
+
+    // ensure the callback has worked and contract's state has changed
+    let txs = RECIPIENT_TXS.load(&deps.storage, &watched_addr).unwrap();
+    assert_eq!(
+        txs,
+        Vec::from([Transfer {
+            recipient: watched_addr.clone(),
+            sender: "neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf".to_string(),
+            denom: "stake".to_string(),
+            amount: "10000".to_string(),
+        }])
+    );
+
+    // simulate neutron's SudoTxQueryResult call with the following payload:
+    // a sending from neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf to another addr of 10000 stake
+    let data: Binary = Binary::from(base64::decode("CpMBCpABChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEnAKLm5ldXRyb24xMGg5c3RjNXY2bnRnZXlnZjV4Zjk0NW5qcXE1aDMycjU0cmY3a2YSLm5ldXRyb24xNHV4dnUyMmxocmF6eXhhZGFxdjVkNmxzd3UwcDI3NmxsN2hya2waDgoFc3Rha2USBTEwMDAwEmcKUApGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQJPYibh+Zef13ZkulPqI27rV5xswZ0H/vh1Tnymp1RHPhIECgIIARgAEhMKDQoFc3Rha2USBDEwMDAQwJoMGkBEv2CW/0gIrankNl4aGs9LXy2BKA6kAWyl4MUxmXnbnjRpgaNbQIyo4i7nUgVsuOpqzAdudM2M53OSU0Dmo5tF").unwrap());
+    let res = sudo_tx_query_result(deps.as_mut(), env.clone(), query_id, height, data);
+
+    // ensure the callback has returned an error and contract's state hasn't changed
+    assert_eq!(
+        res.unwrap_err(),
+        ContractError::Std(StdError::generic_err(
+            "failed to find a matching transaction message",
+        ))
+    );
+    let txs = RECIPIENT_TXS.load(&deps.storage, &watched_addr).unwrap();
+    assert_eq!(
+        txs,
+        Vec::from([Transfer {
+            recipient: watched_addr.clone(),
+            sender: "neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf".to_string(),
+            denom: "stake".to_string(),
+            amount: "10000".to_string(),
+        }])
+    );
+
+    // simulate neutron's SudoTxQueryResult call with the following payload:
+    // a sending from neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf to watched_addr of 10000 stake
+    let data: Binary = Binary::from(base64::decode("CpMBCpABChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEnAKLm5ldXRyb24xMGg5c3RjNXY2bnRnZXlnZjV4Zjk0NW5qcXE1aDMycjU0cmY3a2YSLm5ldXRyb24xZmo2eXFya3B3NmZtcDdmN2poajU3ZHVqZnB3YWw0bTI1ZGFmengaDgoFc3Rha2USBTEwMDAwEmcKUApGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQJPYibh+Zef13ZkulPqI27rV5xswZ0H/vh1Tnymp1RHPhIECgIIARgAEhMKDQoFc3Rha2USBDEwMDAQwJoMGkAIiXNJXmA57KhyaWpKcLLr3602A5+hlvv/b4PgcDDm9y0qikC+biNZXin1dEMpHOvX9DwOWJ9utv6EKljiSyfT").unwrap());
+    sudo_tx_query_result(deps.as_mut(), env, query_id, height, data).unwrap();
+
+    // ensure the callback has worked and contract's state has changed again
+    let txs = RECIPIENT_TXS.load(&deps.storage, &watched_addr).unwrap();
+    assert_eq!(
+        txs,
+        Vec::from([
+            Transfer {
+                recipient: watched_addr.clone(),
+                sender: "neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf".to_string(),
+                denom: "stake".to_string(),
+                amount: "10000".to_string(),
+            },
+            Transfer {
+                recipient: watched_addr,
+                sender: "neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf".to_string(),
+                denom: "stake".to_string(),
+                amount: "10000".to_string(),
+            }
+        ])
+    );
 }
