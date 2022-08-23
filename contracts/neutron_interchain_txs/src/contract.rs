@@ -92,6 +92,7 @@ pub enum ExecuteMsg {
         validator: String,
         amount: u128,
     },
+    CleanAckResults {},
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -128,6 +129,7 @@ pub fn execute(
             interchain_account_id,
             amount,
         } => execute_undelegate(deps, env, interchain_account_id, validator, amount),
+        ExecuteMsg::CleanAckResults {} => execute_clean_ack_results(deps),
     }
 }
 
@@ -303,6 +305,16 @@ fn execute_undelegate(
     Ok(Response::default().add_submessages(vec![submsg]))
 }
 
+fn execute_clean_ack_results(deps: DepsMut) -> StdResult<Response<NeutronMsg>> {
+    let keys: Vec<StdResult<String>> = ACKNOWLEDGEMENT_RESULTS
+        .keys(deps.storage, None, None, cosmwasm_std::Order::Descending)
+        .collect();
+    for key in keys {
+        ACKNOWLEDGEMENT_RESULTS.remove(deps.storage, key?);
+    }
+    Ok(Response::default())
+}
+
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn sudo(deps: DepsMut, env: Env, msg: SudoMsg) -> StdResult<Response> {
     match msg {
@@ -407,7 +419,7 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
     ACKNOWLEDGEMENT_RESULTS.save(
         deps.storage,
         payload.connection_key,
-        &AcknowledgementResult::Ack(item_types),
+        &AcknowledgementResult::Success(item_types),
     )?;
 
     Ok(Response::default())
