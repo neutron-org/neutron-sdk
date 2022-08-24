@@ -30,6 +30,9 @@ pub enum NeutronMsg {
 
         /// **memo** is a memo you want to attach to your interchain transaction.It behaves like a memo in usual Cosmos transaction
         memo: String,
+
+        /// **timeout** is a timeout in seconds after which the packet times out
+        timeout: i64,
     },
 
     /// RegisterInterchainQuery registers an interchain query
@@ -90,18 +93,21 @@ impl NeutronMsg {
     /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
     /// * **interchain_account_id** is an identifier of your interchain account from which you want to execute msgs;
     /// * **msgs** is a list of protobuf encoded Cosmos-SDK messages you want to execute on remote chain;
-    /// * **memo** is a memo you want to attach to your interchain transaction.It behaves like a memo in usual Cosmos transaction.
+    /// * **memo** is a memo you want to attach to your interchain transaction. It behaves like a memo in usual Cosmos transaction;
+    /// * **timeout** is a timeout in seconds after which the packet times out.
     pub fn submit_tx(
         connection_id: String,
         interchain_account_id: String,
         msgs: Vec<ProtobufAny>,
         memo: String,
+        timeout: i64,
     ) -> Self {
         NeutronMsg::SubmitTx {
             connection_id,
             interchain_account_id,
             msgs,
             memo,
+            timeout,
         }
     }
 

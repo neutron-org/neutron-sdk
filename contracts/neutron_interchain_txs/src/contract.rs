@@ -41,6 +41,9 @@ use crate::storage::{
     IBC_SUDO_ID_RANGE_END, IBC_SUDO_ID_RANGE_START, INTERCHAIN_ACCOUNTS,
 };
 
+// Default timeout for SubmitTX is a one week
+const DEFAULT_TIMEOUT_SECONDS: i64 = 60 * 60 * 24 * 7;
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 struct OpenAckVersion {
@@ -182,6 +185,7 @@ fn execute_delegate(
         interchain_account_id,
         vec![any_msg],
         "".to_string(),
+        DEFAULT_TIMEOUT_SECONDS,
     );
 
     let submsg = msg_with_sudo_callback(
@@ -228,6 +232,7 @@ fn execute_undelegate(
         interchain_account_id,
         vec![any_msg],
         "".to_string(),
+        DEFAULT_TIMEOUT_SECONDS,
     );
 
     let submsg = msg_with_sudo_callback(
