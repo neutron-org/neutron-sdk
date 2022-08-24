@@ -5,7 +5,11 @@ use cosmwasm_std::{from_binary, Addr, Coin, Decimal, Uint128};
 use neutron_bindings::types::StorageValue;
 use prost::Message as ProstMessage;
 use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
+
+use serde::de::Visitor;
+use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
+
+use core::fmt;
 use std::ops::Div;
 use std::str::FromStr;
 
@@ -60,10 +64,67 @@ pub enum TransactionFilterOp {
     Gte,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(PartialEq, Eq)]
 pub enum TransactionFilterValue {
     String(String),
     Int(u128),
+}
+
+struct ITransactionFilterValueVisitor;
+
+impl<'de> Visitor<'de> for ITransactionFilterValueVisitor {
+    type Value = TransactionFilterValue;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("an integer or a string")
+    }
+
+    fn visit_u128<E>(self, v: u128) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        Ok(TransactionFilterValue::Int(v))
+    }
+
+    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        Ok(TransactionFilterValue::String(v.to_string()))
+    }
+
+    fn visit_f32<E>(self, _v: f32) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        Err(E::custom("Floats is not supported"))
+    }
+    fn visit_f64<E>(self, _v: f64) -> Result<Self::Value, E>
+    where
+        E: de::Error,
+    {
+        Err(E::custom("Floats is not supported"))
+    }
+}
+
+impl<'de> Deserialize<'de> for TransactionFilterValue {
+    fn deserialize<D>(deserializer: D) -> Result<TransactionFilterValue, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        deserializer.deserialize_string(ITransactionFilterValueVisitor)
+    }
+}
+impl Serialize for TransactionFilterValue {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match &*self {
+            TransactionFilterValue::String(v) => serializer.serialize_str(v),
+            TransactionFilterValue::Int(v) => serializer.serialize_u128(*v),
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize)]
@@ -152,7 +213,7 @@ impl KVReconstruct for Balances {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema)]
 /// A structure that can be reconstructed from **StorageValues**'s for the **Delegator Delegation Interchain Query**.
 /// Contains delegations which some delegator has on remote chain.
 pub struct Delegations {
