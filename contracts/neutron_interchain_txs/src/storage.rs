@@ -29,8 +29,8 @@ pub const ACKNOWLEDGEMENT_RESULTS: Map<String, AcknowledgementResult> =
 pub enum AcknowledgementResult {
     /// Success - Got success acknowledgement in sudo with array of message item types in it
     Success(Vec<String>),
-    /// Error - Got error acknowledgement in sudo with payload message in it
-    Error(String),
+    /// Error - Got error acknowledgement in sudo with payload message in it and error details
+    Error((String, String)),
     /// Timeout - Got timeout acknowledgement in sudo with payload message in it
     Timeout(String),
 }

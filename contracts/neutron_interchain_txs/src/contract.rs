@@ -418,7 +418,7 @@ fn sudo_error(deps: DepsMut, request: RequestPacket, details: String) -> StdResu
     ACKNOWLEDGEMENT_RESULTS.save(
         deps.storage,
         payload.connection_key,
-        &AcknowledgementResult::Error(details),
+        &AcknowledgementResult::Error((payload.message, details)),
     )?;
 
     Ok(Response::default())
