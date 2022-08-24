@@ -4,24 +4,29 @@ This monorepository contains the source code of smart contracts and packages for
 
 ## Overview
 
-### Packages
+### Neutron SDK
 
-The following packages are maintained here:
+The Neutron SDK is contained inside `packages` folder and consists the following packages:
 
-| Package                    | Reference                                                                              | Description                                                                                     |
-|----------------------------|----------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------|
-| Neutron Interchain Queries | https://github.com/neutron-org/neutron-contracts/tree/main/packages/interchain_queries | Queries, messages and helper methods and for interacting with Neutron Interchain Queries Module |
-| Neutron Bindings           | https://github.com/neutron-org/neutron-contracts/tree/main/packages/bindings           | Structures and helper methods for interacting with Neutron blockchain                           |
-| Neutron Sudo               | https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron_sudo       | Structures for Sudo Contract callbacks from Neutron blockchain                                  |
+| Package                         | Reference                                                                                              | Description                                                                                          |
+|---------------------------------|--------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------|
+| Neutron Interchain Queries      | https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron-sdk/src/interchain_queries | Queries, messages and helper methods and for interacting with Neutron Interchain Queries Module      |
+| Neutron Interchain Transactions | https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron-sdk/src/interchain_txs     | Queries, messages and helper methods and for interacting with Neutron Interchain Transactions Module |
+| Neutron Bindings                | https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron-sdk/src/bindings           | Structures and helper methods for interacting with Neutron blockchain                                |
+| Neutron Sudo                    | https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron-sdk/src/sudo               | Structures for Sudo Contract callbacks from Neutron blockchain                                       |
+| Neutron Errors                  | https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron-sdk/src/errors             | Structures and helpers for Neutron specific error and result types                                   |
+
 
 ### Contracts
 
 The following contracts are maintained here:
 
-| Contract                                    | Reference                                                                                       | Description                                                                                                                                                                                                                                                                                              |
-|---------------------------------------------|-------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Neutron Interchain Queries Example Contract | https://github.com/neutron-org/neutron-contracts/tree/main/contracts/neutron-interchain-queries | The contract shows how to properly work with [Interchain Queries Module](https://github.com/neutron-org/neutron/tree/master/x/interchainqueries) using [Interchain Queries Package](https://github.com/neutron-org/neutron-contracts/tree/main/packages/interchain_queries) via CosmWasm smart-contract. |
-| Neutron IBC Transfer Example Contract       | https://github.com/neutron-org/neutron-contracts/tree/main/contracts/ibc_transfer               | The contract shows how to properly use [Neutron Sudo Package](https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron_sudo) to handle a callback from IBC transfer                                                                                                                   |
+| Contract                                         | Reference                                                                                       | Description                                                                                                                                                                                                                                                                                                                      |
+|--------------------------------------------------|-------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Neutron Interchain Queries Example Contract      | https://github.com/neutron-org/neutron-contracts/tree/main/contracts/neutron-interchain-queries | The contract shows how to properly work with [Interchain Queries Module](https://github.com/neutron-org/neutron/tree/master/x/interchainqueries) using [Interchain Queries SDK package](https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron-sdk/src/interchain_queries) via CosmWasm smart-contract.     |
+| Neutron Interchain Transactions Example Contract | https://github.com/neutron-org/neutron-contracts/tree/main/contracts/neutron_interchain_txs     | The contract shows how to properly use [Neutron Interchain Transactions Module](https://github.com/neutron-org/neutron/tree/master/x/interchaintxs) using [Interchain Transactions SDK package](https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron-sdk/src/interchain_txs) via CosmWasm smart-contract. |
+| Neutron IBC Transfer Example Contract            | https://github.com/neutron-org/neutron-contracts/tree/main/contracts/ibc_transfer               | The contract shows how to properly use [Neutron Sudo Package](https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron_sudo) to handle a callback from IBC transfer                                                                                                                                           |
+| Reflect                                          | https://github.com/neutron-org/neutron-contracts/tree/main/contracts/reflect                    | This contract is used for tests in the main neutron repository.                                                                                                                                                                                                                                                                  |
 
 ## Development
 

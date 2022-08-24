@@ -30,7 +30,7 @@ use neutron_sdk::interchain_queries::queries::{
 };
 use neutron_sdk::interchain_queries::{
     register_balance_query, register_delegator_delegations_query, register_transfers_query,
-    TransferRecipientQuery,
+    remove_interchain_query, update_interchain_query, TransferRecipientQuery,
 };
 use neutron_sdk::sudo::msg::SudoMsg;
 use neutron_sdk::{NeutronError, NeutronResult};
@@ -93,6 +93,12 @@ pub fn execute(
             recipient,
             update_period,
         } => register_transfers_query(deps, env, connection_id, zone_id, recipient, update_period),
+        ExecuteMsg::UpdateInterchainQuery {
+            query_id,
+            new_keys,
+            new_update_period,
+        } => update_interchain_query(query_id, new_keys, new_update_period),
+        ExecuteMsg::RemoveInterchainQuery { query_id } => remove_interchain_query(query_id),
     }
 }
 

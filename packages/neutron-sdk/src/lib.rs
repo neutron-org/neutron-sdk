@@ -13,6 +13,7 @@
 pub mod bindings;
 mod errors;
 pub mod interchain_queries;
+pub mod interchain_txs;
 pub mod sudo;
 
 pub use errors::error::{NeutronError, NeutronResult};

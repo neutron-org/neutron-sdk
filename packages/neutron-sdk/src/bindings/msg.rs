@@ -18,7 +18,7 @@ pub enum NeutronMsg {
     },
 
     /// SubmitTx starts the process of executing any Cosmos-SDK *msgs* on remote chain
-    SubmitTX {
+    SubmitTx {
         /// **connection_id** is an IBC connection identifier between Neutron and remote chain
         connection_id: String,
 
@@ -52,6 +52,24 @@ pub enum NeutronMsg {
         /// **update_period** is used to say how often the query must be updated.
         update_period: u64,
     },
+
+    /// RegisterInterchainQuery updates an interchain query
+    UpdateInterchainQuery {
+        /// **query_id** is the ID of the query we want to update
+        query_id: u64,
+
+        /// **new_keys** is the new query keys to retrive
+        new_keys: Option<Vec<KVKey>>,
+
+        /// **new_update_period** is a new update period of the query
+        new_update_period: Option<u64>,
+    },
+
+    /// RemoveInterchainQuery removes as interchain query
+    RemoveInterchainQuery {
+        /// **query_id** is ID of the query we want to remove
+        query_id: u64,
+    },
 }
 
 impl NeutronMsg {
@@ -79,7 +97,7 @@ impl NeutronMsg {
         msgs: Vec<ProtobufAny>,
         memo: String,
     ) -> Self {
-        NeutronMsg::SubmitTX {
+        NeutronMsg::SubmitTx {
             connection_id,
             interchain_account_id,
             msgs,
@@ -110,6 +128,28 @@ impl NeutronMsg {
             connection_id,
             update_period,
         }
+    }
+
+    /// Basic helper to define a update interchain query message:
+    /// * **query_id** is ID of the query we want to update
+    /// * **new_keys** is encoded keys to query;
+    /// * **new_update_period** is used to say how often the query must be updated.
+    pub fn update_interchain_query(
+        query_id: u64,
+        new_keys: Option<Vec<KVKey>>,
+        new_update_period: Option<u64>,
+    ) -> Self {
+        NeutronMsg::UpdateInterchainQuery {
+            query_id,
+            new_keys,
+            new_update_period,
+        }
+    }
+
+    /// Basic helper to define a remove interchain query message:
+    /// * **query_id** is ID of the query we want to remove
+    pub fn remove_interchain_query(query_id: u64) -> Self {
+        NeutronMsg::RemoveInterchainQuery { query_id }
     }
 }
 

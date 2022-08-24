@@ -13,11 +13,3 @@
 // limitations under the License.
 
 pub mod helpers;
-pub mod queries;
-mod register_queries;
-pub mod types;
-
-pub use register_queries::{
-    register_balance_query, register_delegator_delegations_query, register_transfers_query,
-    remove_interchain_query, update_interchain_query, TransferRecipientQuery,
-};
