@@ -46,6 +46,26 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "acknowledgement_result"
+      ],
+      "properties": {
+        "acknowledgement_result": {
+          "type": "object",
+          "required": [
+            "interchain_account_id"
+          ],
+          "properties": {
+            "interchain_account_id": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
     }
   ]
 }

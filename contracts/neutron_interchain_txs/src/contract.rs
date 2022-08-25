@@ -14,7 +14,7 @@
 
 use cosmos_sdk_proto::cosmos::base::v1beta1::Coin;
 use cosmos_sdk_proto::cosmos::staking::v1beta1::{
-    MsgDelegate, MsgUndelegate, MsgUndelegateResponse,
+    MsgDelegate, MsgDelegateResponse, MsgUndelegate, MsgUndelegateResponse,
 };
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
@@ -27,18 +27,19 @@ use neutron_bindings::msg::NeutronMsg;
 use neutron_bindings::query::InterchainQueries;
 use neutron_sudo::msg::RequestPacket;
 use neutron_sudo::msg::SudoMsg;
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use neutron_bindings::query::QueryInterchainAccountAddressResponse;
 use neutron_bindings::ProtobufAny;
 use prost::Message;
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
 
 use crate::error::ContractResult;
 use crate::storage::{
-    read_reply_payload, read_sudo_payload, save_reply_payload, save_sudo_payload, SudoPayload,
-    IBC_SUDO_ID_RANGE_END, IBC_SUDO_ID_RANGE_START, INTERCHAIN_ACCOUNTS,
+    read_reply_payload, read_sudo_payload, save_reply_payload, save_sudo_payload,
+    AcknowledgementResult, SudoPayload, ACKNOWLEDGEMENT_RESULTS, IBC_SUDO_ID_RANGE_END,
+    IBC_SUDO_ID_RANGE_START, INTERCHAIN_ACCOUNTS,
 };
 
 // Default timeout for SubmitTX is a one week
@@ -89,6 +90,7 @@ pub fn execute(
             interchain_account_id,
             amount,
         } => execute_undelegate(deps, env, interchain_account_id, validator, amount),
+        ExecuteMsg::CleanAckResults {} => execute_clean_ack_results(deps),
     }
 }
 
@@ -102,6 +104,9 @@ pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> Contract
         QueryMsg::InterchainAccountAddressFromContract {
             interchain_account_id,
         } => query_interchain_address_contract(deps, env, interchain_account_id),
+        QueryMsg::AcknowledgementResult {
+            interchain_account_id,
+        } => query_acknowledgement_result(deps, env, interchain_account_id),
     }
 }
 
@@ -126,7 +131,17 @@ pub fn query_interchain_address_contract(
     env: Env,
     interchain_account_id: String,
 ) -> ContractResult<Binary> {
-    Ok(to_binary(&get_ica(deps, env, &interchain_account_id)?)?)
+    Ok(to_binary(&get_ica(deps, &env, &interchain_account_id)?)?)
+}
+
+pub fn query_acknowledgement_result(
+    deps: Deps<InterchainQueries>,
+    env: Env,
+    interchain_account_id: String,
+) -> ContractResult<Binary> {
+    let key = connection_key(env.contract.address.to_string(), &interchain_account_id);
+    let res = ACKNOWLEDGEMENT_RESULTS.may_load(deps.storage, key)?;
+    Ok(to_binary(&res)?)
 }
 
 fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
@@ -146,8 +161,7 @@ fn execute_register_ica(
 ) -> StdResult<Response<NeutronMsg>> {
     let register =
         NeutronMsg::register_interchain_account(connection_id, interchain_account_id.clone());
-    let key =
-        "icacontroller-".to_string() + env.contract.address.as_str() + "." + &interchain_account_id;
+    let key = connection_key(env.contract.address.to_string(), &interchain_account_id);
     INTERCHAIN_ACCOUNTS.save(deps.storage, key, &None)?;
     Ok(Response::new().add_message(register))
 }
@@ -159,7 +173,7 @@ fn execute_delegate(
     validator: String,
     amount: u128,
 ) -> StdResult<Response<NeutronMsg>> {
-    let (delegator, connection_id) = get_ica(deps.as_ref(), env, &interchain_account_id)?;
+    let (delegator, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
     let delegate_msg = MsgDelegate {
         delegator_address: delegator,
         validator_address: validator,
@@ -182,7 +196,7 @@ fn execute_delegate(
 
     let cosmos_msg = NeutronMsg::submit_tx(
         connection_id,
-        interchain_account_id,
+        interchain_account_id.clone(),
         vec![any_msg],
         "".to_string(),
         DEFAULT_TIMEOUT_SECONDS,
@@ -192,6 +206,10 @@ fn execute_delegate(
         deps.branch(),
         cosmos_msg,
         SudoPayload {
+            connection_key: connection_key(
+                env.contract.address.to_string(),
+                &interchain_account_id,
+            ),
             message: "message".to_string(),
         },
     )?;
@@ -206,7 +224,7 @@ fn execute_undelegate(
     validator: String,
     amount: u128,
 ) -> StdResult<Response<NeutronMsg>> {
-    let (delegator, connection_id) = get_ica(deps.as_ref(), env, &interchain_account_id)?;
+    let (delegator, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
     let delegate_msg = MsgUndelegate {
         delegator_address: delegator,
         validator_address: validator,
@@ -229,7 +247,7 @@ fn execute_undelegate(
 
     let cosmos_msg = NeutronMsg::submit_tx(
         connection_id,
-        interchain_account_id,
+        interchain_account_id.clone(),
         vec![any_msg],
         "".to_string(),
         DEFAULT_TIMEOUT_SECONDS,
@@ -239,6 +257,10 @@ fn execute_undelegate(
         deps.branch(),
         cosmos_msg,
         SudoPayload {
+            connection_key: connection_key(
+                env.contract.address.to_string(),
+                &interchain_account_id,
+            ),
             message: "message".to_string(),
         },
     )?;
@@ -246,11 +268,21 @@ fn execute_undelegate(
     Ok(Response::default().add_submessages(vec![submsg]))
 }
 
+fn execute_clean_ack_results(deps: DepsMut) -> StdResult<Response<NeutronMsg>> {
+    let keys: Vec<StdResult<String>> = ACKNOWLEDGEMENT_RESULTS
+        .keys(deps.storage, None, None, cosmwasm_std::Order::Descending)
+        .collect();
+    for key in keys {
+        ACKNOWLEDGEMENT_RESULTS.remove(deps.storage, key?);
+    }
+    Ok(Response::default())
+}
+
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn sudo(deps: DepsMut, env: Env, msg: SudoMsg) -> StdResult<Response> {
     match msg {
         SudoMsg::Response { request, data } => sudo_response(deps, request, data),
-        SudoMsg::Error { request, details } => sudo_error(deps.as_ref(), request, details),
+        SudoMsg::Error { request, details } => sudo_error(deps, request, details),
         SudoMsg::Timeout { request } => sudo_timeout(deps, env, request),
         SudoMsg::OpenAck {
             port_id,
@@ -315,11 +347,14 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
     let payload = read_sudo_payload(deps.storage, channel_id, seq_id)?;
     deps.api
         .debug(format!("WASMDEBUG: sudo_response: sudo payload: {:?}", payload).as_str());
+
     // handle response
     let parsed_data = parse_response(data)?;
 
+    let mut item_types = vec![];
     for item in parsed_data {
         let item_type = item.msg_type.as_str();
+        item_types.push(item_type.to_string());
         match item_type {
             "/cosmos.staking.v1beta1.MsgUndelegate" => {
                 let out: MsgUndelegateResponse = parse_item(&item.data)?;
@@ -328,6 +363,9 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
                     .ok_or_else(|| StdError::generic_err("failed to get completion time"))?;
                 deps.api
                     .debug(format!("Undelegation completion time: {:?}", completion_time).as_str());
+            }
+            "/cosmos.staking.v1beta1.MsgDelegate" => {
+                let _out: MsgDelegateResponse = parse_item(&item.data)?;
             }
             _ => {
                 deps.api.debug(
@@ -341,18 +379,53 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
         }
     }
 
+    ACKNOWLEDGEMENT_RESULTS.save(
+        deps.storage,
+        payload.connection_key,
+        &AcknowledgementResult::Success(item_types),
+    )?;
+
     Ok(Response::default())
 }
 
 fn sudo_timeout(deps: DepsMut, _env: Env, request: RequestPacket) -> StdResult<Response> {
     deps.api
         .debug(format!("WASMDEBUG: sudo timeout request: {:?}", request).as_str());
+
+    let seq_id = request
+        .sequence
+        .ok_or_else(|| StdError::generic_err("sequence not found"))?;
+    let channel_id = request
+        .source_channel
+        .ok_or_else(|| StdError::generic_err("channel_id not found"))?;
+    let payload = read_sudo_payload(deps.storage, channel_id, seq_id)?;
+
+    ACKNOWLEDGEMENT_RESULTS.save(
+        deps.storage,
+        payload.connection_key,
+        &AcknowledgementResult::Timeout(payload.message),
+    )?;
+
     Ok(Response::default())
 }
 
-fn sudo_error(deps: Deps, _request: RequestPacket, details: String) -> StdResult<Response> {
+fn sudo_error(deps: DepsMut, request: RequestPacket, details: String) -> StdResult<Response> {
     deps.api
         .debug(format!("WASMDEBUG: sudo error: {}", details).as_str());
+    let seq_id = request
+        .sequence
+        .ok_or_else(|| StdError::generic_err("sequence not found"))?;
+    let channel_id = request
+        .source_channel
+        .ok_or_else(|| StdError::generic_err("channel_id not found"))?;
+    let payload = read_sudo_payload(deps.storage, channel_id, seq_id)?;
+
+    ACKNOWLEDGEMENT_RESULTS.save(
+        deps.storage,
+        payload.connection_key,
+        &AcknowledgementResult::Error((payload.message, details)),
+    )?;
+
     Ok(Response::default())
 }
 
@@ -365,11 +438,10 @@ fn prepare_sudo_payload(mut deps: DepsMut, _env: Env, msg: Reply) -> StdResult<R
 
 fn get_ica(
     deps: Deps<impl CustomQuery>,
-    env: Env,
-    interchain_account_id: &String,
+    env: &Env,
+    interchain_account_id: &str,
 ) -> Result<(String, String), StdError> {
-    let key =
-        "icacontroller-".to_string() + env.contract.address.as_str() + "." + interchain_account_id;
+    let key = connection_key(env.contract.address.to_string(), interchain_account_id);
 
     INTERCHAIN_ACCOUNTS
         .load(deps.storage, key)?
@@ -385,4 +457,9 @@ pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> StdResult<Response> {
             msg.id
         ))),
     }
+}
+
+// connection_key specifies they key for interchain account we need
+fn connection_key(contract_address: String, interchain_account_id: &str) -> String {
+    "icacontroller-".to_string() + &contract_address + "." + interchain_account_id
 }
