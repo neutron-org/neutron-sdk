@@ -4,7 +4,8 @@ use crate::helpers::{
     create_validator_key, decode_and_convert,
 };
 use crate::types::{
-    TransactionFilterItem, TransactionFilterOp, TransactionFilterValue, RECIPIENT_FIELD,
+    TransactionFilterItem, TransactionFilterOp, TransactionFilterValue, HEIGHT_FIELD,
+    RECIPIENT_FIELD,
 };
 
 use crate::types::{
@@ -166,14 +167,30 @@ pub fn register_transfers_query(
     zone_id: String,
     recipient: String,
     update_period: u64,
+    min_height: Option<u128>,
 ) -> ContractResult<Response<NeutronMsg>> {
-    let query_data: Vec<TransactionFilterItem> = vec![TransactionFilterItem {
+    let mut query_data: Vec<TransactionFilterItem> = vec![TransactionFilterItem {
         field: RECIPIENT_FIELD.to_string(),
         op: TransactionFilterOp::Eq,
         value: TransactionFilterValue::String(recipient),
     }];
+    if let Some(min_height) = min_height {
+        query_data.push(TransactionFilterItem {
+            field: HEIGHT_FIELD.to_string(),
+            op: TransactionFilterOp::Gte,
+            value: TransactionFilterValue::Int(min_height),
+        })
+    }
     let query_data_json_encoded =
         to_string(&query_data).map_err(|e| StdError::generic_err(e.to_string()))?;
+
+    deps.api.debug(
+        format!(
+            "WASMDEBUG: query_data_json_encoded: {:?}",
+            query_data_json_encoded,
+        )
+        .as_str(),
+    );
 
     register_interchain_query(
         deps,

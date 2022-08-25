@@ -93,7 +93,16 @@ pub fn execute(
             connection_id,
             recipient,
             update_period,
-        } => register_transfers_query(deps, env, connection_id, zone_id, recipient, update_period),
+            min_height,
+        } => register_transfers_query(
+            deps,
+            env,
+            connection_id,
+            zone_id,
+            recipient,
+            update_period,
+            min_height,
+        ),
         ExecuteMsg::UpdateInterchainQuery {
             query_id,
             new_keys,
@@ -159,6 +168,7 @@ pub fn sudo_tx_query_result(
     // Decode the transaction data
     let tx: TxRaw = TxRaw::decode(data.as_slice())?;
     let body: TxBody = TxBody::decode(tx.body_bytes.as_slice())?;
+    deps.api.debug("WASMDEBUG: Decode the transaction data");
 
     // Get the registered query by ID and retrieve the raw query string
     let registered_query: QueryRegisteredQueryResponse =
@@ -183,6 +193,9 @@ pub fn sudo_tx_query_result(
     match registered_query.registered_query.query_type.as_str() {
         _ => {
             // For transfer queries, query data looks like `[{"field:"transfer.recipient", "op":"eq", "value":"some_address"}]`
+            deps.api
+                .debug(format!("WASMDEBUG: parse json: {:?}", transactions_filter,).as_str());
+
             let query_data: Vec<TransactionFilterItem> =
                 serde_json_wasm::from_str(transactions_filter.as_str())?;
 

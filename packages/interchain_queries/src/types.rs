@@ -5,11 +5,8 @@ use cosmwasm_std::{from_binary, Addr, Coin, Decimal, Uint128};
 use neutron_bindings::types::StorageValue;
 use prost::Message as ProstMessage;
 use schemars::JsonSchema;
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-use serde::de::Visitor;
-use serde::{de, Deserialize, Deserializer, Serialize, Serializer};
-
-use core::fmt;
 use std::ops::Div;
 use std::str::FromStr;
 
@@ -54,8 +51,9 @@ pub const PARAMS_STORE_KEY: &str = "params";
 pub const PARAMS_STORE_DELIMITER: &str = "/";
 
 pub const RECIPIENT_FIELD: &str = "transfer.recipient";
+pub const HEIGHT_FIELD: &str = "tx.height";
 
-#[derive(Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
 pub enum TransactionFilterOp {
     Eq,
     Lt,
@@ -64,57 +62,33 @@ pub enum TransactionFilterOp {
     Gte,
 }
 
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Debug)]
 pub enum TransactionFilterValue {
     String(String),
     Int(u128),
 }
 
-struct ITransactionFilterValueVisitor;
-
-impl<'de> Visitor<'de> for ITransactionFilterValueVisitor {
-    type Value = TransactionFilterValue;
-
-    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        formatter.write_str("an integer or a string")
-    }
-
-    fn visit_u128<E>(self, v: u128) -> Result<Self::Value, E>
-    where
-        E: de::Error,
-    {
-        Ok(TransactionFilterValue::Int(v))
-    }
-
-    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-    where
-        E: de::Error,
-    {
-        Ok(TransactionFilterValue::String(v.to_string()))
-    }
-
-    fn visit_f32<E>(self, _v: f32) -> Result<Self::Value, E>
-    where
-        E: de::Error,
-    {
-        Err(E::custom("Floats is not supported"))
-    }
-    fn visit_f64<E>(self, _v: f64) -> Result<Self::Value, E>
-    where
-        E: de::Error,
-    {
-        Err(E::custom("Floats is not supported"))
-    }
-}
-
 impl<'de> Deserialize<'de> for TransactionFilterValue {
-    fn deserialize<D>(deserializer: D) -> Result<TransactionFilterValue, D::Error>
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>,
     {
-        deserializer.deserialize_string(ITransactionFilterValueVisitor)
+        use serde::de::Error;
+        use serde_json::Value;
+
+        let v = Value::deserialize(deserializer)?;
+        let n = v.as_u64();
+        if let Some(n) = n {
+            Ok(Self::Int(n.into()))
+        } else {
+            let n = v
+                .as_str()
+                .ok_or_else(|| D::Error::custom("Value must be number or string"))?;
+            Ok(Self::String(n.to_string()))
+        }
     }
 }
+
 impl Serialize for TransactionFilterValue {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
@@ -127,7 +101,7 @@ impl Serialize for TransactionFilterValue {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct TransactionFilterItem {
     pub field: String,
     pub op: TransactionFilterOp,
