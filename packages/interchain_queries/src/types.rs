@@ -5,7 +5,8 @@ use cosmwasm_std::{from_binary, Addr, Coin, Decimal, Uint128};
 use neutron_bindings::types::StorageValue;
 use prost::Message as ProstMessage;
 use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+
 use std::ops::Div;
 use std::str::FromStr;
 
@@ -48,6 +49,64 @@ pub const PARAMS_STORE_KEY: &str = "params";
 
 /// Default delimiter of **params** Cosmos-SDK module
 pub const PARAMS_STORE_DELIMITER: &str = "/";
+
+pub const RECIPIENT_FIELD: &str = "transfer.recipient";
+pub const HEIGHT_FIELD: &str = "tx.height";
+
+#[derive(Serialize, Deserialize, PartialEq, Eq, Debug)]
+pub enum TransactionFilterOp {
+    Eq,
+    Lt,
+    Gt,
+    Lte,
+    Gte,
+}
+
+#[derive(PartialEq, Eq, Debug)]
+pub enum TransactionFilterValue {
+    String(String),
+    Int(u128),
+}
+
+impl<'de> Deserialize<'de> for TransactionFilterValue {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        use serde::de::Error;
+        use serde_json::Value;
+
+        let v = Value::deserialize(deserializer)?;
+        let n = v.as_u64();
+        if let Some(n) = n {
+            Ok(Self::Int(n.into()))
+        } else {
+            let n = v
+                .as_str()
+                .ok_or_else(|| D::Error::custom("Value must be number or string"))?;
+            Ok(Self::String(n.to_string()))
+        }
+    }
+}
+
+impl Serialize for TransactionFilterValue {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match &*self {
+            TransactionFilterValue::String(v) => serializer.serialize_str(v),
+            TransactionFilterValue::Int(v) => serializer.serialize_u128(*v),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct TransactionFilterItem {
+    pub field: String,
+    pub op: TransactionFilterOp,
+    pub value: TransactionFilterValue,
+}
 
 #[derive(Serialize, Deserialize, Copy, Clone, Debug, PartialEq, JsonSchema)]
 /// Describes possible interchain query types
@@ -128,7 +187,7 @@ impl KVReconstruct for Balances {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema)]
 /// A structure that can be reconstructed from **StorageValues**'s for the **Delegator Delegation Interchain Query**.
 /// Contains delegations which some delegator has on remote chain.
 pub struct Delegations {
