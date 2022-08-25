@@ -13,6 +13,10 @@ pub enum QueryMsg {
     InterchainAccountAddressFromContract {
         interchain_account_id: String,
     },
+    // this query returns acknowledgement result after interchain transaction
+    AcknowledgementResult {
+        interchain_account_id: String,
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -38,4 +42,5 @@ pub enum ExecuteMsg {
         validator: String,
         amount: u128,
     },
+    CleanAckResults {},
 }
