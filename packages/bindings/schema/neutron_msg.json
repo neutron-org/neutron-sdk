@@ -34,10 +34,10 @@
       "description": "SubmitTx starts the process of executing any Cosmos-SDK *msgs* on remote chain",
       "type": "object",
       "required": [
-        "submit_t_x"
+        "submit_tx"
       ],
       "properties": {
-        "submit_t_x": {
+        "submit_tx": {
           "type": "object",
           "required": [
             "connection_id",
