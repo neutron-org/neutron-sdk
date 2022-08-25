@@ -160,6 +160,7 @@ pub fn register_delegator_delegations_query(
 /// * **zone_id** is used to identify the chain of interest;
 /// * **recipient** is an address of an account on remote chain for which you want to get list of transfer transactions;
 /// * **update_period** is used to say how often the query must be updated.
+/// * **min_height** is used to set min height for query (by default = 0).
 pub fn register_transfers_query(
     deps: DepsMut<InterchainQueries>,
     env: Env,
