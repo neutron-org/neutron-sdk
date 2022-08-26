@@ -58,6 +58,14 @@
             "connection_id": {
               "type": "string"
             },
+            "min_height": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint128",
+              "minimum": 0.0
+            },
             "recipient": {
               "type": "string"
             },
