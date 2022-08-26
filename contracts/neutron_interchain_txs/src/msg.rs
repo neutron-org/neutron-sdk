@@ -36,6 +36,7 @@ pub enum ExecuteMsg {
         interchain_account_id: String,
         validator: String,
         amount: u128,
+        timeout: Option<i64>,
     },
     Undelegate {
         interchain_account_id: String,
