@@ -7,18 +7,11 @@ use crate::interchain_queries::helpers::{
     create_validator_key, decode_and_convert,
 };
 use crate::interchain_queries::types::{
-    QueryType, BANK_STORE_KEY, KEY_BOND_DENOM, PARAMS_STORE_KEY, STAKING_STORE_KEY,
+    QueryType, TransactionFilterItem, TransactionFilterOp, TransactionFilterValue, BANK_STORE_KEY,
+    HEIGHT_FIELD, KEY_BOND_DENOM, PARAMS_STORE_KEY, RECIPIENT_FIELD, STAKING_STORE_KEY,
 };
 use cosmwasm_std::{attr, Attribute, Binary, DepsMut, Env, Response, StdError};
 use schemars::_serde_json::to_string;
-use serde::{Deserialize, Serialize};
-
-/// TransferRecipientQuery represents the request model for transfers query registration.
-#[derive(Serialize, Deserialize)]
-pub struct TransferRecipientQuery {
-    #[serde(rename = "transfer.recipient")]
-    pub recipient: String,
-}
 
 #[allow(clippy::too_many_arguments)]
 /// Registers an Interchain Query with provided params
@@ -162,6 +155,7 @@ pub fn register_delegator_delegations_query(
 /// * **zone_id** is used to identify the chain of interest;
 /// * **recipient** is an address of an account on remote chain for which you want to get list of transfer transactions;
 /// * **update_period** is used to say how often the query must be updated.
+/// * **min_height** is used to set min height for query (by default = 0).
 pub fn register_transfers_query(
     deps: DepsMut<InterchainQueries>,
     env: Env,
@@ -169,11 +163,30 @@ pub fn register_transfers_query(
     zone_id: String,
     recipient: String,
     update_period: u64,
+    min_height: Option<u128>,
 ) -> NeutronResult<Response<NeutronMsg>> {
-    let query_data = TransferRecipientQuery { recipient };
-
+    let mut query_data: Vec<TransactionFilterItem> = vec![TransactionFilterItem {
+        field: RECIPIENT_FIELD.to_string(),
+        op: TransactionFilterOp::Eq,
+        value: TransactionFilterValue::String(recipient),
+    }];
+    if let Some(min_height) = min_height {
+        query_data.push(TransactionFilterItem {
+            field: HEIGHT_FIELD.to_string(),
+            op: TransactionFilterOp::Gte,
+            value: TransactionFilterValue::Int(min_height),
+        })
+    }
     let query_data_json_encoded =
         to_string(&query_data).map_err(|e| StdError::generic_err(e.to_string()))?;
+
+    deps.api.debug(
+        format!(
+            "WASMDEBUG: query_data_json_encoded: {:?}",
+            query_data_json_encoded,
+        )
+        .as_str(),
+    );
 
     register_interchain_query(
         deps,

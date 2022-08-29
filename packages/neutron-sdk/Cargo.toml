@@ -27,6 +27,7 @@ cw-storage-plus = { version = "0.13.2", features = ["iterator"]}
 base64 = "0.13.0"
 bech32 = "0.9.0"
 thiserror = { version = "1.0" }
+serde_json = { version = "1.0.85" }
 
 [dev-dependencies]
 cosmwasm-schema = { version = "1.0.0", default-features = false }
