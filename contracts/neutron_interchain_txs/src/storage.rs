@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "snake_case")]
 pub struct SudoPayload {
     pub message: String,
-    pub connection_key: String,
+    pub port_id: String,
 }
 
 pub const IBC_SUDO_ID_RANGE_START: u64 = 1_000_000_000;

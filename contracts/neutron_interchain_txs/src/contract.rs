@@ -30,7 +30,9 @@ use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use neutron_sdk::bindings::msg::NeutronMsg;
 use neutron_sdk::bindings::query::{InterchainQueries, QueryInterchainAccountAddressResponse};
 use neutron_sdk::bindings::types::ProtobufAny;
-use neutron_sdk::interchain_txs::helpers::{parse_item, parse_response, parse_sequence};
+use neutron_sdk::interchain_txs::helpers::{
+    get_port_id, parse_item, parse_response, parse_sequence,
+};
 use neutron_sdk::sudo::msg::{RequestPacket, SudoMsg};
 use neutron_sdk::NeutronResult;
 
@@ -134,7 +136,7 @@ pub fn query_acknowledgement_result(
     env: Env,
     interchain_account_id: String,
 ) -> NeutronResult<Binary> {
-    let key = connection_key(env.contract.address.to_string(), &interchain_account_id);
+    let key = get_port_id(env.contract.address.to_string(), &interchain_account_id);
     let res = ACKNOWLEDGEMENT_RESULTS.may_load(deps.storage, key)?;
     Ok(to_binary(&res)?)
 }
@@ -156,7 +158,7 @@ fn execute_register_ica(
 ) -> StdResult<Response<NeutronMsg>> {
     let register =
         NeutronMsg::register_interchain_account(connection_id, interchain_account_id.clone());
-    let key = connection_key(env.contract.address.to_string(), &interchain_account_id);
+    let key = get_port_id(env.contract.address.to_string(), &interchain_account_id);
     INTERCHAIN_ACCOUNTS.save(deps.storage, key, &None)?;
     Ok(Response::new().add_message(register))
 }
@@ -200,10 +202,7 @@ fn execute_delegate(
         deps.branch(),
         cosmos_msg,
         SudoPayload {
-            connection_key: connection_key(
-                env.contract.address.to_string(),
-                &interchain_account_id,
-            ),
+            port_id: get_port_id(env.contract.address.to_string(), &interchain_account_id),
             message: "message".to_string(),
         },
     )?;
@@ -250,10 +249,7 @@ fn execute_undelegate(
         deps.branch(),
         cosmos_msg,
         SudoPayload {
-            connection_key: connection_key(
-                env.contract.address.to_string(),
-                &interchain_account_id,
-            ),
+            port_id: get_port_id(env.contract.address.to_string(), &interchain_account_id),
             message: "message".to_string(),
         },
     )?;
@@ -374,7 +370,7 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
 
     ACKNOWLEDGEMENT_RESULTS.save(
         deps.storage,
-        payload.connection_key,
+        payload.port_id,
         &AcknowledgementResult::Success(item_types),
     )?;
 
@@ -395,7 +391,7 @@ fn sudo_timeout(deps: DepsMut, _env: Env, request: RequestPacket) -> StdResult<R
 
     ACKNOWLEDGEMENT_RESULTS.save(
         deps.storage,
-        payload.connection_key,
+        payload.port_id,
         &AcknowledgementResult::Timeout(payload.message),
     )?;
 
@@ -415,7 +411,7 @@ fn sudo_error(deps: DepsMut, request: RequestPacket, details: String) -> StdResu
 
     ACKNOWLEDGEMENT_RESULTS.save(
         deps.storage,
-        payload.connection_key,
+        payload.port_id,
         &AcknowledgementResult::Error((payload.message, details)),
     )?;
 
@@ -434,7 +430,7 @@ fn get_ica(
     env: &Env,
     interchain_account_id: &str,
 ) -> Result<(String, String), StdError> {
-    let key = connection_key(env.contract.address.to_string(), interchain_account_id);
+    let key = get_port_id(env.contract.address.to_string(), interchain_account_id);
 
     INTERCHAIN_ACCOUNTS
         .load(deps.storage, key)?
@@ -450,9 +446,4 @@ pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> StdResult<Response> {
             msg.id
         ))),
     }
-}
-
-// connection_key specifies they key for interchain account we need
-fn connection_key(contract_address: String, interchain_account_id: &str) -> String {
-    "icacontroller-".to_string() + &contract_address + "." + interchain_account_id
 }

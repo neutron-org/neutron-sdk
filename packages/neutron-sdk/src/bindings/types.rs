@@ -68,7 +68,7 @@ pub struct InterchainQueryResult {
 #[serde(rename_all = "snake_case")]
 /// Describes value in the Cosmos-SDK KV-storage on remote chain
 pub struct StorageValue {
-    /// **storage_prefix** is a path to the storage (storage prefix) where you want to read value by key (usually name of cosmos-neutron-sdk module: 'staking', 'bank', etc.)
+    /// **storage_prefix** is a path to the storage (storage prefix) where you want to read value by key (usually name of cosmos-sdk module: 'staking', 'bank', etc.)
     pub storage_prefix: String,
 
     /// **key** is a key under which the **value** is stored in the storage on remote chain
@@ -105,7 +105,7 @@ const KV_KEYS_DELIMITER: &str = ",";
 #[serde(rename_all = "snake_case")]
 /// Describes a KV key for which you want to get value from the storage on remote chain
 pub struct KVKey {
-    /// **path** is a path to the storage (storage prefix) where you want to read value by key (usually name of cosmos-neutron-sdk module: 'staking', 'bank', etc.)
+    /// **path** is a path to the storage (storage prefix) where you want to read value by key (usually name of cosmos-sdk module: 'staking', 'bank', etc.)
     pub path: String,
 
     /// **key** is a key you want to read from the storage
