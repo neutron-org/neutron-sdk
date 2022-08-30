@@ -39,6 +39,9 @@ pub enum ContractError {
 
     #[error("Invalid query result format: {0}")]
     InvalidQueryResultFormat(String),
+
+    #[error("Integration tests mock is active")]
+    IntegrationTestsMock {},
 }
 
 impl From<serde_json_wasm::de::Error> for ContractError {

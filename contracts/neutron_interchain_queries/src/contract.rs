@@ -21,8 +21,17 @@ use cosmwasm_std::{
 use cosmwasm_std::{from_binary, to_binary};
 use prost::Message as ProstMessage;
 
-use crate::msg::{ExecuteMsg, GetRecipientTxsResponse, InstantiateMsg, MigrateMsg, QueryMsg};
-use crate::state::{Transfer, RECIPIENT_TXS};
+use crate::{
+    integration_tests_mock_handlers::{set_kv_query_mock, unset_kv_query_mock},
+    msg::{
+        ExecuteMsg, GetRecipientTxsResponse, InstantiateMsg, KvCallbackStatsResponse, MigrateMsg,
+        QueryMsg,
+    },
+    state::{
+        IntegrationTestsKvMock, Transfer, INTEGRATION_TESTS_KV_MOCK, KV_CALLBACK_STATS,
+        RECIPIENT_TXS,
+    },
+};
 use interchain_queries::error::{ContractError, ContractResult};
 use interchain_queries::queries::{query_balance, query_delegations, query_registered_query};
 use interchain_queries::register_queries::{
@@ -109,6 +118,8 @@ pub fn execute(
             new_update_period,
         } => update_interchain_query(query_id, new_keys, new_update_period),
         ExecuteMsg::RemoveInterchainQuery { query_id } => remove_interchain_query(query_id),
+        ExecuteMsg::IntegrationTestsSetKvQueryMock {} => set_kv_query_mock(deps),
+        ExecuteMsg::IntegrationTestsUnsetKvQueryMock {} => unset_kv_query_mock(deps),
     }
 }
 
@@ -120,6 +131,7 @@ pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> Contract
         QueryMsg::GetDelegations { query_id } => query_delegations(deps, env, query_id),
         QueryMsg::GetRegisteredQuery { query_id } => query_registered_query(deps, query_id),
         QueryMsg::GetRecipientTxs { recipient } => query_recipient_txs(deps, recipient),
+        QueryMsg::KvCallbackStats { query_id } => query_kv_callback_stats(deps, query_id),
     }
 }
 
@@ -128,6 +140,18 @@ fn query_recipient_txs(deps: Deps<InterchainQueries>, recipient: String) -> Cont
         .load(deps.storage, &recipient)
         .unwrap_or_default();
     Ok(to_binary(&GetRecipientTxsResponse { transfers: txs })?)
+}
+
+/// Returns block height of last KV query callback execution
+pub fn query_kv_callback_stats(
+    deps: Deps<InterchainQueries>,
+    query_id: u64,
+) -> ContractResult<Binary> {
+    Ok(to_binary(&KvCallbackStatsResponse {
+        last_update_height: KV_CALLBACK_STATS
+            .may_load(deps.storage, query_id)?
+            .unwrap_or(0),
+    })?)
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -276,7 +300,7 @@ pub fn sudo_tx_query_result(
 /// id is provided, so you need to read the query result from the state.
 pub fn sudo_kv_query_result(
     deps: DepsMut<InterchainQueries>,
-    _env: Env,
+    env: Env,
     query_id: u64,
 ) -> ContractResult<Response> {
     deps.api.debug(
@@ -286,6 +310,19 @@ pub fn sudo_kv_query_result(
         )
         .as_str(),
     );
+
+    if let Some(IntegrationTestsKvMock::Enabled {}) =
+        INTEGRATION_TESTS_KV_MOCK.may_load(deps.storage)?
+    {
+        // doesn't really matter whatever data we try to save here, it should all be reverted
+        // since we return an error in this branch anyway. in fact, this branch exists for the
+        // sole reason of testing this particular revert behaviour.
+        KV_CALLBACK_STATS.save(deps.storage, query_id, &0)?;
+        return Err(ContractError::IntegrationTestsMock {});
+    }
+
+    // store last KV callback update time
+    KV_CALLBACK_STATS.save(deps.storage, query_id, &env.block.height)?;
 
     // TODO: provide an actual example. Currently to many things are going to change
     // after @pro0n00gler's PRs to implement this.

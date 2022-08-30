@@ -38,6 +38,14 @@ pub enum ExecuteMsg {
     RemoveInterchainQuery {
         query_id: u64,
     },
+    /// Used only in integration tests framework to simulate failures.
+    /// After executing this message, contract will attempt to alter state,
+    /// zero out kv query statistics and then fail, all of this happening
+    /// in sudo kv callback handler.
+    IntegrationTestsSetKvQueryMock {},
+    /// Used only in integration tests framework to simulate failures.
+    /// After executing this message, contract will revert back to normal behaviour.
+    IntegrationTestsUnsetKvQueryMock {},
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -47,6 +55,7 @@ pub enum QueryMsg {
     GetDelegations { query_id: u64 },
     GetRegisteredQuery { query_id: u64 },
     GetRecipientTxs { recipient: String },
+    KvCallbackStats { query_id: u64 },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -57,3 +66,9 @@ pub struct GetRecipientTxsResponse {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct MigrateMsg {}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct KvCallbackStatsResponse {
+    pub last_update_height: u64,
+}

@@ -87,6 +87,28 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "kv_callback_stats"
+      ],
+      "properties": {
+        "kv_callback_stats": {
+          "type": "object",
+          "required": [
+            "query_id"
+          ],
+          "properties": {
+            "query_id": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
     }
   ]
 }
