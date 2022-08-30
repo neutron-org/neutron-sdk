@@ -42,8 +42,8 @@ use crate::storage::{
     IBC_SUDO_ID_RANGE_START, INTERCHAIN_ACCOUNTS,
 };
 
-// Default timeout for SubmitTX is a one week
-const DEFAULT_TIMEOUT_SECONDS: i64 = 60 * 60 * 24 * 7;
+// Default timeout for SubmitTX is two weeks
+const DEFAULT_TIMEOUT_SECONDS: i64 = 60 * 60 * 24 * 7 * 2;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
