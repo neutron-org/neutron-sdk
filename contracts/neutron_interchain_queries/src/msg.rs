@@ -47,12 +47,19 @@ pub enum QueryMsg {
     GetDelegations { query_id: u64 },
     GetRegisteredQuery { query_id: u64 },
     GetRecipientTxs { recipient: String },
+    GetTransfersAmount {},
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct GetRecipientTxsResponse {
     pub transfers: Vec<Transfer>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct GetTransfersAmountResponse {
+    pub amount: u64,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

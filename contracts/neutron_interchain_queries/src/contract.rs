@@ -21,8 +21,11 @@ use cosmwasm_std::{
 use cosmwasm_std::{from_binary, to_binary};
 use prost::Message as ProstMessage;
 
-use crate::msg::{ExecuteMsg, GetRecipientTxsResponse, InstantiateMsg, MigrateMsg, QueryMsg};
-use crate::state::{Transfer, RECIPIENT_TXS};
+use crate::msg::{
+    ExecuteMsg, GetRecipientTxsResponse, GetTransfersAmountResponse, InstantiateMsg, MigrateMsg,
+    QueryMsg,
+};
+use crate::state::{Transfer, RECIPIENT_TXS, TRANSFERS};
 use interchain_queries::error::{ContractError, ContractResult};
 use interchain_queries::queries::{query_balance, query_delegations, query_registered_query};
 use interchain_queries::register_queries::{
@@ -38,6 +41,9 @@ use neutron_bindings::query::{InterchainQueries, QueryRegisteredQueryResponse};
 use neutron_sudo::msg::SudoMsg;
 
 use serde_json_wasm;
+
+/// defines the incoming transfers limit to make a case of failed callback possible.
+const MAX_ALLOWED_TRANSFER: u64 = 20000;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -120,6 +126,7 @@ pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> Contract
         QueryMsg::GetDelegations { query_id } => query_delegations(deps, env, query_id),
         QueryMsg::GetRegisteredQuery { query_id } => query_registered_query(deps, query_id),
         QueryMsg::GetRecipientTxs { recipient } => query_recipient_txs(deps, recipient),
+        QueryMsg::GetTransfersAmount {} => query_transfers_amount(deps),
     }
 }
 
@@ -128,6 +135,13 @@ fn query_recipient_txs(deps: Deps<InterchainQueries>, recipient: String) -> Cont
         .load(deps.storage, &recipient)
         .unwrap_or_default();
     Ok(to_binary(&GetRecipientTxsResponse { transfers: txs })?)
+}
+
+fn query_transfers_amount(deps: Deps<InterchainQueries>) -> ContractResult<Binary> {
+    let transfers_amount = TRANSFERS.load(deps.storage).unwrap_or_default();
+    Ok(to_binary(&GetTransfersAmountResponse {
+        amount: transfers_amount,
+    })?)
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -238,10 +252,33 @@ pub fn sudo_tx_query_result(
                     for coin in transfer_msg.amount {
                         deposits.push(Transfer {
                             sender: transfer_msg.from_address.clone(),
-                            amount: coin.amount,
+                            amount: coin.amount.clone(),
                             denom: coin.denom,
                             recipient: recipient.to_string(),
                         });
+                        let mut stored_transfers: u64 =
+                            TRANSFERS.load(deps.storage).unwrap_or_default();
+                        stored_transfers += 1;
+                        TRANSFERS.save(deps.storage, &stored_transfers)?;
+
+                        match coin.amount.parse::<u64>() {
+                            Ok(amount) => {
+                                if amount > MAX_ALLOWED_TRANSFER {
+                                    return Err(ContractError::Std(StdError::generic_err(
+                                        format!(
+                                            "maximum allowed transfer is {}",
+                                            MAX_ALLOWED_TRANSFER
+                                        ),
+                                    )));
+                                };
+                            }
+                            Err(error) => {
+                                return Err(ContractError::Std(StdError::generic_err(format!(
+                                    "failed to cast transfer amount to u64: {}",
+                                    error
+                                ))));
+                            }
+                        };
                     }
                 }
             }
