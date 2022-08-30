@@ -38,8 +38,8 @@ use neutron_sdk::NeutronResult;
 
 use crate::storage::{
     read_reply_payload, read_sudo_payload, save_reply_payload, save_sudo_payload,
-    AcknowledgementResult, SudoPayload, ACKNOWLEDGEMENT_RESULTS, IBC_SUDO_ID_RANGE_END,
-    IBC_SUDO_ID_RANGE_START, INTERCHAIN_ACCOUNTS,
+    AcknowledgementResult, SudoPayload, ACKNOWLEDGEMENT_RESULTS, INTERCHAIN_ACCOUNTS,
+    SUDO_PAYLOAD_REPLY_ID,
 };
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -146,8 +146,8 @@ fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
     msg: C,
     payload: SudoPayload,
 ) -> StdResult<SubMsg<T>> {
-    let id = save_reply_payload(deps.storage, payload)?;
-    Ok(SubMsg::reply_on_success(msg, id))
+    save_reply_payload(deps.storage, payload)?;
+    Ok(SubMsg::reply_on_success(msg, SUDO_PAYLOAD_REPLY_ID))
 }
 
 fn execute_register_ica(
@@ -419,7 +419,7 @@ fn sudo_error(deps: DepsMut, request: RequestPacket, details: String) -> StdResu
 }
 
 fn prepare_sudo_payload(mut deps: DepsMut, _env: Env, msg: Reply) -> StdResult<Response> {
-    let payload = read_reply_payload(deps.storage, msg.id)?;
+    let payload = read_reply_payload(deps.storage)?;
     let (channel_id, seq_id) = parse_sequence(deps.as_ref(), msg)?;
     save_sudo_payload(deps.branch().storage, channel_id, seq_id, payload)?;
     Ok(Response::new())
@@ -440,7 +440,7 @@ fn get_ica(
 #[entry_point]
 pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> StdResult<Response> {
     match msg.id {
-        IBC_SUDO_ID_RANGE_START..=IBC_SUDO_ID_RANGE_END => prepare_sudo_payload(deps, env, msg),
+        SUDO_PAYLOAD_REPLY_ID => prepare_sudo_payload(deps, env, msg),
         _ => Err(StdError::generic_err(format!(
             "unsupported reply message id {}",
             msg.id
