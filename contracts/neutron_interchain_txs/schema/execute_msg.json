@@ -86,6 +86,14 @@
             "interchain_account_id": {
               "type": "string"
             },
+            "timeout": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint64",
+              "minimum": 0.0
+            },
             "validator": {
               "type": "string"
             }
