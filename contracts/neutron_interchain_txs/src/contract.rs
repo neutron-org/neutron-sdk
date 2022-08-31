@@ -43,7 +43,7 @@ use crate::storage::{
 };
 
 // Default timeout for SubmitTX is two weeks
-const DEFAULT_TIMEOUT_SECONDS: i64 = 60 * 60 * 24 * 7 * 2;
+const DEFAULT_TIMEOUT_SECONDS: u64 = 60 * 60 * 24 * 7 * 2;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -173,7 +173,7 @@ fn execute_delegate(
     interchain_account_id: String,
     validator: String,
     amount: u128,
-    timeout: Option<i64>,
+    timeout: Option<u64>,
 ) -> StdResult<Response<NeutronMsg>> {
     let (delegator, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
     let delegate_msg = MsgDelegate {

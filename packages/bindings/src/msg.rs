@@ -32,7 +32,7 @@ pub enum NeutronMsg {
         memo: String,
 
         /// **timeout** is a timeout in seconds after which the packet times out
-        timeout: i64,
+        timeout: u64,
     },
 
     /// RegisterInterchainQuery registers an interchain query
@@ -100,7 +100,7 @@ impl NeutronMsg {
         interchain_account_id: String,
         msgs: Vec<ProtobufAny>,
         memo: String,
-        timeout: i64,
+        timeout: u64,
     ) -> Self {
         NeutronMsg::SubmitTx {
             connection_id,

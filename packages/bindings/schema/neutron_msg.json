@@ -69,7 +69,8 @@
             "timeout": {
               "description": "*timeout** is a timeout in seconds after which the packet times out",
               "type": "integer",
-              "format": "int64"
+              "format": "uint64",
+              "minimum": 0.0
             }
           }
         }
