@@ -90,7 +90,8 @@ pub fn execute(
             validator,
             interchain_account_id,
             amount,
-        } => execute_undelegate(deps, env, interchain_account_id, validator, amount),
+            timeout,
+        } => execute_undelegate(deps, env, interchain_account_id, validator, amount, timeout),
         ExecuteMsg::CleanAckResults {} => execute_clean_ack_results(deps),
     }
 }
@@ -225,6 +226,7 @@ fn execute_undelegate(
     interchain_account_id: String,
     validator: String,
     amount: u128,
+    timeout: Option<u64>,
 ) -> StdResult<Response<NeutronMsg>> {
     let (delegator, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
     let delegate_msg = MsgUndelegate {
@@ -252,7 +254,7 @@ fn execute_undelegate(
         interchain_account_id.clone(),
         vec![any_msg],
         "".to_string(),
-        DEFAULT_TIMEOUT_SECONDS,
+        timeout.unwrap_or(DEFAULT_TIMEOUT_SECONDS),
     );
 
     let submsg = msg_with_sudo_callback(
