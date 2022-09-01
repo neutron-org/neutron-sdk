@@ -43,7 +43,8 @@
             "connection_id",
             "interchain_account_id",
             "memo",
-            "msgs"
+            "msgs",
+            "timeout"
           ],
           "properties": {
             "connection_id": {
@@ -64,6 +65,12 @@
               "items": {
                 "$ref": "#/definitions/ProtobufAny"
               }
+            },
+            "timeout": {
+              "description": "*timeout** is a timeout in seconds after which the packet times out",
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
             }
           }
         }

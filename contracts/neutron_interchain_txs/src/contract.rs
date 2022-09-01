@@ -42,6 +42,9 @@ use crate::storage::{
     IBC_SUDO_ID_RANGE_START, INTERCHAIN_ACCOUNTS,
 };
 
+// Default timeout for SubmitTX is two weeks
+const DEFAULT_TIMEOUT_SECONDS: u64 = 60 * 60 * 24 * 7 * 2;
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 struct OpenAckVersion {
@@ -81,12 +84,14 @@ pub fn execute(
             validator,
             interchain_account_id,
             amount,
-        } => execute_delegate(deps, env, interchain_account_id, validator, amount),
+            timeout,
+        } => execute_delegate(deps, env, interchain_account_id, validator, amount, timeout),
         ExecuteMsg::Undelegate {
             validator,
             interchain_account_id,
             amount,
-        } => execute_undelegate(deps, env, interchain_account_id, validator, amount),
+            timeout,
+        } => execute_undelegate(deps, env, interchain_account_id, validator, amount, timeout),
         ExecuteMsg::CleanAckResults {} => execute_clean_ack_results(deps),
     }
 }
@@ -169,6 +174,7 @@ fn execute_delegate(
     interchain_account_id: String,
     validator: String,
     amount: u128,
+    timeout: Option<u64>,
 ) -> StdResult<Response<NeutronMsg>> {
     let (delegator, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
     let delegate_msg = MsgDelegate {
@@ -196,6 +202,7 @@ fn execute_delegate(
         interchain_account_id.clone(),
         vec![any_msg],
         "".to_string(),
+        timeout.unwrap_or(DEFAULT_TIMEOUT_SECONDS),
     );
 
     let submsg = msg_with_sudo_callback(
@@ -219,6 +226,7 @@ fn execute_undelegate(
     interchain_account_id: String,
     validator: String,
     amount: u128,
+    timeout: Option<u64>,
 ) -> StdResult<Response<NeutronMsg>> {
     let (delegator, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
     let delegate_msg = MsgUndelegate {
@@ -246,6 +254,7 @@ fn execute_undelegate(
         interchain_account_id.clone(),
         vec![any_msg],
         "".to_string(),
+        timeout.unwrap_or(DEFAULT_TIMEOUT_SECONDS),
     );
 
     let submsg = msg_with_sudo_callback(
