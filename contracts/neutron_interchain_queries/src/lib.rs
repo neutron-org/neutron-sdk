@@ -18,6 +18,8 @@ pub mod contract;
 pub mod msg;
 pub mod state;
 
+mod integration_tests_mock_handlers;
+
 #[allow(clippy::unwrap_used)]
 #[cfg(test)]
 mod testing;
