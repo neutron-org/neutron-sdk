@@ -6,15 +6,15 @@ This monorepository contains the source code of smart contracts and packages for
 
 ### Neutron SDK
 
-The Neutron SDK is contained inside `packages` folder and consists the following subpackages:
+The Neutron SDK is contained inside `packages` folder and consists of the following subpackages:
 
-| Package                         | Reference                                                                                              | Description                                                                                          |
-|---------------------------------|--------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------|
-| Neutron Interchain Queries      | https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron-sdk/src/interchain_queries | Queries, messages and helper methods and for interacting with Neutron Interchain Queries Module      |
-| Neutron Interchain Transactions | https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron-sdk/src/interchain_txs     | Queries, messages and helper methods and for interacting with Neutron Interchain Transactions Module |
-| Neutron Bindings                | https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron-sdk/src/bindings           | Structures and helper methods for interacting with Neutron blockchain                                |
-| Neutron Sudo                    | https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron-sdk/src/sudo               | Structures for Sudo Contract callbacks from Neutron blockchain                                       |
-| Neutron Errors                  | https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron-sdk/src/errors             | Structures and helpers for Neutron specific error and result types                                   |
+| Package                         | Reference                                                                                              | Description                                                                                      |
+|---------------------------------|--------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|
+| Neutron Interchain Queries      | https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron-sdk/src/interchain_queries | Queries, messages and helper methods for interacting with Neutron Interchain Queries Module      |
+| Neutron Interchain Transactions | https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron-sdk/src/interchain_txs     | Queries, messages and helper methods for interacting with Neutron Interchain Transactions Module |
+| Neutron Bindings                | https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron-sdk/src/bindings           | Structures and helper methods for interacting with Neutron blockchain                            |
+| Neutron Sudo                    | https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron-sdk/src/sudo               | Structures for Sudo Contract callbacks from Neutron blockchain                                   |
+| Neutron Errors                  | https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron-sdk/src/errors             | Structures and helpers for Neutron specific error and result types                               |
 
 
 ### Contracts
