@@ -141,7 +141,7 @@ pub fn query_acknowledgement_result(
     env: Env,
     interchain_account_id: String,
 ) -> NeutronResult<Binary> {
-    let key = get_port_id(env.contract.address.to_string(), &interchain_account_id);
+    let key = get_port_id(env.contract.address, &interchain_account_id);
     let res = ACKNOWLEDGEMENT_RESULTS.may_load(deps.storage, key)?;
     Ok(to_binary(&res)?)
 }
@@ -163,7 +163,7 @@ fn execute_register_ica(
 ) -> StdResult<Response<NeutronMsg>> {
     let register =
         NeutronMsg::register_interchain_account(connection_id, interchain_account_id.clone());
-    let key = get_port_id(env.contract.address.to_string(), &interchain_account_id);
+    let key = get_port_id(env.contract.address, &interchain_account_id);
     INTERCHAIN_ACCOUNTS.save(deps.storage, key, &None)?;
     Ok(Response::new().add_message(register))
 }
@@ -209,7 +209,7 @@ fn execute_delegate(
         deps.branch(),
         cosmos_msg,
         SudoPayload {
-            port_id: get_port_id(env.contract.address.to_string(), &interchain_account_id),
+            port_id: get_port_id(env.contract.address, &interchain_account_id),
             message: "message".to_string(),
         },
     )?;
@@ -258,7 +258,7 @@ fn execute_undelegate(
         deps.branch(),
         cosmos_msg,
         SudoPayload {
-            port_id: get_port_id(env.contract.address.to_string(), &interchain_account_id),
+            port_id: get_port_id(env.contract.address, &interchain_account_id),
             message: "message".to_string(),
         },
     )?;
@@ -439,7 +439,7 @@ fn get_ica(
     env: &Env,
     interchain_account_id: &str,
 ) -> Result<(String, String), StdError> {
-    let key = get_port_id(env.contract.address.to_string(), interchain_account_id);
+    let key = get_port_id(env.contract.address.clone(), interchain_account_id);
 
     INTERCHAIN_ACCOUNTS
         .load(deps.storage, key)?
