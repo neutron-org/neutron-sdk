@@ -24,12 +24,12 @@ use prost::Message as ProstMessage;
 use crate::{
     integration_tests_mock_handlers::{set_kv_query_mock, unset_kv_query_mock},
     msg::{
-        ExecuteMsg, GetRecipientTxsResponse, InstantiateMsg, KvCallbackStatsResponse, MigrateMsg,
-        QueryMsg,
+        ExecuteMsg, GetRecipientTxsResponse, GetTransfersAmountResponse, InstantiateMsg,
+        KvCallbackStatsResponse, MigrateMsg, QueryMsg,
     },
     state::{
         IntegrationTestsKvMock, Transfer, INTEGRATION_TESTS_KV_MOCK, KV_CALLBACK_STATS,
-        RECIPIENT_TXS,
+        RECIPIENT_TXS, TRANSFERS,
     },
 };
 use interchain_queries::error::{ContractError, ContractResult};
@@ -47,6 +47,9 @@ use neutron_bindings::query::{InterchainQueries, QueryRegisteredQueryResponse};
 use neutron_sudo::msg::SudoMsg;
 
 use serde_json_wasm;
+
+/// defines the incoming transfers limit to make a case of failed callback possible.
+const MAX_ALLOWED_TRANSFER: u64 = 20000;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -131,6 +134,7 @@ pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> Contract
         QueryMsg::GetDelegations { query_id } => query_delegations(deps, env, query_id),
         QueryMsg::GetRegisteredQuery { query_id } => query_registered_query(deps, query_id),
         QueryMsg::GetRecipientTxs { recipient } => query_recipient_txs(deps, recipient),
+        QueryMsg::GetTransfersAmount {} => query_transfers_amount(deps),
         QueryMsg::KvCallbackStats { query_id } => query_kv_callback_stats(deps, query_id),
     }
 }
@@ -140,6 +144,13 @@ fn query_recipient_txs(deps: Deps<InterchainQueries>, recipient: String) -> Cont
         .load(deps.storage, &recipient)
         .unwrap_or_default();
     Ok(to_binary(&GetRecipientTxsResponse { transfers: txs })?)
+}
+
+fn query_transfers_amount(deps: Deps<InterchainQueries>) -> ContractResult<Binary> {
+    let transfers_amount = TRANSFERS.load(deps.storage).unwrap_or_default();
+    Ok(to_binary(&GetTransfersAmountResponse {
+        amount: transfers_amount,
+    })?)
 }
 
 /// Returns block height of last KV query callback execution
@@ -181,32 +192,14 @@ pub fn sudo_tx_query_result(
     _height: u64,
     data: Binary,
 ) -> ContractResult<Response> {
-    deps.api.debug(
-        format!(
-            "WASMDEBUG: sudo_check_tx_query_result received; query_id: {:?}",
-            query_id,
-        )
-        .as_str(),
-    );
-
     // Decode the transaction data
     let tx: TxRaw = TxRaw::decode(data.as_slice())?;
     let body: TxBody = TxBody::decode(tx.body_bytes.as_slice())?;
-    deps.api.debug("WASMDEBUG: Decode the transaction data");
 
     // Get the registered query by ID and retrieve the raw query string
     let registered_query: QueryRegisteredQueryResponse =
         from_binary(&query_registered_query(deps.as_ref(), query_id)?)?;
     let transactions_filter = registered_query.registered_query.transactions_filter;
-
-    deps.api.debug(
-        format!(
-            "WASMDEBUG: sudo_check_tx_query_result loaded query string; query_id: {:?},\
-             transactions_filter: {:?}",
-            query_id, transactions_filter,
-        )
-        .as_str(),
-    );
 
     #[allow(clippy::match_single_binding)]
     // Depending of the query type, check the transaction data to see whether is satisfies
@@ -217,19 +210,8 @@ pub fn sudo_tx_query_result(
     match registered_query.registered_query.query_type.as_str() {
         _ => {
             // For transfer queries, query data looks like `[{"field:"transfer.recipient", "op":"eq", "value":"some_address"}]`
-            deps.api
-                .debug(format!("WASMDEBUG: parse json: {:?}", transactions_filter,).as_str());
-
             let query_data: Vec<TransactionFilterItem> =
                 serde_json_wasm::from_str(transactions_filter.as_str())?;
-
-            deps.api.debug(
-                format!(
-                    "WASMDEBUG: sudo_check_tx_query_result parsed query string; query_id: {:?}",
-                    query_id
-                )
-                .as_str(),
-            );
 
             let recipient = query_data
                 .iter()
@@ -240,60 +222,79 @@ pub fn sudo_tx_query_result(
                 })
                 .unwrap_or("");
 
-            let mut deposits: Vec<Transfer> = vec![];
-
-            for message in body.messages {
-                // Skip all messages in this transaction that are not Send messages.
-                if message.type_url != *COSMOS_SDK_TRANSFER_MSG_URL.to_string() {
-                    continue;
-                }
-
-                // Parse a Send message and check that it has the required recipient.
-                let transfer_msg: MsgSend = MsgSend::decode(message.value.as_slice())?;
-                if transfer_msg.to_address == recipient {
-                    deps.api.debug(
-                        format!(
-                            "WASMDEBUG: sudo_check_tx_query_result found a matching transaction; \
-                             query_id: {:?}, from_address: {:?}",
-                            query_id, transfer_msg.from_address,
-                        )
-                        .as_str(),
-                    );
-                    for coin in transfer_msg.amount {
-                        deposits.push(Transfer {
-                            sender: transfer_msg.from_address.clone(),
-                            amount: coin.amount,
-                            denom: coin.denom,
-                            recipient: recipient.to_string(),
-                        });
-                    }
-                }
-            }
-
+            let deposits = recipient_deposits_from_tx_body(body, recipient)?;
             // If we didn't find a Send message with the correct recipient, return an error, and
             // this query result will be rejected by Neutron: no data will be saved to state.
             if deposits.is_empty() {
-                deps.api.debug(
-                    format!(
-                        "WASMDEBUG: sudo_check_tx_query_result failed to find a matching \
-                         transaction; query_id: {:?}",
-                        query_id
-                    )
-                    .as_str(),
-                );
-                Err(ContractError::Std(StdError::generic_err(
+                return Err(ContractError::Std(StdError::generic_err(
                     "failed to find a matching transaction message",
-                )))
-            } else {
-                let mut stored_deposits: Vec<Transfer> = RECIPIENT_TXS
-                    .load(deps.storage, recipient)
-                    .unwrap_or_default();
-                stored_deposits.extend(deposits);
-                RECIPIENT_TXS.save(deps.storage, recipient, &stored_deposits)?;
-                Ok(Response::new())
+                )));
+            }
+
+            let mut stored_transfers: u64 = TRANSFERS.load(deps.storage).unwrap_or_default();
+            stored_transfers += deposits.len() as u64;
+            TRANSFERS.save(deps.storage, &stored_transfers)?;
+
+            check_deposits_size(&deposits)?;
+            let mut stored_deposits: Vec<Transfer> = RECIPIENT_TXS
+                .load(deps.storage, recipient)
+                .unwrap_or_default();
+            stored_deposits.extend(deposits);
+            RECIPIENT_TXS.save(deps.storage, recipient, &stored_deposits)?;
+            Ok(Response::new())
+        }
+    }
+}
+
+/// parses tx body and retrieves transactions to the given recipient.
+fn recipient_deposits_from_tx_body(
+    tx_body: TxBody,
+    recipient: &str,
+) -> ContractResult<Vec<Transfer>> {
+    let mut deposits: Vec<Transfer> = vec![];
+    for msg in tx_body.messages {
+        // Skip all messages in this transaction that are not Send messages.
+        if msg.type_url != *COSMOS_SDK_TRANSFER_MSG_URL.to_string() {
+            continue;
+        }
+
+        // Parse a Send message and check that it has the required recipient.
+        let transfer_msg: MsgSend = MsgSend::decode(msg.value.as_slice())?;
+        if transfer_msg.to_address == recipient {
+            for coin in transfer_msg.amount {
+                deposits.push(Transfer {
+                    sender: transfer_msg.from_address.clone(),
+                    amount: coin.amount.clone(),
+                    denom: coin.denom,
+                    recipient: recipient.to_string(),
+                });
             }
         }
     }
+    Ok(deposits)
+}
+
+// checks whether there are deposits that are greater then MAX_ALLOWED_TRANSFER.
+fn check_deposits_size(deposits: &Vec<Transfer>) -> StdResult<()> {
+    for deposit in deposits {
+        match deposit.amount.parse::<u64>() {
+            Ok(amount) => {
+                if amount > MAX_ALLOWED_TRANSFER {
+                    return Err(StdError::generic_err(format!(
+                        "maximum allowed transfer is {}",
+                        MAX_ALLOWED_TRANSFER
+                    )));
+                };
+            }
+            Err(error) => {
+                return Err(StdError::generic_err(format!(
+                    "failed to cast transfer amount to u64: {}",
+                    error
+                )));
+            }
+        };
+    }
+    Ok(())
 }
 
 /// sudo_kv_query_result is the contract's callback for KV query results. Note that only the query

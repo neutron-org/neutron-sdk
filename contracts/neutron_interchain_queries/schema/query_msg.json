@@ -109,6 +109,18 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "get_transfers_amount"
+      ],
+      "properties": {
+        "get_transfers_amount": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
     }
   ]
 }
