@@ -20,21 +20,25 @@ use cosmwasm_std::testing::{mock_env, mock_info, MockApi, MockStorage};
 use cosmwasm_std::{
     from_binary, to_binary, Addr, Binary, Coin, Delegation, Env, MessageInfo, OwnedDeps, StdError,
 };
-use interchain_queries::error::ContractError;
-use interchain_queries::helpers::{create_account_balances_prefix, decode_and_convert};
-use interchain_queries::queries::{DelegatorDelegationsResponse, QueryBalanceResponse};
-use interchain_queries::types::{
+use neutron_sdk::bindings::query::{
+    InterchainQueries, QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse,
+};
+use neutron_sdk::bindings::types::{
+    decode_hex, InterchainQueryResult, KVKey, KVKeys, RegisteredQuery, StorageValue,
+};
+use neutron_sdk::interchain_queries::helpers::{
+    create_account_denom_balance_key, decode_and_convert,
+};
+use neutron_sdk::interchain_queries::types::{
     Balances, QueryType, TransactionFilterItem, TransactionFilterOp, TransactionFilterValue,
     RECIPIENT_FIELD,
 };
-use neutron_bindings::query::{
-    InterchainQueries, QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse,
-};
-use neutron_bindings::types::{
-    decode_hex, InterchainQueryResult, KVKey, KVKeys, RegisteredQuery, StorageValue,
-};
 use prost::Message as ProstMessage;
 
+use neutron_sdk::interchain_queries::queries::{
+    DelegatorDelegationsResponse, QueryBalanceResponse,
+};
+use neutron_sdk::NeutronError;
 use schemars::_serde_json::to_string;
 
 enum QueryParam {
@@ -76,8 +80,7 @@ fn build_registered_query_response(
 fn build_interchain_query_balance_response(addr: Addr, denom: String, amount: String) -> Binary {
     let converted_addr_bytes = decode_and_convert(addr.as_str()).unwrap();
 
-    let mut balance_key = create_account_balances_prefix(&converted_addr_bytes).unwrap();
-    balance_key.extend_from_slice(denom.as_bytes());
+    let balance_key = create_account_denom_balance_key(converted_addr_bytes, &denom).unwrap();
 
     let balance_amount = CosmosCoin { denom, amount };
 
@@ -334,7 +337,7 @@ fn test_sudo_tx_query_result_callback() {
     // ensure the callback has returned an error and contract's state hasn't changed
     assert_eq!(
         res.unwrap_err(),
-        ContractError::Std(StdError::generic_err(
+        NeutronError::Std(StdError::generic_err(
             "failed to find a matching transaction message",
         ))
     );
@@ -430,7 +433,7 @@ fn test_sudo_tx_query_result_min_height_callback() {
     // ensure the callback has returned an error and contract's state hasn't changed
     assert_eq!(
         res.unwrap_err(),
-        ContractError::Std(StdError::generic_err(
+        NeutronError::Std(StdError::generic_err(
             "failed to find a matching transaction message",
         ))
     );

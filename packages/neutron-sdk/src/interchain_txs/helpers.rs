@@ -66,3 +66,15 @@ pub fn parse_sequence(deps: Deps, msg: Reply) -> StdResult<(String, u64)> {
         may_channel_id, may_seq_id
     )))
 }
+
+const CONTROLLER_PORT_PREFIX: &str = "icacontroller-";
+const ICA_OWNER_DELIMITER: &str = ".";
+
+/// Constructs a full ICA controller port identifier for a contract with **contract_address** and **interchain_account_id**
+/// https://github.com/cosmos/ibc-go/blob/46e020640e66f9043c14c53a4d215a5b457d6703/modules/apps/27-interchain-accounts/types/port.go#L11
+pub fn get_port_id<R: AsRef<str>>(contract_address: R, interchain_account_id: R) -> String {
+    CONTROLLER_PORT_PREFIX.to_string()
+        + contract_address.as_ref()
+        + ICA_OWNER_DELIMITER
+        + interchain_account_id.as_ref()
+}

@@ -21,31 +21,31 @@ use cosmwasm_std::{
 use cosmwasm_std::{from_binary, to_binary};
 use prost::Message as ProstMessage;
 
-use crate::{
-    integration_tests_mock_handlers::{set_kv_query_mock, unset_kv_query_mock},
-    msg::{
-        ExecuteMsg, GetRecipientTxsResponse, GetTransfersAmountResponse, InstantiateMsg,
-        KvCallbackStatsResponse, MigrateMsg, QueryMsg,
-    },
-    state::{
-        IntegrationTestsKvMock, Transfer, INTEGRATION_TESTS_KV_MOCK, KV_CALLBACK_STATS,
-        RECIPIENT_TXS, TRANSFERS,
-    },
+use crate::msg::{
+    ExecuteMsg, GetRecipientTxsResponse, GetTransfersAmountResponse, InstantiateMsg,
+    KvCallbackStatsResponse, MigrateMsg, QueryMsg,
 };
-use interchain_queries::error::{ContractError, ContractResult};
-use interchain_queries::queries::{query_balance, query_delegations, query_registered_query};
-use interchain_queries::register_queries::{
+use crate::state::{
+    IntegrationTestsKvMock, Transfer, INTEGRATION_TESTS_KV_MOCK, KV_CALLBACK_STATS, RECIPIENT_TXS,
+    TRANSFERS,
+};
+use neutron_sdk::bindings::msg::NeutronMsg;
+use neutron_sdk::bindings::query::{InterchainQueries, QueryRegisteredQueryResponse};
+use neutron_sdk::interchain_queries::queries::{
+    query_balance, query_delegations, query_registered_query,
+};
+use neutron_sdk::interchain_queries::{
     register_balance_query, register_delegator_delegations_query, register_transfers_query,
     remove_interchain_query, update_interchain_query,
 };
-use interchain_queries::types::{
+use neutron_sdk::sudo::msg::SudoMsg;
+use neutron_sdk::{NeutronError, NeutronResult};
+
+use crate::integration_tests_mock_handlers::{set_kv_query_mock, unset_kv_query_mock};
+use neutron_sdk::interchain_queries::types::{
     TransactionFilterItem, TransactionFilterOp, TransactionFilterValue,
     COSMOS_SDK_TRANSFER_MSG_URL, RECIPIENT_FIELD,
 };
-use neutron_bindings::msg::NeutronMsg;
-use neutron_bindings::query::{InterchainQueries, QueryRegisteredQueryResponse};
-use neutron_sudo::msg::SudoMsg;
-
 use serde_json_wasm;
 
 /// defines the incoming transfers limit to make a case of failed callback possible.
@@ -57,7 +57,7 @@ pub fn instantiate(
     _env: Env,
     _info: MessageInfo,
     _msg: InstantiateMsg,
-) -> ContractResult<Response> {
+) -> NeutronResult<Response> {
     //TODO
     Ok(Response::default())
 }
@@ -68,7 +68,7 @@ pub fn execute(
     env: Env,
     _: MessageInfo,
     msg: ExecuteMsg,
-) -> ContractResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response<NeutronMsg>> {
     match msg {
         ExecuteMsg::RegisterBalanceQuery {
             zone_id,
@@ -127,7 +127,7 @@ pub fn execute(
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> ContractResult<Binary> {
+pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> NeutronResult<Binary> {
     match msg {
         //TODO: check if query.result.height is too old (for all interchain queries)
         QueryMsg::Balance { query_id } => query_balance(deps, env, query_id),
@@ -139,14 +139,14 @@ pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> Contract
     }
 }
 
-fn query_recipient_txs(deps: Deps<InterchainQueries>, recipient: String) -> ContractResult<Binary> {
+fn query_recipient_txs(deps: Deps<InterchainQueries>, recipient: String) -> NeutronResult<Binary> {
     let txs = RECIPIENT_TXS
         .load(deps.storage, &recipient)
         .unwrap_or_default();
     Ok(to_binary(&GetRecipientTxsResponse { transfers: txs })?)
 }
 
-fn query_transfers_amount(deps: Deps<InterchainQueries>) -> ContractResult<Binary> {
+fn query_transfers_amount(deps: Deps<InterchainQueries>) -> NeutronResult<Binary> {
     let transfers_amount = TRANSFERS.load(deps.storage).unwrap_or_default();
     Ok(to_binary(&GetTransfersAmountResponse {
         amount: transfers_amount,
@@ -157,7 +157,7 @@ fn query_transfers_amount(deps: Deps<InterchainQueries>) -> ContractResult<Binar
 pub fn query_kv_callback_stats(
     deps: Deps<InterchainQueries>,
     query_id: u64,
-) -> ContractResult<Binary> {
+) -> NeutronResult<Binary> {
     Ok(to_binary(&KvCallbackStatsResponse {
         last_update_height: KV_CALLBACK_STATS
             .may_load(deps.storage, query_id)?
@@ -171,7 +171,7 @@ pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Respons
 }
 
 #[entry_point]
-pub fn sudo(deps: DepsMut<InterchainQueries>, env: Env, msg: SudoMsg) -> ContractResult<Response> {
+pub fn sudo(deps: DepsMut<InterchainQueries>, env: Env, msg: SudoMsg) -> NeutronResult<Response> {
     match msg {
         SudoMsg::TxQueryResult {
             query_id,
@@ -191,7 +191,7 @@ pub fn sudo_tx_query_result(
     query_id: u64,
     _height: u64,
     data: Binary,
-) -> ContractResult<Response> {
+) -> NeutronResult<Response> {
     // Decode the transaction data
     let tx: TxRaw = TxRaw::decode(data.as_slice())?;
     let body: TxBody = TxBody::decode(tx.body_bytes.as_slice())?;
@@ -226,7 +226,7 @@ pub fn sudo_tx_query_result(
             // If we didn't find a Send message with the correct recipient, return an error, and
             // this query result will be rejected by Neutron: no data will be saved to state.
             if deposits.is_empty() {
-                return Err(ContractError::Std(StdError::generic_err(
+                return Err(NeutronError::Std(StdError::generic_err(
                     "failed to find a matching transaction message",
                 )));
             }
@@ -250,7 +250,7 @@ pub fn sudo_tx_query_result(
 fn recipient_deposits_from_tx_body(
     tx_body: TxBody,
     recipient: &str,
-) -> ContractResult<Vec<Transfer>> {
+) -> NeutronResult<Vec<Transfer>> {
     let mut deposits: Vec<Transfer> = vec![];
     for msg in tx_body.messages {
         // Skip all messages in this transaction that are not Send messages.
@@ -303,7 +303,7 @@ pub fn sudo_kv_query_result(
     deps: DepsMut<InterchainQueries>,
     env: Env,
     query_id: u64,
-) -> ContractResult<Response> {
+) -> NeutronResult<Response> {
     deps.api.debug(
         format!(
             "WASMDEBUG: sudo_kv_query_result received; query_id: {:?}",
@@ -319,7 +319,7 @@ pub fn sudo_kv_query_result(
         // since we return an error in this branch anyway. in fact, this branch exists for the
         // sole reason of testing this particular revert behaviour.
         KV_CALLBACK_STATS.save(deps.storage, query_id, &0)?;
-        return Err(ContractError::IntegrationTestsMock {});
+        return Err(NeutronError::IntegrationTestsMock {});
     }
 
     // store last KV callback update time

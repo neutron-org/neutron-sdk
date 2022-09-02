@@ -12,9 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![warn(clippy::unwrap_used, clippy::expect_used)]
+pub mod helpers;
+pub mod queries;
+mod register_queries;
+pub mod types;
 
-pub mod contract;
-pub mod msg;
-
-mod storage;
+pub use register_queries::{
+    register_balance_query, register_delegator_delegations_query, register_transfers_query,
+    remove_interchain_query, update_interchain_query,
+};

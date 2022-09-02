@@ -7,7 +7,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct InstantiateMsg {}
-use neutron_sudo::msg::SudoMsg;
+use neutron_sdk::sudo::msg::SudoMsg;
 
 #[entry_point]
 pub fn instantiate(

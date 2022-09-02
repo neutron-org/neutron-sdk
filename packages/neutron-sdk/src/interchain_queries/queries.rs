@@ -10,11 +10,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use crate::error::{ContractError, ContractResult};
-use crate::types::{Balances, Delegations, KVReconstruct, QueryType};
+use crate::bindings::query::{
+    InterchainQueries, QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse,
+};
+use crate::interchain_queries::types::{Balances, Delegations, KVReconstruct, QueryType};
+use crate::{NeutronError, NeutronResult};
 use cosmwasm_std::{to_binary, Binary, Deps, Env};
-use neutron_bindings::query::InterchainQueries;
-use neutron_bindings::query::{QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -33,25 +34,24 @@ pub struct DelegatorDelegationsResponse {
 }
 
 /// Parse **actual** query type, checks that it's valid and assert it with **expected** query type
-pub fn check_query_type(actual: String, expected: QueryType) -> ContractResult<QueryType> {
+pub fn check_query_type(actual: String, expected: QueryType) -> NeutronResult<QueryType> {
     if let Some(t) = QueryType::try_from_str(&actual) {
         if t != expected {
-            return Err(ContractError::InvalidQueryType {
-                expected,
-                actual: t.into(),
+            return Err(NeutronError::InvalidQueryType {
+                query_type: t.into(),
             });
         }
         return Ok(t);
     }
 
-    Err(ContractError::InvalidQueryType { expected, actual })
+    Err(NeutronError::InvalidQueryType { query_type: actual })
 }
 
 /// Queries registered query info
 fn get_registered_query(
     deps: Deps<InterchainQueries>,
     interchain_query_id: u64,
-) -> ContractResult<QueryRegisteredQueryResponse> {
+) -> NeutronResult<QueryRegisteredQueryResponse> {
     let query = InterchainQueries::RegisteredInterchainQuery {
         query_id: interchain_query_id,
     };
@@ -64,7 +64,7 @@ fn get_registered_query(
 fn get_interchain_query_result(
     deps: Deps<InterchainQueries>,
     interchain_query_id: u64,
-) -> ContractResult<QueryRegisteredQueryResultResponse> {
+) -> NeutronResult<QueryRegisteredQueryResultResponse> {
     let interchain_query = InterchainQueries::InterchainQueryResult {
         query_id: interchain_query_id,
     };
@@ -76,7 +76,7 @@ fn get_interchain_query_result(
 pub fn query_kv_result<T: KVReconstruct>(
     deps: Deps<InterchainQueries>,
     query_id: u64,
-) -> ContractResult<T> {
+) -> NeutronResult<T> {
     let registered_query_result = get_interchain_query_result(deps, query_id)?;
 
     KVReconstruct::reconstruct(&registered_query_result.result.kv_results)
@@ -88,7 +88,7 @@ pub fn query_balance(
     deps: Deps<InterchainQueries>,
     _env: Env,
     registered_query_id: u64,
-) -> ContractResult<Binary> {
+) -> NeutronResult<Binary> {
     let registered_query = get_registered_query(deps, registered_query_id)?;
 
     check_query_type(registered_query.registered_query.query_type, QueryType::KV)?;
@@ -109,7 +109,7 @@ pub fn query_delegations(
     deps: Deps<InterchainQueries>,
     _env: Env,
     registered_query_id: u64,
-) -> ContractResult<Binary> {
+) -> NeutronResult<Binary> {
     let registered_query = get_registered_query(deps, registered_query_id)?;
 
     check_query_type(registered_query.registered_query.query_type, QueryType::KV)?;
@@ -128,6 +128,6 @@ pub fn query_delegations(
 pub fn query_registered_query(
     deps: Deps<InterchainQueries>,
     query_id: u64,
-) -> ContractResult<Binary> {
+) -> NeutronResult<Binary> {
     Ok(to_binary(&get_registered_query(deps, query_id)?)?)
 }

@@ -1,5 +1,5 @@
 use crate::state::Transfer;
-use neutron_bindings::types::KVKey;
+use neutron_sdk::bindings::types::KVKey;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 

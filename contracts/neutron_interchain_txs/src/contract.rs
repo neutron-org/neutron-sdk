@@ -22,24 +22,24 @@ use cosmwasm_std::{
     to_binary, Binary, CosmosMsg, CustomQuery, Deps, DepsMut, Env, MessageInfo, Reply, Response,
     StdError, StdResult, SubMsg,
 };
-use interchain_txs::helpers::{parse_item, parse_response, parse_sequence};
-use neutron_bindings::msg::NeutronMsg;
-use neutron_bindings::query::InterchainQueries;
-use neutron_sudo::msg::RequestPacket;
-use neutron_sudo::msg::SudoMsg;
+use prost::Message;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
-use neutron_bindings::query::QueryInterchainAccountAddressResponse;
-use neutron_bindings::ProtobufAny;
-use prost::Message;
+use neutron_sdk::bindings::msg::NeutronMsg;
+use neutron_sdk::bindings::query::{InterchainQueries, QueryInterchainAccountAddressResponse};
+use neutron_sdk::bindings::types::ProtobufAny;
+use neutron_sdk::interchain_txs::helpers::{
+    get_port_id, parse_item, parse_response, parse_sequence,
+};
+use neutron_sdk::sudo::msg::{RequestPacket, SudoMsg};
+use neutron_sdk::NeutronResult;
 
-use crate::error::ContractResult;
 use crate::storage::{
     read_reply_payload, read_sudo_payload, save_reply_payload, save_sudo_payload,
-    AcknowledgementResult, SudoPayload, ACKNOWLEDGEMENT_RESULTS, IBC_SUDO_ID_RANGE_END,
-    IBC_SUDO_ID_RANGE_START, INTERCHAIN_ACCOUNTS,
+    AcknowledgementResult, SudoPayload, ACKNOWLEDGEMENT_RESULTS, INTERCHAIN_ACCOUNTS,
+    SUDO_PAYLOAD_REPLY_ID,
 };
 
 // Default timeout for SubmitTX is two weeks
@@ -62,7 +62,7 @@ pub fn instantiate(
     _env: Env,
     _info: MessageInfo,
     _msg: InstantiateMsg,
-) -> ContractResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response<NeutronMsg>> {
     Ok(Response::default())
 }
 
@@ -97,7 +97,7 @@ pub fn execute(
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> ContractResult<Binary> {
+pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> NeutronResult<Binary> {
     match msg {
         QueryMsg::InterchainAccountAddress {
             interchain_account_id,
@@ -117,7 +117,7 @@ pub fn query_interchain_address(
     env: Env,
     interchain_account_id: String,
     connection_id: String,
-) -> ContractResult<Binary> {
+) -> NeutronResult<Binary> {
     let query = InterchainQueries::InterchainAccountAddress {
         owner_address: env.contract.address.to_string(),
         interchain_account_id,
@@ -132,7 +132,7 @@ pub fn query_interchain_address_contract(
     deps: Deps<InterchainQueries>,
     env: Env,
     interchain_account_id: String,
-) -> ContractResult<Binary> {
+) -> NeutronResult<Binary> {
     Ok(to_binary(&get_ica(deps, &env, &interchain_account_id)?)?)
 }
 
@@ -140,8 +140,8 @@ pub fn query_acknowledgement_result(
     deps: Deps<InterchainQueries>,
     env: Env,
     interchain_account_id: String,
-) -> ContractResult<Binary> {
-    let key = connection_key(env.contract.address.to_string(), &interchain_account_id);
+) -> NeutronResult<Binary> {
+    let key = get_port_id(env.contract.address.as_str(), &interchain_account_id);
     let res = ACKNOWLEDGEMENT_RESULTS.may_load(deps.storage, key)?;
     Ok(to_binary(&res)?)
 }
@@ -151,8 +151,8 @@ fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
     msg: C,
     payload: SudoPayload,
 ) -> StdResult<SubMsg<T>> {
-    let id = save_reply_payload(deps.storage, payload)?;
-    Ok(SubMsg::reply_on_success(msg, id))
+    save_reply_payload(deps.storage, payload)?;
+    Ok(SubMsg::reply_on_success(msg, SUDO_PAYLOAD_REPLY_ID))
 }
 
 fn execute_register_ica(
@@ -163,7 +163,7 @@ fn execute_register_ica(
 ) -> StdResult<Response<NeutronMsg>> {
     let register =
         NeutronMsg::register_interchain_account(connection_id, interchain_account_id.clone());
-    let key = connection_key(env.contract.address.to_string(), &interchain_account_id);
+    let key = get_port_id(env.contract.address.as_str(), &interchain_account_id);
     INTERCHAIN_ACCOUNTS.save(deps.storage, key, &None)?;
     Ok(Response::new().add_message(register))
 }
@@ -209,10 +209,7 @@ fn execute_delegate(
         deps.branch(),
         cosmos_msg,
         SudoPayload {
-            connection_key: connection_key(
-                env.contract.address.to_string(),
-                &interchain_account_id,
-            ),
+            port_id: get_port_id(env.contract.address.as_str(), &interchain_account_id),
             message: "message".to_string(),
         },
     )?;
@@ -261,10 +258,7 @@ fn execute_undelegate(
         deps.branch(),
         cosmos_msg,
         SudoPayload {
-            connection_key: connection_key(
-                env.contract.address.to_string(),
-                &interchain_account_id,
-            ),
+            port_id: get_port_id(env.contract.address.as_str(), &interchain_account_id),
             message: "message".to_string(),
         },
     )?;
@@ -385,7 +379,7 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
 
     ACKNOWLEDGEMENT_RESULTS.save(
         deps.storage,
-        payload.connection_key,
+        payload.port_id,
         &AcknowledgementResult::Success(item_types),
     )?;
 
@@ -406,7 +400,7 @@ fn sudo_timeout(deps: DepsMut, _env: Env, request: RequestPacket) -> StdResult<R
 
     ACKNOWLEDGEMENT_RESULTS.save(
         deps.storage,
-        payload.connection_key,
+        payload.port_id,
         &AcknowledgementResult::Timeout(payload.message),
     )?;
 
@@ -426,7 +420,7 @@ fn sudo_error(deps: DepsMut, request: RequestPacket, details: String) -> StdResu
 
     ACKNOWLEDGEMENT_RESULTS.save(
         deps.storage,
-        payload.connection_key,
+        payload.port_id,
         &AcknowledgementResult::Error((payload.message, details)),
     )?;
 
@@ -434,7 +428,7 @@ fn sudo_error(deps: DepsMut, request: RequestPacket, details: String) -> StdResu
 }
 
 fn prepare_sudo_payload(mut deps: DepsMut, _env: Env, msg: Reply) -> StdResult<Response> {
-    let payload = read_reply_payload(deps.storage, msg.id)?;
+    let payload = read_reply_payload(deps.storage)?;
     let (channel_id, seq_id) = parse_sequence(deps.as_ref(), msg)?;
     save_sudo_payload(deps.branch().storage, channel_id, seq_id, payload)?;
     Ok(Response::new())
@@ -445,7 +439,7 @@ fn get_ica(
     env: &Env,
     interchain_account_id: &str,
 ) -> Result<(String, String), StdError> {
-    let key = connection_key(env.contract.address.to_string(), interchain_account_id);
+    let key = get_port_id(env.contract.address.as_str(), interchain_account_id);
 
     INTERCHAIN_ACCOUNTS
         .load(deps.storage, key)?
@@ -455,15 +449,10 @@ fn get_ica(
 #[entry_point]
 pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> StdResult<Response> {
     match msg.id {
-        IBC_SUDO_ID_RANGE_START..=IBC_SUDO_ID_RANGE_END => prepare_sudo_payload(deps, env, msg),
+        SUDO_PAYLOAD_REPLY_ID => prepare_sudo_payload(deps, env, msg),
         _ => Err(StdError::generic_err(format!(
             "unsupported reply message id {}",
             msg.id
         ))),
     }
-}
-
-// connection_key specifies they key for interchain account we need
-fn connection_key(contract_address: String, interchain_account_id: &str) -> String {
-    "icacontroller-".to_string() + &contract_address + "." + interchain_account_id
 }

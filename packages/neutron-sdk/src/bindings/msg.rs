@@ -1,4 +1,4 @@
-use crate::types::{KVKey, ProtobufAny};
+use crate::bindings::types::{KVKey, ProtobufAny};
 use cosmwasm_std::{CosmosMsg, CustomMsg};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};

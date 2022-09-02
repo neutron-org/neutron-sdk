@@ -1,6 +1,4 @@
-// Copyright 2022 Neutron
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
+// Copyright 2022 Neutron Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
@@ -12,9 +10,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#![warn(clippy::unwrap_used, clippy::expect_used)]
+pub mod bindings;
+mod errors;
+pub mod interchain_queries;
+pub mod interchain_txs;
+pub mod sudo;
 
-pub mod contract;
-pub mod msg;
+pub use errors::error::{NeutronError, NeutronResult};
 
-mod storage;
+// This is a signal, such that any contract that imports these helpers will only run on the
+// neutron blockchain
+#[no_mangle]
+extern "C" fn requires_neutron() {}

@@ -1,12 +1,11 @@
-use crate::types::QueryType;
 use cosmwasm_std::{DecimalRangeExceeded, OverflowError, StdError};
 use serde_json_wasm;
 use thiserror::Error;
 
-pub type ContractResult<T> = Result<T, ContractError>;
+pub type NeutronResult<T> = Result<T, NeutronError>;
 
 #[derive(Error, Debug, PartialEq)]
-pub enum ContractError {
+pub enum NeutronError {
     #[error("{0}")]
     Std(#[from] StdError),
 
@@ -28,8 +27,8 @@ pub enum ContractError {
     #[error("invalid reply id: {0}")]
     InvalidReplyID(u64),
 
-    #[error("invalid query type: expected '{expected:?}' got {actual:?}")]
-    InvalidQueryType { expected: QueryType, actual: String },
+    #[error("invalid query type: {query_type:?}")]
+    InvalidQueryType { query_type: String },
 
     #[error("Decimal range exceeded")]
     DecimalRangeExceeded(#[from] DecimalRangeExceeded),
@@ -44,8 +43,8 @@ pub enum ContractError {
     IntegrationTestsMock {},
 }
 
-impl From<serde_json_wasm::de::Error> for ContractError {
+impl From<serde_json_wasm::de::Error> for NeutronError {
     fn from(e: serde_json_wasm::de::Error) -> Self {
-        ContractError::SerdeJSONWasm(e.to_string())
+        NeutronError::SerdeJSONWasm(e.to_string())
     }
 }
