@@ -33,8 +33,6 @@ pub struct RegisteredQuery {
     pub query_type: String,
     /// The filter for transaction search ICQ
     pub transactions_filter: String,
-    /// The chain of interest identifier.
-    pub zone_id: String,
     /// The IBC connection ID for getting ConsensusState to verify proofs.
     pub connection_id: String,
     /// Parameter that defines how often the query must be updated.
