@@ -1,5 +1,5 @@
 use cosmos_sdk_proto::cosmos::base::abci::v1beta1::{MsgData, TxMsgData};
-use cosmwasm_std::{Addr, Binary, Deps, Reply, StdError, StdResult};
+use cosmwasm_std::{Binary, Deps, Reply, StdError, StdResult};
 use prost::{DecodeError, Message};
 
 /// Parse acknowledgement into Vec<MsgData> structure
@@ -72,9 +72,9 @@ const ICA_OWNER_DELIMITER: &str = ".";
 
 /// Constructs a full ICA controller port identifier for a contract with **contract_address** and **interchain_account_id**
 /// https://github.com/cosmos/ibc-go/blob/46e020640e66f9043c14c53a4d215a5b457d6703/modules/apps/27-interchain-accounts/types/port.go#L11
-pub fn get_port_id(contract_address: Addr, interchain_account_id: &str) -> String {
+pub fn get_port_id<R: AsRef<str>>(contract_address: R, interchain_account_id: R) -> String {
     CONTROLLER_PORT_PREFIX.to_string()
-        + contract_address.as_str()
+        + contract_address.as_ref()
         + ICA_OWNER_DELIMITER
-        + interchain_account_id
+        + interchain_account_id.as_ref()
 }
