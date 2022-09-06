@@ -2,10 +2,9 @@ use cosmos_sdk_proto::cosmos::base::abci::v1beta1::{MsgData, TxMsgData};
 use cosmwasm_std::{Binary, Deps, Reply, StdError, StdResult};
 use prost::{DecodeError, Message};
 
-/// Parse acknowledgement into Vec<MsgData> structure
-pub fn parse_response(data: Binary) -> StdResult<Vec<MsgData>> {
-    let result = Binary::from_base64(&data.to_string())?;
-    let msg_data: Result<TxMsgData, DecodeError> = TxMsgData::decode(result.as_slice());
+/// Decodes acknowledgement into Vec<MsgData> structure
+pub fn decode_acknowledgement_response(data: Binary) -> StdResult<Vec<MsgData>> {
+    let msg_data: Result<TxMsgData, DecodeError> = TxMsgData::decode(data.as_slice());
     match msg_data {
         Err(e) => {
             return Err(StdError::generic_err(format!(
@@ -17,8 +16,8 @@ pub fn parse_response(data: Binary) -> StdResult<Vec<MsgData>> {
     }
 }
 
-/// Parse protobuff any item into T structure
-pub fn parse_item<T: prost::Message + Default>(item: &Vec<u8>) -> StdResult<T> {
+/// Decodes protobuf any item into T structure
+pub fn decode_message_response<T: prost::Message + Default>(item: &Vec<u8>) -> StdResult<T> {
     let res = T::decode(item.as_slice());
     match res {
         Err(e) => return Err(StdError::generic_err(format!("Can't decode item: {}", e))),

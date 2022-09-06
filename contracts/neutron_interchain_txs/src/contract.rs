@@ -31,7 +31,7 @@ use neutron_sdk::bindings::msg::NeutronMsg;
 use neutron_sdk::bindings::query::{InterchainQueries, QueryInterchainAccountAddressResponse};
 use neutron_sdk::bindings::types::ProtobufAny;
 use neutron_sdk::interchain_txs::helpers::{
-    get_port_id, parse_item, parse_response, parse_sequence,
+    decode_acknowledgement_response, decode_message_response, get_port_id, parse_sequence,
 };
 use neutron_sdk::sudo::msg::{RequestPacket, SudoMsg};
 use neutron_sdk::NeutronResult;
@@ -205,6 +205,8 @@ fn execute_delegate(
         timeout.unwrap_or(DEFAULT_TIMEOUT_SECONDS),
     );
 
+    // We use a submessage here because we need the process message reply to save
+    // the outgoing IBC packet identifier for later.
     let submsg = msg_with_sudo_callback(
         deps.branch(),
         cosmos_msg,
@@ -347,7 +349,7 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
         .debug(format!("WASMDEBUG: sudo_response: sudo payload: {:?}", payload).as_str());
 
     // handle response
-    let parsed_data = parse_response(data)?;
+    let parsed_data = decode_acknowledgement_response(data)?;
 
     let mut item_types = vec![];
     for item in parsed_data {
@@ -355,7 +357,7 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
         item_types.push(item_type.to_string());
         match item_type {
             "/cosmos.staking.v1beta1.MsgUndelegate" => {
-                let out: MsgUndelegateResponse = parse_item(&item.data)?;
+                let out: MsgUndelegateResponse = decode_message_response(&item.data)?;
                 let completion_time = out
                     .completion_time
                     .ok_or_else(|| StdError::generic_err("failed to get completion time"))?;
@@ -363,7 +365,7 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
                     .debug(format!("Undelegation completion time: {:?}", completion_time).as_str());
             }
             "/cosmos.staking.v1beta1.MsgDelegate" => {
-                let _out: MsgDelegateResponse = parse_item(&item.data)?;
+                let _out: MsgDelegateResponse = decode_message_response(&item.data)?;
             }
             _ => {
                 deps.api.debug(
