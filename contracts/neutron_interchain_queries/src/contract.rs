@@ -14,11 +14,10 @@
 
 use cosmos_sdk_proto::cosmos::bank::v1beta1::MsgSend;
 use cosmos_sdk_proto::cosmos::tx::v1beta1::{TxBody, TxRaw};
-#[cfg(not(feature = "library"))]
 use cosmwasm_std::{
-    entry_point, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult,
+    attr, entry_point, from_binary, to_binary, Attribute, Binary, Deps, DepsMut, Env, MessageInfo,
+    Response, StdError, StdResult,
 };
-use cosmwasm_std::{from_binary, to_binary};
 use prost::Message as ProstMessage;
 
 use crate::msg::{
@@ -35,8 +34,8 @@ use neutron_sdk::interchain_queries::queries::{
     query_balance, query_delegations, query_registered_query,
 };
 use neutron_sdk::interchain_queries::{
-    register_balance_query, register_delegator_delegations_query, register_transfers_query,
-    remove_interchain_query, update_interchain_query,
+    register_balance_query_msg, register_delegator_delegations_query_msg,
+    register_transfers_query_msg, remove_interchain_query, update_interchain_query,
 };
 use neutron_sdk::sudo::msg::SudoMsg;
 use neutron_sdk::{NeutronError, NeutronResult};
@@ -91,7 +90,7 @@ pub fn execute(
             delegator,
             validators,
             update_period,
-        } => register_delegator_delegations_query(
+        } => register_delegations_query(
             deps,
             env,
             connection_id,
@@ -124,6 +123,98 @@ pub fn execute(
         ExecuteMsg::IntegrationTestsSetKvQueryMock {} => set_kv_query_mock(deps),
         ExecuteMsg::IntegrationTestsUnsetKvQueryMock {} => unset_kv_query_mock(deps),
     }
+}
+
+pub fn register_balance_query(
+    deps: DepsMut<InterchainQueries>,
+    env: Env,
+    connection_id: String,
+    zone_id: String,
+    addr: String,
+    denom: String,
+    update_period: u64,
+) -> NeutronResult<Response<NeutronMsg>> {
+    let msg = register_balance_query_msg(
+        deps,
+        env,
+        connection_id.clone(),
+        zone_id.clone(),
+        addr.clone(),
+        denom.clone(),
+        update_period,
+    )?;
+
+    let attrs: Vec<Attribute> = vec![
+        attr("action", "register_interchain_balance_query"),
+        attr("connection_id", connection_id.as_str()),
+        attr("zone_id", zone_id.as_str()),
+        attr("update_period", update_period.to_string()),
+        attr("denom", denom),
+        attr("addr", addr),
+    ];
+
+    Ok(Response::new().add_message(msg).add_attributes(attrs))
+}
+
+pub fn register_delegations_query(
+    deps: DepsMut<InterchainQueries>,
+    env: Env,
+    connection_id: String,
+    zone_id: String,
+    delegator: String,
+    validators: Vec<String>,
+    update_period: u64,
+) -> NeutronResult<Response<NeutronMsg>> {
+    let msg = register_delegator_delegations_query_msg(
+        deps,
+        env,
+        connection_id.clone(),
+        zone_id.clone(),
+        delegator.clone(),
+        validators.clone(),
+        update_period,
+    )?;
+
+    let attrs: Vec<Attribute> = vec![
+        attr("action", "register_interchain_delegations_query"),
+        attr("connection_id", connection_id.as_str()),
+        attr("zone_id", zone_id.as_str()),
+        attr("update_period", update_period.to_string()),
+        attr("delegator", delegator),
+        attr("validators", validators.join(",")),
+    ];
+
+    Ok(Response::new().add_message(msg).add_attributes(attrs))
+}
+
+pub fn register_transfers_query(
+    deps: DepsMut<InterchainQueries>,
+    env: Env,
+    connection_id: String,
+    zone_id: String,
+    recipient: String,
+    update_period: u64,
+    min_height: Option<u128>,
+) -> NeutronResult<Response<NeutronMsg>> {
+    let msg = register_transfers_query_msg(
+        deps,
+        env,
+        connection_id.clone(),
+        zone_id.clone(),
+        recipient.clone(),
+        update_period,
+        min_height,
+    )?;
+
+    let attrs: Vec<Attribute> = vec![
+        attr("action", "register_interchain_transfers_query"),
+        attr("connection_id", connection_id.as_str()),
+        attr("zone_id", zone_id.as_str()),
+        attr("update_period", update_period.to_string()),
+        attr("recipient", recipient),
+    ];
+
+    Ok(Response::new().add_message(msg).add_attributes(attrs))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
