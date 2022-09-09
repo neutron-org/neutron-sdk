@@ -161,14 +161,6 @@ pub fn register_transfers_query_msg(
     let query_data_json_encoded =
         to_string(&query_data).map_err(|e| StdError::generic_err(e.to_string()))?;
 
-    deps.api.debug(
-        format!(
-            "WASMDEBUG: query_data_json_encoded: {:?}",
-            query_data_json_encoded,
-        )
-        .as_str(),
-    );
-
     register_interchain_query_msg(
         deps,
         env,

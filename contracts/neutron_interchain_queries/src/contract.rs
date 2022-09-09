@@ -15,8 +15,8 @@
 use cosmos_sdk_proto::cosmos::bank::v1beta1::MsgSend;
 use cosmos_sdk_proto::cosmos::tx::v1beta1::{TxBody, TxRaw};
 use cosmwasm_std::{
-    attr, entry_point, from_binary, to_binary, Attribute, Binary, Deps, DepsMut, Env, MessageInfo,
-    Response, StdError, StdResult,
+    attr, entry_point, to_binary, Attribute, Binary, Deps, DepsMut, Env, MessageInfo, Response,
+    StdError, StdResult,
 };
 use prost::Message as ProstMessage;
 
@@ -32,7 +32,7 @@ use neutron_sdk::bindings::msg::NeutronMsg;
 use neutron_sdk::bindings::query::{InterchainQueries, QueryRegisteredQueryResponse};
 use neutron_sdk::bindings::types::{KVKey, KVKeys};
 use neutron_sdk::interchain_queries::queries::{
-    query_balance, query_delegations, query_registered_query,
+    get_registered_query, query_balance, query_delegations,
 };
 use neutron_sdk::interchain_queries::{
     register_balance_query_msg, register_delegator_delegations_query_msg,
@@ -251,9 +251,13 @@ pub fn remove_interchain_query(query_id: u64) -> NeutronResult<Response<NeutronM
 pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> NeutronResult<Binary> {
     match msg {
         //TODO: check if query.result.height is too old (for all interchain queries)
-        QueryMsg::Balance { query_id } => query_balance(deps, env, query_id),
-        QueryMsg::GetDelegations { query_id } => query_delegations(deps, env, query_id),
-        QueryMsg::GetRegisteredQuery { query_id } => query_registered_query(deps, query_id),
+        QueryMsg::Balance { query_id } => Ok(to_binary(&query_balance(deps, env, query_id)?)?),
+        QueryMsg::GetDelegations { query_id } => {
+            Ok(to_binary(&query_delegations(deps, env, query_id)?)?)
+        }
+        QueryMsg::GetRegisteredQuery { query_id } => {
+            Ok(to_binary(&get_registered_query(deps, query_id)?)?)
+        }
         QueryMsg::GetRecipientTxs { recipient } => query_recipient_txs(deps, recipient),
         QueryMsg::GetTransfersAmount {} => query_transfers_amount(deps),
         QueryMsg::KvCallbackStats { query_id } => query_kv_callback_stats(deps, query_id),
@@ -319,7 +323,7 @@ pub fn sudo_tx_query_result(
 
     // Get the registered query by ID and retrieve the raw query string
     let registered_query: QueryRegisteredQueryResponse =
-        from_binary(&query_registered_query(deps.as_ref(), query_id)?)?;
+        get_registered_query(deps.as_ref(), query_id)?;
     let transactions_filter = registered_query.registered_query.transactions_filter;
 
     #[allow(clippy::match_single_binding)]
