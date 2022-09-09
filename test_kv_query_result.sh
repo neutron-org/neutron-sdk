@@ -32,5 +32,5 @@ QUERIES_CONTRACT_ADDRESS=$(echo $RES | jq -r '.logs[0].events[0].attributes[0].v
 echo $QUERIES_CONTRACT_ADDRESS
 
 # Register a query for KEY_2 balance
-RES=$(${BIN} tx wasm execute $QUERIES_CONTRACT_ADDRESS "{\"register_balance_query\": {\"connection_id\": \"connection-0\", \"denom\": \"stake\", \"addr\": \"${KEY_2}\", \"update_period\": 5, \"zone_id\": \"${CHAIN_ID_2}\"}}" --from ${USERNAME_1}  -y --chain-id ${CHAIN_ID_1} --output json --broadcast-mode=block --gas-prices 0.0025stake --gas 1000000 --keyring-backend test --home ${HOME_1} --node tcp://127.0.0.1:16657)
+RES=$(${BIN} tx wasm execute $QUERIES_CONTRACT_ADDRESS "{\"register_balance_query\": {\"connection_id\": \"connection-0\", \"denom\": \"stake\", \"addr\": \"${KEY_2}\", \"update_period\": 5}}" --from ${USERNAME_1}  -y --chain-id ${CHAIN_ID_1} --output json --broadcast-mode=block --gas-prices 0.0025stake --gas 1000000 --keyring-backend test --home ${HOME_1} --node tcp://127.0.0.1:16657)
 echo $RES
