@@ -12,6 +12,7 @@
 
 pub mod bindings;
 mod errors;
+pub mod ibc;
 pub mod interchain_queries;
 pub mod interchain_txs;
 pub mod sudo;
