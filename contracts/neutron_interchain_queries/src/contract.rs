@@ -30,12 +30,13 @@ use crate::state::{
 };
 use neutron_sdk::bindings::msg::NeutronMsg;
 use neutron_sdk::bindings::query::{InterchainQueries, QueryRegisteredQueryResponse};
+use neutron_sdk::bindings::types::{KVKey, KVKeys};
 use neutron_sdk::interchain_queries::queries::{
     query_balance, query_delegations, query_registered_query,
 };
 use neutron_sdk::interchain_queries::{
     register_balance_query_msg, register_delegator_delegations_query_msg,
-    register_transfers_query_msg, remove_interchain_query, update_interchain_query,
+    register_transfers_query_msg,
 };
 use neutron_sdk::sudo::msg::SudoMsg;
 use neutron_sdk::{NeutronError, NeutronResult};
@@ -215,6 +216,35 @@ pub fn register_transfers_query(
     ];
 
     Ok(Response::new().add_message(msg).add_attributes(attrs))
+}
+
+pub fn update_interchain_query(
+    query_id: u64,
+    new_keys: Option<Vec<KVKey>>,
+    new_update_period: Option<u64>,
+) -> NeutronResult<Response<NeutronMsg>> {
+    let mut attributes = vec![
+        attr("action", "update_interchain_query"),
+        attr("query_id", query_id.to_string()),
+    ];
+    if let Some(keys) = new_keys.clone() {
+        attributes.push(attr("new_keys", KVKeys(keys)))
+    }
+    if let Some(update_period) = new_update_period {
+        attributes.push(attr("new_update_period", update_period.to_string()))
+    }
+    let update_msg = NeutronMsg::update_interchain_query(query_id, new_keys, new_update_period);
+    Ok(Response::new()
+        .add_message(update_msg)
+        .add_attributes(attributes))
+}
+
+pub fn remove_interchain_query(query_id: u64) -> NeutronResult<Response<NeutronMsg>> {
+    let remove_msg = NeutronMsg::remove_interchain_query(query_id);
+    Ok(Response::new().add_message(remove_msg).add_attributes(vec![
+        attr("action", "remove_interchain_query"),
+        attr("query_id", query_id.to_string()),
+    ]))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]

@@ -19,5 +19,5 @@ pub mod types;
 
 pub use register_queries::{
     register_balance_query_msg, register_delegator_delegations_query_msg,
-    register_transfers_query_msg, remove_interchain_query, update_interchain_query,
+    register_transfers_query_msg,
 };

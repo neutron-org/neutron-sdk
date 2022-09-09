@@ -1,6 +1,6 @@
 use crate::bindings::msg::NeutronMsg;
 use crate::bindings::query::InterchainQueries;
-use crate::bindings::types::{KVKey, KVKeys};
+use crate::bindings::types::KVKey;
 use crate::errors::error::NeutronResult;
 use crate::interchain_queries::helpers::{
     create_account_denom_balance_key, create_delegation_key, create_params_store_key,
@@ -10,7 +10,7 @@ use crate::interchain_queries::types::{
     QueryType, TransactionFilterItem, TransactionFilterOp, TransactionFilterValue, BANK_STORE_KEY,
     HEIGHT_FIELD, KEY_BOND_DENOM, PARAMS_STORE_KEY, RECIPIENT_FIELD, STAKING_STORE_KEY,
 };
-use cosmwasm_std::{attr, Binary, DepsMut, Env, Response, StdError};
+use cosmwasm_std::{Binary, DepsMut, Env, StdError};
 use schemars::_serde_json::to_string;
 
 #[allow(clippy::too_many_arguments)]
@@ -179,43 +179,4 @@ pub fn register_transfers_query_msg(
         query_data_json_encoded,
         update_period,
     )
-}
-
-/// Updates a registered Interchain Query.
-/// Only the owner of the query can execute this message.
-///
-/// * **query_id** is an identifier of a registered Interchain Query;
-/// * **new_keys** is a new Vec of KV keys you want your query to handle. Optional, if None, the old value stays the same;
-/// * **new_update_period** is a new update period for your query. Optional, if None, the old value stays the same.
-pub fn update_interchain_query(
-    query_id: u64,
-    new_keys: Option<Vec<KVKey>>,
-    new_update_period: Option<u64>,
-) -> NeutronResult<Response<NeutronMsg>> {
-    let mut attributes = vec![
-        attr("action", "update_interchain_query"),
-        attr("query_id", query_id.to_string()),
-    ];
-    if let Some(keys) = new_keys.clone() {
-        attributes.push(attr("new_keys", KVKeys(keys)))
-    }
-    if let Some(update_period) = new_update_period {
-        attributes.push(attr("new_update_period", update_period.to_string()))
-    }
-    let update_msg = NeutronMsg::update_interchain_query(query_id, new_keys, new_update_period);
-    Ok(Response::new()
-        .add_message(update_msg)
-        .add_attributes(attributes))
-}
-
-/// Removes a registered Interchain Query from the Interchain Queries Module.
-/// Only the owner of the query can execute this message.
-///
-/// * **query_id** is an identifier of the query you want to remove.
-pub fn remove_interchain_query(query_id: u64) -> NeutronResult<Response<NeutronMsg>> {
-    let remove_msg = NeutronMsg::remove_interchain_query(query_id);
-    Ok(Response::new().add_message(remove_msg).add_attributes(vec![
-        attr("action", "remove_interchain_query"),
-        attr("query_id", query_id.to_string()),
-    ]))
 }
