@@ -59,7 +59,6 @@ fn build_registered_query_response(
             keys: vec![],
             query_type,
             transactions_filter: "".to_string(),
-            zone_id: "".to_string(),
             connection_id: "".to_string(),
             update_period: 0,
             last_emitted_height: 0,
@@ -124,7 +123,6 @@ fn test_query_balance() {
     let mut deps = dependencies(&[]);
 
     let msg = ExecuteMsg::RegisterBalanceQuery {
-        zone_id: "zone".to_string(),
         connection_id: "connection".to_string(),
         update_period: 10,
         addr: "osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs".to_string(),
@@ -164,7 +162,6 @@ fn test_query_delegator_delegations() {
     let mut deps = dependencies(&[]);
 
     let msg = ExecuteMsg::RegisterDelegatorDelegationsQuery {
-        zone_id: "zone".to_string(),
         connection_id: "connection".to_string(),
         update_period: 10,
         delegator: "osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs".to_string(),
@@ -290,7 +287,6 @@ fn test_sudo_tx_query_result_callback() {
     let query_id: u64 = 1u64;
     let height: u64 = 1u64;
     let msg = ExecuteMsg::RegisterTransfersQuery {
-        zone_id: "zone".to_string(),
         connection_id: "connection".to_string(),
         update_period: 1u64,
         recipient: watched_addr.clone(),
@@ -386,7 +382,6 @@ fn test_sudo_tx_query_result_min_height_callback() {
     let query_id: u64 = 1u64;
     let height: u64 = 1u64;
     let msg = ExecuteMsg::RegisterTransfersQuery {
-        zone_id: "zone".to_string(),
         connection_id: "connection".to_string(),
         update_period: 1u64,
         recipient: watched_addr.clone(),
