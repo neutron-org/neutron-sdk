@@ -15,8 +15,7 @@
 use cosmos_sdk_proto::cosmos::bank::v1beta1::MsgSend;
 use cosmos_sdk_proto::cosmos::tx::v1beta1::{TxBody, TxRaw};
 use cosmwasm_std::{
-    attr, entry_point, to_binary, Attribute, Binary, Deps, DepsMut, Env, MessageInfo, Response,
-    StdError, StdResult,
+    entry_point, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult,
 };
 use prost::Message as ProstMessage;
 
@@ -30,7 +29,7 @@ use crate::state::{
 };
 use neutron_sdk::bindings::msg::NeutronMsg;
 use neutron_sdk::bindings::query::{InterchainQueries, QueryRegisteredQueryResponse};
-use neutron_sdk::bindings::types::{KVKey, KVKeys};
+use neutron_sdk::bindings::types::KVKey;
 use neutron_sdk::interchain_queries::queries::{
     get_registered_query, query_balance, query_delegations,
 };
@@ -121,24 +120,9 @@ pub fn register_balance_query(
     denom: String,
     update_period: u64,
 ) -> NeutronResult<Response<NeutronMsg>> {
-    let msg = register_balance_query_msg(
-        deps,
-        env,
-        connection_id.clone(),
-        addr.clone(),
-        denom.clone(),
-        update_period,
-    )?;
+    let msg = register_balance_query_msg(deps, env, connection_id, addr, denom, update_period)?;
 
-    let attrs: Vec<Attribute> = vec![
-        attr("action", "register_interchain_balance_query"),
-        attr("connection_id", connection_id.as_str()),
-        attr("update_period", update_period.to_string()),
-        attr("denom", denom),
-        attr("addr", addr),
-    ];
-
-    Ok(Response::new().add_message(msg).add_attributes(attrs))
+    Ok(Response::new().add_message(msg))
 }
 
 pub fn register_delegations_query(
@@ -152,21 +136,13 @@ pub fn register_delegations_query(
     let msg = register_delegator_delegations_query_msg(
         deps,
         env,
-        connection_id.clone(),
-        delegator.clone(),
-        validators.clone(),
+        connection_id,
+        delegator,
+        validators,
         update_period,
     )?;
 
-    let attrs: Vec<Attribute> = vec![
-        attr("action", "register_interchain_delegations_query"),
-        attr("connection_id", connection_id.as_str()),
-        attr("update_period", update_period.to_string()),
-        attr("delegator", delegator),
-        attr("validators", validators.join(",")),
-    ];
-
-    Ok(Response::new().add_message(msg).add_attributes(attrs))
+    Ok(Response::new().add_message(msg))
 }
 
 pub fn register_transfers_query(
@@ -180,20 +156,13 @@ pub fn register_transfers_query(
     let msg = register_transfers_query_msg(
         deps,
         env,
-        connection_id.clone(),
-        recipient.clone(),
+        connection_id,
+        recipient,
         update_period,
         min_height,
     )?;
 
-    let attrs: Vec<Attribute> = vec![
-        attr("action", "register_interchain_transfers_query"),
-        attr("connection_id", connection_id.as_str()),
-        attr("update_period", update_period.to_string()),
-        attr("recipient", recipient),
-    ];
-
-    Ok(Response::new().add_message(msg).add_attributes(attrs))
+    Ok(Response::new().add_message(msg))
 }
 
 pub fn update_interchain_query(
@@ -201,28 +170,13 @@ pub fn update_interchain_query(
     new_keys: Option<Vec<KVKey>>,
     new_update_period: Option<u64>,
 ) -> NeutronResult<Response<NeutronMsg>> {
-    let mut attributes = vec![
-        attr("action", "update_interchain_query"),
-        attr("query_id", query_id.to_string()),
-    ];
-    if let Some(keys) = new_keys.clone() {
-        attributes.push(attr("new_keys", KVKeys(keys)))
-    }
-    if let Some(update_period) = new_update_period {
-        attributes.push(attr("new_update_period", update_period.to_string()))
-    }
     let update_msg = NeutronMsg::update_interchain_query(query_id, new_keys, new_update_period);
-    Ok(Response::new()
-        .add_message(update_msg)
-        .add_attributes(attributes))
+    Ok(Response::new().add_message(update_msg))
 }
 
 pub fn remove_interchain_query(query_id: u64) -> NeutronResult<Response<NeutronMsg>> {
     let remove_msg = NeutronMsg::remove_interchain_query(query_id);
-    Ok(Response::new().add_message(remove_msg).add_attributes(vec![
-        attr("action", "remove_interchain_query"),
-        attr("query_id", query_id.to_string()),
-    ]))
+    Ok(Response::new().add_message(remove_msg))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
