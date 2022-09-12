@@ -19,7 +19,6 @@ fn register_interchain_query(
     _deps: DepsMut<InterchainQueries>,
     _env: Env,
     connection_id: String,
-    zone_id: String,
     query_type: QueryType,
     kv_keys: Vec<KVKey>,
     transactions_filter: String,
@@ -29,7 +28,6 @@ fn register_interchain_query(
         query_type.into(),
         kv_keys.clone(),
         transactions_filter.clone(),
-        zone_id.clone(),
         connection_id.clone(),
         update_period,
     );
@@ -37,7 +35,6 @@ fn register_interchain_query(
     let mut attrs: Vec<Attribute> = vec![
         attr("action", "register_interchain_query"),
         attr("connection_id", connection_id.as_str()),
-        attr("zone_id", zone_id.as_str()),
         attr("query_type", query_type),
         attr("update_period", update_period.to_string()),
     ];
@@ -58,7 +55,6 @@ fn register_interchain_query(
 /// Registers an Interchain Query to get balance of account on remote chain for particular denom
 ///
 /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
-/// * **zone_id** is used to identify the chain of interest;
 /// * **addr** address of an account on remote chain for which you want to get balances;
 /// * **denom** denomination of the coin for which you want to get balance;
 /// * **update_period** is used to say how often the query must be updated.
@@ -66,7 +62,6 @@ pub fn register_balance_query(
     deps: DepsMut<InterchainQueries>,
     env: Env,
     connection_id: String,
-    zone_id: String,
     addr: String,
     denom: String,
     update_period: u64,
@@ -84,7 +79,6 @@ pub fn register_balance_query(
         deps,
         env,
         connection_id,
-        zone_id,
         QueryType::KV,
         vec![kv_key],
         String::new(),
@@ -95,7 +89,6 @@ pub fn register_balance_query(
 /// Registers an Interchain Query to get delegations of particular delegator on remote chain.
 ///
 /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
-/// * **zone_id** is used to identify the chain of interest;
 /// * **delegator** is an address of an account on remote chain for which you want to get list of delegations;
 /// * **validators** is a list of validators addresses for which you want to get delegations from particular **delegator**;
 /// * **update_period** is used to say how often the query must be updated.
@@ -103,7 +96,6 @@ pub fn register_delegator_delegations_query(
     deps: DepsMut<InterchainQueries>,
     env: Env,
     connection_id: String,
-    zone_id: String,
     delegator: String,
     validators: Vec<String>,
     update_period: u64,
@@ -141,7 +133,6 @@ pub fn register_delegator_delegations_query(
         deps,
         env,
         connection_id,
-        zone_id,
         QueryType::KV,
         keys,
         String::new(),
@@ -152,7 +143,6 @@ pub fn register_delegator_delegations_query(
 /// Registers an Interchain Query to get transfer events to a recipient on a remote chain.
 ///
 /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
-/// * **zone_id** is used to identify the chain of interest;
 /// * **recipient** is an address of an account on remote chain for which you want to get list of transfer transactions;
 /// * **update_period** is used to say how often the query must be updated.
 /// * **min_height** is used to set min height for query (by default = 0).
@@ -160,7 +150,6 @@ pub fn register_transfers_query(
     deps: DepsMut<InterchainQueries>,
     env: Env,
     connection_id: String,
-    zone_id: String,
     recipient: String,
     update_period: u64,
     min_height: Option<u128>,
@@ -192,7 +181,6 @@ pub fn register_transfers_query(
         deps,
         env,
         connection_id,
-        zone_id,
         QueryType::TX,
         vec![],
         query_data_json_encoded,

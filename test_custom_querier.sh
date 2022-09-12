@@ -23,10 +23,10 @@ echo $ICQ_CONTRACT_ADDRESS
 
 ${BIN} tx bank send demowallet1 ${ICQ_CONTRACT_ADDRESS} 10000stake --chain-id ${CHAINID} --home ${HOME} --node tcp://localhost:16657 --keyring-backend test -y --gas-prices 0.0025stake --broadcast-mode=block
 
-RES=$(${BIN} tx wasm execute $ICQ_CONTRACT_ADDRESS '{"register_balance_query":{"zone_id":"test-2","connection_id":"connection-0","addr":"neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh","denom":"stake","update_period":10}}' --from ${KEY}  -y --chain-id ${CHAINID} --output json --broadcast-mode=block --gas-prices 0.0025stake --gas 1000000 --keyring-backend test --home ${HOME} --node tcp://127.0.0.1:16657)
+RES=$(${BIN} tx wasm execute $ICQ_CONTRACT_ADDRESS '{"register_balance_query":{"connection_id":"connection-0","addr":"neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh","denom":"stake","update_period":10}}' --from ${KEY}  -y --chain-id ${CHAINID} --output json --broadcast-mode=block --gas-prices 0.0025stake --gas 1000000 --keyring-backend test --home ${HOME} --node tcp://127.0.0.1:16657)
 echo $RES
 
-RES=$(${BIN} tx wasm execute $ICQ_CONTRACT_ADDRESS '{"register_delegator_delegations_query":{"zone_id":"test-2","connection_id":"connection-0","delegator":"neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf", "validators": ["neutronvaloper1qnk2n4nlkpw9xfqntladh74w6ujtulwnqshepx"], "update_period":10}}' --from ${KEY}  -y --chain-id ${CHAINID} --output json --broadcast-mode=block --gas-prices 0.0025stake --gas 1000000 --keyring-backend test --home ${HOME} --node tcp://127.0.0.1:16657)
+RES=$(${BIN} tx wasm execute $ICQ_CONTRACT_ADDRESS '{"register_delegator_delegations_query":{"connection_id":"connection-0","delegator":"neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf", "validators": ["neutronvaloper1qnk2n4nlkpw9xfqntladh74w6ujtulwnqshepx"], "update_period":10}}' --from ${KEY}  -y --chain-id ${CHAINID} --output json --broadcast-mode=block --gas-prices 0.0025stake --gas 1000000 --keyring-backend test --home ${HOME} --node tcp://127.0.0.1:16657)
 echo $RES
 
 ${BIN} tx bank send demowallet2 neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh 10000stake --chain-id ${CHAINID2} --home ${HOME2} --node tcp://localhost:26657 --keyring-backend test -y --gas-prices 0.0025stake --broadcast-mode=block

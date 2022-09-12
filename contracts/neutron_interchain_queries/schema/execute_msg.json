@@ -14,8 +14,7 @@
             "addr",
             "connection_id",
             "denom",
-            "update_period",
-            "zone_id"
+            "update_period"
           ],
           "properties": {
             "addr": {
@@ -31,9 +30,6 @@
               "type": "integer",
               "format": "uint64",
               "minimum": 0.0
-            },
-            "zone_id": {
-              "type": "string"
             }
           }
         }
@@ -51,8 +47,7 @@
           "required": [
             "connection_id",
             "recipient",
-            "update_period",
-            "zone_id"
+            "update_period"
           ],
           "properties": {
             "connection_id": {
@@ -73,9 +68,6 @@
               "type": "integer",
               "format": "uint64",
               "minimum": 0.0
-            },
-            "zone_id": {
-              "type": "string"
             }
           }
         }
@@ -94,8 +86,7 @@
             "connection_id",
             "delegator",
             "update_period",
-            "validators",
-            "zone_id"
+            "validators"
           ],
           "properties": {
             "connection_id": {
@@ -114,9 +105,6 @@
               "items": {
                 "type": "string"
               }
-            },
-            "zone_id": {
-              "type": "string"
             }
           }
         }

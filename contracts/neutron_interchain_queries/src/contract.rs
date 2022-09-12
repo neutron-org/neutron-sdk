@@ -71,22 +71,12 @@ pub fn execute(
 ) -> NeutronResult<Response<NeutronMsg>> {
     match msg {
         ExecuteMsg::RegisterBalanceQuery {
-            zone_id,
             connection_id,
             addr,
             denom,
             update_period,
-        } => register_balance_query(
-            deps,
-            env,
-            connection_id,
-            zone_id,
-            addr,
-            denom,
-            update_period,
-        ),
+        } => register_balance_query(deps, env, connection_id, addr, denom, update_period),
         ExecuteMsg::RegisterDelegatorDelegationsQuery {
-            zone_id,
             connection_id,
             delegator,
             validators,
@@ -95,13 +85,11 @@ pub fn execute(
             deps,
             env,
             connection_id,
-            zone_id,
             delegator,
             validators,
             update_period,
         ),
         ExecuteMsg::RegisterTransfersQuery {
-            zone_id,
             connection_id,
             recipient,
             update_period,
@@ -110,7 +98,6 @@ pub fn execute(
             deps,
             env,
             connection_id,
-            zone_id,
             recipient,
             update_period,
             min_height,
