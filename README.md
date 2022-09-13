@@ -15,6 +15,7 @@ The Neutron SDK is contained inside `packages` folder and consists of the follow
 | Neutron Bindings                | https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron-sdk/src/bindings           | Structures and helper methods for interacting with Neutron blockchain                            |
 | Neutron Sudo                    | https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron-sdk/src/sudo               | Structures for Sudo Contract callbacks from Neutron blockchain                                   |
 | Neutron Errors                  | https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron-sdk/src/errors             | Structures and helpers for Neutron specific error and result types                               |
+| Neutron Proto Types             | https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron-sdk/src/proto_types        | Neutron specific protobuf types.
 
 
 ### Contracts

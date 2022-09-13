@@ -12,9 +12,9 @@
 
 pub mod bindings;
 mod errors;
-pub mod ibc;
 pub mod interchain_queries;
 pub mod interchain_txs;
+pub mod proto_types;
 pub mod sudo;
 
 pub use errors::error::{NeutronError, NeutronResult};

@@ -278,7 +278,7 @@ fn execute_clean_ack_results(deps: DepsMut) -> StdResult<Response<NeutronMsg>> {
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn sudo(deps: DepsMut, env: Env, msg: SudoMsg) -> StdResult<Response> {
     deps.api
-        .debug(format!("WASMDEBUG: sudo: received sud msg: {:?}", msg).as_str());
+        .debug(format!("WASMDEBUG: sudo: received sudo msg: {:?}", msg).as_str());
     match msg {
         SudoMsg::Response { request, data } => sudo_response(deps, request, data),
         SudoMsg::Error { request, details } => sudo_error(deps, request, details),

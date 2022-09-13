@@ -3,7 +3,7 @@ use cosmwasm_std::{
     MessageInfo, Reply, Response, StdError, StdResult, SubMsg,
 };
 use neutron_sdk::{
-    ibc::transfer::MsgTransferResponse,
+    proto_types::transfer::MsgTransferResponse,
     sudo::msg::{RequestPacket, SudoMsg},
 };
 use protobuf::Message as ProtoMessage;
@@ -90,10 +90,10 @@ fn prepare_sudo_payload(mut deps: DepsMut, _env: Env, msg: Reply) -> StdResult<R
             .into_result()
             .map_err(StdError::generic_err)?
             .data
-            .unwrap()
+            .ok_or_else(|| StdError::generic_err("no result"))?
             .as_slice(),
     )
-    .unwrap();
+    .map_err(|e| StdError::generic_err(format!("failed to parse response: {:?}", e)))?;
     let seq_id = resp.sequence_id;
     let channel_id = resp.channel;
     save_sudo_payload(deps.branch().storage, channel_id, seq_id, payload)?;
