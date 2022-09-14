@@ -168,3 +168,13 @@ pub struct MsgRegisterInterchainQueryResponse {
     /// **id** is an identifier of newly registered interchain query
     pub id: u64,
 }
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+/// MsgSubmitTxResponse defines the response for Msg/SubmitTx
+pub struct MsgSubmitTxResponse {
+    /// **sequence_id** is a channel's sequence_id for outgoing ibc packet. Unique per a channel.
+    pub sequence_id: u64,
+    /// **channel** is a src channel on neutron side trasaction was submitted from
+    pub channel: String,
+}
