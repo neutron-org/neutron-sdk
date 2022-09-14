@@ -1,5 +1,5 @@
 use cosmos_sdk_proto::cosmos::base::abci::v1beta1::{MsgData, TxMsgData};
-use cosmwasm_std::{Binary, Deps, Reply, StdError, StdResult};
+use cosmwasm_std::{Binary, StdError, StdResult};
 use prost::{DecodeError, Message};
 
 /// Decodes acknowledgement into Vec<MsgData> structure
@@ -23,47 +23,6 @@ pub fn decode_message_response<T: prost::Message + Default>(item: &Vec<u8>) -> S
         Err(e) => return Err(StdError::generic_err(format!("Can't decode item: {}", e))),
         Ok(data) => Ok(data),
     }
-}
-
-/// Parse sequence number from reply
-pub fn parse_sequence(deps: Deps, msg: Reply) -> StdResult<(String, u64)> {
-    let mut may_seq_id: Option<u64> = None;
-    let mut may_channel_id: Option<String> = None;
-    for attr in msg
-        .result
-        .into_result()
-        .map_err(StdError::generic_err)?
-        .events
-        .iter()
-        .find(|e| e.ty == "send_packet")
-        .ok_or_else(|| StdError::generic_err("failed to find packet_sequence attribute"))?
-        .attributes
-        .iter()
-    {
-        if attr.key == "packet_sequence" {
-            may_seq_id = Some(
-                str::parse(&attr.value).map_err(|_e| StdError::generic_err("parse int error"))?,
-            );
-        }
-        if attr.key == "packet_src_channel" {
-            may_channel_id = Some(attr.value.clone())
-        }
-        if let (Some(seq_id), Some(channel_id)) = (may_seq_id, &may_channel_id) {
-            deps.api.debug(
-                format!(
-                    "WASMDEBUG: parse_sequence: reply result: {:?} {:?}",
-                    channel_id, seq_id
-                )
-                .as_str(),
-            );
-            return Ok((channel_id.clone(), seq_id));
-        }
-    }
-
-    Err(StdError::generic_err(format!(
-        "failed to find channel_id or seq_id: {:?} {:?}",
-        may_channel_id, may_seq_id
-    )))
 }
 
 const CONTROLLER_PORT_PREFIX: &str = "icacontroller-";
