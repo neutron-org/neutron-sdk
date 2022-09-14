@@ -43,6 +43,9 @@ pub struct RegisteredQuery {
     /// The remote chain last block height when the query result was updated.
     #[serde(default)]
     pub last_submitted_result_remote_height: u64,
+    /// Amount of coins deposited for the query.
+    #[serde(default)]
+    pub deposit: u64,
 }
 
 /// InterchainQueryResult is a result data for a registered query
