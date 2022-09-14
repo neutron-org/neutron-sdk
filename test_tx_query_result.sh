@@ -36,5 +36,7 @@ RES=$(${BIN} tx wasm execute $QUERIES_CONTRACT_ADDRESS "{\"register_transfers_qu
 echo $RES
 
 # Issue a Send transaction that we will be querying for
-RES=$(${BIN} tx bank send ${KEY_2} ${TARGET_ADDRESS} 1000stake --from ${USERNAME_2} --gas 50000000 --gas-adjustment 1.4 --gas-prices 0.5stake --broadcast-mode block --chain-id ${CHAIN_ID_2} --keyring-backend test --home ${HOME_2} --node tcp://127.0.0.1:26657 -y)
+for i in `seq 0 100`; do
+RES=$(${BIN} tx bank send ${KEY_2} ${TARGET_ADDRESS} 1000stake --sequence ${i} --from ${USERNAME_2} --gas 50000000 --gas-adjustment 1.4 --gas-prices 0.5stake --broadcast-mode sync --chain-id ${CHAIN_ID_2} --keyring-backend test --home ${HOME_2} --node tcp://127.0.0.1:26657 -y)
 echo $RES
+done

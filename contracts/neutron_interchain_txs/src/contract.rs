@@ -27,11 +27,11 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
-use neutron_sdk::bindings::msg::NeutronMsg;
+use neutron_sdk::bindings::msg::{MsgSubmitTxResponse, NeutronMsg};
 use neutron_sdk::bindings::query::{InterchainQueries, QueryInterchainAccountAddressResponse};
 use neutron_sdk::bindings::types::ProtobufAny;
 use neutron_sdk::interchain_txs::helpers::{
-    get_port_id, parse_item, parse_response, parse_sequence,
+    decode_acknowledgement_response, decode_message_response, get_port_id,
 };
 use neutron_sdk::sudo::msg::{RequestPacket, SudoMsg};
 use neutron_sdk::NeutronResult;
@@ -205,6 +205,8 @@ fn execute_delegate(
         timeout.unwrap_or(DEFAULT_TIMEOUT_SECONDS),
     );
 
+    // We use a submessage here because we need the process message reply to save
+    // the outgoing IBC packet identifier for later.
     let submsg = msg_with_sudo_callback(
         deps.branch(),
         cosmos_msg,
@@ -278,6 +280,8 @@ fn execute_clean_ack_results(deps: DepsMut) -> StdResult<Response<NeutronMsg>> {
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn sudo(deps: DepsMut, env: Env, msg: SudoMsg) -> StdResult<Response> {
+    deps.api
+        .debug(format!("WASMDEBUG: sudo: received sudo msg: {:?}", msg).as_str());
     match msg {
         SudoMsg::Response { request, data } => sudo_response(deps, request, data),
         SudoMsg::Error { request, details } => sudo_error(deps, request, details),
@@ -347,7 +351,7 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
         .debug(format!("WASMDEBUG: sudo_response: sudo payload: {:?}", payload).as_str());
 
     // handle response
-    let parsed_data = parse_response(data)?;
+    let parsed_data = decode_acknowledgement_response(data)?;
 
     let mut item_types = vec![];
     for item in parsed_data {
@@ -355,7 +359,7 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
         item_types.push(item_type.to_string());
         match item_type {
             "/cosmos.staking.v1beta1.MsgUndelegate" => {
-                let out: MsgUndelegateResponse = parse_item(&item.data)?;
+                let out: MsgUndelegateResponse = decode_message_response(&item.data)?;
                 let completion_time = out
                     .completion_time
                     .ok_or_else(|| StdError::generic_err("failed to get completion time"))?;
@@ -363,7 +367,7 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
                     .debug(format!("Undelegation completion time: {:?}", completion_time).as_str());
             }
             "/cosmos.staking.v1beta1.MsgDelegate" => {
-                let _out: MsgDelegateResponse = parse_item(&item.data)?;
+                let _out: MsgDelegateResponse = decode_message_response(&item.data)?;
             }
             _ => {
                 deps.api.debug(
@@ -429,7 +433,19 @@ fn sudo_error(deps: DepsMut, request: RequestPacket, details: String) -> StdResu
 
 fn prepare_sudo_payload(mut deps: DepsMut, _env: Env, msg: Reply) -> StdResult<Response> {
     let payload = read_reply_payload(deps.storage)?;
-    let (channel_id, seq_id) = parse_sequence(deps.as_ref(), msg)?;
+    let resp: MsgSubmitTxResponse = serde_json_wasm::from_slice(
+        msg.result
+            .into_result()
+            .map_err(StdError::generic_err)?
+            .data
+            .ok_or_else(|| StdError::generic_err("no result"))?
+            .as_slice(),
+    )
+    .map_err(|e| StdError::generic_err(format!("failed to parse response: {:?}", e)))?;
+    deps.api
+        .debug(format!("WASMDEBUG: reply msg: {:?}", resp).as_str());
+    let seq_id = resp.sequence_id;
+    let channel_id = resp.channel;
     save_sudo_payload(deps.branch().storage, channel_id, seq_id, payload)?;
     Ok(Response::new())
 }
@@ -448,6 +464,8 @@ fn get_ica(
 
 #[entry_point]
 pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> StdResult<Response> {
+    deps.api
+        .debug(format!("WASMDEBUG: reply msg: {:?}", msg).as_str());
     match msg.id {
         SUDO_PAYLOAD_REPLY_ID => prepare_sudo_payload(deps, env, msg),
         _ => Err(StdError::generic_err(format!(
