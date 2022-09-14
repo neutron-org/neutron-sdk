@@ -10,6 +10,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::str::FromStr;
+
 use super::mock_querier::mock_dependencies as dependencies;
 use crate::contract::{execute, query, sudo_tx_query_result};
 use crate::msg::{ExecuteMsg, QueryMsg};
@@ -19,6 +21,7 @@ use cosmos_sdk_proto::cosmos::base::v1beta1::Coin as CosmosCoin;
 use cosmwasm_std::testing::{mock_env, mock_info, MockApi, MockStorage};
 use cosmwasm_std::{
     from_binary, to_binary, Addr, Binary, Coin, Delegation, Env, MessageInfo, OwnedDeps, StdError,
+    Uint128,
 };
 use neutron_sdk::bindings::query::{
     InterchainQueries, QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse,
@@ -61,7 +64,10 @@ fn build_registered_query_response(
             update_period: 0,
             last_submitted_result_local_height,
             last_submitted_result_remote_height: 0,
-            deposit: 100,
+            deposit: Vec::from([Coin {
+                denom: "stake".to_string(),
+                amount: Uint128::from_str("100").unwrap(),
+            }]),
         },
     };
     match param {
