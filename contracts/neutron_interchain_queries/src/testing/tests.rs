@@ -61,6 +61,7 @@ fn build_registered_query_response(
             update_period: 0,
             last_submitted_result_local_height,
             last_submitted_result_remote_height: 0,
+            deposit: 100,
         },
     };
     match param {
