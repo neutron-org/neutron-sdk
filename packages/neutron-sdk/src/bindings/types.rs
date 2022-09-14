@@ -1,7 +1,7 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use cosmwasm_std::Binary;
+use cosmwasm_std::{Binary, Coin};
 
 /// Encodes bytes slice into hex string
 pub fn encode_hex(bytes: &[u8]) -> String {
@@ -45,7 +45,7 @@ pub struct RegisteredQuery {
     pub last_submitted_result_remote_height: u64,
     /// Amount of coins deposited for the query.
     #[serde(default)]
-    pub deposit: u64,
+    pub deposit: Vec<Coin>,
 }
 
 /// InterchainQueryResult is a result data for a registered query
