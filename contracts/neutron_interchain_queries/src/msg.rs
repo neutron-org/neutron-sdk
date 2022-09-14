@@ -10,14 +10,12 @@ pub struct InstantiateMsg {}
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
     RegisterBalanceQuery {
-        zone_id: String,
         connection_id: String,
         update_period: u64,
         addr: String,
         denom: String,
     },
     RegisterTransfersQuery {
-        zone_id: String,
         connection_id: String,
         update_period: u64,
         recipient: String,
@@ -26,7 +24,6 @@ pub enum ExecuteMsg {
     RegisterDelegatorDelegationsQuery {
         delegator: String,
         validators: Vec<String>,
-        zone_id: String,
         connection_id: String,
         update_period: u64,
     },

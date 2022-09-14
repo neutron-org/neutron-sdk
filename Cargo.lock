@@ -359,6 +359,7 @@ dependencies = [
  "cosmwasm-std",
  "cw-storage-plus",
  "neutron-sdk",
+ "protobuf",
  "schemars",
  "serde",
 ]
@@ -408,6 +409,7 @@ dependencies = [
  "cosmwasm-std",
  "cw-storage-plus",
  "prost 0.11.0",
+ "protobuf",
  "schemars",
  "serde",
  "serde-json-wasm",

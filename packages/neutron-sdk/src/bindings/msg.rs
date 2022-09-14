@@ -46,9 +46,6 @@ pub enum NeutronMsg {
         /// **transactions_filter** is the filter for transaction search ICQ
         transactions_filter: String,
 
-        /// **zone_id** is used to identify the chain of interest
-        zone_id: String,
-
         /// **connection_id** is an IBC connection identifier between Neutron and remote chain
         connection_id: String,
 
@@ -115,14 +112,12 @@ impl NeutronMsg {
     /// * **query_type** is a query type identifier ('tx' or 'kv' for now)
     /// * **keys** is the KV-storage keys for which we want to get values from remote chain
     /// * **transactions_filter** is the filter for transaction search ICQ
-    /// * **zone_id** is used to identify the chain of interest
     /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
     /// * **update_period** is used to say how often the query must be updated.
     pub fn register_interchain_query(
         query_type: String,
         keys: Vec<KVKey>,
         transactions_filter: String,
-        zone_id: String,
         connection_id: String,
         update_period: u64,
     ) -> Self {
@@ -130,7 +125,6 @@ impl NeutronMsg {
             query_type,
             keys,
             transactions_filter,
-            zone_id,
             connection_id,
             update_period,
         }
@@ -173,4 +167,14 @@ impl CustomMsg for NeutronMsg {}
 pub struct MsgRegisterInterchainQueryResponse {
     /// **id** is an identifier of newly registered interchain query
     pub id: u64,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+/// MsgSubmitTxResponse defines the response for Msg/SubmitTx
+pub struct MsgSubmitTxResponse {
+    /// **sequence_id** is a channel's sequence_id for outgoing ibc packet. Unique per a channel.
+    pub sequence_id: u64,
+    /// **channel** is a src channel on neutron side trasaction was submitted from
+    pub channel: String,
 }
