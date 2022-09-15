@@ -12,19 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use std::collections::HashMap;
+use std::marker::PhantomData;
+
 use cosmwasm_std::testing::{MockApi, MockQuerier, MockStorage};
 use cosmwasm_std::{
     from_slice, Binary, Coin, ContractResult, CustomQuery, FullDelegation, OwnedDeps, Querier,
     QuerierResult, QueryRequest, SystemError, SystemResult, Uint128, Validator,
 };
-
-use neutron_sdk::bindings::query::InterchainQueries;
 use schemars::JsonSchema;
-
 use serde::{Deserialize, Serialize};
 
-use std::collections::HashMap;
-use std::marker::PhantomData;
+use neutron_sdk::bindings::query::InterchainQueries;
 
 pub const MOCK_CONTRACT_ADDR: &str = "cosmos2contract";
 
@@ -64,7 +63,7 @@ impl Querier for WasmMockQuerier {
                 return QuerierResult::Err(SystemError::InvalidRequest {
                     error: format!("Parsing query request: {}", e),
                     request: bin_request.into(),
-                })
+                });
             }
         };
         self.handle_query(&request)
@@ -84,7 +83,11 @@ impl WasmMockQuerier {
                     (*self.registred_queries.get(query_id).unwrap()).clone(),
                 ))
             }
-            QueryRequest::Custom(InterchainQueries::RegisteredInterchainQueries {}) => {
+            QueryRequest::Custom(InterchainQueries::RegisteredInterchainQueries {
+                owners: _owners,
+                connection_id: _connection_id,
+                pagination: _pagination,
+            }) => {
                 todo!()
             }
             QueryRequest::Custom(InterchainQueries::InterchainAccountAddress { .. }) => {
