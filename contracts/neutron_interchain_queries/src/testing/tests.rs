@@ -35,9 +35,7 @@ use neutron_sdk::interchain_queries::types::{
 };
 use prost::Message as ProstMessage;
 
-use neutron_sdk::interchain_queries::queries::{
-    DelegatorDelegationsResponse, QueryBalanceResponse,
-};
+use neutron_sdk::interchain_queries::queries::{BalanceResponse, DelegatorDelegationsResponse};
 use neutron_sdk::NeutronError;
 use schemars::_serde_json::to_string;
 
@@ -143,11 +141,11 @@ fn test_query_balance() {
         ),
     );
     let query_balance = QueryMsg::Balance { query_id: 1 };
-    let resp: QueryBalanceResponse =
+    let resp: BalanceResponse =
         from_binary(&query(deps.as_ref(), mock_env(), query_balance).unwrap()).unwrap();
     assert_eq!(
         resp,
-        QueryBalanceResponse {
+        BalanceResponse {
             last_submitted_local_height: 987,
             balances: Balances {
                 coins: vec![Coin::new(8278104u128, "uosmo")]
