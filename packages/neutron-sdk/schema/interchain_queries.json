@@ -117,6 +117,10 @@
     }
   ],
   "definitions": {
+    "Binary": {
+      "description": "Binary is a wrapper around Vec<u8> to add base64 de/serialization with serde. It also adds some helper methods to help encode inline.\n\nThis is only needed as serde-json-{core,wasm} has a horrible encoding for Vec<u8>",
+      "type": "string"
+    },
     "PageRequest": {
       "type": "object",
       "required": [
@@ -133,12 +137,11 @@
         },
         "key": {
           "description": "**key** is a value returned in PageResponse.next_key to begin querying the next page most efficiently. Only one of offset or key should be set.",
-          "type": "array",
-          "items": {
-            "type": "integer",
-            "format": "uint8",
-            "minimum": 0.0
-          }
+          "allOf": [
+            {
+              "$ref": "#/definitions/Binary"
+            }
+          ]
         },
         "limit": {
           "description": "**limit** is the total number of results to be returned in the result page. If left empty it will default to a value to be set by each app.",
