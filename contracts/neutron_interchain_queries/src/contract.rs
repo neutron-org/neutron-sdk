@@ -116,7 +116,7 @@ pub fn execute(
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> NeutronResult<Binary> {
     match msg {
-        //TODO: check if query.result.height is too old (for all interchain queries)
+        // TODO: check if query.result.height is too old (for all interchain queries)
         QueryMsg::Balance { query_id } => query_balance(deps, env, query_id),
         QueryMsg::GetDelegations { query_id } => query_delegations(deps, env, query_id),
         QueryMsg::GetRegisteredQuery { query_id } => query_registered_query(deps, query_id),
