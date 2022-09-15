@@ -92,7 +92,7 @@
       "additionalProperties": false
     },
     {
-      "description": "Query registered interchain query with a specific queiry_id",
+      "description": "Query registered interchain query with a specific query_id",
       "type": "object",
       "required": [
         "registered_interchain_query"
