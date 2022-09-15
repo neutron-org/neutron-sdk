@@ -1,4 +1,10 @@
+<<<<<<< HEAD
 6f872dd5ed2d23e9ea0b208882bec74273ccfdd0c7292e56a4248e96e2473eb0  ibc_transfer.wasm
 1bab53a378a1a6b8a65b295fd2a8263946a18e4976704322187c2fdceb0f2f71  neutron_interchain_queries.wasm
 5bc589a4dfcb35e80dae24a78d9ecbee332e20884e1168c69f808a120873bd0a  neutron_interchain_txs.wasm
+=======
+8baa0b0d76b3a755ee3775ac864032bdd51ff6d4c105380347f83e9d1e7626a7  ibc_transfer.wasm
+d3f3e0b4620c1da4a9bc1534ac8ddc6563c8389ec287ba36b04101ff3b1175ed  neutron_interchain_queries.wasm
+12aa52b591cc16cf26e153d66ec12361b59c60b507f3b0bd05bae261d4d36070  neutron_interchain_txs.wasm
+>>>>>>> Fix after rebase
 d01f85e09d1d63d2b0936bdf96742b1e01019b9aefefd3dd1b1903fd929216e5  reflect.wasm
