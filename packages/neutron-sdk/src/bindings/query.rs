@@ -1,5 +1,5 @@
 use crate::bindings::types::{InterchainQueryResult, RegisteredQuery};
-use cosmwasm_std::CustomQuery;
+use cosmwasm_std::{Binary, CustomQuery};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -47,7 +47,7 @@ pub struct PageRequest {
     /// **key** is a value returned in PageResponse.next_key to begin
     /// querying the next page most efficiently. Only one of offset or key
     /// should be set.
-    key: Vec<u8>,
+    key: Binary,
     /// **offset** is a numeric offset that can be used when key is unavailable.
     /// It is less efficient than using key. Only one of offset or key should
     /// be set.
