@@ -15,13 +15,13 @@ use crate::bindings::query::{
 };
 use crate::interchain_queries::types::{Balances, Delegations, KVReconstruct, QueryType};
 use crate::{NeutronError, NeutronResult};
-use cosmwasm_std::{to_binary, Binary, Deps, Env};
+use cosmwasm_std::{Deps, Env};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub struct QueryBalanceResponse {
+pub struct BalanceResponse {
     pub balances: Balances,
     pub last_submitted_local_height: u64,
 }
@@ -48,7 +48,7 @@ pub fn check_query_type(actual: String, expected: QueryType) -> NeutronResult<Qu
 }
 
 /// Queries registered query info
-fn get_registered_query(
+pub fn get_registered_query(
     deps: Deps<InterchainQueries>,
     interchain_query_id: u64,
 ) -> NeutronResult<QueryRegisteredQueryResponse> {
@@ -88,19 +88,19 @@ pub fn query_balance(
     deps: Deps<InterchainQueries>,
     _env: Env,
     registered_query_id: u64,
-) -> NeutronResult<Binary> {
+) -> NeutronResult<BalanceResponse> {
     let registered_query = get_registered_query(deps, registered_query_id)?;
 
     check_query_type(registered_query.registered_query.query_type, QueryType::KV)?;
 
     let balances: Balances = query_kv_result(deps, registered_query.registered_query.id)?;
 
-    Ok(to_binary(&QueryBalanceResponse {
+    Ok(BalanceResponse {
         last_submitted_local_height: registered_query
             .registered_query
             .last_submitted_result_local_height,
         balances,
-    })?)
+    })
 }
 
 /// Returns delegations of particular delegator on remote chain
@@ -109,25 +109,17 @@ pub fn query_delegations(
     deps: Deps<InterchainQueries>,
     _env: Env,
     registered_query_id: u64,
-) -> NeutronResult<Binary> {
+) -> NeutronResult<DelegatorDelegationsResponse> {
     let registered_query = get_registered_query(deps, registered_query_id)?;
 
     check_query_type(registered_query.registered_query.query_type, QueryType::KV)?;
 
     let delegations: Delegations = query_kv_result(deps, registered_query.registered_query.id)?;
 
-    Ok(to_binary(&DelegatorDelegationsResponse {
+    Ok(DelegatorDelegationsResponse {
         delegations: delegations.delegations,
         last_submitted_local_height: registered_query
             .registered_query
             .last_submitted_result_local_height,
-    })?)
-}
-
-/// Queries registered interchain query by **query_id**
-pub fn query_registered_query(
-    deps: Deps<InterchainQueries>,
-    query_id: u64,
-) -> NeutronResult<Binary> {
-    Ok(to_binary(&get_registered_query(deps, query_id)?)?)
+    })
 }

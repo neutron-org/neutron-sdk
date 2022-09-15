@@ -14,11 +14,9 @@
 
 use cosmos_sdk_proto::cosmos::bank::v1beta1::MsgSend;
 use cosmos_sdk_proto::cosmos::tx::v1beta1::{TxBody, TxRaw};
-#[cfg(not(feature = "library"))]
 use cosmwasm_std::{
-    entry_point, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult,
+    entry_point, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult,
 };
-use cosmwasm_std::{from_binary, to_binary};
 use prost::Message as ProstMessage;
 
 use crate::msg::{
@@ -31,12 +29,13 @@ use crate::state::{
 };
 use neutron_sdk::bindings::msg::NeutronMsg;
 use neutron_sdk::bindings::query::{InterchainQueries, QueryRegisteredQueryResponse};
+use neutron_sdk::bindings::types::KVKey;
 use neutron_sdk::interchain_queries::queries::{
-    query_balance, query_delegations, query_registered_query,
+    get_registered_query, query_balance, query_delegations,
 };
 use neutron_sdk::interchain_queries::{
-    register_balance_query, register_delegator_delegations_query, register_transfers_query,
-    remove_interchain_query, update_interchain_query,
+    register_balance_query_msg, register_delegator_delegations_query_msg,
+    register_transfers_query_msg,
 };
 use neutron_sdk::sudo::msg::SudoMsg;
 use neutron_sdk::{NeutronError, NeutronResult};
@@ -81,7 +80,7 @@ pub fn execute(
             delegator,
             validators,
             update_period,
-        } => register_delegator_delegations_query(
+        } => register_delegations_query(
             deps,
             env,
             connection_id,
@@ -113,13 +112,84 @@ pub fn execute(
     }
 }
 
+pub fn register_balance_query(
+    deps: DepsMut<InterchainQueries>,
+    env: Env,
+    connection_id: String,
+    addr: String,
+    denom: String,
+    update_period: u64,
+) -> NeutronResult<Response<NeutronMsg>> {
+    let msg = register_balance_query_msg(deps, env, connection_id, addr, denom, update_period)?;
+
+    Ok(Response::new().add_message(msg))
+}
+
+pub fn register_delegations_query(
+    deps: DepsMut<InterchainQueries>,
+    env: Env,
+    connection_id: String,
+    delegator: String,
+    validators: Vec<String>,
+    update_period: u64,
+) -> NeutronResult<Response<NeutronMsg>> {
+    let msg = register_delegator_delegations_query_msg(
+        deps,
+        env,
+        connection_id,
+        delegator,
+        validators,
+        update_period,
+    )?;
+
+    Ok(Response::new().add_message(msg))
+}
+
+pub fn register_transfers_query(
+    deps: DepsMut<InterchainQueries>,
+    env: Env,
+    connection_id: String,
+    recipient: String,
+    update_period: u64,
+    min_height: Option<u128>,
+) -> NeutronResult<Response<NeutronMsg>> {
+    let msg = register_transfers_query_msg(
+        deps,
+        env,
+        connection_id,
+        recipient,
+        update_period,
+        min_height,
+    )?;
+
+    Ok(Response::new().add_message(msg))
+}
+
+pub fn update_interchain_query(
+    query_id: u64,
+    new_keys: Option<Vec<KVKey>>,
+    new_update_period: Option<u64>,
+) -> NeutronResult<Response<NeutronMsg>> {
+    let update_msg = NeutronMsg::update_interchain_query(query_id, new_keys, new_update_period);
+    Ok(Response::new().add_message(update_msg))
+}
+
+pub fn remove_interchain_query(query_id: u64) -> NeutronResult<Response<NeutronMsg>> {
+    let remove_msg = NeutronMsg::remove_interchain_query(query_id);
+    Ok(Response::new().add_message(remove_msg))
+}
+
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> NeutronResult<Binary> {
     match msg {
         //TODO: check if query.result.height is too old (for all interchain queries)
-        QueryMsg::Balance { query_id } => query_balance(deps, env, query_id),
-        QueryMsg::GetDelegations { query_id } => query_delegations(deps, env, query_id),
-        QueryMsg::GetRegisteredQuery { query_id } => query_registered_query(deps, query_id),
+        QueryMsg::Balance { query_id } => Ok(to_binary(&query_balance(deps, env, query_id)?)?),
+        QueryMsg::GetDelegations { query_id } => {
+            Ok(to_binary(&query_delegations(deps, env, query_id)?)?)
+        }
+        QueryMsg::GetRegisteredQuery { query_id } => {
+            Ok(to_binary(&get_registered_query(deps, query_id)?)?)
+        }
         QueryMsg::GetRecipientTxs { recipient } => query_recipient_txs(deps, recipient),
         QueryMsg::GetTransfersAmount {} => query_transfers_amount(deps),
         QueryMsg::KvCallbackStats { query_id } => query_kv_callback_stats(deps, query_id),
@@ -185,7 +255,7 @@ pub fn sudo_tx_query_result(
 
     // Get the registered query by ID and retrieve the raw query string
     let registered_query: QueryRegisteredQueryResponse =
-        from_binary(&query_registered_query(deps.as_ref(), query_id)?)?;
+        get_registered_query(deps.as_ref(), query_id)?;
     let transactions_filter = registered_query.registered_query.transactions_filter;
 
     #[allow(clippy::match_single_binding)]
