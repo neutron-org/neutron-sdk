@@ -68,6 +68,7 @@ fn build_registered_query_response(
                 denom: "stake".to_string(),
                 amount: Uint128::from_str("100").unwrap(),
             }]),
+            submit_timeout: 0,
         },
     };
     match param {

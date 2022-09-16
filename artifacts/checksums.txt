@@ -4,7 +4,7 @@
 5bc589a4dfcb35e80dae24a78d9ecbee332e20884e1168c69f808a120873bd0a  neutron_interchain_txs.wasm
 =======
 8baa0b0d76b3a755ee3775ac864032bdd51ff6d4c105380347f83e9d1e7626a7  ibc_transfer.wasm
-d3f3e0b4620c1da4a9bc1534ac8ddc6563c8389ec287ba36b04101ff3b1175ed  neutron_interchain_queries.wasm
+e06399fe11c5ee9e8b80278dd63a279af2a4a0b993c1c51c09c748d73e455033  neutron_interchain_queries.wasm
 12aa52b591cc16cf26e153d66ec12361b59c60b507f3b0bd05bae261d4d36070  neutron_interchain_txs.wasm
 >>>>>>> Fix after rebase
 d01f85e09d1d63d2b0936bdf96742b1e01019b9aefefd3dd1b1903fd929216e5  reflect.wasm
