@@ -37,8 +37,6 @@ pub struct RegisteredQuery {
     pub connection_id: String,
     /// Parameter that defines how often the query must be updated.
     pub update_period: u64,
-    /// The local height when the event to update the query result was emitted last time.
-    pub last_emitted_height: u64,
     /// The local chain last block height when the query result was updated.
     #[serde(default)]
     pub last_submitted_result_local_height: u64,

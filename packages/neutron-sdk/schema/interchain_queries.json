@@ -67,13 +67,32 @@
       ],
       "properties": {
         "registered_interchain_queries": {
-          "type": "object"
+          "type": "object",
+          "required": [
+            "connection_id",
+            "owners",
+            "pagination"
+          ],
+          "properties": {
+            "connection_id": {
+              "type": "string"
+            },
+            "owners": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "pagination": {
+              "$ref": "#/definitions/PageRequest"
+            }
+          }
         }
       },
       "additionalProperties": false
     },
     {
-      "description": "Query registered interchain query with a specific queiry_id",
+      "description": "Query registered interchain query with a specific query_id",
       "type": "object",
       "required": [
         "registered_interchain_query"
@@ -96,5 +115,51 @@
       },
       "additionalProperties": false
     }
-  ]
+  ],
+  "definitions": {
+    "Binary": {
+      "description": "Binary is a wrapper around Vec<u8> to add base64 de/serialization with serde. It also adds some helper methods to help encode inline.\n\nThis is only needed as serde-json-{core,wasm} has a horrible encoding for Vec<u8>",
+      "type": "string"
+    },
+    "PageRequest": {
+      "type": "object",
+      "required": [
+        "count_total",
+        "key",
+        "limit",
+        "offset",
+        "reverse"
+      ],
+      "properties": {
+        "count_total": {
+          "description": "**count_total** is set to true  to indicate that the result set should include a count of the total number of items available for pagination in UIs. count_total is only respected when offset is used. It is ignored when key is set.",
+          "type": "boolean"
+        },
+        "key": {
+          "description": "**key** is a value returned in PageResponse.next_key to begin querying the next page most efficiently. Only one of offset or key should be set.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Binary"
+            }
+          ]
+        },
+        "limit": {
+          "description": "**limit** is the total number of results to be returned in the result page. If left empty it will default to a value to be set by each app.",
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        },
+        "offset": {
+          "description": "**offset** is a numeric offset that can be used when key is unavailable. It is less efficient than using key. Only one of offset or key should be set.",
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        },
+        "reverse": {
+          "description": "reverse is set to true if results are to be returned in the descending order.",
+          "type": "boolean"
+        }
+      }
+    }
+  }
 }
