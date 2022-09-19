@@ -3,7 +3,7 @@ use cosmwasm_std::{CosmosMsg, CustomMsg};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 /// A number of Custom messages that can call into the Neutron bindings
 pub enum NeutronMsg {
@@ -161,7 +161,7 @@ impl From<NeutronMsg> for CosmosMsg<NeutronMsg> {
 
 impl CustomMsg for NeutronMsg {}
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 /// Describes response structure for **RegisterInterchainQuery** msg
 pub struct MsgRegisterInterchainQueryResponse {
@@ -169,7 +169,7 @@ pub struct MsgRegisterInterchainQueryResponse {
     pub id: u64,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 /// MsgSubmitTxResponse defines the response for Msg/SubmitTx
 pub struct MsgSubmitTxResponse {

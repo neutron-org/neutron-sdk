@@ -2,7 +2,7 @@ use cosmwasm_std::Binary;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct RequestPacket {
     pub sequence: Option<u64>,
     pub source_port: Option<String>,
@@ -13,13 +13,13 @@ pub struct RequestPacket {
     pub timeout_height: Option<RequestPacketTimeoutHeight>,
     pub timeout_timestamp: Option<u64>,
 }
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct RequestPacketTimeoutHeight {
     pub revision_number: Option<u64>,
     pub revision_height: Option<u64>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum SudoMsg {
     Response {

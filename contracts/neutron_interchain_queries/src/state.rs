@@ -9,7 +9,7 @@ pub const RECIPIENT_TXS: Map<&Recipient, Vec<Transfer>> = Map::new("recipient_tx
 /// contains number of transfers to addresses observed by the contract.
 pub const TRANSFERS: Item<u64> = Item::new("transfers");
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct Transfer {
     pub recipient: String,
     pub sender: String,
@@ -20,7 +20,7 @@ pub struct Transfer {
 pub const INTEGRATION_TESTS_KV_MOCK: Item<IntegrationTestsKvMock> =
     Item::new("integration_tests_kv_mock");
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub enum IntegrationTestsKvMock {
     Enabled,
     Disabled,

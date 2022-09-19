@@ -6,12 +6,10 @@ use prost::{DecodeError, Message};
 pub fn decode_acknowledgement_response(data: Binary) -> StdResult<Vec<MsgData>> {
     let msg_data: Result<TxMsgData, DecodeError> = TxMsgData::decode(data.as_slice());
     match msg_data {
-        Err(e) => {
-            return Err(StdError::generic_err(format!(
-                "Can't decode response: {}",
-                e
-            )))
-        }
+        Err(e) => Err(StdError::generic_err(format!(
+            "Can't decode response: {}",
+            e
+        ))),
         Ok(msg) => Ok(msg.data),
     }
 }
@@ -20,7 +18,7 @@ pub fn decode_acknowledgement_response(data: Binary) -> StdResult<Vec<MsgData>> 
 pub fn decode_message_response<T: prost::Message + Default>(item: &Vec<u8>) -> StdResult<T> {
     let res = T::decode(item.as_slice());
     match res {
-        Err(e) => return Err(StdError::generic_err(format!("Can't decode item: {}", e))),
+        Err(e) => Err(StdError::generic_err(format!("Can't decode item: {}", e))),
         Ok(data) => Ok(data),
     }
 }
