@@ -43,7 +43,7 @@ RES=$(${BIN} tx bank send ${ADDRESS_2} ${ICA_ADDRESS} 10000stake --chain-id ${CH
 echo $RES
 
 #Delegate
-RES=$(${BIN} tx wasm execute $CONTRACT_ADDRESS "{\"delegate\": {\"interchain_account_id\": \"test\", \"validator\": \"${VAL2}\", \"amount\":\"5000\"}}" --from ${ADDRESS_1}  -y --chain-id ${CHAIN_ID_1} --output json --broadcast-mode=block --gas-prices 0.0025stake --gas 1000000 --keyring-backend test --home ${HOME_1} --node tcp://127.0.0.1:16657)
+RES=$(${BIN} tx wasm execute $CONTRACT_ADDRESS "{\"delegate\": {\"interchain_account_id\": \"test\", \"validator\": \"${VAL2}\", \"amount\":\"5000\",\"denom\":\"stake\"}}" --from ${ADDRESS_1}  -y --chain-id ${CHAIN_ID_1} --output json --broadcast-mode=block --gas-prices 0.0025stake --gas 1000000 --keyring-backend test --home ${HOME_1} --node tcp://127.0.0.1:16657)
 echo $RES
 
 sleep 7;
