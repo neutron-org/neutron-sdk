@@ -1,8 +1,11 @@
 use crate::errors::error::{NeutronError, NeutronResult};
 use crate::interchain_queries::types::{
-    AddressBytes, BALANCES_PREFIX, DELEGATION_KEY, MAX_ADDR_LEN, PARAMS_STORE_DELIMITER,
-    VALIDATORS_KEY,
+    AddressBytes, BALANCES_PREFIX, DELEGATION_KEY, FEE_POOL_KEY, MAX_ADDR_LEN,
+    PARAMS_STORE_DELIMITER, PROPOSALS_KEY_PREFIX, SUPPLY_PREFIX, VALIDATORS_KEY,
 };
+use cosmos_sdk_proto::cosmos::staking::v1beta1::Commission as ValidatorCommission;
+use cosmwasm_std::{Decimal, Uint128};
+use std::str::{from_utf8, FromStr};
 
 /// Creates KV key to get **module** param by **key**
 pub fn create_params_store_key(module: &str, key: &str) -> Vec<u8> {
@@ -65,6 +68,25 @@ pub fn create_account_denom_balance_key<AddrBytes: AsRef<[u8]>, S: AsRef<str>>(
     Ok(account_balance_key)
 }
 
+/// Creates **denom** balance Cosmos-SDK storage key for account with **addr**
+pub fn create_denom_balance_key<AddrBytes: AsRef<[u8]>, S: AsRef<str>>(
+    addr: AddrBytes,
+    denom: S,
+) -> NeutronResult<Vec<u8>> {
+    let mut account_balance_key = create_account_balances_prefix(addr)?;
+    account_balance_key.extend_from_slice(denom.as_ref().as_bytes());
+
+    Ok(account_balance_key)
+}
+
+/// Creates **denom** total Cosmos-SDK storage key for bank module
+pub fn create_total_denom_key<S: AsRef<str>>(denom: S) -> NeutronResult<Vec<u8>> {
+    let mut total_supply: Vec<u8> = vec![SUPPLY_PREFIX];
+    total_supply.extend_from_slice(denom.as_ref().as_bytes());
+
+    Ok(total_supply)
+}
+
 /// Creates delegations Cosmos-SDK storage prefix for delegator with **delegator_addr**
 /// https://github.com/cosmos/cosmos-sdk/blob/ad9e5620fb3445c716e9de45cfcdb56e8f1745bf/x/staking/types/keys.go#L181
 pub fn create_delegations_key<AddrBytes: AsRef<[u8]>>(
@@ -97,4 +119,71 @@ pub fn create_validator_key<AddrBytes: AsRef<[u8]>>(
     key.extend_from_slice(length_prefix(operator_address)?.as_slice());
 
     Ok(key)
+}
+
+/// Creates Cosmos-SDK distribution key for fee pool
+/// https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/distribution/types/keys.go#L46
+pub fn create_fee_pool_key() -> NeutronResult<Vec<u8>> {
+    let key: Vec<u8> = vec![FEE_POOL_KEY];
+
+    Ok(key)
+}
+
+/// Creates Cosmos-SDK governance key for proposal with specific id
+/// https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/gov/types/keys.go#L41
+pub fn create_gov_proposal_key(proposal_id: u64) -> NeutronResult<Vec<u8>> {
+    let mut key: Vec<u8> = vec![PROPOSALS_KEY_PREFIX];
+    key.extend_from_slice(proposal_id.to_be_bytes().as_slice());
+
+    Ok(key)
+}
+
+/// Returns validator max change rate
+pub fn get_max_change_rate(commission: &Option<ValidatorCommission>) -> Option<Decimal> {
+    let commission_rates = commission.as_ref().map(|v| v.commission_rates.as_ref())?;
+    commission_rates.map(|v| Decimal::from_str(v.max_change_rate.as_str()).unwrap_or_default())
+}
+
+/// Returns validator max rate
+pub fn get_max_rate(commission: &Option<ValidatorCommission>) -> Option<Decimal> {
+    let commission_rates = commission.as_ref().map(|v| v.commission_rates.as_ref())?;
+    commission_rates.map(|v| Decimal::from_str(v.max_rate.as_str()).unwrap_or_default())
+}
+
+/// Returns current validator rate
+pub fn get_rate(commission: &Option<ValidatorCommission>) -> Option<Decimal> {
+    let commission_rates = commission.as_ref().map(|v| v.commission_rates.as_ref())?;
+    commission_rates.map(|v| Decimal::from_str(v.rate.as_str()).unwrap_or_default())
+}
+
+/// Returns current validator rate
+pub fn get_update_time(commission: &Option<ValidatorCommission>) -> Option<u64> {
+    let commission_rates = commission.as_ref().map(|v| v.update_time.as_ref())?;
+    commission_rates.map(|v| v.seconds as u64)
+}
+
+/// Returns denom for total supply from StorageValue key
+pub fn get_total_supply_denom(denom: String) -> Option<String> {
+    let denom = base64::decode(denom).ok();
+    if let Some(denom) = denom {
+        return get_denom_value(denom);
+    }
+    None
+}
+
+fn get_denom_value(denom: Vec<u8>) -> Option<String> {
+    if denom.len() > 1 {
+        return from_utf8(&denom[1..]).ok().map(|d| d.to_string());
+    }
+
+    None
+}
+
+/// Returns total supply amount from StorageValue key
+pub fn get_total_supply_amount(amount: String) -> Option<Uint128> {
+    let amount = base64::decode(amount).ok();
+    if let Some(amount) = amount {
+        return from_utf8(&amount).ok().map(|a| Uint128::from_str(a).ok())?;
+    }
+    None
 }
