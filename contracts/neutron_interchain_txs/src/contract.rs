@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use cosmos_sdk_proto::cosmos::bank::v1beta1::{MsgSend, MsgSendResponse};
 use cosmos_sdk_proto::cosmos::base::v1beta1::Coin;
 use cosmos_sdk_proto::cosmos::staking::v1beta1::{
     MsgDelegate, MsgDelegateResponse, MsgUndelegate, MsgUndelegateResponse,
@@ -111,6 +112,21 @@ pub fn execute(
             timeout,
         ),
         ExecuteMsg::CleanAckResults {} => execute_clean_ack_results(deps),
+        ExecuteMsg::Send {
+            interchain_account_id,
+            recipient,
+            amount,
+            denom,
+            timeout,
+        } => execute_send(
+            deps,
+            env,
+            interchain_account_id,
+            recipient,
+            amount,
+            denom,
+            timeout,
+        ),
     }
 }
 
@@ -232,6 +248,55 @@ fn execute_delegate(
         SudoPayload {
             port_id: get_port_id(env.contract.address.as_str(), &interchain_account_id),
             message: "message".to_string(),
+        },
+    )?;
+
+    Ok(Response::default().add_submessages(vec![submsg]))
+}
+
+fn execute_send(
+    mut deps: DepsMut,
+    env: Env,
+    interchain_account_id: String,
+    recipient: String,
+    amount: String,
+    denom: String,
+    timeout: Option<u64>,
+) -> StdResult<Response<NeutronMsg>> {
+    let (sender, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
+    let send_msg = MsgSend {
+        amount: vec![Coin { denom, amount }],
+        from_address: sender,
+        to_address: recipient,
+    };
+    let mut buf = Vec::new();
+    buf.reserve(send_msg.encoded_len());
+
+    if let Err(e) = send_msg.encode(&mut buf) {
+        return Err(StdError::generic_err(format!("Encode error: {}", e)));
+    }
+
+    let any_msg = ProtobufAny {
+        type_url: "/cosmos.bank.v1beta1.MsgSend".to_string(),
+        value: Binary::from(buf),
+    };
+
+    let cosmos_msg = NeutronMsg::submit_tx(
+        connection_id,
+        interchain_account_id.clone(),
+        vec![any_msg],
+        "".to_string(),
+        timeout.unwrap_or(DEFAULT_TIMEOUT_SECONDS),
+    );
+
+    // We use a submessage here because we need the process message reply to save
+    // the outgoing IBC packet identifier for later.
+    let submsg = msg_with_sudo_callback(
+        deps.branch(),
+        cosmos_msg,
+        SudoPayload {
+            port_id: get_port_id(env.contract.address.as_str(), &interchain_account_id),
+            message: "send".to_string(),
         },
     )?;
 
@@ -389,6 +454,10 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
             "/cosmos.staking.v1beta1.MsgDelegate" => {
                 let _out: MsgDelegateResponse = decode_message_response(&item.data)?;
             }
+            "/cosmos.bank.v1beta1.MsgSend" => {
+                deps.api.debug("WASMDEBUG: sudo: MsgSendResponse received");
+                let _out: MsgSendResponse = decode_message_response(&item.data)?;
+            }
             _ => {
                 deps.api.debug(
                     format!(
@@ -480,7 +549,8 @@ fn get_ica(
     let key = get_port_id(env.contract.address.as_str(), interchain_account_id);
 
     INTERCHAIN_ACCOUNTS
-        .load(deps.storage, key)?
+        .load(deps.storage, key.clone())
+        .map_err(|_| StdError::generic_err(format!("{} ica not found", key)))?
         .ok_or_else(|| StdError::generic_err("Interchain account is not created yet"))
 }
 

@@ -46,5 +46,12 @@ pub enum ExecuteMsg {
         denom: String,
         timeout: Option<u64>,
     },
+    Send {
+        interchain_account_id: String,
+        recipient: String,
+        amount: String,
+        denom: String,
+        timeout: Option<u64>,
+    },
     CleanAckResults {},
 }

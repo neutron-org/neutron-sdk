@@ -113,6 +113,46 @@
     {
       "type": "object",
       "required": [
+        "send"
+      ],
+      "properties": {
+        "send": {
+          "type": "object",
+          "required": [
+            "amount",
+            "denom",
+            "interchain_account_id",
+            "recipient"
+          ],
+          "properties": {
+            "amount": {
+              "type": "string"
+            },
+            "denom": {
+              "type": "string"
+            },
+            "interchain_account_id": {
+              "type": "string"
+            },
+            "recipient": {
+              "type": "string"
+            },
+            "timeout": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
         "clean_ack_results"
       ],
       "properties": {
