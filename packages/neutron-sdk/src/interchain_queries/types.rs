@@ -94,7 +94,7 @@ impl Serialize for TransactionFilterValue {
     where
         S: Serializer,
     {
-        match &*self {
+        match self {
             TransactionFilterValue::String(v) => serializer.serialize_str(v),
             TransactionFilterValue::Int(v) => serializer.serialize_u128(*v),
         }
@@ -108,7 +108,7 @@ pub struct TransactionFilterItem {
     pub value: TransactionFilterValue,
 }
 
-#[derive(Serialize, Deserialize, Copy, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Copy, Clone, Debug, PartialEq, Eq, JsonSchema)]
 /// Describes possible interchain query types
 pub enum QueryType {
     #[serde(rename = "kv")]
