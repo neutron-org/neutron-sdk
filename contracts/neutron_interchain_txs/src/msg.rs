@@ -16,6 +16,7 @@ pub enum QueryMsg {
     // this query returns acknowledgement result after interchain transaction
     AcknowledgementResult {
         interchain_account_id: String,
+        sequence_id: u64,
     },
 }
 

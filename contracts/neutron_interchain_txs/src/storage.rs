@@ -18,7 +18,7 @@ pub const INTERCHAIN_ACCOUNTS: Map<String, Option<(String, String)>> =
     Map::new("interchain_accounts");
 
 // interchain transaction responses - ack/err/timeout state to query later
-pub const ACKNOWLEDGEMENT_RESULTS: Map<String, AcknowledgementResult> =
+pub const ACKNOWLEDGEMENT_RESULTS: Map<(String, u64), AcknowledgementResult> =
     Map::new("acknowledgement_results");
 
 /// Serves for storing acknowledgement calls for interchain transactions
