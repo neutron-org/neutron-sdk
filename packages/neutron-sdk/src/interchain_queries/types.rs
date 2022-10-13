@@ -1,4 +1,4 @@
-use crate::bindings::types::StorageValue;
+use crate::bindings::types::{KVKey, StorageValue};
 use crate::errors::error::NeutronResult;
 use crate::NeutronError;
 use cosmos_sdk_proto::cosmos::base::v1beta1::Coin as CosmosCoin;
@@ -140,6 +140,17 @@ impl Into<String> for QueryType {
             QueryType::TX => QUERY_TYPE_TX_VALUE.to_string(),
         }
     }
+}
+
+/// Describes possible interchain query types with a payload
+pub enum QueryPayload {
+    /// **kv** is an interchain query type to query KV values from remote chain
+    /// payload is kvkeys
+    KV(Vec<KVKey>),
+
+    /// **tx** is an interchain query type to query transactions from remote chain
+    /// payload is transactions filter
+    TX(String),
 }
 
 /// Bytes representations of Bech32 address

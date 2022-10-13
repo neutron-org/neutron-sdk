@@ -4,7 +4,7 @@ use cosmwasm_std::{
 };
 use neutron_sdk::{
     proto_types::transfer::MsgTransferResponse,
-    sudo::msg::{RequestPacket, SudoMsg},
+    sudo::msg::{RequestPacket, TransferSudoMsg},
 };
 use protobuf::Message as ProtoMessage;
 use schemars::JsonSchema;
@@ -159,11 +159,34 @@ fn execute_send(mut deps: DepsMut, to: String, amount: u128) -> StdResult<Respon
 }
 
 #[entry_point]
-pub fn sudo(deps: DepsMut, _env: Env, msg: SudoMsg) -> StdResult<Response> {
+pub fn sudo(deps: DepsMut, _env: Env, msg: TransferSudoMsg) -> StdResult<Response> {
     match msg {
-        SudoMsg::Response { request, data } => sudo_response(deps, request, data),
-        _ => todo!(),
+        TransferSudoMsg::Response { request, data } => sudo_response(deps, request, data),
+        TransferSudoMsg::Error { request, details } => sudo_error(deps, request, details),
+        TransferSudoMsg::Timeout { request } => sudo_timeout(deps, request),
     }
+}
+
+fn sudo_error(deps: DepsMut, req: RequestPacket, data: String) -> StdResult<Response> {
+    deps.api.debug(
+        format!(
+            "WASMDEBUG: sudo_error: sudo error received: {:?} {}",
+            req, data
+        )
+        .as_str(),
+    );
+    Ok(Response::new())
+}
+
+fn sudo_timeout(deps: DepsMut, req: RequestPacket) -> StdResult<Response> {
+    deps.api.debug(
+        format!(
+            "WASMDEBUG: sudo_timeout: sudo timeout ack received: {:?}",
+            req
+        )
+        .as_str(),
+    );
+    Ok(Response::new())
 }
 
 fn sudo_response(deps: DepsMut, req: RequestPacket, data: Binary) -> StdResult<Response> {

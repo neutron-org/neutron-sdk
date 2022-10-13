@@ -13,6 +13,8 @@ use crate::interchain_queries::types::{
 use cosmwasm_std::{Binary, DepsMut, Env, StdError};
 use schemars::_serde_json::to_string;
 
+use super::types::QueryPayload;
+
 #[allow(clippy::too_many_arguments)]
 /// Creates a message to register an Interchain Query with provided params
 fn register_interchain_query_msg(
@@ -24,14 +26,18 @@ fn register_interchain_query_msg(
     transactions_filter: String,
     update_period: u64,
 ) -> NeutronResult<NeutronMsg> {
-    let register_msg = NeutronMsg::register_interchain_query(
-        query_type.into(),
-        kv_keys,
-        transactions_filter,
-        connection_id,
-        update_period,
-    );
-    Ok(register_msg)
+    match query_type {
+        QueryType::KV => Ok(NeutronMsg::register_interchain_query(
+            QueryPayload::KV(kv_keys),
+            connection_id,
+            update_period,
+        )),
+        QueryType::TX => Ok(NeutronMsg::register_interchain_query(
+            QueryPayload::TX(transactions_filter),
+            connection_id,
+            update_period,
+        )),
+    }
 }
 
 /// Creates a message to register an Interchain Query to get balance of account on remote chain for particular denom
