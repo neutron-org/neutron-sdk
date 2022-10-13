@@ -120,18 +120,6 @@ pub enum QueryType {
     TX,
 }
 
-impl QueryType {
-    /// Tries to parse query type from string
-    /// Returns **None** if string is invalid query type
-    pub fn try_from_str(s: &str) -> Option<QueryType> {
-        match s {
-            QUERY_TYPE_KV_VALUE => Some(QueryType::KV),
-            QUERY_TYPE_TX_VALUE => Some(QueryType::TX),
-            _ => None,
-        }
-    }
-}
-
 #[allow(clippy::from_over_into)]
 impl Into<String> for QueryType {
     fn into(self) -> String {
