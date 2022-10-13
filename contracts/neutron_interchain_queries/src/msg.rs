@@ -35,6 +35,9 @@ pub enum ExecuteMsg {
     RemoveInterchainQuery {
         query_id: u64,
     },
+    UpdateFakeLoopLimit {
+        new_fake_loop_limit: u64,
+    },
     /// Used only in integration tests framework to simulate failures.
     /// After executing this message, contract will attempt to alter state,
     /// zero out kv query statistics and then fail, all of this happening

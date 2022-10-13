@@ -24,8 +24,8 @@ use crate::msg::{
     KvCallbackStatsResponse, MigrateMsg, QueryMsg,
 };
 use crate::state::{
-    IntegrationTestsKvMock, Transfer, INTEGRATION_TESTS_KV_MOCK, KV_CALLBACK_STATS, RECIPIENT_TXS,
-    TRANSFERS,
+    IntegrationTestsKvMock, Transfer, FAKE_LOOP_LIMIT, INTEGRATION_TESTS_KV_MOCK,
+    KV_CALLBACK_STATS, RECIPIENT_TXS, TRANSFERS,
 };
 use neutron_sdk::bindings::msg::NeutronMsg;
 use neutron_sdk::bindings::query::{InterchainQueries, QueryRegisteredQueryResponse};
@@ -52,12 +52,13 @@ const MAX_ALLOWED_TRANSFER: u64 = 20000;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
-    _deps: DepsMut,
+    deps: DepsMut,
     _env: Env,
     _info: MessageInfo,
     _msg: InstantiateMsg,
 ) -> NeutronResult<Response> {
     //TODO
+    FAKE_LOOP_LIMIT.save(deps.storage, &0)?;
     Ok(Response::default())
 }
 
@@ -109,7 +110,18 @@ pub fn execute(
         ExecuteMsg::RemoveInterchainQuery { query_id } => remove_interchain_query(query_id),
         ExecuteMsg::IntegrationTestsSetKvQueryMock {} => set_kv_query_mock(deps),
         ExecuteMsg::IntegrationTestsUnsetKvQueryMock {} => unset_kv_query_mock(deps),
+        ExecuteMsg::UpdateFakeLoopLimit {
+            new_fake_loop_limit,
+        } => update_fake_loop_limit(deps, new_fake_loop_limit),
     }
+}
+
+pub fn update_fake_loop_limit(
+    deps: DepsMut<InterchainQueries>,
+    new_fake_loop_limit: u64,
+) -> NeutronResult<Response<NeutronMsg>> {
+    FAKE_LOOP_LIMIT.save(deps.storage, &new_fake_loop_limit)?;
+    Ok(Response::default())
 }
 
 pub fn register_balance_query(
@@ -252,6 +264,16 @@ pub fn sudo_tx_query_result(
     // Decode the transaction data
     let tx: TxRaw = TxRaw::decode(data.as_slice())?;
     let body: TxBody = TxBody::decode(tx.body_bytes.as_slice())?;
+
+    let mut fake_loop_limit = FAKE_LOOP_LIMIT.load(deps.storage).unwrap_or(0);
+
+    while fake_loop_limit > 0 {
+        fake_loop_limit -= 1;
+        let fake_tx: TxRaw = TxRaw::decode(data.as_slice())?;
+        let fake_body: TxBody = TxBody::decode(tx.body_bytes.as_slice())?;
+        deps.api
+            .debug(format!("WASMDEBUG: fake look: {:?} {:?}", fake_tx, fake_body).as_str());
+    }
 
     // Get the registered query by ID and retrieve the raw query string
     let registered_query: QueryRegisteredQueryResponse =

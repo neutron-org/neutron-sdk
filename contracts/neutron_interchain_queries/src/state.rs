@@ -8,6 +8,8 @@ pub type Recipient = str;
 pub const RECIPIENT_TXS: Map<&Recipient, Vec<Transfer>> = Map::new("recipient_txs");
 /// contains number of transfers to addresses observed by the contract.
 pub const TRANSFERS: Item<u64> = Item::new("transfers");
+/// contains number of fake loops for tx query result to consume more gas
+pub const FAKE_LOOP_LIMIT: Item<u64> = Item::new("fake_loop_limit");
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct Transfer {

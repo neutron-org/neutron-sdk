@@ -173,6 +173,28 @@
       "additionalProperties": false
     },
     {
+      "type": "object",
+      "required": [
+        "update_fake_loop_limit"
+      ],
+      "properties": {
+        "update_fake_loop_limit": {
+          "type": "object",
+          "required": [
+            "new_fake_loop_limit"
+          ],
+          "properties": {
+            "new_fake_loop_limit": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
       "description": "Used only in integration tests framework to simulate failures. After executing this message, contract will attempt to alter state, zero out kv query statistics and then fail, all of this happening in sudo kv callback handler.",
       "type": "object",
       "required": [
