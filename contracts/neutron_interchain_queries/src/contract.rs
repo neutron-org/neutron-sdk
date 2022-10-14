@@ -191,7 +191,7 @@ pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> NeutronR
             Ok(to_binary(&get_registered_query(deps, query_id)?)?)
         }
         QueryMsg::GetRecipientTxs { recipient } => query_recipient_txs(deps, recipient),
-        QueryMsg::GetTransfersAmount {} => query_transfers_amount(deps),
+        QueryMsg::GetTransfersNumber {} => query_transfers_number(deps),
         QueryMsg::KvCallbackStats { query_id } => query_kv_callback_stats(deps, query_id),
     }
 }
@@ -203,11 +203,10 @@ fn query_recipient_txs(deps: Deps<InterchainQueries>, recipient: String) -> Neut
     Ok(to_binary(&GetRecipientTxsResponse { transfers: txs })?)
 }
 
-fn query_transfers_amount(deps: Deps<InterchainQueries>) -> NeutronResult<Binary> {
-    let transfers_amount = TRANSFERS.load(deps.storage).unwrap_or_default();
-    Ok(to_binary(&GetTransfersAmountResponse {
-        amount: transfers_amount,
-    })?)
+/// Returns the number of transfers made on remote chain and queried with ICQ
+fn query_transfers_number(deps: Deps<InterchainQueries>) -> NeutronResult<Binary> {
+    let transfers_number = TRANSFERS.load(deps.storage).unwrap_or_default();
+    Ok(to_binary(&GetTransfersAmountResponse { transfers_number })?)
 }
 
 /// Returns block height of last KV query callback execution
