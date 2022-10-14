@@ -51,7 +51,7 @@ pub enum SudoMsg {
 }
 
 /// TransferSudoMsg is a sudo response payload for a native ibc transfer
-/// SudoMsg for ibc transfer has fewer methods then SudoMsg for ica txs
+/// SudoMsg for ibc transfer has fewer methods than SudoMsg for ica txs
 /// so we describe standalone type to not confuse users with useless variants
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
