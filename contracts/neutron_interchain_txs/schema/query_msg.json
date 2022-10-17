@@ -72,6 +72,18 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "errors_queue"
+      ],
+      "properties": {
+        "errors_queue": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
     }
   ]
 }

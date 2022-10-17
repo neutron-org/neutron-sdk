@@ -43,7 +43,7 @@ neutron-sdk = { path = "../../packages/neutron-sdk", default-features = false, v
 base64 = "0.13.0"
 protobuf = { version = "3.2.0", features = ["with-bytes"] }
 prost = "0.11"
-prost-types = "0.10"
+prost-types = "0.11"
 bech32 = "0.9.0"
 thiserror = { version = "1.0" }
 
