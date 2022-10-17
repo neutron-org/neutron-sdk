@@ -40,6 +40,9 @@ pub fn execute(deps: DepsMut, _env: Env, _: MessageInfo, msg: ExecuteMsg) -> Std
     deps.api
         .debug(format!("WASMDEBUG: execute: received msg: {:?}", msg).as_str());
     match msg {
+        // NOTE: this is an example contract that shows how to make IBC transfers!
+        // Please add necessary authorization or other protection mechanisms
+        // if you intend to send funds over IBC
         ExecuteMsg::Send { to, amount } => execute_send(deps, to, amount),
     }
 }
