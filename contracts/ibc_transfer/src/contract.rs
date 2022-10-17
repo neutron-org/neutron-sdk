@@ -32,7 +32,12 @@ pub fn instantiate(
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
-    Send { to: String, amount: u128 },
+    Send {
+        channel: String,
+        to: String,
+        denom: String,
+        amount: u128,
+    },
 }
 
 #[entry_point]
@@ -43,7 +48,12 @@ pub fn execute(deps: DepsMut, _env: Env, _: MessageInfo, msg: ExecuteMsg) -> Std
         // NOTE: this is an example contract that shows how to make IBC transfers!
         // Please add necessary authorization or other protection mechanisms
         // if you intend to send funds over IBC
-        ExecuteMsg::Send { to, amount } => execute_send(deps, to, amount),
+        ExecuteMsg::Send {
+            channel,
+            to,
+            denom,
+            amount,
+        } => execute_send(deps, channel, to, denom, amount),
     }
 }
 
@@ -114,11 +124,17 @@ pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> StdResult<Response> {
     }
 }
 
-fn execute_send(mut deps: DepsMut, to: String, amount: u128) -> StdResult<Response> {
-    let coin1 = coin(amount, "stake");
+fn execute_send(
+    mut deps: DepsMut,
+    channel: String,
+    to: String,
+    denom: String,
+    amount: u128,
+) -> StdResult<Response> {
+    let coin1 = coin(amount, denom.clone());
     let msg1: CosmosMsg = CosmosMsg::Ibc(IbcMsg::Transfer {
         // transfer channel
-        channel_id: "channel-0".to_string(),
+        channel_id: channel.clone(),
         // "to" is an address on the counterpart chain
         to_address: to.clone(),
         amount: coin1,
@@ -127,10 +143,10 @@ fn execute_send(mut deps: DepsMut, to: String, amount: u128) -> StdResult<Respon
             height: 10000000,
         }),
     });
-    let coin2 = coin(2 * amount, "stake");
+    let coin2 = coin(2 * amount, denom);
     let msg2: CosmosMsg = CosmosMsg::Ibc(IbcMsg::Transfer {
         // transfer channel
-        channel_id: "channel-0".to_string(),
+        channel_id: channel,
         // "to" is an address on the counterpart chain
         to_address: to,
         amount: coin2,
