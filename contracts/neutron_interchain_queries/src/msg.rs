@@ -36,6 +36,18 @@ pub enum ExecuteMsg {
         query_id: u64,
     },
     /// Used only in integration tests framework to simulate failures.
+    IntegrationTestsRegisterQueryEmptyKeys {
+        connection_id: String,
+    },
+    /// Used only in integration tests framework to simulate failures.
+    IntegrationTestsRegisterQueryEmptyPath {
+        connection_id: String,
+    },
+    /// Used only in integration tests framework to simulate failures.
+    IntegrationTestsRegisterQueryEmptyId {
+        connection_id: String,
+    },
+    /// Used only in integration tests framework to simulate failures.
     /// After executing this message, contract will attempt to alter state,
     /// zero out kv query statistics and then fail, all of this happening
     /// in sudo kv callback handler.

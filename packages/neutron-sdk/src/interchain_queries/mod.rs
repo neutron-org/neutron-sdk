@@ -14,7 +14,7 @@
 
 pub mod helpers;
 pub mod queries;
-mod register_queries;
+pub mod register_queries;
 pub mod types;
 
 pub use register_queries::{

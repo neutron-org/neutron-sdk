@@ -15,7 +15,7 @@ use schemars::_serde_json::to_string;
 
 #[allow(clippy::too_many_arguments)]
 /// Creates a message to register an Interchain Query with provided params
-fn register_interchain_query_msg(
+pub fn register_interchain_query_msg(
     _deps: DepsMut<InterchainQueries>,
     _env: Env,
     connection_id: String,
