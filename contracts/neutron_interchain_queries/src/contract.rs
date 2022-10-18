@@ -49,6 +49,7 @@ use serde_json_wasm;
 
 /// defines the incoming transfers limit to make a case of failed callback possible.
 const MAX_ALLOWED_TRANSFER: u64 = 20000;
+const MAX_ALLOWED_MESSAGES: usize = 20;
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -308,7 +309,11 @@ fn recipient_deposits_from_tx_body(
     recipient: &str,
 ) -> NeutronResult<Vec<Transfer>> {
     let mut deposits: Vec<Transfer> = vec![];
-    for msg in tx_body.messages {
+    // Only handle up to MAX_ALLOWED_MESSAGES messages, everything else
+    // will be ignored to prevent 'out of gas' conditions.
+    // Note: in real contracts you will have to somehow save ignored
+    // data in order to handle it later.
+    for msg in tx_body.messages.iter().take(MAX_ALLOWED_MESSAGES) {
         // Skip all messages in this transaction that are not Send messages.
         if msg.type_url != *COSMOS_SDK_TRANSFER_MSG_URL.to_string() {
             continue;
