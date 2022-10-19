@@ -15,7 +15,7 @@ use crate::state::{
     IBC_SUDO_ID_RANGE_END, IBC_SUDO_ID_RANGE_START,
 };
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct InstantiateMsg {}
 
 #[entry_point]
@@ -29,10 +29,15 @@ pub fn instantiate(
     Ok(Response::default())
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
-    Send { to: String, amount: u128 },
+    Send {
+        channel: String,
+        to: String,
+        denom: String,
+        amount: u128,
+    },
 }
 
 #[entry_point]
@@ -40,17 +45,25 @@ pub fn execute(deps: DepsMut, _env: Env, _: MessageInfo, msg: ExecuteMsg) -> Std
     deps.api
         .debug(format!("WASMDEBUG: execute: received msg: {:?}", msg).as_str());
     match msg {
-        ExecuteMsg::Send { to, amount } => execute_send(deps, to, amount),
+        // NOTE: this is an example contract that shows how to make IBC transfers!
+        // Please add necessary authorization or other protection mechanisms
+        // if you intend to send funds over IBC
+        ExecuteMsg::Send {
+            channel,
+            to,
+            denom,
+            amount,
+        } => execute_send(deps, channel, to, denom, amount),
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct Type1 {
     pub message: String,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct Type2 {
     pub data: String,
@@ -111,11 +124,17 @@ pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> StdResult<Response> {
     }
 }
 
-fn execute_send(mut deps: DepsMut, to: String, amount: u128) -> StdResult<Response> {
-    let coin1 = coin(amount, "stake");
+fn execute_send(
+    mut deps: DepsMut,
+    channel: String,
+    to: String,
+    denom: String,
+    amount: u128,
+) -> StdResult<Response> {
+    let coin1 = coin(amount, denom.clone());
     let msg1: CosmosMsg = CosmosMsg::Ibc(IbcMsg::Transfer {
         // transfer channel
-        channel_id: "channel-0".to_string(),
+        channel_id: channel.clone(),
         // "to" is an address on the counterpart chain
         to_address: to.clone(),
         amount: coin1,
@@ -124,10 +143,10 @@ fn execute_send(mut deps: DepsMut, to: String, amount: u128) -> StdResult<Respon
             height: 10000000,
         }),
     });
-    let coin2 = coin(2 * amount, "stake");
+    let coin2 = coin(2 * amount, denom);
     let msg2: CosmosMsg = CosmosMsg::Ibc(IbcMsg::Transfer {
         // transfer channel
-        channel_id: "channel-0".to_string(),
+        channel_id: channel,
         // "to" is an address on the counterpart chain
         to_address: to,
         amount: coin2,

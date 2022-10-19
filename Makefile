@@ -1,4 +1,4 @@
-.PHONY: schema test clippy proto-gen build fmt
+.PHONY: schema test clippy proto-gen build fmt compile check_contracts
 
 schema:
 	@find contracts/* -maxdepth 0 -type d \( ! -name . \) -exec bash -c "cd '{}' && cargo schema" \;
@@ -16,6 +16,11 @@ fmt:
 build_proto:
 	@./build_proto.sh
 
-build: build_proto schema clippy test fmt
+compile:
 	@./build_release.sh
-	@./check_contracts.sh
+
+check_contracts:
+	@cargo install cosmwasm-check
+	@cosmwasm-check --available-capabilities iterator,staking,stargate,neutron artifacts/*.wasm
+
+build: build_proto schema clippy test fmt compile check_contracts

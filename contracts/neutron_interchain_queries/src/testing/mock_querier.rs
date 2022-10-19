@@ -27,7 +27,7 @@ use neutron_sdk::bindings::query::InterchainQueries;
 
 pub const MOCK_CONTRACT_ADDR: &str = "cosmos2contract";
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct CustomQueryWrapper {}
 

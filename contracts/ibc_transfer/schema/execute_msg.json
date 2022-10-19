@@ -12,6 +12,8 @@
           "type": "object",
           "required": [
             "amount",
+            "channel",
+            "denom",
             "to"
           ],
           "properties": {
@@ -19,6 +21,12 @@
               "type": "integer",
               "format": "uint128",
               "minimum": 0.0
+            },
+            "channel": {
+              "type": "string"
+            },
+            "denom": {
+              "type": "string"
             },
             "to": {
               "type": "string"
