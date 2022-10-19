@@ -166,7 +166,7 @@ pub trait KVReconstruct: Sized {
     fn reconstruct(kvs: &[StorageValue]) -> NeutronResult<Self>;
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 /// A structure that can be reconstructed from **StorageValues**'s for the **Balance Interchain Query**.
 /// Contains coins that are held by some account on remote chain.
 pub struct Balances {
@@ -187,7 +187,7 @@ impl KVReconstruct for Balances {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 /// A structure that can be reconstructed from **StorageValues**'s for the **Delegator Delegation Interchain Query**.
 /// Contains delegations which some delegator has on remote chain.
 pub struct Delegations {
