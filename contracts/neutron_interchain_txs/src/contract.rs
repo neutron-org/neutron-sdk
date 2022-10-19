@@ -84,14 +84,32 @@ pub fn execute(
             validator,
             interchain_account_id,
             amount,
+            denom,
             timeout,
-        } => execute_delegate(deps, env, interchain_account_id, validator, amount, timeout),
+        } => execute_delegate(
+            deps,
+            env,
+            interchain_account_id,
+            validator,
+            amount,
+            denom,
+            timeout,
+        ),
         ExecuteMsg::Undelegate {
             validator,
             interchain_account_id,
             amount,
+            denom,
             timeout,
-        } => execute_undelegate(deps, env, interchain_account_id, validator, amount, timeout),
+        } => execute_undelegate(
+            deps,
+            env,
+            interchain_account_id,
+            validator,
+            amount,
+            denom,
+            timeout,
+        ),
         ExecuteMsg::CleanAckResults {} => execute_clean_ack_results(deps),
     }
 }
@@ -174,6 +192,7 @@ fn execute_delegate(
     interchain_account_id: String,
     validator: String,
     amount: u128,
+    denom: String,
     timeout: Option<u64>,
 ) -> StdResult<Response<NeutronMsg>> {
     let (delegator, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
@@ -181,7 +200,7 @@ fn execute_delegate(
         delegator_address: delegator,
         validator_address: validator,
         amount: Some(Coin {
-            denom: "stake".to_string(),
+            denom,
             amount: amount.to_string(),
         }),
     };
@@ -225,6 +244,7 @@ fn execute_undelegate(
     interchain_account_id: String,
     validator: String,
     amount: u128,
+    denom: String,
     timeout: Option<u64>,
 ) -> StdResult<Response<NeutronMsg>> {
     let (delegator, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
@@ -232,7 +252,7 @@ fn execute_undelegate(
         delegator_address: delegator,
         validator_address: validator,
         amount: Some(Coin {
-            denom: "stake".to_string(),
+            denom,
             amount: amount.to_string(),
         }),
     };
@@ -414,6 +434,8 @@ fn sudo_timeout(deps: DepsMut, _env: Env, request: RequestPacket) -> StdResult<R
 fn sudo_error(deps: DepsMut, request: RequestPacket, details: String) -> StdResult<Response> {
     deps.api
         .debug(format!("WASMDEBUG: sudo error: {}", details).as_str());
+    deps.api
+        .debug(format!("WASMDEBUG: request packet: {:?}", request).as_str());
     let seq_id = request
         .sequence
         .ok_or_else(|| StdError::generic_err("sequence not found"))?;
