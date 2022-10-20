@@ -20,7 +20,7 @@ pub fn decode_hex(s: &str) -> Option<Vec<u8>> {
         .collect()
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct RegisteredQuery {
     /// The unique id of the registered query.
