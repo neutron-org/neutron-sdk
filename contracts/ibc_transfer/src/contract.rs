@@ -2,6 +2,7 @@ use cosmwasm_std::{
     coin, entry_point, Binary, CosmosMsg, Deps, DepsMut, Env, IbcMsg, IbcTimeout, IbcTimeoutBlock,
     MessageInfo, Reply, Response, StdError, StdResult, SubMsg,
 };
+use cw2::set_contract_version;
 use neutron_sdk::{
     proto_types::transfer::MsgTransferResponse,
     sudo::msg::{RequestPacket, TransferSudoMsg},
@@ -15,6 +16,9 @@ use crate::state::{
     IBC_SUDO_ID_RANGE_END, IBC_SUDO_ID_RANGE_START,
 };
 
+const CONTRACT_NAME: &str = concat!("crates.io:neutron-contracts__", env!("CARGO_PKG_NAME"));
+const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct InstantiateMsg {}
 
@@ -25,14 +29,20 @@ pub fn instantiate(
     _info: MessageInfo,
     _msg: InstantiateMsg,
 ) -> StdResult<Response> {
-    deps.api.debug("WASMDEBUG: Instantiate");
+    deps.api.debug("WASMDEBUG: instantiate");
+    set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
     Ok(Response::default())
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
-    Send { to: String, amount: u128 },
+    Send {
+        channel: String,
+        to: String,
+        denom: String,
+        amount: u128,
+    },
 }
 
 #[entry_point]
@@ -40,7 +50,15 @@ pub fn execute(deps: DepsMut, _env: Env, _: MessageInfo, msg: ExecuteMsg) -> Std
     deps.api
         .debug(format!("WASMDEBUG: execute: received msg: {:?}", msg).as_str());
     match msg {
-        ExecuteMsg::Send { to, amount } => execute_send(deps, to, amount),
+        // NOTE: this is an example contract that shows how to make IBC transfers!
+        // Please add necessary authorization or other protection mechanisms
+        // if you intend to send funds over IBC
+        ExecuteMsg::Send {
+            channel,
+            to,
+            denom,
+            amount,
+        } => execute_send(deps, channel, to, denom, amount),
     }
 }
 
@@ -111,11 +129,17 @@ pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> StdResult<Response> {
     }
 }
 
-fn execute_send(mut deps: DepsMut, to: String, amount: u128) -> StdResult<Response> {
-    let coin1 = coin(amount, "stake");
+fn execute_send(
+    mut deps: DepsMut,
+    channel: String,
+    to: String,
+    denom: String,
+    amount: u128,
+) -> StdResult<Response> {
+    let coin1 = coin(amount, denom.clone());
     let msg1: CosmosMsg = CosmosMsg::Ibc(IbcMsg::Transfer {
         // transfer channel
-        channel_id: "channel-0".to_string(),
+        channel_id: channel.clone(),
         // "to" is an address on the counterpart chain
         to_address: to.clone(),
         amount: coin1,
@@ -124,10 +148,10 @@ fn execute_send(mut deps: DepsMut, to: String, amount: u128) -> StdResult<Respon
             height: 10000000,
         }),
     });
-    let coin2 = coin(2 * amount, "stake");
+    let coin2 = coin(2 * amount, denom);
     let msg2: CosmosMsg = CosmosMsg::Ibc(IbcMsg::Transfer {
         // transfer channel
-        channel_id: "channel-0".to_string(),
+        channel_id: channel,
         // "to" is an address on the counterpart chain
         to_address: to,
         amount: coin2,
@@ -209,4 +233,13 @@ fn sudo_response(deps: DepsMut, req: RequestPacket, data: Binary) -> StdResult<R
     }
     // at this place we can safely remove the data under (channel_id, seq_id) key
     // but it costs an extra gas, so its on you how to use the storage
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+pub struct MigrateMsg {}
+
+#[entry_point]
+pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
+    deps.api.debug("WASMDEBUG: migrate");
+    Ok(Response::default())
 }

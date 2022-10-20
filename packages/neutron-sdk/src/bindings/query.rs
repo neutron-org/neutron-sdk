@@ -64,14 +64,14 @@ pub struct PageRequest {
     reverse: bool,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct QueryRegisteredQueriesResponse {
     /// **registered_queries** is a list of registered queries
     pub registered_queries: Vec<RegisteredQuery>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct QueryRegisteredQueryResponse {
     /// **registered_query** is a registered query

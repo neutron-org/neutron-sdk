@@ -53,7 +53,7 @@ pub enum QueryMsg {
     GetRegisteredQuery { query_id: u64 },
     GetRecipientTxs { recipient: String },
     KvCallbackStats { query_id: u64 },
-    GetTransfersAmount {},
+    GetTransfersNumber {},
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -65,7 +65,7 @@ pub struct GetRecipientTxsResponse {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct GetTransfersAmountResponse {
-    pub amount: u64,
+    pub transfers_number: u64,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
