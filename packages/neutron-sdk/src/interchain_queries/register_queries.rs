@@ -17,7 +17,7 @@ use super::types::QueryPayload;
 
 #[allow(clippy::too_many_arguments)]
 /// Creates a message to register an Interchain Query with provided params
-fn new_interchain_query_msg(
+fn new_register_interchain_query_msg(
     _deps: DepsMut<InterchainQueries>,
     _env: Env,
     connection_id: String,
@@ -46,7 +46,7 @@ fn new_interchain_query_msg(
 /// * **addr** address of an account on remote chain for which you want to get balances;
 /// * **denom** denomination of the coin for which you want to get balance;
 /// * **update_period** is used to say how often the query must be updated.
-pub fn new_balance_query_msg(
+pub fn new_register_balance_query_msg(
     deps: DepsMut<InterchainQueries>,
     env: Env,
     connection_id: String,
@@ -63,7 +63,7 @@ pub fn new_balance_query_msg(
         key: Binary(balance_key),
     };
 
-    new_interchain_query_msg(
+    new_register_interchain_query_msg(
         deps,
         env,
         connection_id,
@@ -80,7 +80,7 @@ pub fn new_balance_query_msg(
 /// * **delegator** is an address of an account on remote chain for which you want to get list of delegations;
 /// * **validators** is a list of validators addresses for which you want to get delegations from particular **delegator**;
 /// * **update_period** is used to say how often the query must be updated.
-pub fn new_delegator_delegations_query_msg(
+pub fn new_register_delegator_delegations_query_msg(
     deps: DepsMut<InterchainQueries>,
     env: Env,
     connection_id: String,
@@ -117,7 +117,7 @@ pub fn new_delegator_delegations_query_msg(
         })
     }
 
-    new_interchain_query_msg(
+    new_register_interchain_query_msg(
         deps,
         env,
         connection_id,
@@ -134,7 +134,7 @@ pub fn new_delegator_delegations_query_msg(
 /// * **recipient** is an address of an account on remote chain for which you want to get list of transfer transactions;
 /// * **update_period** is used to say how often the query must be updated.
 /// * **min_height** is used to set min height for query (by default = 0).
-pub fn new_transfers_query_msg(
+pub fn new_register_transfers_query_msg(
     deps: DepsMut<InterchainQueries>,
     env: Env,
     connection_id: String,
@@ -157,7 +157,7 @@ pub fn new_transfers_query_msg(
     let query_data_json_encoded =
         to_string(&query_data).map_err(|e| StdError::generic_err(e.to_string()))?;
 
-    new_interchain_query_msg(
+    new_register_interchain_query_msg(
         deps,
         env,
         connection_id,

@@ -112,9 +112,9 @@ impl NeutronMsg {
     }
 
     /// Basic helper to define a register interchain query message:
-    /// * **query_type** is a query type identifier ('tx' or 'kv' for now)
-    /// * **keys** is the KV-storage keys for which we want to get values from remote chain
-    /// * **transactions_filter** is the filter for transaction search ICQ
+    /// * **query** is a query type identifier ('tx' or 'kv' for now) with a payload:
+    /// when the query enum is 'kv' than payload is the KV-storage keys for which we want to get values from remote chain
+    /// when the query enum is 'tx' than payload is the filter for transaction search ICQ
     /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
     /// * **update_period** is used to say how often the query must be updated.
     pub fn register_interchain_query(
