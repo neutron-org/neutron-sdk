@@ -35,8 +35,7 @@ use neutron_sdk::interchain_queries::queries::{
     get_registered_query, query_balance, query_delegations,
 };
 use neutron_sdk::interchain_queries::{
-    register_balance_query_msg, register_delegator_delegations_query_msg,
-    register_transfers_query_msg,
+    new_balance_query_msg, new_delegator_delegations_query_msg, new_transfers_query_msg,
 };
 use neutron_sdk::sudo::msg::SudoMsg;
 use neutron_sdk::{NeutronError, NeutronResult};
@@ -126,7 +125,7 @@ pub fn register_balance_query(
     denom: String,
     update_period: u64,
 ) -> NeutronResult<Response<NeutronMsg>> {
-    let msg = register_balance_query_msg(deps, env, connection_id, addr, denom, update_period)?;
+    let msg = new_balance_query_msg(deps, env, connection_id, addr, denom, update_period)?;
 
     Ok(Response::new().add_message(msg))
 }
@@ -139,7 +138,7 @@ pub fn register_delegations_query(
     validators: Vec<String>,
     update_period: u64,
 ) -> NeutronResult<Response<NeutronMsg>> {
-    let msg = register_delegator_delegations_query_msg(
+    let msg = new_delegator_delegations_query_msg(
         deps,
         env,
         connection_id,
@@ -159,7 +158,7 @@ pub fn register_transfers_query(
     update_period: u64,
     min_height: Option<u128>,
 ) -> NeutronResult<Response<NeutronMsg>> {
-    let msg = register_transfers_query_msg(
+    let msg = new_transfers_query_msg(
         deps,
         env,
         connection_id,

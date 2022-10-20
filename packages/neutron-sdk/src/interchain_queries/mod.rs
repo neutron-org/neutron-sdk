@@ -18,6 +18,5 @@ mod register_queries;
 pub mod types;
 
 pub use register_queries::{
-    register_balance_query_msg, register_delegator_delegations_query_msg,
-    register_transfers_query_msg,
+    new_balance_query_msg, new_delegator_delegations_query_msg, new_transfers_query_msg,
 };
