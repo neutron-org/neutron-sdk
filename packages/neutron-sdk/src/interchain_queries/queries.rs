@@ -13,11 +13,13 @@
 use crate::bindings::query::{
     InterchainQueries, QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse,
 };
-use crate::interchain_queries::types::{Balances, Delegations, KVReconstruct, QueryType};
+use crate::interchain_queries::types::{Balances, Delegations, KVReconstruct};
 use crate::{NeutronError, NeutronResult};
 use cosmwasm_std::{Deps, Env};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+
+use super::types::QueryType;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -33,18 +35,14 @@ pub struct DelegatorDelegationsResponse {
     pub last_submitted_local_height: u64,
 }
 
-/// Parse **actual** query type, checks that it's valid and assert it with **expected** query type
-pub fn check_query_type(actual: String, expected: QueryType) -> NeutronResult<QueryType> {
-    if let Some(t) = QueryType::try_from_str(&actual) {
-        if t != expected {
-            return Err(NeutronError::InvalidQueryType {
-                query_type: t.into(),
-            });
-        }
-        return Ok(t);
+/// Checks **actual** query type is **expected** query type
+pub fn check_query_type(actual: QueryType, expected: QueryType) -> NeutronResult<()> {
+    if actual != expected {
+        return Err(NeutronError::InvalidQueryType {
+            query_type: actual.into(),
+        });
     }
-
-    Err(NeutronError::InvalidQueryType { query_type: actual })
+    Ok(())
 }
 
 /// Queries registered query info

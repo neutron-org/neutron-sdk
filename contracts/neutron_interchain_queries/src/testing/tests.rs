@@ -50,7 +50,7 @@ enum QueryParam {
 fn build_registered_query_response(
     id: u64,
     param: QueryParam,
-    query_type: String,
+    query_type: QueryType,
     last_submitted_result_local_height: u64,
 ) -> Binary {
     let mut resp = QueryRegisteredQueryResponse {
@@ -137,7 +137,7 @@ fn test_query_balance() {
     let keys = register_query(&mut deps, mock_env(), mock_info("", &[]), msg);
 
     let registered_query =
-        build_registered_query_response(1, QueryParam::Keys(keys.0), QueryType::KV.into(), 987);
+        build_registered_query_response(1, QueryParam::Keys(keys.0), QueryType::KV, 987);
 
     deps.querier.add_registred_queries(1, registered_query);
     deps.querier.add_query_response(
@@ -249,7 +249,7 @@ fn test_query_delegator_delegations() {
     };
 
     let registered_query =
-        build_registered_query_response(1, QueryParam::Keys(keys.0), QueryType::KV.into(), 987);
+        build_registered_query_response(1, QueryParam::Keys(keys.0), QueryType::KV, 987);
 
     deps.querier
         .add_query_response(1, to_binary(&delegations_response).unwrap());
@@ -308,7 +308,7 @@ fn test_sudo_tx_query_result_callback() {
             }])
             .unwrap(),
         ),
-        QueryType::TX.into(),
+        QueryType::TX,
         0,
     );
     deps.querier.add_registred_queries(1, registered_query);
@@ -403,7 +403,7 @@ fn test_sudo_tx_query_result_min_height_callback() {
             }])
             .unwrap(),
         ),
-        QueryType::TX.into(),
+        QueryType::TX,
         0,
     );
     deps.querier.add_registred_queries(1, registered_query);

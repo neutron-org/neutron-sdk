@@ -3,6 +3,8 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::fmt::Write as _;
 
+use crate::interchain_queries::types::QueryType;
+
 /// Encodes bytes slice into hex string
 pub fn encode_hex(bytes: &[u8]) -> String {
     let mut s = String::with_capacity(bytes.len() * 2);
@@ -30,7 +32,7 @@ pub struct RegisteredQuery {
     /// The KV-storage keys for which we want to get values from remote chain
     pub keys: Vec<KVKey>,
     /// The query type identifier (i.e. 'kv' or 'tx' for now)
-    pub query_type: String,
+    pub query_type: QueryType,
     /// The filter for transaction search ICQ
     pub transactions_filter: String,
     /// The IBC connection ID for getting ConsensusState to verify proofs.

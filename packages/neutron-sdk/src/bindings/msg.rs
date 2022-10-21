@@ -1,4 +1,7 @@
-use crate::bindings::types::{KVKey, ProtobufAny};
+use crate::{
+    bindings::types::{KVKey, ProtobufAny},
+    interchain_queries::types::{QueryPayload, QueryType},
+};
 use cosmwasm_std::{CosmosMsg, CustomMsg};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -109,24 +112,31 @@ impl NeutronMsg {
     }
 
     /// Basic helper to define a register interchain query message:
-    /// * **query_type** is a query type identifier ('tx' or 'kv' for now)
-    /// * **keys** is the KV-storage keys for which we want to get values from remote chain
-    /// * **transactions_filter** is the filter for transaction search ICQ
+    /// * **query** is a query type identifier ('tx' or 'kv' for now) with a payload:
+    /// when the query enum is 'kv' than payload is the KV-storage keys for which we want to get values from remote chain
+    /// when the query enum is 'tx' than payload is the filter for transaction search ICQ
     /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
     /// * **update_period** is used to say how often the query must be updated.
     pub fn register_interchain_query(
-        query_type: String,
-        keys: Vec<KVKey>,
-        transactions_filter: String,
+        query: QueryPayload,
         connection_id: String,
         update_period: u64,
     ) -> Self {
-        NeutronMsg::RegisterInterchainQuery {
-            query_type,
-            keys,
-            transactions_filter,
-            connection_id,
-            update_period,
+        match query {
+            QueryPayload::KV(keys) => NeutronMsg::RegisterInterchainQuery {
+                query_type: QueryType::KV.into(),
+                keys,
+                transactions_filter: String::new(),
+                connection_id,
+                update_period,
+            },
+            QueryPayload::TX(transactions_filter) => NeutronMsg::RegisterInterchainQuery {
+                query_type: QueryType::TX.into(),
+                keys: vec![],
+                transactions_filter,
+                connection_id,
+                update_period,
+            },
         }
     }
 
