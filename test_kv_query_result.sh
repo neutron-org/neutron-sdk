@@ -31,6 +31,10 @@ echo $RES
 QUERIES_CONTRACT_ADDRESS=$(echo $RES | jq -r '.logs[0].events[0].attributes[0].value')
 echo $QUERIES_CONTRACT_ADDRESS
 
+# Send some money to contract for deposit
+RES=$(${BIN} tx bank send ${USERNAME_1} ${QUERIES_CONTRACT_ADDRESS} 1000000stake --chain-id ${CHAIN_ID_1}  --broadcast-mode=block --gas-prices 0.0025stake -y --output json --keyring-backend test --home ${HOME_1} --node tcp://127.0.0.1:16657)
+echo $RES
+
 # Register a query for KEY_2 balance
 RES=$(${BIN} tx wasm execute $QUERIES_CONTRACT_ADDRESS "{\"register_balance_query\": {\"connection_id\": \"connection-0\", \"denom\": \"stake\", \"addr\": \"${KEY_2}\", \"update_period\": 5}}" --from ${USERNAME_1}  -y --chain-id ${CHAIN_ID_1} --output json --broadcast-mode=block --gas-prices 0.0025stake --gas 1000000 --keyring-backend test --home ${HOME_1} --node tcp://127.0.0.1:16657)
 echo $RES

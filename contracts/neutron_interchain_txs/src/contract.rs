@@ -132,7 +132,8 @@ pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> NeutronR
         } => query_interchain_address_contract(deps, env, interchain_account_id),
         QueryMsg::AcknowledgementResult {
             interchain_account_id,
-        } => query_acknowledgement_result(deps, env, interchain_account_id),
+            sequence_id,
+        } => query_acknowledgement_result(deps, env, interchain_account_id, sequence_id),
     }
 }
 
@@ -164,9 +165,10 @@ pub fn query_acknowledgement_result(
     deps: Deps<InterchainQueries>,
     env: Env,
     interchain_account_id: String,
+    sequence_id: u64,
 ) -> NeutronResult<Binary> {
-    let key = get_port_id(env.contract.address.as_str(), &interchain_account_id);
-    let res = ACKNOWLEDGEMENT_RESULTS.may_load(deps.storage, key)?;
+    let port_id = get_port_id(env.contract.address.as_str(), &interchain_account_id);
+    let res = ACKNOWLEDGEMENT_RESULTS.may_load(deps.storage, (port_id, sequence_id))?;
     Ok(to_binary(&res)?)
 }
 
@@ -295,7 +297,7 @@ fn execute_undelegate(
 }
 
 fn execute_clean_ack_results(deps: DepsMut) -> StdResult<Response<NeutronMsg>> {
-    let keys: Vec<StdResult<String>> = ACKNOWLEDGEMENT_RESULTS
+    let keys: Vec<StdResult<(String, u64)>> = ACKNOWLEDGEMENT_RESULTS
         .keys(deps.storage, None, None, cosmwasm_std::Order::Descending)
         .collect();
     for key in keys {
@@ -408,10 +410,16 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
         }
     }
 
-    ACKNOWLEDGEMENT_RESULTS.save(
+    // update but also check that we don't update same seq_id twice
+    ACKNOWLEDGEMENT_RESULTS.update(
         deps.storage,
-        payload.port_id,
-        &AcknowledgementResult::Success(item_types),
+        (payload.port_id, seq_id),
+        |maybe_ack| -> StdResult<AcknowledgementResult> {
+            match maybe_ack {
+                Some(_ack) => Err(StdError::generic_err("trying to update same seq_id")),
+                None => Ok(AcknowledgementResult::Success(item_types)),
+            }
+        },
     )?;
 
     Ok(Response::default())
@@ -429,10 +437,16 @@ fn sudo_timeout(deps: DepsMut, _env: Env, request: RequestPacket) -> StdResult<R
         .ok_or_else(|| StdError::generic_err("channel_id not found"))?;
     let payload = read_sudo_payload(deps.storage, channel_id, seq_id)?;
 
-    ACKNOWLEDGEMENT_RESULTS.save(
+    // update but also check that we don't update same seq_id twice
+    ACKNOWLEDGEMENT_RESULTS.update(
         deps.storage,
-        payload.port_id,
-        &AcknowledgementResult::Timeout(payload.message),
+        (payload.port_id, seq_id),
+        |maybe_ack| -> StdResult<AcknowledgementResult> {
+            match maybe_ack {
+                Some(_ack) => Err(StdError::generic_err("trying to update same seq_id")),
+                None => Ok(AcknowledgementResult::Timeout(payload.message)),
+            }
+        },
     )?;
 
     Ok(Response::default())
@@ -451,10 +465,16 @@ fn sudo_error(deps: DepsMut, request: RequestPacket, details: String) -> StdResu
         .ok_or_else(|| StdError::generic_err("channel_id not found"))?;
     let payload = read_sudo_payload(deps.storage, channel_id, seq_id)?;
 
-    ACKNOWLEDGEMENT_RESULTS.save(
+    // update but also check that we don't update same seq_id twice
+    ACKNOWLEDGEMENT_RESULTS.update(
         deps.storage,
-        payload.port_id,
-        &AcknowledgementResult::Error((payload.message, details)),
+        (payload.port_id, seq_id),
+        |maybe_ack| -> StdResult<AcknowledgementResult> {
+            match maybe_ack {
+                Some(_ack) => Err(StdError::generic_err("trying to update same seq_id")),
+                None => Ok(AcknowledgementResult::Error((payload.message, details))),
+            }
+        },
     )?;
 
     Ok(Response::default())
