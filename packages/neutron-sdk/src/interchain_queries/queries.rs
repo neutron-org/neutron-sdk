@@ -14,10 +14,12 @@ use crate::bindings::query::{
     InterchainQueries, QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse,
 };
 use crate::interchain_queries::types::{Balances, Delegations, KVReconstruct};
-use crate::NeutronResult;
+use crate::{NeutronError, NeutronResult};
 use cosmwasm_std::{Deps, Env};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+
+use super::types::QueryType;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -31,6 +33,16 @@ pub struct BalanceResponse {
 pub struct DelegatorDelegationsResponse {
     pub delegations: Vec<cosmwasm_std::Delegation>,
     pub last_submitted_local_height: u64,
+}
+
+/// Checks **actual** query type is **expected** query type
+pub fn check_query_type(actual: QueryType, expected: QueryType) -> NeutronResult<()> {
+    if actual != expected {
+        return Err(NeutronError::InvalidQueryType {
+            query_type: actual.into(),
+        });
+    }
+    Ok(())
 }
 
 /// Queries registered query info
@@ -77,6 +89,8 @@ pub fn query_balance(
 ) -> NeutronResult<BalanceResponse> {
     let registered_query = get_registered_query(deps, registered_query_id)?;
 
+    check_query_type(registered_query.registered_query.query_type, QueryType::KV)?;
+
     let balances: Balances = query_kv_result(deps, registered_query.registered_query.id)?;
 
     Ok(BalanceResponse {
@@ -95,6 +109,8 @@ pub fn query_delegations(
     registered_query_id: u64,
 ) -> NeutronResult<DelegatorDelegationsResponse> {
     let registered_query = get_registered_query(deps, registered_query_id)?;
+
+    check_query_type(registered_query.registered_query.query_type, QueryType::KV)?;
 
     let delegations: Delegations = query_kv_result(deps, registered_query.registered_query.id)?;
 
