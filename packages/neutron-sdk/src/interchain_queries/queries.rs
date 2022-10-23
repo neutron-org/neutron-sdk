@@ -23,8 +23,6 @@ use cosmwasm_std::{Deps, Env};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use super::types::QueryType;
-
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct BalanceResponse {

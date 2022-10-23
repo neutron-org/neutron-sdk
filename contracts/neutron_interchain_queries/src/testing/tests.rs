@@ -288,7 +288,7 @@ fn test_bank_total_supply_query() {
     let keys = register_query(&mut deps, mock_env(), mock_info("", &[]), msg);
 
     let registered_query =
-        build_registered_query_response(1, QueryParam::Keys(keys.0), QueryType::KV.into(), 987);
+        build_registered_query_response(1, QueryParam::Keys(keys.0), QueryType::KV, 987);
 
     let mut kv_results: Vec<StorageValue> = vec![];
 
@@ -339,7 +339,7 @@ fn test_distribution_fee_pool_query() {
     let keys = register_query(&mut deps, mock_env(), mock_info("", &[]), msg);
 
     let registered_query =
-        build_registered_query_response(1, QueryParam::Keys(keys.0), QueryType::KV.into(), 987);
+        build_registered_query_response(1, QueryParam::Keys(keys.0), QueryType::KV, 987);
 
     deps.querier.add_registred_queries(1, registered_query);
     deps.querier.add_query_response(
@@ -378,7 +378,7 @@ fn test_gov_proposals_query() {
     let keys = register_query(&mut deps, mock_env(), mock_info("", &[]), msg);
 
     let registered_query =
-        build_registered_query_response(1, QueryParam::Keys(keys.0), QueryType::KV.into(), 987);
+        build_registered_query_response(1, QueryParam::Keys(keys.0), QueryType::KV, 987);
 
     let mut kv_results: Vec<StorageValue> = vec![];
 
@@ -488,7 +488,7 @@ fn test_staking_validators_query() {
     let keys = register_query(&mut deps, mock_env(), mock_info("", &[]), msg);
 
     let registered_query =
-        build_registered_query_response(1, QueryParam::Keys(keys.0), QueryType::KV.into(), 987);
+        build_registered_query_response(1, QueryParam::Keys(keys.0), QueryType::KV, 987);
 
     let mut kv_results: Vec<StorageValue> = vec![];
 

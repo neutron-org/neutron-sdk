@@ -81,7 +81,7 @@ pub fn new_register_balance_query_msg(
 /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
 /// * **denom** denomination of the coin for which you want to get total supply;
 /// * **update_period** is used to say how often the query must be updated.
-pub fn register_bank_total_supply_query_msg(
+pub fn new_register_bank_total_supply_query_msg(
     deps: DepsMut<InterchainQueries>,
     env: Env,
     connection_id: String,
@@ -101,7 +101,7 @@ pub fn register_bank_total_supply_query_msg(
         kv_keys.push(kv_key)
     }
 
-    register_interchain_query_msg(
+    new_register_interchain_query_msg(
         deps,
         env,
         connection_id,
@@ -116,7 +116,7 @@ pub fn register_bank_total_supply_query_msg(
 ///
 /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
 /// * **update_period** is used to say how often the query must be updated.
-pub fn register_distribution_fee_pool_query_msg(
+pub fn new_register_distribution_fee_pool_query_msg(
     deps: DepsMut<InterchainQueries>,
     env: Env,
     connection_id: String,
@@ -127,7 +127,7 @@ pub fn register_distribution_fee_pool_query_msg(
         key: Binary(create_fee_pool_key()?),
     };
 
-    register_interchain_query_msg(
+    new_register_interchain_query_msg(
         deps,
         env,
         connection_id,
@@ -143,7 +143,7 @@ pub fn register_distribution_fee_pool_query_msg(
 /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
 /// * **proposal_id** is a proposal id from remote chain.
 /// * **update_period** is used to say how often the query must be updated.
-pub fn register_gov_proposal_query_msg(
+pub fn new_register_gov_proposal_query_msg(
     deps: DepsMut<InterchainQueries>,
     env: Env,
     connection_id: String,
@@ -161,7 +161,7 @@ pub fn register_gov_proposal_query_msg(
         kv_keys.push(kv_key)
     }
 
-    register_interchain_query_msg(
+    new_register_interchain_query_msg(
         deps,
         env,
         connection_id,
@@ -177,7 +177,7 @@ pub fn register_gov_proposal_query_msg(
 /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
 /// * **validator** is an validator operator address of an account on remote chain for which you want to get rewards ;
 /// * **update_period** is used to say how often the query must be updated.
-pub fn register_staking_validators_query_msg(
+pub fn new_register_staking_validators_query_msg(
     deps: DepsMut<InterchainQueries>,
     env: Env,
     connection_id: String,
@@ -197,7 +197,7 @@ pub fn register_staking_validators_query_msg(
         kv_keys.push(kv_key)
     }
 
-    register_interchain_query_msg(
+    new_register_interchain_query_msg(
         deps,
         env,
         connection_id,

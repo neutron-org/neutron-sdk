@@ -36,10 +36,10 @@ use neutron_sdk::interchain_queries::queries::{
     query_distribution_fee_pool, query_government_proposals, query_staking_validators,
 };
 use neutron_sdk::interchain_queries::{
-    new_register_balance_query_msg, new_register_delegator_delegations_query_msg,
-    new_register_transfers_query_msg, register_bank_total_supply_query_msg,
-    register_distribution_fee_pool_query_msg, register_gov_proposal_query_msg,
-    register_staking_validators_query_msg,
+    new_register_balance_query_msg, new_register_bank_total_supply_query_msg,
+    new_register_delegator_delegations_query_msg, new_register_distribution_fee_pool_query_msg,
+    new_register_gov_proposal_query_msg, new_register_staking_validators_query_msg,
+    new_register_transfers_query_msg,
 };
 use neutron_sdk::sudo::msg::SudoMsg;
 use neutron_sdk::{NeutronError, NeutronResult};
@@ -161,7 +161,7 @@ pub fn register_bank_total_supply_query(
     update_period: u64,
 ) -> NeutronResult<Response<NeutronMsg>> {
     let msg =
-        register_bank_total_supply_query_msg(deps, env, connection_id, denoms, update_period)?;
+        new_register_bank_total_supply_query_msg(deps, env, connection_id, denoms, update_period)?;
 
     Ok(Response::new().add_message(msg))
 }
@@ -172,7 +172,8 @@ pub fn register_distribution_fee_pool_query(
     connection_id: String,
     update_period: u64,
 ) -> NeutronResult<Response<NeutronMsg>> {
-    let msg = register_distribution_fee_pool_query_msg(deps, env, connection_id, update_period)?;
+    let msg =
+        new_register_distribution_fee_pool_query_msg(deps, env, connection_id, update_period)?;
 
     Ok(Response::new().add_message(msg))
 }
@@ -184,8 +185,13 @@ pub fn register_gov_proposal_query(
     proposals_ids: Vec<u64>,
     update_period: u64,
 ) -> NeutronResult<Response<NeutronMsg>> {
-    let msg =
-        register_gov_proposal_query_msg(deps, env, connection_id, proposals_ids, update_period)?;
+    let msg = new_register_gov_proposal_query_msg(
+        deps,
+        env,
+        connection_id,
+        proposals_ids,
+        update_period,
+    )?;
 
     Ok(Response::new().add_message(msg))
 }
@@ -197,8 +203,13 @@ pub fn register_staking_validators_query(
     validators: Vec<String>,
     update_period: u64,
 ) -> NeutronResult<Response<NeutronMsg>> {
-    let msg =
-        register_staking_validators_query_msg(deps, env, connection_id, validators, update_period)?;
+    let msg = new_register_staking_validators_query_msg(
+        deps,
+        env,
+        connection_id,
+        validators,
+        update_period,
+    )?;
 
     Ok(Response::new().add_message(msg))
 }
