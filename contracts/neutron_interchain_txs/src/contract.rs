@@ -512,7 +512,7 @@ fn sudo_timeout(deps: DepsMut, _env: Env, request: RequestPacket) -> StdResult<R
     // write an error log and / or save the acknowledgement to an errors queue for later manual
     // processing. The decision is based purely on your application logic.
     // Please be careful because it may lead to an unexpected state changes because state might
-    // was changed before this call and will not be reverted because of supressed error.
+    // has been changed before this call and will not be reverted because of supressed error.
     let payload = read_sudo_payload(deps.storage, channel_id, seq_id).ok();
     if let Some(payload) = payload {
         // update but also check that we don't update same seq_id twice
