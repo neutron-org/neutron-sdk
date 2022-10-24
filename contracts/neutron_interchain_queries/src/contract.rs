@@ -73,7 +73,7 @@ pub fn instantiate(
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut<InterchainQueries>,
-    env: Env,
+    _env: Env,
     _: MessageInfo,
     msg: ExecuteMsg,
 ) -> NeutronResult<Response<NeutronMsg>> {
@@ -83,52 +83,38 @@ pub fn execute(
             addr,
             denom,
             update_period,
-        } => register_balance_query(deps, env, connection_id, addr, denom, update_period),
+        } => register_balance_query(connection_id, addr, denom, update_period),
         ExecuteMsg::RegisterBankTotalSupplyQuery {
             connection_id,
             denoms,
             update_period,
-        } => register_bank_total_supply_query(deps, env, connection_id, denoms, update_period),
+        } => register_bank_total_supply_query(connection_id, denoms, update_period),
         ExecuteMsg::RegisterDistributionFeePoolQuery {
             connection_id,
             update_period,
-        } => register_distribution_fee_pool_query(deps, env, connection_id, update_period),
+        } => register_distribution_fee_pool_query(connection_id, update_period),
         ExecuteMsg::RegisterGovernmentProposalsQuery {
             connection_id,
             proposals_ids,
             update_period,
-        } => register_gov_proposal_query(deps, env, connection_id, proposals_ids, update_period),
+        } => register_gov_proposal_query(connection_id, proposals_ids, update_period),
         ExecuteMsg::RegisterStakingValidatorsQuery {
             connection_id,
             validators,
             update_period,
-        } => register_staking_validators_query(deps, env, connection_id, validators, update_period),
+        } => register_staking_validators_query(connection_id, validators, update_period),
         ExecuteMsg::RegisterDelegatorDelegationsQuery {
             connection_id,
             delegator,
             validators,
             update_period,
-        } => register_delegations_query(
-            deps,
-            env,
-            connection_id,
-            delegator,
-            validators,
-            update_period,
-        ),
+        } => register_delegations_query(connection_id, delegator, validators, update_period),
         ExecuteMsg::RegisterTransfersQuery {
             connection_id,
             recipient,
             update_period,
             min_height,
-        } => register_transfers_query(
-            deps,
-            env,
-            connection_id,
-            recipient,
-            update_period,
-            min_height,
-        ),
+        } => register_transfers_query(connection_id, recipient, update_period, min_height),
         ExecuteMsg::UpdateInterchainQuery {
             query_id,
             new_keys,
@@ -141,90 +127,62 @@ pub fn execute(
 }
 
 pub fn register_balance_query(
-    deps: DepsMut<InterchainQueries>,
-    env: Env,
     connection_id: String,
     addr: String,
     denom: String,
     update_period: u64,
 ) -> NeutronResult<Response<NeutronMsg>> {
-    let msg = new_register_balance_query_msg(deps, env, connection_id, addr, denom, update_period)?;
+    let msg = new_register_balance_query_msg(connection_id, addr, denom, update_period)?;
 
     Ok(Response::new().add_message(msg))
 }
 
 pub fn register_bank_total_supply_query(
-    deps: DepsMut<InterchainQueries>,
-    env: Env,
     connection_id: String,
     denoms: Vec<String>,
     update_period: u64,
 ) -> NeutronResult<Response<NeutronMsg>> {
-    let msg =
-        new_register_bank_total_supply_query_msg(deps, env, connection_id, denoms, update_period)?;
+    let msg = new_register_bank_total_supply_query_msg(connection_id, denoms, update_period)?;
 
     Ok(Response::new().add_message(msg))
 }
 
 pub fn register_distribution_fee_pool_query(
-    deps: DepsMut<InterchainQueries>,
-    env: Env,
     connection_id: String,
     update_period: u64,
 ) -> NeutronResult<Response<NeutronMsg>> {
-    let msg =
-        new_register_distribution_fee_pool_query_msg(deps, env, connection_id, update_period)?;
+    let msg = new_register_distribution_fee_pool_query_msg(connection_id, update_period)?;
 
     Ok(Response::new().add_message(msg))
 }
 
 pub fn register_gov_proposal_query(
-    deps: DepsMut<InterchainQueries>,
-    env: Env,
     connection_id: String,
     proposals_ids: Vec<u64>,
     update_period: u64,
 ) -> NeutronResult<Response<NeutronMsg>> {
-    let msg = new_register_gov_proposal_query_msg(
-        deps,
-        env,
-        connection_id,
-        proposals_ids,
-        update_period,
-    )?;
+    let msg = new_register_gov_proposal_query_msg(connection_id, proposals_ids, update_period)?;
 
     Ok(Response::new().add_message(msg))
 }
 
 pub fn register_staking_validators_query(
-    deps: DepsMut<InterchainQueries>,
-    env: Env,
     connection_id: String,
     validators: Vec<String>,
     update_period: u64,
 ) -> NeutronResult<Response<NeutronMsg>> {
-    let msg = new_register_staking_validators_query_msg(
-        deps,
-        env,
-        connection_id,
-        validators,
-        update_period,
-    )?;
+    let msg = new_register_staking_validators_query_msg(connection_id, validators, update_period)?;
 
     Ok(Response::new().add_message(msg))
 }
 
 pub fn register_delegations_query(
-    deps: DepsMut<InterchainQueries>,
-    env: Env,
     connection_id: String,
     delegator: String,
     validators: Vec<String>,
     update_period: u64,
 ) -> NeutronResult<Response<NeutronMsg>> {
     let msg = new_register_delegator_delegations_query_msg(
-        deps,
-        env,
         connection_id,
         delegator,
         validators,
@@ -235,21 +193,13 @@ pub fn register_delegations_query(
 }
 
 pub fn register_transfers_query(
-    deps: DepsMut<InterchainQueries>,
-    env: Env,
     connection_id: String,
     recipient: String,
     update_period: u64,
     min_height: Option<u128>,
 ) -> NeutronResult<Response<NeutronMsg>> {
-    let msg = new_register_transfers_query_msg(
-        deps,
-        env,
-        connection_id,
-        recipient,
-        update_period,
-        min_height,
-    )?;
+    let msg =
+        new_register_transfers_query_msg(connection_id, recipient, update_period, min_height)?;
 
     Ok(Response::new().add_message(msg))
 }

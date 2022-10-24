@@ -1,10 +1,12 @@
 use crate::{
     bindings::types::{KVKey, ProtobufAny},
-    interchain_queries::types::{QueryPayload, QueryType},
+    interchain_queries::types::{QueryPayload, QueryType, MAX_TX_FILTERS},
+    NeutronError, NeutronResult,
 };
-use cosmwasm_std::{CosmosMsg, CustomMsg};
+use cosmwasm_std::{CosmosMsg, CustomMsg, StdError};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use serde_json_wasm::to_string;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -113,16 +115,18 @@ impl NeutronMsg {
 
     /// Basic helper to define a register interchain query message:
     /// * **query** is a query type identifier ('tx' or 'kv' for now) with a payload:
-    /// when the query enum is 'kv' than payload is the KV-storage keys for which we want to get values from remote chain
-    /// when the query enum is 'tx' than payload is the filter for transaction search ICQ
+    ///   - when the query enum is 'kv' then payload is the KV-storage keys for which we want to get
+    ///     values from remote chain;
+    ///   - when the query enum is 'tx' then payload is the filters for transaction search ICQ,
+    ///     maximum allowed number of filters is 32.
     /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
     /// * **update_period** is used to say how often the query must be updated.
     pub fn register_interchain_query(
         query: QueryPayload,
         connection_id: String,
         update_period: u64,
-    ) -> Self {
-        match query {
+    ) -> NeutronResult<Self> {
+        Ok(match query {
             QueryPayload::KV(keys) => NeutronMsg::RegisterInterchainQuery {
                 query_type: QueryType::KV.into(),
                 keys,
@@ -130,14 +134,23 @@ impl NeutronMsg {
                 connection_id,
                 update_period,
             },
-            QueryPayload::TX(transactions_filter) => NeutronMsg::RegisterInterchainQuery {
-                query_type: QueryType::TX.into(),
-                keys: vec![],
-                transactions_filter,
-                connection_id,
-                update_period,
-            },
-        }
+            QueryPayload::TX(transactions_filters) => {
+                if transactions_filters.len() > MAX_TX_FILTERS {
+                    return Err(NeutronError::TooManyTransactionFilters {
+                        max: MAX_TX_FILTERS,
+                    });
+                } else {
+                    NeutronMsg::RegisterInterchainQuery {
+                        query_type: QueryType::TX.into(),
+                        keys: vec![],
+                        transactions_filter: to_string(&transactions_filters)
+                            .map_err(|e| StdError::generic_err(e.to_string()))?,
+                        connection_id,
+                        update_period,
+                    }
+                }
+            }
+        })
     }
 
     /// Basic helper to define a update interchain query message:

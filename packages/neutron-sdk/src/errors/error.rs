@@ -41,6 +41,9 @@ pub enum NeutronError {
 
     #[error("Integration tests mock is active")]
     IntegrationTestsMock {},
+
+    #[error("Too many transaction filters, max allowed: {max:?}")]
+    TooManyTransactionFilters { max: usize },
 }
 
 impl From<serde_json_wasm::de::Error> for NeutronError {
