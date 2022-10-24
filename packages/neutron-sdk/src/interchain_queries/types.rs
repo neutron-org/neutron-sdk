@@ -199,7 +199,7 @@ pub struct Balances {
 
 impl KVReconstruct for Balances {
     fn reconstruct(storage_values: &[StorageValue]) -> NeutronResult<Balances> {
-        let mut coins: Vec<Coin> = vec![];
+        let mut coins: Vec<Coin> = Vec::with_capacity(storage_values.len());
 
         for kv in storage_values {
             let balance: CosmosCoin = CosmosCoin::decode(kv.value.as_slice())?;
@@ -220,11 +220,11 @@ pub struct TotalSupply {
 
 impl KVReconstruct for TotalSupply {
     fn reconstruct(storage_values: &[StorageValue]) -> NeutronResult<TotalSupply> {
-        let mut coins: Vec<Coin> = vec![];
+        let mut coins: Vec<Coin> = Vec::with_capacity(storage_values.len());
 
         for kv in storage_values {
-            let denom = get_total_supply_denom(kv.key.to_base64());
-            let amount = get_total_supply_amount(kv.value.to_base64());
+            let denom = get_total_supply_denom(&kv.key);
+            let amount = get_total_supply_amount(&kv.value);
             if let (Some(denom), Some(amount)) = (denom, amount) {
                 coins.push(Coin::new(amount.u128(), denom));
             }
@@ -242,7 +242,7 @@ pub struct FeePool {
 
 impl KVReconstruct for FeePool {
     fn reconstruct(storage_values: &[StorageValue]) -> NeutronResult<FeePool> {
-        let mut coins: Vec<Coin> = vec![];
+        let mut coins: Vec<Coin> = Vec::with_capacity(storage_values.len());
 
         for kv in storage_values {
             let cosmos_pool: CosmosFeePool = CosmosFeePool::decode(kv.value.as_slice())?;
@@ -304,7 +304,7 @@ pub struct StakingValidator {
 
 impl KVReconstruct for StakingValidator {
     fn reconstruct(storage_values: &[StorageValue]) -> NeutronResult<StakingValidator> {
-        let mut validators = vec![];
+        let mut validators = Vec::with_capacity(storage_values.len());
 
         for kv in storage_values {
             let validator: CosmosValidator = CosmosValidator::decode(kv.value.as_slice())?;
@@ -371,12 +371,12 @@ pub struct GovernmentProposal {
 
 impl KVReconstruct for GovernmentProposal {
     fn reconstruct(storage_values: &[StorageValue]) -> NeutronResult<GovernmentProposal> {
-        let mut proposals = vec![];
+        let mut proposals = Vec::with_capacity(storage_values.len());
 
         for kv in storage_values {
             let proposal: CosmosProposal = CosmosProposal::decode(kv.value.as_slice())?;
 
-            let mut coins: Vec<Coin> = vec![];
+            let mut coins: Vec<Coin> = Vec::with_capacity(proposal.total_deposit.len());
 
             for coin in proposal.total_deposit {
                 let amount = Uint128::from_str(coin.amount.as_str())?;

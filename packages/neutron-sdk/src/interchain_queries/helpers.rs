@@ -4,7 +4,7 @@ use crate::interchain_queries::types::{
     PARAMS_STORE_DELIMITER, PROPOSALS_KEY_PREFIX, SUPPLY_PREFIX, VALIDATORS_KEY,
 };
 use cosmos_sdk_proto::cosmos::staking::v1beta1::Commission as ValidatorCommission;
-use cosmwasm_std::{Decimal, Uint128};
+use cosmwasm_std::{Binary, Decimal, Uint128};
 use std::str::{from_utf8, FromStr};
 
 /// Creates KV key to get **module** param by **key**
@@ -163,15 +163,7 @@ pub fn get_update_time(commission: &Option<ValidatorCommission>) -> Option<u64> 
 }
 
 /// Returns denom for total supply from StorageValue key
-pub fn get_total_supply_denom(denom: String) -> Option<String> {
-    let denom = base64::decode(denom).ok();
-    if let Some(denom) = denom {
-        return get_denom_value(denom);
-    }
-    None
-}
-
-fn get_denom_value(denom: Vec<u8>) -> Option<String> {
+pub fn get_total_supply_denom(denom: &Binary) -> Option<String> {
     if denom.len() > 1 {
         return from_utf8(&denom[1..]).ok().map(|d| d.to_string());
     }
@@ -180,10 +172,6 @@ fn get_denom_value(denom: Vec<u8>) -> Option<String> {
 }
 
 /// Returns total supply amount from StorageValue key
-pub fn get_total_supply_amount(amount: String) -> Option<Uint128> {
-    let amount = base64::decode(amount).ok();
-    if let Some(amount) = amount {
-        return from_utf8(&amount).ok().map(|a| Uint128::from_str(a).ok())?;
-    }
-    None
+pub fn get_total_supply_amount(amount: &Binary) -> Option<Uint128> {
+    from_utf8(amount).ok().map(|a| Uint128::from_str(a).ok())?
 }

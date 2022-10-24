@@ -18,7 +18,7 @@ TARGET_ADDRESS=neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u
 VAL2=neutronvaloper1qnk2n4nlkpw9xfqntladh74w6ujtulwnqshepx
 TEST_WALLET=test_wallet
 
-echo "y" | ${BIN} keys add ${TEST_WALLET} --home ${HOME_1} --keyring-backend=test
+yes | ${BIN} keys add ${TEST_WALLET} --home ${HOME_1} --keyring-backend=test
 TEST_ADDR=$(${BIN} keys show ${TEST_WALLET} --keyring-backend test -a --home ${HOME_1})
 
 ${BIN} tx bank send ${USERNAME_1} ${TEST_ADDR} 100000000stake --chain-id ${CHAIN_ID_1} --home ${HOME_1} --node tcp://localhost:16657 --keyring-backend test -y --gas-prices 0.0025stake --broadcast-mode=block

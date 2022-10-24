@@ -10,7 +10,7 @@ RLY2=neutron17dtl0mjt3t77kpuhg2edqzjpszulwhgzcdvagh
 TEST_WALLET=test_wallet
 BIN=neutrond
 
-echo "y" | ${BIN} keys add ${TEST_WALLET} --home ${HOME} --keyring-backend=test
+yes | ${BIN} keys add ${TEST_WALLET} --home ${HOME} --keyring-backend=test
 TEST_ADDR=$(${BIN} keys show ${TEST_WALLET} --keyring-backend test -a --home ${HOME})
 
 ${BIN} tx bank send ${KEY} ${TEST_ADDR} 100000000stake --chain-id ${CHAINID} --home ${HOME} --node tcp://localhost:16657 --keyring-backend test -y --gas-prices 0.0025stake --broadcast-mode=block
