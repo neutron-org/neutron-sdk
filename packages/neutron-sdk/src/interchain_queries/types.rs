@@ -418,7 +418,9 @@ pub struct Delegations {
 
 impl KVReconstruct for Delegations {
     fn reconstruct(storage_values: &[StorageValue]) -> NeutronResult<Delegations> {
-        let mut delegations: Vec<cosmwasm_std::Delegation> = vec![];
+        // We are taking 2 items chunks from starage_value to calculate one delegation
+        let mut delegations: Vec<cosmwasm_std::Delegation> =
+            Vec::with_capacity(storage_values.len() / 2);
 
         // first StorageValue is denom
         if storage_values[0].value.is_empty() {
