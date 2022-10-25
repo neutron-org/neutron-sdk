@@ -1,4 +1,4 @@
-use cosmwasm_std::{from_binary, to_vec, Binary, StdResult, Storage};
+use cosmwasm_std::{from_binary, to_vec, Binary, Order, StdResult, Storage};
 use cw_storage_plus::{Item, Map};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -21,6 +21,8 @@ pub const INTERCHAIN_ACCOUNTS: Map<String, Option<(String, String)>> =
 pub const ACKNOWLEDGEMENT_RESULTS: Map<(String, u64), AcknowledgementResult> =
     Map::new("acknowledgement_results");
 
+pub const ERRORS_QUEUE: Map<u32, String> = Map::new("errors_queue");
+
 /// Serves for storing acknowledgement calls for interchain transactions
 #[derive(Serialize, Deserialize, Clone, PartialEq, Eq, JsonSchema, Debug)]
 #[serde(rename_all = "snake_case")]
@@ -40,6 +42,23 @@ pub fn save_reply_payload(store: &mut dyn Storage, payload: SudoPayload) -> StdR
 pub fn read_reply_payload(store: &mut dyn Storage) -> StdResult<SudoPayload> {
     let data = REPLY_ID_STORAGE.load(store)?;
     from_binary(&Binary(data))
+}
+
+pub fn add_error_to_queue(store: &mut dyn Storage, error_msg: String) -> Option<()> {
+    let result = ERRORS_QUEUE
+        .keys(store, None, None, Order::Descending)
+        .next()
+        .and_then(|data| data.ok())
+        .map(|c| c + 1)
+        .or(Some(0));
+
+    result.and_then(|idx| ERRORS_QUEUE.save(store, idx, &error_msg).ok())
+}
+
+pub fn read_errors_from_queue(store: &dyn Storage) -> StdResult<Vec<(Vec<u8>, String)>> {
+    ERRORS_QUEUE
+        .range_raw(store, None, None, Order::Ascending)
+        .collect()
 }
 
 pub fn read_sudo_payload(
