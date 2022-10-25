@@ -32,10 +32,13 @@ use neutron_sdk::bindings::msg::NeutronMsg;
 use neutron_sdk::bindings::query::{InterchainQueries, QueryRegisteredQueryResponse};
 use neutron_sdk::bindings::types::KVKey;
 use neutron_sdk::interchain_queries::queries::{
-    get_registered_query, query_balance, query_delegations,
+    get_registered_query, query_balance, query_bank_total, query_delegations,
+    query_distribution_fee_pool, query_government_proposals, query_staking_validators,
 };
 use neutron_sdk::interchain_queries::{
-    new_register_balance_query_msg, new_register_delegator_delegations_query_msg,
+    new_register_balance_query_msg, new_register_bank_total_supply_query_msg,
+    new_register_delegator_delegations_query_msg, new_register_distribution_fee_pool_query_msg,
+    new_register_gov_proposal_query_msg, new_register_staking_validators_query_msg,
     new_register_transfers_query_msg,
 };
 use neutron_sdk::sudo::msg::SudoMsg;
@@ -81,6 +84,25 @@ pub fn execute(
             denom,
             update_period,
         } => register_balance_query(deps, env, connection_id, addr, denom, update_period),
+        ExecuteMsg::RegisterBankTotalSupplyQuery {
+            connection_id,
+            denoms,
+            update_period,
+        } => register_bank_total_supply_query(deps, env, connection_id, denoms, update_period),
+        ExecuteMsg::RegisterDistributionFeePoolQuery {
+            connection_id,
+            update_period,
+        } => register_distribution_fee_pool_query(deps, env, connection_id, update_period),
+        ExecuteMsg::RegisterGovernmentProposalsQuery {
+            connection_id,
+            proposals_ids,
+            update_period,
+        } => register_gov_proposal_query(deps, env, connection_id, proposals_ids, update_period),
+        ExecuteMsg::RegisterStakingValidatorsQuery {
+            connection_id,
+            validators,
+            update_period,
+        } => register_staking_validators_query(deps, env, connection_id, validators, update_period),
         ExecuteMsg::RegisterDelegatorDelegationsQuery {
             connection_id,
             delegator,
@@ -127,6 +149,67 @@ pub fn register_balance_query(
     update_period: u64,
 ) -> NeutronResult<Response<NeutronMsg>> {
     let msg = new_register_balance_query_msg(deps, env, connection_id, addr, denom, update_period)?;
+
+    Ok(Response::new().add_message(msg))
+}
+
+pub fn register_bank_total_supply_query(
+    deps: DepsMut<InterchainQueries>,
+    env: Env,
+    connection_id: String,
+    denoms: Vec<String>,
+    update_period: u64,
+) -> NeutronResult<Response<NeutronMsg>> {
+    let msg =
+        new_register_bank_total_supply_query_msg(deps, env, connection_id, denoms, update_period)?;
+
+    Ok(Response::new().add_message(msg))
+}
+
+pub fn register_distribution_fee_pool_query(
+    deps: DepsMut<InterchainQueries>,
+    env: Env,
+    connection_id: String,
+    update_period: u64,
+) -> NeutronResult<Response<NeutronMsg>> {
+    let msg =
+        new_register_distribution_fee_pool_query_msg(deps, env, connection_id, update_period)?;
+
+    Ok(Response::new().add_message(msg))
+}
+
+pub fn register_gov_proposal_query(
+    deps: DepsMut<InterchainQueries>,
+    env: Env,
+    connection_id: String,
+    proposals_ids: Vec<u64>,
+    update_period: u64,
+) -> NeutronResult<Response<NeutronMsg>> {
+    let msg = new_register_gov_proposal_query_msg(
+        deps,
+        env,
+        connection_id,
+        proposals_ids,
+        update_period,
+    )?;
+
+    Ok(Response::new().add_message(msg))
+}
+
+pub fn register_staking_validators_query(
+    deps: DepsMut<InterchainQueries>,
+    env: Env,
+    connection_id: String,
+    validators: Vec<String>,
+    update_period: u64,
+) -> NeutronResult<Response<NeutronMsg>> {
+    let msg = new_register_staking_validators_query_msg(
+        deps,
+        env,
+        connection_id,
+        validators,
+        update_period,
+    )?;
 
     Ok(Response::new().add_message(msg))
 }
@@ -190,6 +273,18 @@ pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> NeutronR
     match msg {
         //TODO: check if query.result.height is too old (for all interchain queries)
         QueryMsg::Balance { query_id } => Ok(to_binary(&query_balance(deps, env, query_id)?)?),
+        QueryMsg::BankTotalSupply { query_id } => {
+            Ok(to_binary(&query_bank_total(deps, env, query_id)?)?)
+        }
+        QueryMsg::DistributionFeePool { query_id } => Ok(to_binary(&query_distribution_fee_pool(
+            deps, env, query_id,
+        )?)?),
+        QueryMsg::StakingValidators { query_id } => {
+            Ok(to_binary(&query_staking_validators(deps, env, query_id)?)?)
+        }
+        QueryMsg::GovernmentProposals { query_id } => Ok(to_binary(&query_government_proposals(
+            deps, env, query_id,
+        )?)?),
         QueryMsg::GetDelegations { query_id } => {
             Ok(to_binary(&query_delegations(deps, env, query_id)?)?)
         }

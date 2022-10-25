@@ -17,11 +17,17 @@ use crate::contract::{execute, query, sudo_tx_query_result};
 use crate::msg::{ExecuteMsg, QueryMsg};
 use crate::state::{Transfer, RECIPIENT_TXS};
 use crate::testing::mock_querier::WasmMockQuerier;
-use cosmos_sdk_proto::cosmos::base::v1beta1::Coin as CosmosCoin;
+use cosmos_sdk_proto::cosmos::base::v1beta1::{Coin as CosmosCoin, DecCoin as CosmosDecCoin};
+use cosmos_sdk_proto::cosmos::distribution::v1beta1::FeePool as CosmosFeePool;
+use cosmos_sdk_proto::cosmos::gov::v1beta1::{
+    Proposal as CosmosProposal, TallyResult as CosmosTallyResult,
+};
+use cosmos_sdk_proto::cosmos::staking::v1beta1::Validator as CosmosValidator;
+use cosmos_sdk_proto::Any;
 use cosmwasm_std::testing::{mock_env, mock_info, MockApi, MockStorage};
 use cosmwasm_std::{
-    from_binary, to_binary, Addr, Binary, Coin, Delegation, Env, MessageInfo, OwnedDeps, StdError,
-    Uint128,
+    from_binary, to_binary, Addr, Binary, Coin, Decimal, Delegation, Env, MessageInfo, OwnedDeps,
+    StdError, Uint128,
 };
 use neutron_sdk::bindings::query::{
     InterchainQueries, QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse,
@@ -30,15 +36,20 @@ use neutron_sdk::bindings::types::{
     decode_hex, InterchainQueryResult, KVKey, KVKeys, RegisteredQuery, StorageValue,
 };
 use neutron_sdk::interchain_queries::helpers::{
-    create_account_denom_balance_key, decode_and_convert,
+    create_account_denom_balance_key, create_fee_pool_key, create_gov_proposal_key,
+    create_total_denom_key, create_validator_key, decode_and_convert,
 };
 use neutron_sdk::interchain_queries::types::{
-    Balances, QueryType, TransactionFilterItem, TransactionFilterOp, TransactionFilterValue,
+    Balances, FeePool, GovernmentProposal, Proposal, QueryType, StakingValidator, TallyResult,
+    TotalSupply, TransactionFilterItem, TransactionFilterOp, TransactionFilterValue, Validator,
     RECIPIENT_FIELD,
 };
 use prost::Message as ProstMessage;
 
-use neutron_sdk::interchain_queries::queries::{BalanceResponse, DelegatorDelegationsResponse};
+use neutron_sdk::interchain_queries::queries::{
+    BalanceResponse, DelegatorDelegationsResponse, FeePoolResponse, ProposalResponse,
+    TotalSupplyResponse, ValidatorResponse,
+};
 use neutron_sdk::NeutronError;
 use schemars::_serde_json::to_string;
 
@@ -79,6 +90,106 @@ fn build_registered_query_response(
     }
 
     Binary::from(to_string(&resp).unwrap().as_bytes())
+}
+
+fn build_interchain_query_bank_total_denom_value(denom: String, amount: String) -> StorageValue {
+    let bank_total_key = create_total_denom_key(&denom).unwrap();
+
+    let amount = amount.as_bytes().to_vec();
+
+    StorageValue {
+        storage_prefix: "".to_string(),
+        key: Binary(bank_total_key),
+        value: Binary(amount),
+    }
+}
+
+fn build_interchain_query_distribution_fee_pool_response(denom: String, amount: String) -> Binary {
+    let fee_pool_key = create_fee_pool_key().unwrap();
+
+    let community_pool_amount = CosmosDecCoin { denom, amount };
+
+    let fee_pool = CosmosFeePool {
+        community_pool: vec![community_pool_amount],
+    };
+
+    let s = StorageValue {
+        storage_prefix: "".to_string(),
+        key: Binary(fee_pool_key),
+        value: Binary(fee_pool.encode_to_vec()),
+    };
+    Binary::from(
+        to_string(&QueryRegisteredQueryResultResponse {
+            result: InterchainQueryResult {
+                kv_results: vec![s],
+                height: 123456,
+                revision: 2,
+            },
+        })
+        .unwrap()
+        .as_bytes(),
+    )
+}
+
+fn build_interchain_query_staking_validator_value(validator: String) -> StorageValue {
+    let operator_address = decode_and_convert(validator.as_str()).unwrap();
+    let validator_key = create_validator_key(operator_address).unwrap();
+
+    let validator = CosmosValidator {
+        operator_address: validator,
+        consensus_pubkey: Some(Any {
+            type_url: "".to_string(),
+            value: vec![],
+        }),
+        status: 1,
+        tokens: "1".to_string(),
+        jailed: false,
+        delegator_shares: "1".to_string(),
+        description: None,
+        unbonding_height: 0,
+        unbonding_time: None,
+        commission: None,
+        min_self_delegation: "1".to_string(),
+    };
+
+    StorageValue {
+        storage_prefix: "".to_string(),
+        key: Binary(validator_key),
+        value: Binary(validator.encode_to_vec()),
+    }
+}
+
+fn build_interchain_query_gov_proposal_value(proposal_id: u64) -> StorageValue {
+    let proposal_key = create_gov_proposal_key(proposal_id).unwrap();
+
+    let proposal = CosmosProposal {
+        proposal_id,
+        content: Some(Any {
+            type_url: "/cosmos.gov.v1beta1.TextProposal".to_string(),
+            value: vec![],
+        }),
+        status: 1,
+        final_tally_result: Some(CosmosTallyResult {
+            abstain: "0".to_string(),
+            yes: "0".to_string(),
+            no: "0".to_string(),
+            no_with_veto: "0".to_string(),
+        }),
+        deposit_end_time: None,
+        submit_time: None,
+        total_deposit: Vec::from([CosmosCoin {
+            denom: "stake".to_string(),
+            amount: "100".to_string(),
+        }]),
+        voting_start_time: None,
+        voting_end_time: None,
+    };
+
+    StorageValue {
+        storage_prefix: "".to_string(),
+        key: Binary(proposal_key),
+        value: Binary(proposal.encode_to_vec()),
+    }
 }
 
 fn build_interchain_query_balance_response(addr: Addr, denom: String, amount: String) -> Binary {
@@ -157,6 +268,296 @@ fn test_query_balance() {
             last_submitted_local_height: 987,
             balances: Balances {
                 coins: vec![Coin::new(8278104u128, "uosmo")]
+            }
+        }
+    )
+}
+
+#[test]
+fn test_bank_total_supply_query() {
+    let mut deps = dependencies(&[]);
+
+    let denoms = vec!["uosmo".to_string(), "uatom".to_string()];
+
+    let msg = ExecuteMsg::RegisterBankTotalSupplyQuery {
+        connection_id: "connection".to_string(),
+        update_period: 10,
+        denoms: denoms.clone(),
+    };
+
+    let keys = register_query(&mut deps, mock_env(), mock_info("", &[]), msg);
+
+    let registered_query =
+        build_registered_query_response(1, QueryParam::Keys(keys.0), QueryType::KV, 987);
+
+    let mut kv_results: Vec<StorageValue> = vec![];
+
+    for denom in denoms {
+        let value =
+            build_interchain_query_bank_total_denom_value(denom.to_string(), "8278104".to_string());
+        kv_results.push(value);
+    }
+
+    let total_supply_response = QueryRegisteredQueryResultResponse {
+        result: InterchainQueryResult {
+            kv_results,
+            height: 0,
+            revision: 0,
+        },
+    };
+
+    deps.querier.add_registred_queries(1, registered_query);
+    deps.querier
+        .add_query_response(1, to_binary(&total_supply_response).unwrap());
+    let bank_total_balance = QueryMsg::BankTotalSupply { query_id: 1 };
+
+    let resp: TotalSupplyResponse =
+        from_binary(&query(deps.as_ref(), mock_env(), bank_total_balance).unwrap()).unwrap();
+    assert_eq!(
+        resp,
+        TotalSupplyResponse {
+            last_submitted_local_height: 987,
+            supply: TotalSupply {
+                coins: vec![
+                    Coin::new(8278104u128, "uosmo"),
+                    Coin::new(8278104u128, "uatom")
+                ]
+            }
+        }
+    );
+}
+
+#[test]
+fn test_distribution_fee_pool_query() {
+    let mut deps = dependencies(&[]);
+
+    let msg = ExecuteMsg::RegisterDistributionFeePoolQuery {
+        connection_id: "connection".to_string(),
+        update_period: 10,
+    };
+
+    let keys = register_query(&mut deps, mock_env(), mock_info("", &[]), msg);
+
+    let registered_query =
+        build_registered_query_response(1, QueryParam::Keys(keys.0), QueryType::KV, 987);
+
+    deps.querier.add_registred_queries(1, registered_query);
+    deps.querier.add_query_response(
+        1,
+        build_interchain_query_distribution_fee_pool_response(
+            "uosmo".to_string(),
+            "8278104".to_string(),
+        ),
+    );
+    let fee_pool_balance = QueryMsg::DistributionFeePool { query_id: 1 };
+    let resp: FeePoolResponse =
+        from_binary(&query(deps.as_ref(), mock_env(), fee_pool_balance).unwrap()).unwrap();
+    assert_eq!(
+        resp,
+        FeePoolResponse {
+            last_submitted_local_height: 987,
+            pool: FeePool {
+                coins: vec![Coin::new(8278104u128, "uosmo")]
+            }
+        }
+    )
+}
+
+#[test]
+fn test_gov_proposals_query() {
+    let mut deps = dependencies(&[]);
+
+    let proposals_ids = vec![1, 2, 3];
+
+    let msg = ExecuteMsg::RegisterGovernmentProposalsQuery {
+        connection_id: "connection".to_string(),
+        proposals_ids: proposals_ids.clone(),
+        update_period: 10,
+    };
+
+    let keys = register_query(&mut deps, mock_env(), mock_info("", &[]), msg);
+
+    let registered_query =
+        build_registered_query_response(1, QueryParam::Keys(keys.0), QueryType::KV, 987);
+
+    let mut kv_results: Vec<StorageValue> = vec![];
+
+    for id in proposals_ids {
+        let value = build_interchain_query_gov_proposal_value(id);
+        kv_results.push(value);
+    }
+
+    let proposals_response = QueryRegisteredQueryResultResponse {
+        result: InterchainQueryResult {
+            kv_results,
+            height: 0,
+            revision: 0,
+        },
+    };
+
+    deps.querier.add_registred_queries(1, registered_query);
+    deps.querier
+        .add_query_response(1, to_binary(&proposals_response).unwrap());
+
+    let government_proposal = QueryMsg::GovernmentProposals { query_id: 1 };
+    let resp: ProposalResponse =
+        from_binary(&query(deps.as_ref(), mock_env(), government_proposal).unwrap()).unwrap();
+    assert_eq!(
+        resp,
+        ProposalResponse {
+            last_submitted_local_height: 987,
+            proposals: GovernmentProposal {
+                proposals: vec![
+                    Proposal {
+                        proposal_id: 1,
+                        proposal_type: Some("/cosmos.gov.v1beta1.TextProposal".to_string()),
+                        total_deposit: Vec::from([Coin {
+                            denom: "stake".to_string(),
+                            amount: Uint128::from_str("100").unwrap(),
+                        }]),
+                        status: 1,
+                        submit_time: None,
+                        deposit_end_time: None,
+                        voting_end_time: None,
+                        voting_start_time: None,
+                        final_tally_result: Some(TallyResult {
+                            abstain: "0".to_string(),
+                            yes: "0".to_string(),
+                            no: "0".to_string(),
+                            no_with_veto: "0".to_string()
+                        })
+                    },
+                    Proposal {
+                        proposal_id: 2,
+                        proposal_type: Some("/cosmos.gov.v1beta1.TextProposal".to_string()),
+                        total_deposit: Vec::from([Coin {
+                            denom: "stake".to_string(),
+                            amount: Uint128::from_str("100").unwrap(),
+                        }]),
+                        status: 1,
+                        submit_time: None,
+                        deposit_end_time: None,
+                        voting_end_time: None,
+                        voting_start_time: None,
+                        final_tally_result: Some(TallyResult {
+                            abstain: "0".to_string(),
+                            yes: "0".to_string(),
+                            no: "0".to_string(),
+                            no_with_veto: "0".to_string()
+                        })
+                    },
+                    Proposal {
+                        proposal_id: 3,
+                        proposal_type: Some("/cosmos.gov.v1beta1.TextProposal".to_string()),
+                        total_deposit: Vec::from([Coin {
+                            denom: "stake".to_string(),
+                            amount: Uint128::from_str("100").unwrap(),
+                        }]),
+                        status: 1,
+                        submit_time: None,
+                        deposit_end_time: None,
+                        voting_end_time: None,
+                        voting_start_time: None,
+                        final_tally_result: Some(TallyResult {
+                            abstain: "0".to_string(),
+                            yes: "0".to_string(),
+                            no: "0".to_string(),
+                            no_with_veto: "0".to_string()
+                        })
+                    }
+                ]
+            }
+        }
+    )
+}
+
+#[test]
+fn test_staking_validators_query() {
+    let mut deps = dependencies(&[]);
+    let validators = vec![
+        "cosmosvaloper132juzk0gdmwuxvx4phug7m3ymyatxlh9734g4w".to_string(),
+        "cosmosvaloper1sjllsnramtg3ewxqwwrwjxfgc4n4ef9u2lcnj0".to_string(),
+    ];
+
+    let msg = ExecuteMsg::RegisterStakingValidatorsQuery {
+        connection_id: "connection".to_string(),
+        update_period: 10,
+        validators: validators.clone(),
+    };
+
+    let keys = register_query(&mut deps, mock_env(), mock_info("", &[]), msg);
+
+    let registered_query =
+        build_registered_query_response(1, QueryParam::Keys(keys.0), QueryType::KV, 987);
+
+    let mut kv_results: Vec<StorageValue> = vec![];
+
+    for validator in validators {
+        let value = build_interchain_query_staking_validator_value(validator);
+        kv_results.push(value);
+    }
+
+    let validators_response = QueryRegisteredQueryResultResponse {
+        result: InterchainQueryResult {
+            kv_results,
+            height: 0,
+            revision: 0,
+        },
+    };
+
+    deps.querier.add_registred_queries(1, registered_query);
+    deps.querier
+        .add_query_response(1, to_binary(&validators_response).unwrap());
+    let staking_validators = QueryMsg::StakingValidators { query_id: 1 };
+    let resp: ValidatorResponse =
+        from_binary(&query(deps.as_ref(), mock_env(), staking_validators).unwrap()).unwrap();
+    assert_eq!(
+        resp,
+        ValidatorResponse {
+            last_submitted_local_height: 987,
+            validator: StakingValidator {
+                validators: vec![
+                    Validator {
+                        operator_address: "cosmosvaloper132juzk0gdmwuxvx4phug7m3ymyatxlh9734g4w"
+                            .to_string(),
+                        status: 1,
+                        tokens: "1".to_string(),
+                        jailed: false,
+                        delegator_shares: "1".to_string(),
+                        unbonding_height: 0,
+                        unbonding_time: None,
+                        min_self_delegation: Decimal::from_str("1").unwrap(),
+                        moniker: None,
+                        identity: None,
+                        website: None,
+                        security_contact: None,
+                        details: None,
+                        rate: None,
+                        max_rate: None,
+                        max_change_rate: None,
+                        update_time: None,
+                    },
+                    Validator {
+                        operator_address: "cosmosvaloper1sjllsnramtg3ewxqwwrwjxfgc4n4ef9u2lcnj0"
+                            .to_string(),
+                        status: 1,
+                        tokens: "1".to_string(),
+                        jailed: false,
+                        delegator_shares: "1".to_string(),
+                        unbonding_height: 0,
+                        unbonding_time: None,
+                        min_self_delegation: Decimal::from_str("1").unwrap(),
+                        moniker: None,
+                        identity: None,
+                        website: None,
+                        security_contact: None,
+                        details: None,
+                        rate: None,
+                        max_rate: None,
+                        max_change_rate: None,
+                        update_time: None,
+                    }
+                ]
             }
         }
     )

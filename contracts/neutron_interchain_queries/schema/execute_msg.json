@@ -39,6 +39,133 @@
     {
       "type": "object",
       "required": [
+        "register_bank_total_supply_query"
+      ],
+      "properties": {
+        "register_bank_total_supply_query": {
+          "type": "object",
+          "required": [
+            "connection_id",
+            "denoms",
+            "update_period"
+          ],
+          "properties": {
+            "connection_id": {
+              "type": "string"
+            },
+            "denoms": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "update_period": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "register_distribution_fee_pool_query"
+      ],
+      "properties": {
+        "register_distribution_fee_pool_query": {
+          "type": "object",
+          "required": [
+            "connection_id",
+            "update_period"
+          ],
+          "properties": {
+            "connection_id": {
+              "type": "string"
+            },
+            "update_period": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "register_staking_validators_query"
+      ],
+      "properties": {
+        "register_staking_validators_query": {
+          "type": "object",
+          "required": [
+            "connection_id",
+            "update_period",
+            "validators"
+          ],
+          "properties": {
+            "connection_id": {
+              "type": "string"
+            },
+            "update_period": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "validators": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "register_government_proposals_query"
+      ],
+      "properties": {
+        "register_government_proposals_query": {
+          "type": "object",
+          "required": [
+            "connection_id",
+            "proposals_ids",
+            "update_period"
+          ],
+          "properties": {
+            "connection_id": {
+              "type": "string"
+            },
+            "proposals_ids": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "uint64",
+                "minimum": 0.0
+              }
+            },
+            "update_period": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
         "register_transfers_query"
       ],
       "properties": {
