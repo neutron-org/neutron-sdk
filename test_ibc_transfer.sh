@@ -22,5 +22,5 @@ echo $TRANSFER_CONTRACT_ADDRESS
 ${BIN} tx bank send demowallet1 ${TRANSFER_CONTRACT_ADDRESS} 10000stake --chain-id ${CHAINID} --home ${HOME} --node tcp://localhost:16657 --keyring-backend test -y --gas-prices 0.0025stake --broadcast-mode=block
 
 
-RES=$(${BIN} tx wasm execute $TRANSFER_CONTRACT_ADDRESS '{"send":{"to":"neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2","amount":"1000"}}' --from ${KEY}  -y --chain-id ${CHAINID} --output json --broadcast-mode=block --gas-prices 0.0025stake --gas 1000000 --keyring-backend test --home ${HOME} --node tcp://127.0.0.1:16657)
+RES=$(${BIN} tx wasm execute $TRANSFER_CONTRACT_ADDRESS '{"send":{"to":"neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2","amount":"1000", "denom": "stake", "channel": "channel-0"}}' --from ${KEY}  -y --chain-id ${CHAINID} --output json --broadcast-mode=block --gas-prices 0.0025stake --gas 1000000 --keyring-backend test --home ${HOME} --node tcp://127.0.0.1:16657)
 echo $RES
