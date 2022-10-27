@@ -171,7 +171,6 @@ pub type AddressBytes = Vec<u8>;
 
 /// A **data structure** that can be reconstructed from slice of **StorageValue** structures.
 /// Neutron provides `KVReconstruct` for many primitive and standard Cosmos-SDK types and query responses.
-/// The complete list is [here][TODO_LINK]. All of these can be deserialized using Neutron out of the box.
 ///
 /// Third-party projects may provide `KVReconstruct` implementations for types that they introduce.
 /// For example if some query is not implemented in Neutron standard library, developers can create their own type/query and implement `KVReconstruct` for it.
