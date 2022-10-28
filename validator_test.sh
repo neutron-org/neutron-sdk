@@ -1,5 +1,5 @@
 args=("$@")
-
+## Set up envs
 echo "What network you going to interact:"
 echo "1. CosmosHub"
 echo "2. Juno"
@@ -58,6 +58,7 @@ then
 fi
 echo "Chain id: $NEUTRON_CHAIN_ID"
 
+## Check if ibc connection does exist
 RES=$(neutrond query ibc connection end $CONNECTION_ID 2>/dev/null)
 
 if [ -z "$RES" ]
@@ -68,7 +69,7 @@ fi
 echo "Connection id: $CONNECTION_ID"
 echo ""
 
-
+## Add a new key
 RES=$($BIN keys add $NEUTRON_KEY_NAME --output json)
 NEUTRON_ADDRESS=$(echo $RES | jq -r .address)
 MNEMONIC=$(echo $RES | jq -r .mnemonic)
@@ -86,6 +87,8 @@ echo "Please go to $FAUCET_URL and get tokens for $NEUTRON_ADDRESS"
 echo "Make sure tx is passed by going to $EXPLORER_URL/accounts/$NEUTRON_ADDRESS"
 echo "Hit enter when ready"
 read
+
+## Upload contract
 echo "Upload the queries contract"
 RES=$(${BIN} tx wasm store ${CONTRACT} --from ${NEUTRON_KEY_NAME} --gas 50000000 --chain-id ${NEUTRON_CHAIN_ID} --broadcast-mode=block --gas-prices ${GAS_PRICES}  -y --output json)
 CONTRACT_CODE_ID=$(echo $RES | jq -r '.logs[0].events[1].attributes[0].value')
@@ -94,27 +97,29 @@ then
     echo "Can't get code id"
     exit
 fi
-
 echo "Contract code id: $CONTRACT_CODE_ID"
 echo ""
+
+## Instantiate contract
 echo "Instantiate the contract"
 INIT_CONTRACT='{}'
 RES=$(${BIN} tx wasm instantiate $CONTRACT_CODE_ID "$INIT_CONTRACT" --from $NEUTRON_KEY_NAME --admin ${NEUTRON_ADDRESS} -y --chain-id ${NEUTRON_CHAIN_ID} --output json --broadcast-mode=block --label "init"  --gas-prices ${GAS_PRICES} --gas auto --gas-adjustment 1.4)
 CONTRACT_ADDRESS=$(echo $RES | jq -r '.logs[0].events[0].attributes[0].value')
 echo "Contract address: $CONTRACT_ADDRESS"
-
-
 if [ $CONTRACT_ADDRESS = "null" ]
 then
     echo "Can't get contract address"
     exit
 fi
-
 echo ""
+
+
+## Register interchain account
 echo "Register interchain account"
 RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "{\"register\": {\"connection_id\": \"${CONNECTION_ID}\", \"interchain_account_id\": \"${INTERCHAIN_ACCOUNT_ID}\"}}" --from $NEUTRON_KEY_NAME  -y --chain-id ${NEUTRON_CHAIN_ID} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000)
 echo "Waiting for registering account..."
 
+## Wait until ICA appears on the target chain
 j=40
 while [[ $j -gt 0 ]]
 do
@@ -139,6 +144,8 @@ echo "Please send 0.02 ${DENOM[$i]} to $ICA_ADDRESS"
 echo "hit enter when you are ready"
 read
 echo ""
+
+## Execute Interchain Delegate tx
 echo "Execute Interchain Delegate tx"
 RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "{\"delegate\": {\"interchain_account_id\": \"${INTERCHAIN_ACCOUNT_ID}\", \"validator\": \"${TARGET_VALIDATOR}\", \"denom\":\"${TARGET_DENOM}\", \"amount\":\"9000\"}}" --from ${NEUTRON_KEY_NAME}  -y --chain-id ${NEUTRON_CHAIN_ID} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000)
 CODE=$(echo $RES | jq -r '.code')
@@ -148,6 +155,7 @@ then
 fi
 echo "Waiting for delegation..."
 
+## Wait until ackowledgement appears on the source chain
 j=40
 while [[ $j -gt 0 ]]
 do
