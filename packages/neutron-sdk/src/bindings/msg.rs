@@ -2,9 +2,17 @@ use crate::{
     bindings::types::{KVKey, ProtobufAny},
     interchain_queries::types::{QueryPayload, QueryType},
 };
-use cosmwasm_std::{CosmosMsg, CustomMsg};
+
+use cosmwasm_std::{Coin, CosmosMsg, CustomMsg};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+pub struct PayerFee {
+    recv_fee: Vec<Coin>,
+    ack_fee: Vec<Coin>,
+    timeout_fee: Vec<Coin>,
+}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -36,6 +44,9 @@ pub enum NeutronMsg {
 
         /// **timeout** is a timeout in seconds after which the packet times out
         timeout: u64,
+
+        /// ***payer_fee** is a fee payer for the interchain transaction
+        payer_fee: PayerFee,
     },
 
     /// RegisterInterchainQuery registers an interchain query
@@ -101,6 +112,7 @@ impl NeutronMsg {
         msgs: Vec<ProtobufAny>,
         memo: String,
         timeout: u64,
+        payer_fee: PayerFee,
     ) -> Self {
         NeutronMsg::SubmitTx {
             connection_id,
@@ -108,6 +120,7 @@ impl NeutronMsg {
             msgs,
             memo,
             timeout,
+            payer_fee,
         }
     }
 
