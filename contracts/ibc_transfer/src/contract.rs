@@ -2,9 +2,10 @@ use cosmwasm_std::{
     coin, entry_point, Binary, CosmosMsg, Deps, DepsMut, Env, IbcMsg, IbcTimeout, IbcTimeoutBlock,
     MessageInfo, Reply, Response, StdError, StdResult, SubMsg,
 };
+use cw2::set_contract_version;
 use neutron_sdk::{
     proto_types::transfer::MsgTransferResponse,
-    sudo::msg::{RequestPacket, SudoMsg},
+    sudo::msg::{RequestPacket, TransferSudoMsg},
 };
 use protobuf::Message as ProtoMessage;
 use schemars::JsonSchema;
@@ -14,6 +15,9 @@ use crate::state::{
     read_reply_payload, read_sudo_payload, save_reply_payload, save_sudo_payload,
     IBC_SUDO_ID_RANGE_END, IBC_SUDO_ID_RANGE_START,
 };
+
+const CONTRACT_NAME: &str = concat!("crates.io:neutron-contracts__", env!("CARGO_PKG_NAME"));
+const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct InstantiateMsg {}
@@ -25,7 +29,8 @@ pub fn instantiate(
     _info: MessageInfo,
     _msg: InstantiateMsg,
 ) -> StdResult<Response> {
-    deps.api.debug("WASMDEBUG: Instantiate");
+    deps.api.debug("WASMDEBUG: instantiate");
+    set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
     Ok(Response::default())
 }
 
@@ -45,6 +50,9 @@ pub fn execute(deps: DepsMut, _env: Env, _: MessageInfo, msg: ExecuteMsg) -> Std
     deps.api
         .debug(format!("WASMDEBUG: execute: received msg: {:?}", msg).as_str());
     match msg {
+        // NOTE: this is an example contract that shows how to make IBC transfers!
+        // Please add necessary authorization or other protection mechanisms
+        // if you intend to send funds over IBC
         ExecuteMsg::Send {
             channel,
             to,
@@ -175,11 +183,34 @@ fn execute_send(
 }
 
 #[entry_point]
-pub fn sudo(deps: DepsMut, _env: Env, msg: SudoMsg) -> StdResult<Response> {
+pub fn sudo(deps: DepsMut, _env: Env, msg: TransferSudoMsg) -> StdResult<Response> {
     match msg {
-        SudoMsg::Response { request, data } => sudo_response(deps, request, data),
-        _ => todo!(),
+        TransferSudoMsg::Response { request, data } => sudo_response(deps, request, data),
+        TransferSudoMsg::Error { request, details } => sudo_error(deps, request, details),
+        TransferSudoMsg::Timeout { request } => sudo_timeout(deps, request),
     }
+}
+
+fn sudo_error(deps: DepsMut, req: RequestPacket, data: String) -> StdResult<Response> {
+    deps.api.debug(
+        format!(
+            "WASMDEBUG: sudo_error: sudo error received: {:?} {}",
+            req, data
+        )
+        .as_str(),
+    );
+    Ok(Response::new())
+}
+
+fn sudo_timeout(deps: DepsMut, req: RequestPacket) -> StdResult<Response> {
+    deps.api.debug(
+        format!(
+            "WASMDEBUG: sudo_timeout: sudo timeout ack received: {:?}",
+            req
+        )
+        .as_str(),
+    );
+    Ok(Response::new())
 }
 
 fn sudo_response(deps: DepsMut, req: RequestPacket, data: Binary) -> StdResult<Response> {
@@ -202,4 +233,13 @@ fn sudo_response(deps: DepsMut, req: RequestPacket, data: Binary) -> StdResult<R
     }
     // at this place we can safely remove the data under (channel_id, seq_id) key
     // but it costs an extra gas, so its on you how to use the storage
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+pub struct MigrateMsg {}
+
+#[entry_point]
+pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
+    deps.api.debug("WASMDEBUG: migrate");
+    Ok(Response::default())
 }

@@ -56,13 +56,31 @@
         "acknowledgement_result": {
           "type": "object",
           "required": [
-            "interchain_account_id"
+            "interchain_account_id",
+            "sequence_id"
           ],
           "properties": {
             "interchain_account_id": {
               "type": "string"
+            },
+            "sequence_id": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
             }
           }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "errors_queue"
+      ],
+      "properties": {
+        "errors_queue": {
+          "type": "object"
         }
       },
       "additionalProperties": false

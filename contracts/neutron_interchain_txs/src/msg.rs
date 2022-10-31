@@ -16,7 +16,10 @@ pub enum QueryMsg {
     // this query returns acknowledgement result after interchain transaction
     AcknowledgementResult {
         interchain_account_id: String,
+        sequence_id: u64,
     },
+    // this query returns non-critical errors list
+    ErrorsQueue {},
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -36,12 +39,14 @@ pub enum ExecuteMsg {
         interchain_account_id: String,
         validator: String,
         amount: u128,
+        denom: String,
         timeout: Option<u64>,
     },
     Undelegate {
         interchain_account_id: String,
         validator: String,
         amount: u128,
+        denom: String,
         timeout: Option<u64>,
     },
     CleanAckResults {},

@@ -33,6 +33,7 @@ library = []
 
 [dependencies]
 cosmwasm-std = { version = "1.0.0", features = ["staking"] }
+cw2 = "0.15.1"
 schemars = "0.8.10"
 serde = { version = "1.0.103", default-features = false, features = ["derive"] }
 serde-json-wasm = { version = "0.4.1" }
@@ -40,9 +41,9 @@ cw-storage-plus = { version = "0.14.0", features = ["iterator"]}
 cosmos-sdk-proto = { version = "0.14.0", default-features = false }
 neutron-sdk = { path = "../../packages/neutron-sdk", default-features = false, version = "0.1.0"}
 base64 = "0.13.0"
-protobuf = { version = "3", features = ["with-bytes"] }
+protobuf = { version = "3.2.0", features = ["with-bytes"] }
 prost = "0.11"
-prost-types = "0.10"
+prost-types = "0.11"
 bech32 = "0.9.0"
 thiserror = { version = "1.0" }
 
