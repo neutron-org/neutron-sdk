@@ -140,7 +140,7 @@ then
 fi
 echo "ICA address: $ICA_ADDRESS"
 echo ""
-echo "Please send 0.02 ${DENOM[$i]} to $ICA_ADDRESS"
+echo "Please send 0.02 ${DENOMS[$i]} to $ICA_ADDRESS"
 echo "hit enter when you are ready"
 read
 echo ""
