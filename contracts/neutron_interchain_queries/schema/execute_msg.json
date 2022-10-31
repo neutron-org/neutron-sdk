@@ -300,7 +300,7 @@
       "additionalProperties": false
     },
     {
-      "description": "Used only in integration tests framework to simulate failures.",
+      "description": "Used only in integration tests framework to simulate failures. It tries to register query where keys is an empty array.",
       "type": "object",
       "required": [
         "integration_tests_register_query_empty_keys"
@@ -321,7 +321,7 @@
       "additionalProperties": false
     },
     {
-      "description": "Used only in integration tests framework to simulate failures.",
+      "description": "Used only in integration tests framework to simulate failures. It tries to register query where in keys array there is a key with empty path.",
       "type": "object",
       "required": [
         "integration_tests_register_query_empty_path"
@@ -342,7 +342,7 @@
       "additionalProperties": false
     },
     {
-      "description": "Used only in integration tests framework to simulate failures.",
+      "description": "Used only in integration tests framework to simulate failures. It tries to register query where in keys array there is a key with empty id.",
       "type": "object",
       "required": [
         "integration_tests_register_query_empty_id"
