@@ -4,8 +4,7 @@ echo "What network you going to interact:"
 echo "1. CosmosHub"
 echo "2. Juno"
 
-read -N 1 i
-echo $i
+read i
 
 DENOMS=([1]="atom" [2]="junox")
 TARGET_DENOMS=([1]="uatom" [2]="ujunox")
