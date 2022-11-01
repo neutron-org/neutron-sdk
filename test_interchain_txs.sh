@@ -97,3 +97,4 @@ echo "Show failures"
 ${BIN} q contractmanager failures $CONTRACT_ADDRESS \
     --output json \
     --node tcp://127.0.0.1:16657 | jq ''
+    
