@@ -35,6 +35,12 @@ pub enum ExecuteMsg {
         connection_id: String,
         interchain_account_id: String,
     },
+    SetFees {
+        denom: String,
+        recv_fee: u128,
+        ack_fee: u128,
+        timeout_fee: u128,
+    },
     Delegate {
         interchain_account_id: String,
         validator: String,

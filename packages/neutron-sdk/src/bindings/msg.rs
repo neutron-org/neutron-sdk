@@ -9,9 +9,9 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct PayerFee {
-    recv_fee: Vec<Coin>,
-    ack_fee: Vec<Coin>,
-    timeout_fee: Vec<Coin>,
+    pub recv_fee: Vec<Coin>,
+    pub ack_fee: Vec<Coin>,
+    pub timeout_fee: Vec<Coin>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
