@@ -27,6 +27,7 @@ use prost::Message;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+use crate::integration_tests_mock_handlers::{set_sudo_failure_mock, unset_sudo_failure_mock};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use neutron_sdk::bindings::msg::{MsgSubmitTxResponse, NeutronMsg};
 use neutron_sdk::bindings::query::{InterchainQueries, QueryInterchainAccountAddressResponse};
@@ -39,8 +40,9 @@ use neutron_sdk::NeutronResult;
 
 use crate::storage::{
     add_error_to_queue, read_errors_from_queue, read_reply_payload, read_sudo_payload,
-    save_reply_payload, save_sudo_payload, AcknowledgementResult, SudoPayload,
-    ACKNOWLEDGEMENT_RESULTS, INTERCHAIN_ACCOUNTS, SUDO_PAYLOAD_REPLY_ID,
+    save_reply_payload, save_sudo_payload, AcknowledgementResult, IntegrationTestsSudoMock,
+    SudoPayload, ACKNOWLEDGEMENT_RESULTS, INTEGRATION_TESTS_SUDO_MOCK, INTERCHAIN_ACCOUNTS,
+    SUDO_PAYLOAD_REPLY_ID,
 };
 
 // Default timeout for SubmitTX is two weeks
@@ -117,6 +119,11 @@ pub fn execute(
             timeout,
         ),
         ExecuteMsg::CleanAckResults {} => execute_clean_ack_results(deps),
+        // Used only in integration tests framework to simulate failures.
+        // After executing this message, contract fail, all of this happening
+        // in sudo callback handler.
+        ExecuteMsg::IntegrationTestsSetSudoFailureMock {} => set_sudo_failure_mock(deps),
+        ExecuteMsg::IntegrationTestsUnsetSudoFailureMock {} => unset_sudo_failure_mock(deps),
     }
 }
 
@@ -316,6 +323,19 @@ fn execute_clean_ack_results(deps: DepsMut) -> StdResult<Response<NeutronMsg>> {
 pub fn sudo(deps: DepsMut, env: Env, msg: SudoMsg) -> StdResult<Response> {
     deps.api
         .debug(format!("WASMDEBUG: sudo: received sudo msg: {:?}", msg).as_str());
+
+    if let Some(IntegrationTestsSudoMock::Enabled {}) =
+        INTEGRATION_TESTS_SUDO_MOCK.may_load(deps.storage)?
+    {
+        // Used only in integration tests framework to simulate failures.
+        deps.api
+            .debug("WASMDEBUG: sudo: mocked failure on the handler");
+
+        return Err(StdError::GenericErr {
+            msg: "Integations test mock error".to_string(),
+        });
+    }
+
     match msg {
         SudoMsg::Response { request, data } => sudo_response(deps, request, data),
         SudoMsg::Error { request, details } => sudo_error(deps, request, details),

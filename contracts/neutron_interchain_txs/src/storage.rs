@@ -78,3 +78,13 @@ pub fn save_sudo_payload(
 ) -> StdResult<()> {
     SUDO_PAYLOAD.save(store, (channel_id, seq_id), &to_vec(&payload)?)
 }
+
+/// Used only in integration tests framework to simulate failures.
+pub const INTEGRATION_TESTS_SUDO_MOCK: Item<IntegrationTestsSudoMock> =
+    Item::new("integration_tests_sudo_mock");
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+pub enum IntegrationTestsSudoMock {
+    Enabled,
+    Disabled,
+}

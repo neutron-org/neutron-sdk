@@ -50,4 +50,11 @@ pub enum ExecuteMsg {
         timeout: Option<u64>,
     },
     CleanAckResults {},
+    /// Used only in integration tests framework to simulate failures.
+    /// After executing this message, contract will fail, all of this happening
+    /// in sudo callback handler.
+    IntegrationTestsSetSudoFailureMock {},
+    /// Used only in integration tests framework to simulate failures.
+    /// After executing this message, contract will revert back to normal behaviour.
+    IntegrationTestsUnsetSudoFailureMock {},
 }
