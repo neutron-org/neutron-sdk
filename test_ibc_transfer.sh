@@ -37,6 +37,12 @@ RES=$(${BIN} tx wasm execute $TRANSFER_CONTRACT_ADDRESS \
 echo $RES | jq
 
 echo "Try to transfer coins from test-1 to test-2 again with failing sudo handler"
+echo "Get failures list before test"
+FAILURES_BEFORE_TEST=$(${BIN} q contractmanager failures $TRANSFER_CONTRACT_ADDRESS \
+    --output json \
+    --node tcp://127.0.0.1:16657)
+
+
 echo "Turn off sudo handler"
 RES=$(${BIN} tx wasm execute $TRANSFER_CONTRACT_ADDRESS \
     '{"integration_tests_set_sudo_failure_mock":{}}' \
@@ -80,7 +86,10 @@ RES=$(${BIN} tx wasm execute $TRANSFER_CONTRACT_ADDRESS \
     --node tcp://127.0.0.1:16657)
 echo $RES | jq
 
-echo "Show failures"
+echo "Failures before test. Should be empty"
+echo "${FAILURES_BEFORE_TEST}" | jq ''
+
+echo "Show failures after test"
 ${BIN} q contractmanager failures $TRANSFER_CONTRACT_ADDRESS \
     --output json \
     --node tcp://127.0.0.1:16657 | jq ''

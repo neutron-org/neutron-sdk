@@ -50,6 +50,11 @@ sleep 7;
 curl http://127.0.0.1:1317/staking/delegators/$ICA_ADDRESS/delegations
 
 echo "Try to delegate with sudo error"
+echo "Get failures list before test"
+FAILURES_BEFORE_TEST=$(${BIN} q contractmanager failures $CONTRACT_ADDRESS \
+    --output json \
+    --node tcp://127.0.0.1:16657)
+
 echo "Turn off sudo handler"
 RES=$(${BIN} tx wasm execute $CONTRACT_ADDRESS \
     '{"integration_tests_set_sudo_failure_mock":{}}' \
@@ -93,7 +98,10 @@ RES=$(${BIN} tx wasm execute $CONTRACT_ADDRESS \
     --node tcp://127.0.0.1:16657)
 echo $RES | jq
 
-echo "Show failures"
+echo "Failures before test. Should be empty"
+echo "${FAILURES_BEFORE_TEST}" | jq ''
+
+echo "Show failures after test"
 ${BIN} q contractmanager failures $CONTRACT_ADDRESS \
     --output json \
     --node tcp://127.0.0.1:16657 | jq ''
