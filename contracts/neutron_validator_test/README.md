@@ -1,5 +1,3 @@
-# Neutron Interchain Txs Contract
+# Neutron Test Contract for Validators
 
-The contract provides a convenient interface for interacting with [Interchain Txs Module](https://github.com/neutron-org/neutron/tree/master/x/interchaintxs).
-
-The contract responsible for providing sudo endpoint receiving various acknowledgments 
+The contract provides a convenient interface for testing most important Neutron features.
