@@ -1,6 +1,6 @@
 use cosmwasm_std::{
-    coin, entry_point, Binary, CosmosMsg, Deps, DepsMut, Env, IbcMsg, IbcTimeout, IbcTimeoutBlock,
-    MessageInfo, Reply, Response, StdError, StdResult, SubMsg,
+    coin, entry_point, Binary, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Reply, Response,
+    StdError, StdResult, SubMsg,
 };
 use cw2::set_contract_version;
 use neutron_sdk::{
@@ -47,7 +47,12 @@ pub enum ExecuteMsg {
 }
 
 #[entry_point]
-pub fn execute(deps: DepsMut, _env: Env, _: MessageInfo, msg: ExecuteMsg) -> StdResult<Response> {
+pub fn execute(
+    deps: DepsMut,
+    env: Env,
+    _: MessageInfo,
+    msg: ExecuteMsg,
+) -> StdResult<Response<NeutronMsg>> {
     deps.api
         .debug(format!("WASMDEBUG: execute: received msg: {:?}", msg).as_str());
     match msg {
@@ -59,7 +64,7 @@ pub fn execute(deps: DepsMut, _env: Env, _: MessageInfo, msg: ExecuteMsg) -> Std
             to,
             denom,
             amount,
-        } => execute_send(deps, channel, to, denom, amount),
+        } => execute_send(deps, env, channel, to, denom, amount),
     }
 }
 
@@ -93,11 +98,11 @@ pub enum SudoPayload {
     HandlerPayload2(Type2),
 }
 
-fn msg_with_sudo_callback<C: Into<CosmosMsg>>(
+fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
     deps: DepsMut,
     msg: C,
     payload: SudoPayload,
-) -> StdResult<SubMsg> {
+) -> StdResult<SubMsg<T>> {
     let id = save_reply_payload(deps.storage, payload)?;
     Ok(SubMsg::reply_on_success(msg, id))
 }
@@ -137,7 +142,7 @@ fn execute_send(
     to: String,
     denom: String,
     amount: u128,
-) -> StdResult<Response> {
+) -> StdResult<Response<NeutronMsg>> {
     let coin1 = coin(amount, denom.clone());
     let msg1 = NeutronMsg::MsgTransfer {
         source_port: "transfer".to_string(),
@@ -156,12 +161,12 @@ fn execute_send(
             recv_fee: vec![coin(2000, denom.clone())],
         },
     };
-    let coin2 = coin(2 * amount, denom);
+    let coin2 = coin(2 * amount, denom.clone());
     let msg2 = NeutronMsg::MsgTransfer {
         source_port: "transfer".to_string(),
-        source_channel: channel.clone(),
+        source_channel: channel,
         sender: env.contract.address.to_string(),
-        receiver: to.clone(),
+        receiver: to,
         token: coin2,
         timeout_height: RequestPacketTimeoutHeight {
             revision_number: Some(2),
@@ -171,7 +176,7 @@ fn execute_send(
         payer_fee: PayerFee {
             ack_fee: vec![coin(2000, denom.clone())],
             timeout_fee: vec![coin(2000, denom.clone())],
-            recv_fee: vec![coin(2000, denom.clone())],
+            recv_fee: vec![coin(2000, denom)],
         },
     };
     let submsg1 = msg_with_sudo_callback(
@@ -193,6 +198,7 @@ fn execute_send(
         .debug(format!("WASMDEBUG: execute_send: sent submsg1: {:?}", submsg1).as_str());
     deps.api
         .debug(format!("WASMDEBUG: execute_send: sent submsg2: {:?}", submsg2).as_str());
+
     Ok(Response::default().add_submessages(vec![submsg1, submsg2]))
 }
 
