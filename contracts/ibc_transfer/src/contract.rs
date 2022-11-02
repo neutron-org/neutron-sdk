@@ -3,12 +3,11 @@ use cosmwasm_std::{
     StdError, StdResult, SubMsg,
 };
 use cw2::set_contract_version;
+use neutron_sdk::bindings::msg::MsgIbcTransferResponse;
 use neutron_sdk::{
     bindings::msg::{NeutronMsg, PayerFee},
-    proto_types::transfer::MsgTransferResponse,
     sudo::msg::{RequestPacket, RequestPacketTimeoutHeight, TransferSudoMsg},
 };
-use protobuf::Message as ProtoMessage;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -109,7 +108,7 @@ fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
 
 fn prepare_sudo_payload(mut deps: DepsMut, _env: Env, msg: Reply) -> StdResult<Response> {
     let payload = read_reply_payload(deps.storage, msg.id)?;
-    let resp: MsgTransferResponse = ProtoMessage::parse_from_bytes(
+    let resp: MsgIbcTransferResponse = serde_json_wasm::from_slice(
         msg.result
             .into_result()
             .map_err(StdError::generic_err)?
@@ -158,7 +157,7 @@ fn execute_send(
         fee: PayerFee {
             ack_fee: vec![coin(2000, denom.clone())],
             timeout_fee: vec![coin(2000, denom.clone())],
-            recv_fee: vec![coin(2000, denom.clone())],
+            recv_fee: vec![],
         },
     };
     let coin2 = coin(2 * amount, denom.clone());
@@ -175,8 +174,8 @@ fn execute_send(
         timeout_timestamp: 0,
         fee: PayerFee {
             ack_fee: vec![coin(2000, denom.clone())],
-            timeout_fee: vec![coin(2000, denom.clone())],
-            recv_fee: vec![coin(2000, denom)],
+            timeout_fee: vec![coin(2000, denom)],
+            recv_fee: vec![],
         },
     };
     let submsg1 = msg_with_sudo_callback(

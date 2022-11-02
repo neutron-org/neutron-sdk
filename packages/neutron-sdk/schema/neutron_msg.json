@@ -41,16 +41,24 @@
           "type": "object",
           "required": [
             "connection_id",
+            "fee",
             "interchain_account_id",
             "memo",
             "msgs",
-            "payer_fee",
             "timeout"
           ],
           "properties": {
             "connection_id": {
               "description": "*connection_id** is an IBC connection identifier between Neutron and remote chain",
               "type": "string"
+            },
+            "fee": {
+              "description": "**payer_fee** is a fee payer for the interchain transaction",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/PayerFee"
+                }
+              ]
             },
             "interchain_account_id": {
               "description": "*interchain_account_id** is an identifier of your interchain account from which you want to execute msgs",
@@ -66,14 +74,6 @@
               "items": {
                 "$ref": "#/definitions/ProtobufAny"
               }
-            },
-            "payer_fee": {
-              "description": "**payer_fee** is a fee payer for the interchain transaction",
-              "allOf": [
-                {
-                  "$ref": "#/definitions/PayerFee"
-                }
-              ]
             },
             "timeout": {
               "description": "*timeout** is a timeout in seconds after which the packet times out",
@@ -201,16 +201,16 @@
       "additionalProperties": false
     },
     {
-      "description": "MsgTransfer sends a fungible token packet over IBC",
+      "description": "IbcTransfer sends a fungible token packet over IBC",
       "type": "object",
       "required": [
-        "msg_transfer"
+        "ibc_transfer"
       ],
       "properties": {
-        "msg_transfer": {
+        "ibc_transfer": {
           "type": "object",
           "required": [
-            "payer_fee",
+            "fee",
             "receiver",
             "sender",
             "source_channel",
@@ -220,7 +220,7 @@
             "token"
           ],
           "properties": {
-            "payer_fee": {
+            "fee": {
               "$ref": "#/definitions/PayerFee"
             },
             "receiver": {

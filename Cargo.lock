@@ -436,6 +436,7 @@ dependencies = [
  "protobuf",
  "schemars",
  "serde",
+ "serde-json-wasm",
 ]
 
 [[package]]
