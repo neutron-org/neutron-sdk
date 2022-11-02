@@ -144,7 +144,7 @@ fn execute_send(
     amount: u128,
 ) -> StdResult<Response<NeutronMsg>> {
     let coin1 = coin(amount, denom.clone());
-    let msg1 = NeutronMsg::MsgTransfer {
+    let msg1 = NeutronMsg::IbcTransfer {
         source_port: "transfer".to_string(),
         source_channel: channel.clone(),
         sender: env.contract.address.to_string(),
@@ -155,14 +155,14 @@ fn execute_send(
             revision_height: Some(10000000),
         },
         timeout_timestamp: 0,
-        payer_fee: PayerFee {
+        fee: PayerFee {
             ack_fee: vec![coin(2000, denom.clone())],
             timeout_fee: vec![coin(2000, denom.clone())],
             recv_fee: vec![coin(2000, denom.clone())],
         },
     };
     let coin2 = coin(2 * amount, denom.clone());
-    let msg2 = NeutronMsg::MsgTransfer {
+    let msg2 = NeutronMsg::IbcTransfer {
         source_port: "transfer".to_string(),
         source_channel: channel,
         sender: env.contract.address.to_string(),
@@ -173,7 +173,7 @@ fn execute_send(
             revision_height: Some(10000000),
         },
         timeout_timestamp: 0,
-        payer_fee: PayerFee {
+        fee: PayerFee {
             ack_fee: vec![coin(2000, denom.clone())],
             timeout_fee: vec![coin(2000, denom.clone())],
             recv_fee: vec![coin(2000, denom)],

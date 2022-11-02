@@ -47,7 +47,7 @@ pub enum NeutronMsg {
         timeout: u64,
 
         /// ***payer_fee** is a fee payer for the interchain transaction
-        payer_fee: PayerFee,
+        fee: PayerFee,
     },
 
     /// RegisterInterchainQuery registers an interchain query
@@ -85,8 +85,8 @@ pub enum NeutronMsg {
         /// **query_id** is ID of the query we want to remove
         query_id: u64,
     },
-    /// MsgTransfer sends a fungible token packet over IBC
-    MsgTransfer {
+    /// IbcTransfer sends a fungible token packet over IBC
+    IbcTransfer {
         // the port on which the packet will be sent
         source_port: String,
         // the channel by which the packet will be sent
@@ -103,7 +103,7 @@ pub enum NeutronMsg {
         // Timeout timestamp in absolute nanoseconds since unix epoch.
         // The timeout is disabled when set to 0.
         timeout_timestamp: u64,
-        payer_fee: PayerFee,
+        fee: PayerFee,
     },
 }
 
@@ -141,7 +141,7 @@ impl NeutronMsg {
             msgs,
             memo,
             timeout,
-            payer_fee,
+            fee: payer_fee,
         }
     }
 
