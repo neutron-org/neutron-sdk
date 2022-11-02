@@ -9,7 +9,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-pub struct PayerFee {
+pub struct IbcFee {
     pub recv_fee: Vec<Coin>,
     pub ack_fee: Vec<Coin>,
     pub timeout_fee: Vec<Coin>,
@@ -46,8 +46,8 @@ pub enum NeutronMsg {
         /// **timeout** is a timeout in seconds after which the packet times out
         timeout: u64,
 
-        /// ***payer_fee** is a fee payer for the interchain transaction
-        fee: PayerFee,
+        /// ***fee** is an ibc fee for the transaction
+        fee: IbcFee,
     },
 
     /// RegisterInterchainQuery registers an interchain query
@@ -103,7 +103,7 @@ pub enum NeutronMsg {
         // Timeout timestamp in absolute nanoseconds since unix epoch.
         // The timeout is disabled when set to 0.
         timeout_timestamp: u64,
-        fee: PayerFee,
+        fee: IbcFee,
     },
 }
 
@@ -133,7 +133,7 @@ impl NeutronMsg {
         msgs: Vec<ProtobufAny>,
         memo: String,
         timeout: u64,
-        payer_fee: PayerFee,
+        fee: IbcFee,
     ) -> Self {
         NeutronMsg::SubmitTx {
             connection_id,
@@ -141,7 +141,7 @@ impl NeutronMsg {
             msgs,
             memo,
             timeout,
-            fee: payer_fee,
+            fee,
         }
     }
 

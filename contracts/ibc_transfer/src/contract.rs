@@ -5,7 +5,7 @@ use cosmwasm_std::{
 use cw2::set_contract_version;
 use neutron_sdk::bindings::msg::MsgIbcTransferResponse;
 use neutron_sdk::{
-    bindings::msg::{NeutronMsg, PayerFee},
+    bindings::msg::{IbcFee, NeutronMsg},
     sudo::msg::{RequestPacket, RequestPacketTimeoutHeight, TransferSudoMsg},
 };
 use schemars::JsonSchema;
@@ -154,7 +154,7 @@ fn execute_send(
             revision_height: Some(10000000),
         },
         timeout_timestamp: 0,
-        fee: PayerFee {
+        fee: IbcFee {
             ack_fee: vec![coin(2000, denom.clone())],
             timeout_fee: vec![coin(2000, denom.clone())],
             recv_fee: vec![],
@@ -172,7 +172,7 @@ fn execute_send(
             revision_height: Some(10000000),
         },
         timeout_timestamp: 0,
-        fee: PayerFee {
+        fee: IbcFee {
             ack_fee: vec![coin(2000, denom.clone())],
             timeout_fee: vec![coin(2000, denom)],
             recv_fee: vec![],

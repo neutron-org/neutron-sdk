@@ -28,7 +28,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
-use neutron_sdk::bindings::msg::{MsgSubmitTxResponse, NeutronMsg, PayerFee};
+use neutron_sdk::bindings::msg::{IbcFee, MsgSubmitTxResponse, NeutronMsg};
 use neutron_sdk::bindings::query::{InterchainQueries, QueryInterchainAccountAddressResponse};
 use neutron_sdk::bindings::types::ProtobufAny;
 use neutron_sdk::interchain_txs::helpers::{
@@ -40,7 +40,7 @@ use neutron_sdk::NeutronResult;
 use crate::storage::{
     add_error_to_queue, read_errors_from_queue, read_reply_payload, read_sudo_payload,
     save_reply_payload, save_sudo_payload, AcknowledgementResult, SudoPayload,
-    ACKNOWLEDGEMENT_RESULTS, INTERCHAIN_ACCOUNTS, PAYER_FEE, SUDO_PAYLOAD_REPLY_ID,
+    ACKNOWLEDGEMENT_RESULTS, IBC_FEE, INTERCHAIN_ACCOUNTS, SUDO_PAYLOAD_REPLY_ID,
 };
 
 // Default timeout for SubmitTX is two weeks
@@ -200,7 +200,7 @@ fn execute_set_fees(
     ack_fee: u128,
     timeout_fee: u128,
 ) -> StdResult<Response<NeutronMsg>> {
-    let fees = PayerFee {
+    let fees = IbcFee {
         recv_fee: vec![],
         ack_fee: vec![CosmosCoin {
             denom: denom.clone(),
@@ -211,7 +211,7 @@ fn execute_set_fees(
             amount: Uint128::from(timeout_fee),
         }],
     };
-    PAYER_FEE.save(deps.storage, &fees)?;
+    IBC_FEE.save(deps.storage, &fees)?;
     Ok(Response::default())
 }
 
@@ -237,7 +237,7 @@ fn execute_delegate(
     denom: String,
     timeout: Option<u64>,
 ) -> StdResult<Response<NeutronMsg>> {
-    let payer_fee = PAYER_FEE.load(deps.storage)?;
+    let fee = IBC_FEE.load(deps.storage)?;
     let (delegator, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
     let delegate_msg = MsgDelegate {
         delegator_address: delegator,
@@ -265,7 +265,7 @@ fn execute_delegate(
         vec![any_msg],
         "".to_string(),
         timeout.unwrap_or(DEFAULT_TIMEOUT_SECONDS),
-        payer_fee,
+        fee,
     );
 
     // We use a submessage here because we need the process message reply to save
@@ -291,7 +291,7 @@ fn execute_undelegate(
     denom: String,
     timeout: Option<u64>,
 ) -> StdResult<Response<NeutronMsg>> {
-    let payer_fee = PAYER_FEE.load(deps.storage)?;
+    let fee = IBC_FEE.load(deps.storage)?;
     let (delegator, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
     let delegate_msg = MsgUndelegate {
         delegator_address: delegator,
@@ -319,7 +319,7 @@ fn execute_undelegate(
         vec![any_msg],
         "".to_string(),
         timeout.unwrap_or(DEFAULT_TIMEOUT_SECONDS),
-        payer_fee,
+        fee,
     );
 
     let submsg = msg_with_sudo_callback(

@@ -53,10 +53,10 @@
               "type": "string"
             },
             "fee": {
-              "description": "**payer_fee** is a fee payer for the interchain transaction",
+              "description": "**fee** is an ibc fee for the transaction",
               "allOf": [
                 {
-                  "$ref": "#/definitions/PayerFee"
+                  "$ref": "#/definitions/IbcFee"
                 }
               ]
             },
@@ -221,7 +221,7 @@
           ],
           "properties": {
             "fee": {
-              "$ref": "#/definitions/PayerFee"
+              "$ref": "#/definitions/IbcFee"
             },
             "receiver": {
               "type": "string"
@@ -272,29 +272,7 @@
         }
       }
     },
-    "KVKey": {
-      "description": "Describes a KV key for which you want to get value from the storage on remote chain",
-      "type": "object",
-      "required": [
-        "key",
-        "path"
-      ],
-      "properties": {
-        "key": {
-          "description": "*key** is a key you want to read from the storage",
-          "allOf": [
-            {
-              "$ref": "#/definitions/Binary"
-            }
-          ]
-        },
-        "path": {
-          "description": "*path** is a path to the storage (storage prefix) where you want to read value by key (usually name of cosmos-sdk module: 'staking', 'bank', etc.)",
-          "type": "string"
-        }
-      }
-    },
-    "PayerFee": {
+    "IbcFee": {
       "type": "object",
       "required": [
         "ack_fee",
@@ -319,6 +297,28 @@
           "items": {
             "$ref": "#/definitions/Coin"
           }
+        }
+      }
+    },
+    "KVKey": {
+      "description": "Describes a KV key for which you want to get value from the storage on remote chain",
+      "type": "object",
+      "required": [
+        "key",
+        "path"
+      ],
+      "properties": {
+        "key": {
+          "description": "*key** is a key you want to read from the storage",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Binary"
+            }
+          ]
+        },
+        "path": {
+          "description": "*path** is a path to the storage (storage prefix) where you want to read value by key (usually name of cosmos-sdk module: 'staking', 'bank', etc.)",
+          "type": "string"
         }
       }
     },
