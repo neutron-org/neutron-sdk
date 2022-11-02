@@ -50,6 +50,8 @@ sleep 7;
 curl http://127.0.0.1:1317/staking/delegators/$ICA_ADDRESS/delegations
 
 echo "Try to delegate with sudo error"
+echo "Wait for previous transactions to be processed and turn off sudo handler"
+sleep 10
 echo "Get failures list before test"
 FAILURES_BEFORE_TEST=$(${BIN} q contractmanager failures $CONTRACT_ADDRESS \
     --output json \

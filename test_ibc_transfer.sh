@@ -37,6 +37,8 @@ RES=$(${BIN} tx wasm execute $TRANSFER_CONTRACT_ADDRESS \
 echo $RES | jq
 
 echo "Try to transfer coins from test-1 to test-2 again with failing sudo handler"
+echo "Wait for previous transactions to be processed and turn off sudo handler"
+sleep 10
 echo "Get failures list before test"
 FAILURES_BEFORE_TEST=$(${BIN} q contractmanager failures $TRANSFER_CONTRACT_ADDRESS \
     --output json \
