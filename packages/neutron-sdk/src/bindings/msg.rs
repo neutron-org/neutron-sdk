@@ -1,6 +1,7 @@
 use crate::{
     bindings::types::{KVKey, ProtobufAny},
     interchain_queries::types::{QueryPayload, QueryType},
+    sudo::msg::RequestPacketTimeoutHeight,
 };
 
 use cosmwasm_std::{Coin, CosmosMsg, CustomMsg};
@@ -83,6 +84,26 @@ pub enum NeutronMsg {
     RemoveInterchainQuery {
         /// **query_id** is ID of the query we want to remove
         query_id: u64,
+    },
+    /// MsgTransfer sends a fungible token packet over IBC
+    MsgTransfer {
+        // the port on which the packet will be sent
+        source_port: String,
+        // the channel by which the packet will be sent
+        source_channel: String,
+        // the tokens to be transferred
+        token: Coin,
+        // the sender address
+        sender: String,
+        // the recipient address on the destination chain
+        receiver: String,
+        // Timeout height relative to the current block height.
+        // The timeout is disabled when set to 0.
+        timeout_height: RequestPacketTimeoutHeight,
+        // Timeout timestamp in absolute nanoseconds since unix epoch.
+        // The timeout is disabled when set to 0.
+        timeout_timestamp: u64,
+        payer_fee: PayerFee,
     },
 }
 

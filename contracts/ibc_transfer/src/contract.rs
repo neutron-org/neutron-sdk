@@ -4,8 +4,9 @@ use cosmwasm_std::{
 };
 use cw2::set_contract_version;
 use neutron_sdk::{
+    bindings::msg::{NeutronMsg, PayerFee},
     proto_types::transfer::MsgTransferResponse,
-    sudo::msg::{RequestPacket, TransferSudoMsg},
+    sudo::msg::{RequestPacket, RequestPacketTimeoutHeight, TransferSudoMsg},
 };
 use protobuf::Message as ProtoMessage;
 use schemars::JsonSchema;
@@ -131,35 +132,48 @@ pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> StdResult<Response> {
 
 fn execute_send(
     mut deps: DepsMut,
+    env: Env,
     channel: String,
     to: String,
     denom: String,
     amount: u128,
 ) -> StdResult<Response> {
     let coin1 = coin(amount, denom.clone());
-    let msg1: CosmosMsg = CosmosMsg::Ibc(IbcMsg::Transfer {
-        // transfer channel
-        channel_id: channel.clone(),
-        // "to" is an address on the counterpart chain
-        to_address: to.clone(),
-        amount: coin1,
-        timeout: IbcTimeout::with_block(IbcTimeoutBlock {
-            revision: 2,
-            height: 10000000,
-        }),
-    });
+    let msg1 = NeutronMsg::MsgTransfer {
+        source_port: "transfer".to_string(),
+        source_channel: channel.clone(),
+        sender: env.contract.address.to_string(),
+        receiver: to.clone(),
+        token: coin1,
+        timeout_height: RequestPacketTimeoutHeight {
+            revision_number: Some(2),
+            revision_height: Some(10000000),
+        },
+        timeout_timestamp: 0,
+        payer_fee: PayerFee {
+            ack_fee: vec![coin(2000, denom.clone())],
+            timeout_fee: vec![coin(2000, denom.clone())],
+            recv_fee: vec![coin(2000, denom.clone())],
+        },
+    };
     let coin2 = coin(2 * amount, denom);
-    let msg2: CosmosMsg = CosmosMsg::Ibc(IbcMsg::Transfer {
-        // transfer channel
-        channel_id: channel,
-        // "to" is an address on the counterpart chain
-        to_address: to,
-        amount: coin2,
-        timeout: IbcTimeout::with_block(IbcTimeoutBlock {
-            revision: 2,
-            height: 10000000,
-        }),
-    });
+    let msg2 = NeutronMsg::MsgTransfer {
+        source_port: "transfer".to_string(),
+        source_channel: channel.clone(),
+        sender: env.contract.address.to_string(),
+        receiver: to.clone(),
+        token: coin2,
+        timeout_height: RequestPacketTimeoutHeight {
+            revision_number: Some(2),
+            revision_height: Some(10000000),
+        },
+        timeout_timestamp: 0,
+        payer_fee: PayerFee {
+            ack_fee: vec![coin(2000, denom.clone())],
+            timeout_fee: vec![coin(2000, denom.clone())],
+            recv_fee: vec![coin(2000, denom.clone())],
+        },
+    };
     let submsg1 = msg_with_sudo_callback(
         deps.branch(),
         msg1,

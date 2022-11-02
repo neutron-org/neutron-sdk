@@ -199,6 +199,57 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "description": "MsgTransfer sends a fungible token packet over IBC",
+      "type": "object",
+      "required": [
+        "msg_transfer"
+      ],
+      "properties": {
+        "msg_transfer": {
+          "type": "object",
+          "required": [
+            "payer_fee",
+            "receiver",
+            "sender",
+            "source_channel",
+            "source_port",
+            "timeout_height",
+            "timeout_timestamp",
+            "token"
+          ],
+          "properties": {
+            "payer_fee": {
+              "$ref": "#/definitions/PayerFee"
+            },
+            "receiver": {
+              "type": "string"
+            },
+            "sender": {
+              "type": "string"
+            },
+            "source_channel": {
+              "type": "string"
+            },
+            "source_port": {
+              "type": "string"
+            },
+            "timeout_height": {
+              "$ref": "#/definitions/RequestPacketTimeoutHeight"
+            },
+            "timeout_timestamp": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "token": {
+              "$ref": "#/definitions/Coin"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
     }
   ],
   "definitions": {
@@ -290,6 +341,27 @@
               "$ref": "#/definitions/Binary"
             }
           ]
+        }
+      }
+    },
+    "RequestPacketTimeoutHeight": {
+      "type": "object",
+      "properties": {
+        "revision_height": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint64",
+          "minimum": 0.0
+        },
+        "revision_number": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint64",
+          "minimum": 0.0
         }
       }
     },
