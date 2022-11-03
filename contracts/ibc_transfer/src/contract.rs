@@ -11,9 +11,13 @@ use protobuf::Message as ProtoMessage;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use crate::state::{
-    read_reply_payload, read_sudo_payload, save_reply_payload, save_sudo_payload,
-    IBC_SUDO_ID_RANGE_END, IBC_SUDO_ID_RANGE_START,
+use crate::{
+    integration_tests_mock_handlers::{set_sudo_failure_mock, unset_sudo_failure_mock},
+    state::{
+        read_reply_payload, read_sudo_payload, save_reply_payload, save_sudo_payload,
+        IntegrationTestsSudoMock, IBC_SUDO_ID_RANGE_END, IBC_SUDO_ID_RANGE_START,
+        INTEGRATION_TESTS_SUDO_MOCK,
+    },
 };
 
 const CONTRACT_NAME: &str = concat!("crates.io:neutron-contracts__", env!("CARGO_PKG_NAME"));
@@ -43,6 +47,13 @@ pub enum ExecuteMsg {
         denom: String,
         amount: u128,
     },
+    /// Used only in integration tests framework to simulate failures.
+    /// After executing this message, contract will fail, all of this happening
+    /// in sudo callback handler.
+    IntegrationTestsSetSudoFailureMock {},
+    /// Used only in integration tests framework to simulate failures.
+    /// After executing this message, contract will revert back to normal behaviour.
+    IntegrationTestsUnsetSudoFailureMock {},
 }
 
 #[entry_point]
@@ -59,6 +70,11 @@ pub fn execute(deps: DepsMut, _env: Env, _: MessageInfo, msg: ExecuteMsg) -> Std
             denom,
             amount,
         } => execute_send(deps, channel, to, denom, amount),
+        // Used only in integration tests framework to simulate failures.
+        // After executing this message, contract fail, all of this happening
+        // in sudo callback handler.
+        ExecuteMsg::IntegrationTestsSetSudoFailureMock {} => set_sudo_failure_mock(deps),
+        ExecuteMsg::IntegrationTestsUnsetSudoFailureMock {} => unset_sudo_failure_mock(deps),
     }
 }
 
@@ -184,6 +200,18 @@ fn execute_send(
 
 #[entry_point]
 pub fn sudo(deps: DepsMut, _env: Env, msg: TransferSudoMsg) -> StdResult<Response> {
+    if let Some(IntegrationTestsSudoMock::Enabled {}) =
+        INTEGRATION_TESTS_SUDO_MOCK.may_load(deps.storage)?
+    {
+        // Used only in integration tests framework to simulate failures.
+        deps.api
+            .debug("WASMDEBUG: sudo: mocked failure on the handler");
+
+        return Err(StdError::GenericErr {
+            msg: "Integations test mock error".to_string(),
+        });
+    }
+
     match msg {
         TransferSudoMsg::Response { request, data } => sudo_response(deps, request, data),
         TransferSudoMsg::Error { request, details } => sudo_error(deps, request, details),
