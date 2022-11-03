@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "QueryInterchainAccountAddressResponse",
+  "type": "object",
+  "required": [
+    "interchain_account_address"
+  ],
+  "properties": {
+    "interchain_account_address": {
+      "description": "*interchain_account_address** is a interchain account address on the remote chain",
+      "type": "string"
+    }
+  }
+}
