@@ -18,6 +18,7 @@ use cosmwasm_std::{
     entry_point, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult,
 };
 use cw2::set_contract_version;
+use neutron_sdk::interchain_queries::register_queries::new_register_interchain_query_msg;
 use prost::Message as ProstMessage;
 
 use crate::msg::{
@@ -46,7 +47,7 @@ use neutron_sdk::{NeutronError, NeutronResult};
 
 use crate::integration_tests_mock_handlers::{set_kv_query_mock, unset_kv_query_mock};
 use neutron_sdk::interchain_queries::types::{
-    TransactionFilterItem, TransactionFilterOp, TransactionFilterValue,
+    QueryType, TransactionFilterItem, TransactionFilterOp, TransactionFilterValue,
     COSMOS_SDK_TRANSFER_MSG_URL, RECIPIENT_FIELD,
 };
 use serde_json_wasm;
@@ -73,7 +74,7 @@ pub fn instantiate(
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut<InterchainQueries>,
-    _env: Env,
+    env: Env,
     _: MessageInfo,
     msg: ExecuteMsg,
 ) -> NeutronResult<Response<NeutronMsg>> {
@@ -123,6 +124,15 @@ pub fn execute(
         ExecuteMsg::RemoveInterchainQuery { query_id } => remove_interchain_query(query_id),
         ExecuteMsg::IntegrationTestsSetKvQueryMock {} => set_kv_query_mock(deps),
         ExecuteMsg::IntegrationTestsUnsetKvQueryMock {} => unset_kv_query_mock(deps),
+        ExecuteMsg::IntegrationTestsRegisterQueryEmptyId { connection_id } => {
+            register_query_empty_id(deps, env, connection_id)
+        }
+        ExecuteMsg::IntegrationTestsRegisterQueryEmptyPath { connection_id } => {
+            register_query_empty_path(deps, env, connection_id)
+        }
+        ExecuteMsg::IntegrationTestsRegisterQueryEmptyKeys { connection_id } => {
+            register_query_empty_keys(deps, env, connection_id)
+        }
     }
 }
 
@@ -201,6 +211,65 @@ pub fn register_transfers_query(
     let msg =
         new_register_transfers_query_msg(connection_id, recipient, update_period, min_height)?;
 
+    Ok(Response::new().add_message(msg))
+}
+
+pub fn register_query_empty_id(
+    deps: DepsMut<InterchainQueries>,
+    env: Env,
+    connection_id: String,
+) -> NeutronResult<Response<NeutronMsg>> {
+    let kv_key = KVKey {
+        path: "test".to_string(),
+        key: Binary(vec![]),
+    };
+    let msg = new_register_interchain_query_msg(
+        deps,
+        env,
+        connection_id,
+        QueryType::KV,
+        vec![kv_key],
+        vec![],
+        10,
+    )?;
+    Ok(Response::new().add_message(msg))
+}
+
+pub fn register_query_empty_path(
+    deps: DepsMut<InterchainQueries>,
+    env: Env,
+    connection_id: String,
+) -> NeutronResult<Response<NeutronMsg>> {
+    let kv_key = KVKey {
+        path: "".to_string(),
+        key: Binary("test".as_bytes().to_vec()),
+    };
+    let msg = new_register_interchain_query_msg(
+        deps,
+        env,
+        connection_id,
+        QueryType::KV,
+        vec![kv_key],
+        vec![],
+        10,
+    )?;
+    Ok(Response::new().add_message(msg))
+}
+
+pub fn register_query_empty_keys(
+    deps: DepsMut<InterchainQueries>,
+    env: Env,
+    connection_id: String,
+) -> NeutronResult<Response<NeutronMsg>> {
+    let msg = new_register_interchain_query_msg(
+        deps,
+        env,
+        connection_id,
+        QueryType::KV,
+        vec![],
+        vec![],
+        10,
+    )?;
     Ok(Response::new().add_message(msg))
 }
 

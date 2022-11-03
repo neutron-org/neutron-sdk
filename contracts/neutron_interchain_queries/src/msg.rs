@@ -54,6 +54,18 @@ pub enum ExecuteMsg {
     RemoveInterchainQuery {
         query_id: u64,
     },
+    /// Used only in integration tests framework to simulate failures. It tries to register query where keys is an empty array.
+    IntegrationTestsRegisterQueryEmptyKeys {
+        connection_id: String,
+    },
+    /// Used only in integration tests framework to simulate failures. It tries to register query where in keys array there is a key with empty path.
+    IntegrationTestsRegisterQueryEmptyPath {
+        connection_id: String,
+    },
+    /// Used only in integration tests framework to simulate failures. It tries to register query where in keys array there is a key with empty id.
+    IntegrationTestsRegisterQueryEmptyId {
+        connection_id: String,
+    },
     /// Used only in integration tests framework to simulate failures.
     /// After executing this message, contract will attempt to alter state,
     /// zero out kv query statistics and then fail, all of this happening
