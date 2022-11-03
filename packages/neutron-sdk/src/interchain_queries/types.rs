@@ -1,17 +1,18 @@
-use crate::bindings::types::{KVKey, StorageValue};
-use crate::errors::error::NeutronResult;
-use crate::NeutronError;
-use cosmos_sdk_proto::cosmos::base::v1beta1::Coin as CosmosCoin;
-use cosmos_sdk_proto::cosmos::distribution::v1beta1::FeePool as CosmosFeePool;
-use cosmos_sdk_proto::cosmos::gov::v1beta1::Proposal as CosmosProposal;
-use cosmos_sdk_proto::cosmos::staking::v1beta1::{Delegation, Validator as CosmosValidator};
+use crate::{
+    bindings::types::{KVKey, StorageValue},
+    errors::error::{NeutronError, NeutronResult},
+};
+use cosmos_sdk_proto::cosmos::{
+    base::v1beta1::Coin as CosmosCoin,
+    distribution::v1beta1::FeePool as CosmosFeePool,
+    gov::v1beta1::Proposal as CosmosProposal,
+    staking::v1beta1::{Delegation, Validator as CosmosValidator},
+};
 use cosmwasm_std::{from_binary, Addr, Coin, Decimal, Uint128};
 use prost::Message as ProstMessage;
-use schemars::JsonSchema;
-use schemars::_serde_json::Value;
+use schemars::{JsonSchema, _serde_json::Value};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use std::ops::Div;
-use std::str::FromStr;
+use std::{ops::Div, str::FromStr};
 
 use super::helpers::{
     get_max_change_rate, get_max_rate, get_rate, get_total_supply_amount, get_total_supply_denom,
@@ -126,6 +127,8 @@ impl Serialize for TransactionFilterValue {
     }
 }
 
+pub const MAX_TX_FILTERS: usize = 32;
+
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TransactionFilterItem {
     pub field: String,
@@ -163,7 +166,7 @@ pub enum QueryPayload {
 
     /// **tx** is an interchain query type to query transactions from remote chain
     /// payload is transactions filter
-    TX(String),
+    TX(Vec<TransactionFilterItem>),
 }
 
 /// Bytes representations of Bech32 address
