@@ -1,11 +1,14 @@
 use cosmwasm_std::{from_binary, to_vec, Binary, StdResult, Storage};
 use cw_storage_plus::{Item, Map};
+use neutron_sdk::bindings::msg::IbcFee;
 
 use crate::contract::SudoPayload;
 
 pub const IBC_SUDO_ID_RANGE_START: u64 = 1_000_000_000;
 pub const IBC_SUDO_ID_RANGE_SIZE: u64 = 1_000;
 pub const IBC_SUDO_ID_RANGE_END: u64 = IBC_SUDO_ID_RANGE_START + IBC_SUDO_ID_RANGE_SIZE;
+
+pub const IBC_FEE: Item<IbcFee> = Item::new("ibc_fee");
 
 pub const REPLY_QUEUE_ID: Map<u64, Vec<u8>> = Map::new("reply_queue_id");
 
