@@ -1,21 +1,22 @@
-use crate::bindings::msg::NeutronMsg;
 use crate::bindings::query::InterchainQueries;
-use crate::bindings::types::KVKey;
-use crate::errors::error::NeutronResult;
-use crate::interchain_queries::helpers::{
-    create_account_denom_balance_key, create_delegation_key, create_fee_pool_key,
-    create_gov_proposal_key, create_params_store_key, create_total_denom_key, create_validator_key,
-    decode_and_convert,
-};
 use crate::interchain_queries::types::{
     QueryType, TransactionFilterItem, TransactionFilterOp, TransactionFilterValue, BANK_STORE_KEY,
     DISTRIBUTION_STORE_KEY, GOV_STORE_KEY, HEIGHT_FIELD, KEY_BOND_DENOM, PARAMS_STORE_KEY,
     RECIPIENT_FIELD, STAKING_STORE_KEY,
 };
-use cosmwasm_std::{Binary, DepsMut, Env, StdError};
-use schemars::_serde_json::to_string;
-
-use super::types::QueryPayload;
+use crate::{
+    bindings::{msg::NeutronMsg, types::KVKey},
+    errors::error::NeutronResult,
+    interchain_queries::{
+        helpers::{
+            create_account_denom_balance_key, create_delegation_key, create_fee_pool_key,
+            create_gov_proposal_key, create_params_store_key, create_total_denom_key,
+            create_validator_key, decode_and_convert,
+        },
+        types::QueryPayload,
+    },
+};
+use cosmwasm_std::{Binary, DepsMut, Env};
 
 #[allow(clippy::too_many_arguments)]
 /// Creates a message to register an Interchain Query with provided params
@@ -25,20 +26,20 @@ pub fn new_register_interchain_query_msg(
     connection_id: String,
     query_type: QueryType,
     kv_keys: Vec<KVKey>,
-    transactions_filter: String,
+    transactions_filter: Vec<TransactionFilterItem>,
     update_period: u64,
 ) -> NeutronResult<NeutronMsg> {
     match query_type {
-        QueryType::KV => Ok(NeutronMsg::register_interchain_query(
+        QueryType::KV => NeutronMsg::register_interchain_query(
             QueryPayload::KV(kv_keys),
             connection_id,
             update_period,
-        )),
-        QueryType::TX => Ok(NeutronMsg::register_interchain_query(
+        ),
+        QueryType::TX => NeutronMsg::register_interchain_query(
             QueryPayload::TX(transactions_filter),
             connection_id,
             update_period,
-        )),
+        ),
     }
 }
 
@@ -49,8 +50,6 @@ pub fn new_register_interchain_query_msg(
 /// * **denom** denomination of the coin for which you want to get balance;
 /// * **update_period** is used to say how often the query must be updated.
 pub fn new_register_balance_query_msg(
-    deps: DepsMut<InterchainQueries>,
-    env: Env,
     connection_id: String,
     addr: String,
     denom: String,
@@ -65,13 +64,9 @@ pub fn new_register_balance_query_msg(
         key: Binary(balance_key),
     };
 
-    new_register_interchain_query_msg(
-        deps,
-        env,
+    NeutronMsg::register_interchain_query(
+        QueryPayload::KV(vec![kv_key]),
         connection_id,
-        QueryType::KV,
-        vec![kv_key],
-        String::new(),
         update_period,
     )
 }
@@ -82,8 +77,6 @@ pub fn new_register_balance_query_msg(
 /// * **denom** denomination of the coin for which you want to get total supply;
 /// * **update_period** is used to say how often the query must be updated.
 pub fn new_register_bank_total_supply_query_msg(
-    deps: DepsMut<InterchainQueries>,
-    env: Env,
     connection_id: String,
     denoms: Vec<String>,
     update_period: u64,
@@ -101,15 +94,7 @@ pub fn new_register_bank_total_supply_query_msg(
         kv_keys.push(kv_key)
     }
 
-    new_register_interchain_query_msg(
-        deps,
-        env,
-        connection_id,
-        QueryType::KV,
-        kv_keys,
-        String::new(),
-        update_period,
-    )
+    NeutronMsg::register_interchain_query(QueryPayload::KV(kv_keys), connection_id, update_period)
 }
 
 /// Creates a message to register an Interchain Query to get fee pool on remote chain from distribution module
@@ -117,8 +102,6 @@ pub fn new_register_bank_total_supply_query_msg(
 /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
 /// * **update_period** is used to say how often the query must be updated.
 pub fn new_register_distribution_fee_pool_query_msg(
-    deps: DepsMut<InterchainQueries>,
-    env: Env,
     connection_id: String,
     update_period: u64,
 ) -> NeutronResult<NeutronMsg> {
@@ -127,13 +110,9 @@ pub fn new_register_distribution_fee_pool_query_msg(
         key: Binary(create_fee_pool_key()?),
     };
 
-    new_register_interchain_query_msg(
-        deps,
-        env,
+    NeutronMsg::register_interchain_query(
+        QueryPayload::KV(vec![kv_key]),
         connection_id,
-        QueryType::KV,
-        vec![kv_key],
-        String::new(),
         update_period,
     )
 }
@@ -144,8 +123,6 @@ pub fn new_register_distribution_fee_pool_query_msg(
 /// * **proposal_id** is a proposal id from remote chain.
 /// * **update_period** is used to say how often the query must be updated.
 pub fn new_register_gov_proposal_query_msg(
-    deps: DepsMut<InterchainQueries>,
-    env: Env,
     connection_id: String,
     proposals_ids: Vec<u64>,
     update_period: u64,
@@ -161,15 +138,7 @@ pub fn new_register_gov_proposal_query_msg(
         kv_keys.push(kv_key)
     }
 
-    new_register_interchain_query_msg(
-        deps,
-        env,
-        connection_id,
-        QueryType::KV,
-        kv_keys,
-        String::new(),
-        update_period,
-    )
+    NeutronMsg::register_interchain_query(QueryPayload::KV(kv_keys), connection_id, update_period)
 }
 
 /// Creates a message to register an Interchain Query to get validator info on remote chain
@@ -178,8 +147,6 @@ pub fn new_register_gov_proposal_query_msg(
 /// * **validator** is an validator operator address of an account on remote chain for which you want to get rewards ;
 /// * **update_period** is used to say how often the query must be updated.
 pub fn new_register_staking_validators_query_msg(
-    deps: DepsMut<InterchainQueries>,
-    env: Env,
     connection_id: String,
     validators: Vec<String>,
     update_period: u64,
@@ -197,15 +164,7 @@ pub fn new_register_staking_validators_query_msg(
         kv_keys.push(kv_key)
     }
 
-    new_register_interchain_query_msg(
-        deps,
-        env,
-        connection_id,
-        QueryType::KV,
-        kv_keys,
-        String::new(),
-        update_period,
-    )
+    NeutronMsg::register_interchain_query(QueryPayload::KV(kv_keys), connection_id, update_period)
 }
 
 /// Creates a message to register an Interchain Query to get delegations of particular delegator on remote chain.
@@ -215,8 +174,6 @@ pub fn new_register_staking_validators_query_msg(
 /// * **validators** is a list of validators addresses for which you want to get delegations from particular **delegator**;
 /// * **update_period** is used to say how often the query must be updated.
 pub fn new_register_delegator_delegations_query_msg(
-    deps: DepsMut<InterchainQueries>,
-    env: Env,
     connection_id: String,
     delegator: String,
     validators: Vec<String>,
@@ -251,15 +208,7 @@ pub fn new_register_delegator_delegations_query_msg(
         })
     }
 
-    new_register_interchain_query_msg(
-        deps,
-        env,
-        connection_id,
-        QueryType::KV,
-        keys,
-        String::new(),
-        update_period,
-    )
+    NeutronMsg::register_interchain_query(QueryPayload::KV(keys), connection_id, update_period)
 }
 
 /// Creates a message to register an Interchain Query to get transfer events to a recipient on a remote chain.
@@ -269,14 +218,12 @@ pub fn new_register_delegator_delegations_query_msg(
 /// * **update_period** is used to say how often the query must be updated.
 /// * **min_height** is used to set min height for query (by default = 0).
 pub fn new_register_transfers_query_msg(
-    deps: DepsMut<InterchainQueries>,
-    env: Env,
     connection_id: String,
     recipient: String,
     update_period: u64,
     min_height: Option<u128>,
 ) -> NeutronResult<NeutronMsg> {
-    let mut query_data: Vec<TransactionFilterItem> = vec![TransactionFilterItem {
+    let mut query_data = vec![TransactionFilterItem {
         field: RECIPIENT_FIELD.to_string(),
         op: TransactionFilterOp::Eq,
         value: TransactionFilterValue::String(recipient),
@@ -288,16 +235,10 @@ pub fn new_register_transfers_query_msg(
             value: TransactionFilterValue::Int(min_height),
         })
     }
-    let query_data_json_encoded =
-        to_string(&query_data).map_err(|e| StdError::generic_err(e.to_string()))?;
 
-    new_register_interchain_query_msg(
-        deps,
-        env,
+    NeutronMsg::register_interchain_query(
+        QueryPayload::TX(query_data),
         connection_id,
-        QueryType::TX,
-        vec![],
-        query_data_json_encoded,
         update_period,
     )
 }
