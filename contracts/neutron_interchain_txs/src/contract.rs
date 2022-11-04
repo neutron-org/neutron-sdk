@@ -196,12 +196,15 @@ fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
 fn execute_set_fees(
     deps: DepsMut,
     denom: String,
-    _recv_fee: u128,
+    recv_fee: u128,
     ack_fee: u128,
     timeout_fee: u128,
 ) -> StdResult<Response<NeutronMsg>> {
     let fees = IbcFee {
-        recv_fee: vec![],
+        recv_fee: vec![CosmosCoin {
+            denom: denom.clone(),
+            amount: Uint128::from(recv_fee),
+        }],
         ack_fee: vec![CosmosCoin {
             denom: denom.clone(),
             amount: Uint128::from(ack_fee),
