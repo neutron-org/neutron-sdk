@@ -1,4 +1,4 @@
-use cosmwasm_std::{from_binary, to_vec, Binary, Order, StdResult, Storage};
+use cosmwasm_std::{from_binary, to_vec, Binary, StdResult, Storage};
 use cw_storage_plus::{Item, Map};
 use neutron_sdk::bindings::msg::IbcFee;
 use schemars::JsonSchema;
@@ -23,8 +23,6 @@ pub const INTERCHAIN_ACCOUNTS: Map<String, Option<(String, String)>> =
 pub const ACKNOWLEDGEMENT_RESULTS: Map<(String, u64), AcknowledgementResult> =
     Map::new("acknowledgement_results");
 
-pub const ERRORS_QUEUE: Map<u32, String> = Map::new("errors_queue");
-
 /// Serves for storing acknowledgement calls for interchain transactions
 #[derive(Serialize, Deserialize, Clone, PartialEq, Eq, JsonSchema, Debug)]
 #[serde(rename_all = "snake_case")]
@@ -46,23 +44,6 @@ pub fn read_reply_payload(store: &mut dyn Storage) -> StdResult<SudoPayload> {
     from_binary(&Binary(data))
 }
 
-pub fn add_error_to_queue(store: &mut dyn Storage, error_msg: String) -> Option<()> {
-    let result = ERRORS_QUEUE
-        .keys(store, None, None, Order::Descending)
-        .next()
-        .and_then(|data| data.ok())
-        .map(|c| c + 1)
-        .or(Some(0));
-
-    result.and_then(|idx| ERRORS_QUEUE.save(store, idx, &error_msg).ok())
-}
-
-pub fn read_errors_from_queue(store: &dyn Storage) -> StdResult<Vec<(Vec<u8>, String)>> {
-    ERRORS_QUEUE
-        .range_raw(store, None, None, Order::Ascending)
-        .collect()
-}
-
 pub fn read_sudo_payload(
     store: &mut dyn Storage,
     channel_id: String,
@@ -79,14 +60,4 @@ pub fn save_sudo_payload(
     payload: SudoPayload,
 ) -> StdResult<()> {
     SUDO_PAYLOAD.save(store, (channel_id, seq_id), &to_vec(&payload)?)
-}
-
-/// Used only in integration tests framework to simulate failures.
-pub const INTEGRATION_TESTS_SUDO_MOCK: Item<IntegrationTestsSudoMock> =
-    Item::new("integration_tests_sudo_mock");
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-pub enum IntegrationTestsSudoMock {
-    Enabled,
-    Disabled,
 }
