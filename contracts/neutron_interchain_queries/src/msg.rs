@@ -38,7 +38,7 @@ pub enum ExecuteMsg {
         connection_id: String,
         update_period: u64,
         recipient: String,
-        min_height: Option<u128>,
+        min_height: Option<u64>,
     },
     RegisterDelegatorDelegationsQuery {
         delegator: String,
