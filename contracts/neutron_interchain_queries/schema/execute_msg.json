@@ -185,7 +185,7 @@
                 "integer",
                 "null"
               ],
-              "format": "uint128",
+              "format": "uint64",
               "minimum": 0.0
             },
             "recipient": {

@@ -18,7 +18,7 @@ pub fn create_params_store_key(module: &str, key: &str) -> Vec<u8> {
 }
 
 /// Decodes a bech32 encoded string and converts to base64 encoded bytes
-/// https://github.com/cosmos/cosmos-sdk/blob/ad9e5620fb3445c716e9de45cfcdb56e8f1745bf/types/bech32/bech32.go#L20
+/// <https://github.com/cosmos/cosmos-sdk/blob/ad9e5620fb3445c716e9de45cfcdb56e8f1745bf/types/bech32/bech32.go#L20>
 pub fn decode_and_convert(encoded: &str) -> NeutronResult<AddressBytes> {
     let (_hrp, bytes, _variant) = bech32::decode(encoded)?;
 
@@ -47,7 +47,7 @@ pub fn length_prefix<AddrBytes: AsRef<[u8]>>(addr: AddrBytes) -> NeutronResult<V
 }
 
 /// Creates balances Cosmos-SDK storage prefix for account with **addr**
-/// https://github.com/cosmos/cosmos-sdk/blob/ad9e5620fb3445c716e9de45cfcdb56e8f1745bf/x/bank/types/key.go#L55
+/// <https://github.com/cosmos/cosmos-sdk/blob/ad9e5620fb3445c716e9de45cfcdb56e8f1745bf/x/bank/types/key.go#L55>
 pub fn create_account_balances_prefix<AddrBytes: AsRef<[u8]>>(
     addr: AddrBytes,
 ) -> NeutronResult<Vec<u8>> {
@@ -88,7 +88,7 @@ pub fn create_total_denom_key<S: AsRef<str>>(denom: S) -> NeutronResult<Vec<u8>>
 }
 
 /// Creates delegations Cosmos-SDK storage prefix for delegator with **delegator_addr**
-/// https://github.com/cosmos/cosmos-sdk/blob/ad9e5620fb3445c716e9de45cfcdb56e8f1745bf/x/staking/types/keys.go#L181
+/// <https://github.com/cosmos/cosmos-sdk/blob/ad9e5620fb3445c716e9de45cfcdb56e8f1745bf/x/staking/types/keys.go#L181>
 pub fn create_delegations_key<AddrBytes: AsRef<[u8]>>(
     delegator_address: AddrBytes,
 ) -> NeutronResult<Vec<u8>> {
@@ -99,7 +99,7 @@ pub fn create_delegations_key<AddrBytes: AsRef<[u8]>>(
 }
 
 /// Creates Cosmos-SDK storage key for delegation between delegator with **delegator_addr** and validator with **validator_addr**
-/// https://github.com/cosmos/cosmos-sdk/blob/ad9e5620fb3445c716e9de45cfcdb56e8f1745bf/x/staking/types/keys.go#L176
+/// <https://github.com/cosmos/cosmos-sdk/blob/ad9e5620fb3445c716e9de45cfcdb56e8f1745bf/x/staking/types/keys.go#L176>
 pub fn create_delegation_key<AddrBytes: AsRef<[u8]>>(
     delegator_address: AddrBytes,
     validator_address: AddrBytes,
@@ -111,7 +111,7 @@ pub fn create_delegation_key<AddrBytes: AsRef<[u8]>>(
 }
 
 /// Creates Cosmos-SDK storage key for validator with **operator_address**
-/// https://github.com/cosmos/cosmos-sdk/blob/f2d94445c0f5f52cf5ed999b81048b575de94964/x/staking/types/keys.go#L55
+/// <https://github.com/cosmos/cosmos-sdk/blob/f2d94445c0f5f52cf5ed999b81048b575de94964/x/staking/types/keys.go#L55>
 pub fn create_validator_key<AddrBytes: AsRef<[u8]>>(
     operator_address: AddrBytes,
 ) -> NeutronResult<Vec<u8>> {

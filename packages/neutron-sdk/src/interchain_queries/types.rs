@@ -29,7 +29,7 @@ const QUERY_TYPE_TX_VALUE: &str = "tx";
 pub const COSMOS_SDK_TRANSFER_MSG_URL: &str = "/cosmos.bank.v1beta1.MsgSend";
 
 /// Storage prefix for account balances store
-/// https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/bank/types/key.go#L27
+/// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/bank/types/key.go#L27>
 pub const BALANCES_PREFIX: u8 = 0x02;
 
 /// Storage prefix for bank supply store
@@ -37,11 +37,11 @@ pub const BALANCES_PREFIX: u8 = 0x02;
 pub const SUPPLY_PREFIX: u8 = 0x00;
 
 /// Key for delegations in the **staking** module's storage
-/// https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/staking/types/keys.go#L39
+/// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/staking/types/keys.go#L39>
 pub const DELEGATION_KEY: u8 = 0x31;
 
 /// Key for validators in the **staking** module's storage
-/// https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/staking/types/keys.go#L35
+/// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/staking/types/keys.go#L35>
 pub const VALIDATORS_KEY: u8 = 0x21;
 
 /// Key for Fee Pool in the **distribution** module's storage
@@ -68,7 +68,7 @@ pub const DISTRIBUTION_STORE_KEY: &str = "distribution";
 pub const GOV_STORE_KEY: &str = "gov";
 
 /// Key for bond denomination param of Cosmos-SDK staking module
-/// https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/staking/types/params.go#L39
+/// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/staking/types/params.go#L39>
 pub const KEY_BOND_DENOM: &str = "BondDenom";
 
 /// Name of the standard **params** Cosmos-SDK module
@@ -92,7 +92,7 @@ pub enum TransactionFilterOp {
 #[derive(PartialEq, Eq, Debug)]
 pub enum TransactionFilterValue {
     String(String),
-    Int(u128),
+    Int(u64),
 }
 
 impl<'de> Deserialize<'de> for TransactionFilterValue {
@@ -105,7 +105,7 @@ impl<'de> Deserialize<'de> for TransactionFilterValue {
         let v = Value::deserialize(deserializer)?;
         let n = v.as_u64();
         if let Some(n) = n {
-            Ok(Self::Int(n.into()))
+            Ok(Self::Int(n))
         } else {
             let n = v
                 .as_str()
@@ -122,7 +122,7 @@ impl Serialize for TransactionFilterValue {
     {
         match self {
             TransactionFilterValue::String(v) => serializer.serialize_str(v),
-            TransactionFilterValue::Int(v) => serializer.serialize_u128(*v),
+            TransactionFilterValue::Int(v) => serializer.serialize_u64(*v),
         }
     }
 }
@@ -174,7 +174,6 @@ pub type AddressBytes = Vec<u8>;
 
 /// A **data structure** that can be reconstructed from slice of **StorageValue** structures.
 /// Neutron provides `KVReconstruct` for many primitive and standard Cosmos-SDK types and query responses.
-/// The complete list is [here][TODO_LINK]. All of these can be deserialized using Neutron out of the box.
 ///
 /// Third-party projects may provide `KVReconstruct` implementations for types that they introduce.
 /// For example if some query is not implemented in Neutron standard library, developers can create their own type/query and implement `KVReconstruct` for it.
