@@ -48,3 +48,63 @@ echo $RES
 
 sleep 7;
 curl http://127.0.0.1:1317/staking/delegators/$ICA_ADDRESS/delegations
+
+echo "Try to delegate with sudo error"
+echo "Wait for previous transactions to be processed and turn off sudo handler"
+sleep 10
+echo "Get failures list before test"
+FAILURES_BEFORE_TEST=$(${BIN} q contractmanager failures $CONTRACT_ADDRESS \
+    --output json \
+    --node tcp://127.0.0.1:16657)
+
+echo "Turn off sudo handler"
+RES=$(${BIN} tx wasm execute $CONTRACT_ADDRESS \
+    '{"integration_tests_set_sudo_failure_mock":{}}' \
+    --from ${ADDRESS_1}  -y \
+    --chain-id ${CHAIN_ID_1} \
+    --output json \
+    --broadcast-mode=block \
+    --gas-prices 0.0025stake \
+    --gas 1000000 \
+    --keyring-backend test \
+    --home ${HOME_1} \
+    --node tcp://127.0.0.1:16657)
+echo $RES | jq
+
+echo "Delegate"
+RES=$(${BIN} tx wasm execute $CONTRACT_ADDRESS \
+    "{\"delegate\": {\"interchain_account_id\": \"test\", \"validator\": \"${VAL2}\", \"amount\":\"5000\",\"denom\":\"stake\"}}" \
+    --from ${ADDRESS_1}  -y \
+    --chain-id ${CHAIN_ID_1} \
+    --output json \
+    --broadcast-mode=block \
+    --gas-prices 0.0025stake \
+    --gas 1000000 \
+    --keyring-backend test \
+    --home ${HOME_1} \
+    --node tcp://127.0.0.1:16657)
+echo $RES | jq
+
+echo "Wait for message to be processed and turn on sudo handler"
+sleep 10
+RES=$(${BIN} tx wasm execute $CONTRACT_ADDRESS \
+    '{"integration_tests_unset_sudo_failure_mock":{}}' \
+    --from ${ADDRESS_1}  -y \
+    --chain-id ${CHAIN_ID_1} \
+    --output json \
+    --broadcast-mode=block \
+    --gas-prices 0.0025stake \
+    --gas 1000000 \
+    --keyring-backend test \
+    --home ${HOME_1} \
+    --node tcp://127.0.0.1:16657)
+echo $RES | jq
+
+echo "Failures before test. Should be empty"
+echo "${FAILURES_BEFORE_TEST}" | jq ''
+
+echo "Show failures after test"
+${BIN} q contractmanager failures $CONTRACT_ADDRESS \
+    --output json \
+    --node tcp://127.0.0.1:16657 | jq ''
+    

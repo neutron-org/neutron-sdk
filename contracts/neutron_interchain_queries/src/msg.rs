@@ -38,7 +38,7 @@ pub enum ExecuteMsg {
         connection_id: String,
         update_period: u64,
         recipient: String,
-        min_height: Option<u128>,
+        min_height: Option<u64>,
     },
     RegisterDelegatorDelegationsQuery {
         delegator: String,
@@ -53,6 +53,18 @@ pub enum ExecuteMsg {
     },
     RemoveInterchainQuery {
         query_id: u64,
+    },
+    /// Used only in integration tests framework to simulate failures. It tries to register query where keys is an empty array.
+    IntegrationTestsRegisterQueryEmptyKeys {
+        connection_id: String,
+    },
+    /// Used only in integration tests framework to simulate failures. It tries to register query where in keys array there is a key with empty path.
+    IntegrationTestsRegisterQueryEmptyPath {
+        connection_id: String,
+    },
+    /// Used only in integration tests framework to simulate failures. It tries to register query where in keys array there is a key with empty id.
+    IntegrationTestsRegisterQueryEmptyId {
+        connection_id: String,
     },
     /// Used only in integration tests framework to simulate failures.
     /// After executing this message, contract will attempt to alter state,

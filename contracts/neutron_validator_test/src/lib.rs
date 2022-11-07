@@ -15,6 +15,6 @@
 #![warn(clippy::unwrap_used, clippy::expect_used)]
 
 pub mod contract;
-pub mod state;
+pub mod msg;
 
-mod integration_tests_mock_handlers;
+mod storage;

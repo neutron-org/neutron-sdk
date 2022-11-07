@@ -185,7 +185,7 @@
                 "integer",
                 "null"
               ],
-              "format": "uint128",
+              "format": "uint64",
               "minimum": 0.0
             },
             "recipient": {
@@ -293,6 +293,69 @@
               "type": "integer",
               "format": "uint64",
               "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "Used only in integration tests framework to simulate failures. It tries to register query where keys is an empty array.",
+      "type": "object",
+      "required": [
+        "integration_tests_register_query_empty_keys"
+      ],
+      "properties": {
+        "integration_tests_register_query_empty_keys": {
+          "type": "object",
+          "required": [
+            "connection_id"
+          ],
+          "properties": {
+            "connection_id": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "Used only in integration tests framework to simulate failures. It tries to register query where in keys array there is a key with empty path.",
+      "type": "object",
+      "required": [
+        "integration_tests_register_query_empty_path"
+      ],
+      "properties": {
+        "integration_tests_register_query_empty_path": {
+          "type": "object",
+          "required": [
+            "connection_id"
+          ],
+          "properties": {
+            "connection_id": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "Used only in integration tests framework to simulate failures. It tries to register query where in keys array there is a key with empty id.",
+      "type": "object",
+      "required": [
+        "integration_tests_register_query_empty_id"
+      ],
+      "properties": {
+        "integration_tests_register_query_empty_id": {
+          "type": "object",
+          "required": [
+            "connection_id"
+          ],
+          "properties": {
+            "connection_id": {
+              "type": "string"
             }
           }
         }

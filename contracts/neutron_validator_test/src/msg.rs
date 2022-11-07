@@ -18,12 +18,7 @@ pub enum QueryMsg {
         interchain_account_id: String,
         sequence_id: u64,
     },
-    // this query returns non-critical errors list
-    ErrorsQueue {},
 }
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-pub struct MigrateMsg {}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct InstantiateMsg {}
@@ -50,11 +45,4 @@ pub enum ExecuteMsg {
         timeout: Option<u64>,
     },
     CleanAckResults {},
-    /// Used only in integration tests framework to simulate failures.
-    /// After executing this message, contract will fail, all of this happening
-    /// in sudo callback handler.
-    IntegrationTestsSetSudoFailureMock {},
-    /// Used only in integration tests framework to simulate failures.
-    /// After executing this message, contract will revert back to normal behaviour.
-    IntegrationTestsUnsetSudoFailureMock {},
 }
