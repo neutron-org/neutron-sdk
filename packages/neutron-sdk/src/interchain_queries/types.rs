@@ -92,7 +92,7 @@ pub enum TransactionFilterOp {
 #[derive(PartialEq, Eq, Debug)]
 pub enum TransactionFilterValue {
     String(String),
-    Int(u128),
+    Int(u64),
 }
 
 impl<'de> Deserialize<'de> for TransactionFilterValue {
@@ -105,7 +105,7 @@ impl<'de> Deserialize<'de> for TransactionFilterValue {
         let v = Value::deserialize(deserializer)?;
         let n = v.as_u64();
         if let Some(n) = n {
-            Ok(Self::Int(n.into()))
+            Ok(Self::Int(n))
         } else {
             let n = v
                 .as_str()
@@ -122,7 +122,7 @@ impl Serialize for TransactionFilterValue {
     {
         match self {
             TransactionFilterValue::String(v) => serializer.serialize_str(v),
-            TransactionFilterValue::Int(v) => serializer.serialize_u128(*v),
+            TransactionFilterValue::Int(v) => serializer.serialize_u64(*v),
         }
     }
 }

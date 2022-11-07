@@ -221,7 +221,7 @@ pub fn new_register_transfers_query_msg(
     connection_id: String,
     recipient: String,
     update_period: u64,
-    min_height: Option<u128>,
+    min_height: Option<u64>,
 ) -> NeutronResult<NeutronMsg> {
     let mut query_data = vec![TransactionFilterItem {
         field: RECIPIENT_FIELD.to_string(),
