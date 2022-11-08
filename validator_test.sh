@@ -12,6 +12,8 @@ then
     exit
 fi
 
+NODE_URL="${NODE_URL:-tcp://localhost:26657}"
+echo "Node url: $NODE_URL"
 
 CONTRACT_ADDRESS=$(cat ./contract_address.tmp)
 echo "Contract address: $CONTRACT_ADDRESS"
@@ -53,7 +55,7 @@ You can add symlink from your neutron binary to /bin this way: ln -s PATH_TO_NEU
     exit
 fi
 
-NEUTRON_CHAIN_ID=$(neutrond status | jq -r '.NodeInfo.network')
+NEUTRON_CHAIN_ID=$(neutrond status --node ${NODE_URL}| jq -r '.NodeInfo.network')
 
 if [ -z "$NEUTRON_CHAIN_ID" ]
 then
@@ -63,7 +65,7 @@ fi
 echo "Chain id: $NEUTRON_CHAIN_ID"
 
 ## Check if ibc connection does exist
-RES=$(neutrond query ibc connection end $CONNECTION_ID 2>/dev/null)
+RES=$(neutrond query ibc connection end $CONNECTION_ID --node ${NODE_URL} 2>/dev/null)
 
 if [ -z "$RES" ]
 then
@@ -94,7 +96,7 @@ read
 
 ## Set ibc fees
 echo "Set IBC fees"
-RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "{\"set_fees\": {\"ack_fee\": \"2000\", \"recv_fee\": \"2000\",\"timeout_fee\": \"2000\", \"denom\": \"${INTERCHAIN_ACCOUNT_ID}\"}}" --from $NEUTRON_KEY_NAME  -y --chain-id ${NEUTRON_CHAIN_ID} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000)
+RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "{\"set_fees\": {\"ack_fee\": \"2000\", \"recv_fee\": \"2000\",\"timeout_fee\": \"2000\", \"denom\": \"${INTERCHAIN_ACCOUNT_ID}\"}}" --from $NEUTRON_KEY_NAME  -y --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000)
 CODE=$(echo $RES | jq -r '.code')
 if [ $CODE != "0" ]
 then
@@ -106,12 +108,12 @@ fi
 
 ## Fund contract to be able to pay fees
 echo "Fund the contract to pay for IBC fees"
-RES=$(${BIN}tx bank send $NEUTRON_KEY_NAME ${CONTRACT_ADDRESS} 20000untrn --chain-id neutron-devnet-1 --gas-prices 0${GAS_PRICES})
+RES=$(${BIN}tx bank send $NEUTRON_KEY_NAME ${CONTRACT_ADDRESS} 20000untrn --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --gas-prices 0${GAS_PRICES})
 echo ""
 
 ## Register interchain account
 echo "Register interchain account"
-RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "{\"register\": {\"connection_id\": \"${CONNECTION_ID}\", \"interchain_account_id\": \"${INTERCHAIN_ACCOUNT_ID}\"}}" --from $NEUTRON_KEY_NAME  -y --chain-id ${NEUTRON_CHAIN_ID} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 2000000)
+RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "{\"register\": {\"connection_id\": \"${CONNECTION_ID}\", \"interchain_account_id\": \"${INTERCHAIN_ACCOUNT_ID}\"}}" --from $NEUTRON_KEY_NAME  -y --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 2000000)
 echo "$RES"
 echo ""
 echo "Waiting for registering account..."
@@ -121,7 +123,7 @@ j=40
 while [[ $j -gt 0 ]]
 do
     ((j--))
-    RES=$(neutrond query wasm contract-state smart ${CONTRACT_ADDRESS} "{\"interchain_account_address_from_contract\":{\"interchain_account_id\":\"${INTERCHAIN_ACCOUNT_ID}\"}}" --chain-id ${NEUTRON_CHAIN_ID} --output json 2>/dev/null)
+    RES=$(neutrond query wasm contract-state smart ${CONTRACT_ADDRESS} "{\"interchain_account_address_from_contract\":{\"interchain_account_id\":\"${INTERCHAIN_ACCOUNT_ID}\"}}" --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --output json 2>/dev/null)
     ICA_ADDRESS=$(echo $RES | jq -r '.data | .[0]')
     if [ ${#ICA_ADDRESS} = ${ICA_LENGTH[$i]} ]
     then
@@ -144,7 +146,7 @@ echo ""
 
 ## Execute Interchain Delegate tx
 echo "Execute Interchain Delegate tx"
-RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "{\"delegate\": {\"interchain_account_id\": \"${INTERCHAIN_ACCOUNT_ID}\", \"validator\": \"${TARGET_VALIDATOR}\", \"denom\":\"${TARGET_DENOM}\", \"amount\":\"9000\"}}" --from ${NEUTRON_KEY_NAME}  -y --chain-id ${NEUTRON_CHAIN_ID} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000)
+RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "{\"delegate\": {\"interchain_account_id\": \"${INTERCHAIN_ACCOUNT_ID}\", \"validator\": \"${TARGET_VALIDATOR}\", \"denom\":\"${TARGET_DENOM}\", \"amount\":\"9000\"}}" --from ${NEUTRON_KEY_NAME}  -y --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000)
 CODE=$(echo $RES | jq -r '.code')
 echo "$RES"
 if [ $CODE != "0" ]
@@ -159,7 +161,7 @@ j=60
 while [[ $j -gt 0 ]]
 do
     ((j--))
-    RES=$(${BIN} query wasm contract-state smart ${CONTRACT_ADDRESS} "{\"acknowledgement_result\":{\"interchain_account_id\":\"${INTERCHAIN_ACCOUNT_ID}\", \"sequence_id\": 1}}" --chain-id ${NEUTRON_CHAIN_ID} --output json 2>/dev/null)
+    RES=$(${BIN} query wasm contract-state smart ${CONTRACT_ADDRESS} "{\"acknowledgement_result\":{\"interchain_account_id\":\"${INTERCHAIN_ACCOUNT_ID}\", \"sequence_id\": 1}}" --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --output json 2>/dev/null)
     if [ "$RES" = "{\"data\":{\"success\":[\"/cosmos.staking.v1beta1.MsgDelegate\"]}}" ]
     then
 	ACK=1
@@ -183,7 +185,7 @@ echo ""
 
 # Clear ACK results on contract before the next test
 echo "Clear ACK results on contract before the next test"
-RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "{\"clean_ack_results\": {}}" --from ${NEUTRON_KEY_NAME}  -y --chain-id ${NEUTRON_CHAIN_ID} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000)
+RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "{\"clean_ack_results\": {}}" --from ${NEUTRON_KEY_NAME}  -y --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000)
 CODE=$(echo $RES | jq -r '.code')
 if [ $CODE != "0" ]
 then
@@ -195,7 +197,7 @@ fi
 echo ""
 # Execute Interchain Delegate tx (with host chain error)
 echo "Execute Interchain Delegate tx (with host chain error)"
-RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "{\"delegate\": {\"interchain_account_id\": \"${INTERCHAIN_ACCOUNT_ID}\", \"validator\": \"fake_address\", \"denom\":\"${TARGET_DENOM}\", \"amount\":\"9000\"}}" --from ${NEUTRON_KEY_NAME}  -y --chain-id ${NEUTRON_CHAIN_ID} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000)
+RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "{\"delegate\": {\"interchain_account_id\": \"${INTERCHAIN_ACCOUNT_ID}\", \"validator\": \"fake_address\", \"denom\":\"${TARGET_DENOM}\", \"amount\":\"9000\"}}" --from ${NEUTRON_KEY_NAME}  -y --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000)
 CODE=$(echo $RES | jq -r '.code')
 echo "$RES"
 if [ $CODE != "0" ]
@@ -209,7 +211,7 @@ j=60
 while [[ $j -gt 0 ]]
 do
     ((j--))
-    RES=$(${BIN} query wasm contract-state smart ${CONTRACT_ADDRESS} "{\"acknowledgement_result\":{\"interchain_account_id\":\"${INTERCHAIN_ACCOUNT_ID}\", \"sequence_id\": 2}}" --chain-id ${NEUTRON_CHAIN_ID} --output json 2>/dev/null)
+    RES=$(${BIN} query wasm contract-state smart ${CONTRACT_ADDRESS} "{\"acknowledgement_result\":{\"interchain_account_id\":\"${INTERCHAIN_ACCOUNT_ID}\", \"sequence_id\": 2}}" --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --output json 2>/dev/null)
     if [ "$RES" = "{\"data\":{\"error\":[\"message\",\"ABCI code: 1: error handling packet on host chain: see events for details\"]}}" ]
     then
 	ACK=1
@@ -231,7 +233,7 @@ fi
 echo ""
 # Execute Interchain Delegate tx (with contract error)
 echo "Execute Interchain Delegate tx (with contract error)"
-RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "{\"delegate\": {\"interchain_account_id\": \"${INTERCHAIN_ACCOUNT_ID}\", \"validator\": \"${TARGET_VALIDATOR}\", \"denom\":\"${TARGET_DENOM}\", \"amount\":\"6666\"}}" --from ${NEUTRON_KEY_NAME}  -y --chain-id ${NEUTRON_CHAIN_ID} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000)
+RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "{\"delegate\": {\"interchain_account_id\": \"${INTERCHAIN_ACCOUNT_ID}\", \"validator\": \"${TARGET_VALIDATOR}\", \"denom\":\"${TARGET_DENOM}\", \"amount\":\"6666\"}}" --from ${NEUTRON_KEY_NAME}  -y --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000)
 echo "$RES"
 CODE=$(echo $RES | jq -r '.code')
 if [ $CODE != "0" ]

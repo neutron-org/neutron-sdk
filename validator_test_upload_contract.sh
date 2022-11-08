@@ -7,6 +7,9 @@ NEUTRON_KEY_NAME=validator_test
 GAS_PRICES=0.01untrn
 EXPLORER_URL=http://23.109.159.28:3333/
 FAUCET_URL=http://23.109.159.28/
+NODE_URL="${NODE_URL:-tcp://localhost:26657}"
+
+echo "Node url: $NODE_URL"
 
 
 if [ $# != "1" ]
@@ -28,7 +31,7 @@ You can add symlink from your neutron binary to /bin this way: ln -s PATH_TO_NEU
     exit
 fi
 
-NEUTRON_CHAIN_ID=$(neutrond status | jq -r '.NodeInfo.network')
+NEUTRON_CHAIN_ID=$(neutrond status --node ${NODE_URL}| jq -r '.NodeInfo.network')
 
 if [ -z "$NEUTRON_CHAIN_ID" ]
 then
@@ -55,7 +58,7 @@ echo "Make sure tx is passed by going to $EXPLORER_URL/accounts/$NEUTRON_ADDRESS
 echo "Hit enter when ready"
 read
 echo "Upload the queries contract"
-RES=$(${BIN} tx wasm store ${CONTRACT} --from ${NEUTRON_KEY_NAME} --gas 50000000 --chain-id ${NEUTRON_CHAIN_ID} --broadcast-mode=block --gas-prices ${GAS_PRICES}  -y --output json)
+RES=$(${BIN} tx wasm store ${CONTRACT} --from ${NEUTRON_KEY_NAME} --gas 50000000  --node ${NODE_URL} --chain-id ${NEUTRON_CHAIN_ID} --broadcast-mode=block --gas-prices ${GAS_PRICES}  -y --output json)
 CONTRACT_CODE_ID=$(echo $RES | jq -r '.logs[0].events[1].attributes[0].value')
 if [ $CONTRACT_CODE_ID = "null" ]
 then
@@ -68,7 +71,7 @@ echo "Contract code id: $CONTRACT_CODE_ID"
 echo ""
 echo "Instantiate the contract"
 INIT_CONTRACT='{}'
-RES=$(${BIN} tx wasm instantiate $CONTRACT_CODE_ID "$INIT_CONTRACT" --from $NEUTRON_KEY_NAME --admin ${NEUTRON_ADDRESS} -y --chain-id ${NEUTRON_CHAIN_ID} --output json --broadcast-mode=block --label "init"  --gas-prices ${GAS_PRICES} --gas auto --gas-adjustment 1.4)
+RES=$(${BIN} tx wasm instantiate $CONTRACT_CODE_ID "$INIT_CONTRACT" --from $NEUTRON_KEY_NAME --admin ${NEUTRON_ADDRESS} -y  --node ${NODE_URL} --chain-id ${NEUTRON_CHAIN_ID} --output json --broadcast-mode=block --label "init"  --gas-prices ${GAS_PRICES} --gas auto --gas-adjustment 1.4)
 CONTRACT_ADDRESS=$(echo $RES | jq -r '.logs[0].events[0].attributes[0].value')
 echo "Contract address: $CONTRACT_ADDRESS"
 
