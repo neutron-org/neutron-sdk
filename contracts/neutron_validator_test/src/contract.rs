@@ -17,8 +17,8 @@ use cosmos_sdk_proto::cosmos::staking::v1beta1::{MsgDelegate, MsgUndelegate};
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Binary, CosmosMsg, CustomQuery, Deps, DepsMut, Env, MessageInfo, Reply, Response,
-    StdError, StdResult, SubMsg,
+    to_binary, Binary, Coin as CosmosCoin, CosmosMsg, CustomQuery, Deps, DepsMut, Env, MessageInfo,
+    Reply, Response, StdError, StdResult, SubMsg, Uint128,
 };
 use cw2::set_contract_version;
 use prost::Message;
@@ -26,7 +26,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
-use neutron_sdk::bindings::msg::{MsgSubmitTxResponse, NeutronMsg};
+use neutron_sdk::bindings::msg::{IbcFee, MsgSubmitTxResponse, NeutronMsg};
 use neutron_sdk::bindings::query::{InterchainQueries, QueryInterchainAccountAddressResponse};
 use neutron_sdk::bindings::types::ProtobufAny;
 use neutron_sdk::interchain_txs::helpers::{decode_acknowledgement_response, get_port_id};
@@ -35,7 +35,7 @@ use neutron_sdk::NeutronResult;
 
 use crate::storage::{
     read_reply_payload, read_sudo_payload, save_reply_payload, save_sudo_payload,
-    AcknowledgementResult, SudoPayload, ACKNOWLEDGEMENT_RESULTS, INTERCHAIN_ACCOUNTS,
+    AcknowledgementResult, SudoPayload, ACKNOWLEDGEMENT_RESULTS, IBC_FEE, INTERCHAIN_ACCOUNTS,
     SUDO_PAYLOAD_REPLY_ID,
 };
 
@@ -113,6 +113,12 @@ pub fn execute(
             timeout,
         ),
         ExecuteMsg::CleanAckResults {} => execute_clean_ack_results(deps),
+        ExecuteMsg::SetFees {
+            denom,
+            recv_fee,
+            ack_fee,
+            timeout_fee,
+        } => execute_set_fees(deps, denom, recv_fee, ack_fee, timeout_fee),
     }
 }
 
@@ -177,6 +183,31 @@ fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
     Ok(SubMsg::reply_on_success(msg, SUDO_PAYLOAD_REPLY_ID))
 }
 
+fn execute_set_fees(
+    deps: DepsMut,
+    denom: String,
+    recv_fee: u128,
+    ack_fee: u128,
+    timeout_fee: u128,
+) -> StdResult<Response<NeutronMsg>> {
+    let fees = IbcFee {
+        recv_fee: vec![CosmosCoin {
+            denom: denom.clone(),
+            amount: Uint128::from(recv_fee),
+        }],
+        ack_fee: vec![CosmosCoin {
+            denom: denom.clone(),
+            amount: Uint128::from(ack_fee),
+        }],
+        timeout_fee: vec![CosmosCoin {
+            denom,
+            amount: Uint128::from(timeout_fee),
+        }],
+    };
+    IBC_FEE.save(deps.storage, &fees)?;
+    Ok(Response::default())
+}
+
 fn execute_register_ica(
     deps: DepsMut,
     env: Env,
@@ -199,6 +230,7 @@ fn execute_delegate(
     denom: String,
     timeout: Option<u64>,
 ) -> StdResult<Response<NeutronMsg>> {
+    let fee = IBC_FEE.load(deps.storage)?;
     let (delegator, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
     let delegate_msg = MsgDelegate {
         delegator_address: delegator,
@@ -225,6 +257,7 @@ fn execute_delegate(
         vec![any_msg],
         "".to_string(),
         timeout.unwrap_or(DEFAULT_TIMEOUT_SECONDS),
+        fee,
     );
 
     // We use a submessage here because we need the process message reply to save
@@ -251,6 +284,7 @@ fn execute_undelegate(
     denom: String,
     timeout: Option<u64>,
 ) -> StdResult<Response<NeutronMsg>> {
+    let fee = IBC_FEE.load(deps.storage)?;
     let (delegator, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
     let delegate_msg = MsgUndelegate {
         delegator_address: delegator,
@@ -278,6 +312,7 @@ fn execute_undelegate(
         vec![any_msg],
         "".to_string(),
         timeout.unwrap_or(DEFAULT_TIMEOUT_SECONDS),
+        fee,
     );
 
     let submsg = msg_with_sudo_callback(

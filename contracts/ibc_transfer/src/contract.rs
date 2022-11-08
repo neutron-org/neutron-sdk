@@ -1,23 +1,24 @@
 use cosmwasm_std::{
-    coin, entry_point, Binary, CosmosMsg, Deps, DepsMut, Env, IbcMsg, IbcTimeout, IbcTimeoutBlock,
-    MessageInfo, Reply, Response, StdError, StdResult, SubMsg,
+    coin, entry_point, Binary, Coin, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Reply, Response,
+    StdError, StdResult, SubMsg,
 };
 use cw2::set_contract_version;
+use neutron_sdk::bindings::msg::MsgIbcTransferResponse;
 use neutron_sdk::{
-    proto_types::transfer::MsgTransferResponse,
-    sudo::msg::{RequestPacket, TransferSudoMsg},
+    bindings::msg::{IbcFee, NeutronMsg},
+    sudo::msg::{RequestPacket, RequestPacketTimeoutHeight, TransferSudoMsg},
 };
-use protobuf::Message as ProtoMessage;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+use crate::state::{
+    read_reply_payload, read_sudo_payload, save_reply_payload, save_sudo_payload, IBC_FEE,
+    IBC_SUDO_ID_RANGE_END, IBC_SUDO_ID_RANGE_START,
+};
+
 use crate::{
     integration_tests_mock_handlers::{set_sudo_failure_mock, unset_sudo_failure_mock},
-    state::{
-        read_reply_payload, read_sudo_payload, save_reply_payload, save_sudo_payload,
-        IntegrationTestsSudoMock, IBC_SUDO_ID_RANGE_END, IBC_SUDO_ID_RANGE_START,
-        INTEGRATION_TESTS_SUDO_MOCK,
-    },
+    state::{IntegrationTestsSudoMock, INTEGRATION_TESTS_SUDO_MOCK},
 };
 
 const CONTRACT_NAME: &str = concat!("crates.io:neutron-contracts__", env!("CARGO_PKG_NAME"));
@@ -47,6 +48,12 @@ pub enum ExecuteMsg {
         denom: String,
         amount: u128,
     },
+    SetFees {
+        recv_fee: u128,
+        ack_fee: u128,
+        timeout_fee: u128,
+        denom: String,
+    },
     /// Used only in integration tests framework to simulate failures.
     /// After executing this message, contract will fail, all of this happening
     /// in sudo callback handler.
@@ -57,7 +64,12 @@ pub enum ExecuteMsg {
 }
 
 #[entry_point]
-pub fn execute(deps: DepsMut, _env: Env, _: MessageInfo, msg: ExecuteMsg) -> StdResult<Response> {
+pub fn execute(
+    deps: DepsMut,
+    env: Env,
+    _: MessageInfo,
+    msg: ExecuteMsg,
+) -> StdResult<Response<NeutronMsg>> {
     deps.api
         .debug(format!("WASMDEBUG: execute: received msg: {:?}", msg).as_str());
     match msg {
@@ -69,7 +81,14 @@ pub fn execute(deps: DepsMut, _env: Env, _: MessageInfo, msg: ExecuteMsg) -> Std
             to,
             denom,
             amount,
-        } => execute_send(deps, channel, to, denom, amount),
+        } => execute_send(deps, env, channel, to, denom, amount),
+
+        ExecuteMsg::SetFees {
+            recv_fee,
+            ack_fee,
+            timeout_fee,
+            denom,
+        } => execute_set_fees(deps, recv_fee, ack_fee, timeout_fee, denom),
         // Used only in integration tests framework to simulate failures.
         // After executing this message, contract fail, all of this happening
         // in sudo callback handler.
@@ -108,18 +127,18 @@ pub enum SudoPayload {
     HandlerPayload2(Type2),
 }
 
-fn msg_with_sudo_callback<C: Into<CosmosMsg>>(
+fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
     deps: DepsMut,
     msg: C,
     payload: SudoPayload,
-) -> StdResult<SubMsg> {
+) -> StdResult<SubMsg<T>> {
     let id = save_reply_payload(deps.storage, payload)?;
     Ok(SubMsg::reply_on_success(msg, id))
 }
 
 fn prepare_sudo_payload(mut deps: DepsMut, _env: Env, msg: Reply) -> StdResult<Response> {
     let payload = read_reply_payload(deps.storage, msg.id)?;
-    let resp: MsgTransferResponse = ProtoMessage::parse_from_bytes(
+    let resp: MsgIbcTransferResponse = serde_json_wasm::from_slice(
         msg.result
             .into_result()
             .map_err(StdError::generic_err)?
@@ -145,37 +164,69 @@ pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> StdResult<Response> {
     }
 }
 
+fn get_fee_item(denom: String, amount: u128) -> Vec<Coin> {
+    if amount == 0 {
+        vec![]
+    } else {
+        vec![coin(amount, denom)]
+    }
+}
+
+fn execute_set_fees(
+    deps: DepsMut,
+    recv_fee: u128,
+    ack_fee: u128,
+    timeout_fee: u128,
+    denom: String,
+) -> StdResult<Response<NeutronMsg>> {
+    let fee = IbcFee {
+        recv_fee: get_fee_item(denom.clone(), recv_fee),
+        ack_fee: get_fee_item(denom.clone(), ack_fee),
+        timeout_fee: get_fee_item(denom, timeout_fee),
+    };
+
+    IBC_FEE.save(deps.storage, &fee)?;
+
+    Ok(Response::default())
+}
+
 fn execute_send(
     mut deps: DepsMut,
+    env: Env,
     channel: String,
     to: String,
     denom: String,
     amount: u128,
-) -> StdResult<Response> {
+) -> StdResult<Response<NeutronMsg>> {
+    let fee = IBC_FEE.load(deps.storage)?;
     let coin1 = coin(amount, denom.clone());
-    let msg1: CosmosMsg = CosmosMsg::Ibc(IbcMsg::Transfer {
-        // transfer channel
-        channel_id: channel.clone(),
-        // "to" is an address on the counterpart chain
-        to_address: to.clone(),
-        amount: coin1,
-        timeout: IbcTimeout::with_block(IbcTimeoutBlock {
-            revision: 2,
-            height: 10000000,
-        }),
-    });
+    let msg1 = NeutronMsg::IbcTransfer {
+        source_port: "transfer".to_string(),
+        source_channel: channel.clone(),
+        sender: env.contract.address.to_string(),
+        receiver: to.clone(),
+        token: coin1,
+        timeout_height: RequestPacketTimeoutHeight {
+            revision_number: Some(2),
+            revision_height: Some(10000000),
+        },
+        timeout_timestamp: 0,
+        fee: fee.clone(),
+    };
     let coin2 = coin(2 * amount, denom);
-    let msg2: CosmosMsg = CosmosMsg::Ibc(IbcMsg::Transfer {
-        // transfer channel
-        channel_id: channel,
-        // "to" is an address on the counterpart chain
-        to_address: to,
-        amount: coin2,
-        timeout: IbcTimeout::with_block(IbcTimeoutBlock {
-            revision: 2,
-            height: 10000000,
-        }),
-    });
+    let msg2 = NeutronMsg::IbcTransfer {
+        source_port: "transfer".to_string(),
+        source_channel: channel,
+        sender: env.contract.address.to_string(),
+        receiver: to,
+        token: coin2,
+        timeout_height: RequestPacketTimeoutHeight {
+            revision_number: Some(2),
+            revision_height: Some(10000000),
+        },
+        timeout_timestamp: 0,
+        fee,
+    };
     let submsg1 = msg_with_sudo_callback(
         deps.branch(),
         msg1,
@@ -195,6 +246,7 @@ fn execute_send(
         .debug(format!("WASMDEBUG: execute_send: sent submsg1: {:?}", submsg1).as_str());
     deps.api
         .debug(format!("WASMDEBUG: execute_send: sent submsg2: {:?}", submsg2).as_str());
+
     Ok(Response::default().add_submessages(vec![submsg1, submsg2]))
 }
 

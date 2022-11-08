@@ -117,6 +117,15 @@ then
 fi
 echo ""
 
+## Set ibc fees
+echo "Set IBC fees"
+RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "{\"set_fees\": {\"ack_fee\": \"2000\", \"recv_fee\": \"2000\",\"timeout_fee\": \"2000\", \"denom\": \"${INTERCHAIN_ACCOUNT_ID}\"}}" --from $NEUTRON_KEY_NAME  -y --chain-id ${NEUTRON_CHAIN_ID} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000)
+echo ""
+
+## Fund contract to be able to pay fees
+echo "Fund the contract to pay for IBC fees"
+RES=$(${BIN}tx bank send $NEUTRON_KEY_NAME ${CONTRACT_ADDRESS} 20000untrn --chain-id neutron-devnet-1 --gas-prices 0${GAS_PRICES})
+echo ""
 
 ## Register interchain account
 echo "Register interchain account"
