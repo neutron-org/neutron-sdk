@@ -72,6 +72,48 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "balance"
+      ],
+      "properties": {
+        "balance": {
+          "type": "object",
+          "required": [
+            "query_id"
+          ],
+          "properties": {
+            "query_id": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "get_recipient_txs"
+      ],
+      "properties": {
+        "get_recipient_txs": {
+          "type": "object",
+          "required": [
+            "recipient"
+          ],
+          "properties": {
+            "recipient": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
     }
   ]
 }

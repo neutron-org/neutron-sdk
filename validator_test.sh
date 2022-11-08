@@ -119,6 +119,38 @@ then
     exit
 fi
 echo "ICA address: $ICA_ADDRESS"
+
+echo ""
+echo "Sending two deposits to ICQ contract"
+RES=$(${BIN} tx bank send $NEUTRON_KEY_NAME "$CONTRACT_ADDRESS" 2000000untrn -y --chain-id "$NEUTRON_CHAIN_ID" --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000)
+
+echo ""
+echo "Registering interchain KV query..."
+RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "{\"register_balance_query\": {\"connection_id\": \"${CONNECTION_ID}\", \"addr\": \"${ICA_ADDRESS}\", \"denom\":\"${TARGET_DENOM}\", \"update_period\":5}}" --from $NEUTRON_KEY_NAME -y --chain-id "$NEUTRON_CHAIN_ID" --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000)
+KV_QUERY_ID=$(echo $RES | jq --raw-output '[[.logs[0].events[] | select(.type == "neutron")][0].attributes[] | select(.key == "query_id")][0].value')
+KV_QUERY_REG_TX_HASH=$(echo $RES | jq --raw-output '.txhash')
+echo "KV Query ID: $KV_QUERY_ID, TX hash: $KV_QUERY_REG_TX_HASH"
+
+echo ""
+echo "Registering interchain TX query..."
+RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "{\"register_transfers_query\": {\"connection_id\": \"${CONNECTION_ID}\", \"recipient\": \"${ICA_ADDRESS}\", \"update_period\":5}}" --from $NEUTRON_KEY_NAME -y --chain-id "$NEUTRON_CHAIN_ID" --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000)
+TX_QUERY_ID=$(echo $RES | jq --raw-output '[[.logs[0].events[] | select(.type == "neutron")][0].attributes[] | select(.key == "query_id")][0].value')
+TX_QUERY_REG_TX_HASH=$(echo $RES | jq --raw-output '.txhash')
+echo "TX Query ID: $TX_QUERY_ID, TX hash: $TX_QUERY_REG_TX_HASH"
+
+echo ""
+echo -n "Checking that deposits have been deducted completely from contract balance… "
+RES=$(${BIN} query bank balances ${CONTRACT_ADDRESS} --output json)
+BALANCE=$(echo $RES | jq --raw-output '[.balances[] | select(.denom == "untrn")][0].amount')
+if [[ $BALANCE -eq 20000 ]]; then
+  echo "OK"
+else
+  echo
+  echo "ERROR: contract is expected to drain all of its money on deposits (except 20000untrn for fees), but somehow different amount of tokens is left on its balance:"
+  echo $RES | jq
+  exit 1
+fi
+
 echo ""
 echo "Please send 0.02 ${DENOMS[$i]} to $ICA_ADDRESS"
 echo "hit enter when you are ready"
@@ -176,6 +208,44 @@ then
     exit
 fi
 
+echo ""
+echo "Waiting 30 seconds for query results to arrive…"
+sleep 30
+
+echo ""
+echo "Checking TX query result"
+RES=$(${BIN} query wasm contract-state smart ${CONTRACT_ADDRESS} "{\"get_recipient_txs\":{\"recipient\":\"${ICA_ADDRESS}\"}}" --chain-id "$NEUTRON_CHAIN_ID" --output json)
+echo "$RES" | jq
+echo ""
+echo "Please make sure output contains a single transfer of 0.02$TARGET_DENOM from faucet"
+echo "Hit enter to continue"
+read
+
+echo ""
+echo "Checking KV query result"
+RES=$(${BIN} query wasm contract-state smart ${CONTRACT_ADDRESS} "{\"balance\":{\"query_id\":$KV_QUERY_ID}}" --chain-id "$NEUTRON_CHAIN_ID" --output json)
+echo "$RES" | jq
+echo ""
+echo "Please compare query result to value here https://testnet.juno.explorers.guru/account/$ICA_ADDRESS"
+echo "Hit enter to continue"
+read
+
+echo ""
+echo "Deleting TX query and colleting deposit back to contract…"
+RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "$(printf '{"remove_interchain_query": {"query_id": %s}}' "$TX_QUERY_ID")" --from ${NEUTRON_KEY_NAME} -y --chain-id ${NEUTRON_CHAIN_ID} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000)
+
+echo ""
+echo -n "Checking that a single deposit has been returned to contract balance… "
+RES=$(${BIN} query bank balances ${CONTRACT_ADDRESS} --output json)
+BALANCE=$(echo $RES | jq --raw-output '[.balances[] | select(.denom == "untrn")][0].amount')
+if [[ $BALANCE -eq 1018000 ]]; then
+  echo "OK"
+else
+  echo
+  echo "ERROR: contract is expected to gain a single deposit back, but something went wrong:"
+  echo $RES | jq
+  exit 1
+fi
 
 echo ""
 # Execute Interchain Delegate tx (with host chain error)
