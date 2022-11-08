@@ -17,8 +17,8 @@ use cosmos_sdk_proto::cosmos::staking::v1beta1::{MsgDelegate, MsgUndelegate};
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Binary, Coin as CosmosCoin, CosmosMsg, CustomQuery, Deps, DepsMut, Env, MessageInfo,
-    Reply, Response, StdError, StdResult, SubMsg, Uint128,
+    coin, to_binary, Binary, Coin as CosmosCoin, CosmosMsg, CustomQuery, Deps, DepsMut, Env,
+    MessageInfo, Reply, Response, StdError, StdResult, SubMsg,
 };
 use cw2::set_contract_version;
 use prost::Message;
@@ -118,7 +118,7 @@ pub fn execute(
             recv_fee,
             ack_fee,
             timeout_fee,
-        } => execute_set_fees(deps, denom, recv_fee, ack_fee, timeout_fee),
+        } => execute_set_fees(deps, recv_fee, ack_fee, timeout_fee, denom),
     }
 }
 
@@ -183,28 +183,29 @@ fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
     Ok(SubMsg::reply_on_success(msg, SUDO_PAYLOAD_REPLY_ID))
 }
 
+fn get_fee_item(denom: String, amount: u128) -> Vec<CosmosCoin> {
+    if amount == 0 {
+        vec![]
+    } else {
+        vec![coin(amount, denom)]
+    }
+}
+
 fn execute_set_fees(
     deps: DepsMut,
-    denom: String,
     recv_fee: u128,
     ack_fee: u128,
     timeout_fee: u128,
+    denom: String,
 ) -> StdResult<Response<NeutronMsg>> {
-    let fees = IbcFee {
-        recv_fee: vec![CosmosCoin {
-            denom: denom.clone(),
-            amount: Uint128::from(recv_fee),
-        }],
-        ack_fee: vec![CosmosCoin {
-            denom: denom.clone(),
-            amount: Uint128::from(ack_fee),
-        }],
-        timeout_fee: vec![CosmosCoin {
-            denom,
-            amount: Uint128::from(timeout_fee),
-        }],
+    let fee = IbcFee {
+        recv_fee: get_fee_item(denom.clone(), recv_fee),
+        ack_fee: get_fee_item(denom.clone(), ack_fee),
+        timeout_fee: get_fee_item(denom, timeout_fee),
     };
-    IBC_FEE.save(deps.storage, &fees)?;
+
+    IBC_FEE.save(deps.storage, &fee)?;
+
     Ok(Response::default())
 }
 
