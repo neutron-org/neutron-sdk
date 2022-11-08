@@ -75,25 +75,6 @@ fi
 echo "Connection id: $CONNECTION_ID"
 echo ""
 
-## Add a new key
-RES=$($BIN keys add $NEUTRON_KEY_NAME --output json)
-NEUTRON_ADDRESS=$(echo $RES | jq -r .address)
-MNEMONIC=$(echo $RES | jq -r .mnemonic)
-if [ $NEUTRON_ADDRESS = "null" ]
-then
-    echo "Can't get address from key"
-    exit
-fi
-
-echo "Local address in neutron: $NEUTRON_ADDRESS"
-echo "Key mnemonic: $MNEMONIC"
-echo "Key name: $NEUTRON_KEY_NAME"
-echo ""
-echo "Please go to $FAUCET_URL and get tokens for $NEUTRON_ADDRESS"
-echo "Make sure tx is passed by going to $EXPLORER_URL/accounts/$NEUTRON_ADDRESS"
-echo "Hit enter when ready"
-read
-
 ## Set ibc fees
 echo "Set IBC fees"
 RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "{\"set_fees\": {\"ack_fee\": \"2000\", \"recv_fee\": \"2000\",\"timeout_fee\": \"2000\", \"denom\": \"${INTERCHAIN_ACCOUNT_ID}\"}}" --from $NEUTRON_KEY_NAME  -y --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000)
