@@ -97,10 +97,10 @@ echo "Register interchain account"
 RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "{\"register\": {\"connection_id\": \"${CONNECTION_ID}\", \"interchain_account_id\": \"${INTERCHAIN_ACCOUNT_ID}\"}}" --from $NEUTRON_KEY_NAME  -y --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 2000000)
 echo "$RES"
 echo ""
-echo "Waiting for registering account..."
+echo "Waiting for registering account... it may take a lot of time"
 
 ## Wait until ICA appears on the target chain
-j=40
+j=100
 while [[ $j -gt 0 ]]
 do
     ((j--))
@@ -134,11 +134,11 @@ if [ $CODE != "0" ]
 then
     echo "Delegation failed"
 fi
-echo "Waiting for delegation..."
+echo "Waiting for delegation... it may take a lot of time"
 
 ## Wait until ackowledgement appears on the source chain
 ACK=0
-j=60
+j=100
 while [[ $j -gt 0 ]]
 do
     ((j--))
@@ -185,10 +185,10 @@ if [ $CODE != "0" ]
 then
     echo "Delegation failed"
 fi
-echo "Waiting for delegation..."
+echo "Waiting for delegation...it may take a lot of time"
 
 ACK=0
-j=60
+j=100
 while [[ $j -gt 0 ]]
 do
     ((j--))
