@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 pub struct SudoPayload {
     pub message: String,
     pub port_id: String,
+    pub amount: u128,
 }
 
 pub const SUDO_PAYLOAD_REPLY_ID: u64 = 1;

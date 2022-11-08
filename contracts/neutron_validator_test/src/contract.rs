@@ -235,6 +235,7 @@ fn execute_delegate(
         SudoPayload {
             port_id: get_port_id(env.contract.address.as_str(), &interchain_account_id),
             message: "message".to_string(),
+            amount,
         },
     )?;
 
@@ -285,6 +286,7 @@ fn execute_undelegate(
         SudoPayload {
             port_id: get_port_id(env.contract.address.as_str(), &interchain_account_id),
             message: "message".to_string(),
+            amount,
         },
     )?;
 
@@ -367,6 +369,12 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
     let payload = read_sudo_payload(deps.storage, channel_id, seq_id)?;
     deps.api
         .debug(format!("WASMDEBUG: sudo_response: sudo payload: {:?}", payload).as_str());
+
+    if payload.amount == 6666 {
+        // This one is for testing contract failures
+        deps.api.debug("WASMDEBUG: This is a expected test error");
+        return Err(StdError::generic_err("This is a expected test error"));
+    }
 
     let parsed_data = decode_acknowledgement_response(data)?;
 

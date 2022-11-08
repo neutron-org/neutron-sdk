@@ -94,8 +94,10 @@ CONTRACT_CODE_ID=$(echo $RES | jq -r '.logs[0].events[1].attributes[0].value')
 if [ $CONTRACT_CODE_ID = "null" ]
 then
     echo "Can't get code id"
+    echo "$RES"
     exit
 fi
+
 echo "Contract code id: $CONTRACT_CODE_ID"
 echo ""
 
@@ -105,9 +107,12 @@ INIT_CONTRACT='{}'
 RES=$(${BIN} tx wasm instantiate $CONTRACT_CODE_ID "$INIT_CONTRACT" --from $NEUTRON_KEY_NAME --admin ${NEUTRON_ADDRESS} -y --chain-id ${NEUTRON_CHAIN_ID} --output json --broadcast-mode=block --label "init"  --gas-prices ${GAS_PRICES} --gas auto --gas-adjustment 1.4)
 CONTRACT_ADDRESS=$(echo $RES | jq -r '.logs[0].events[0].attributes[0].value')
 echo "Contract address: $CONTRACT_ADDRESS"
+
+
 if [ $CONTRACT_ADDRESS = "null" ]
 then
     echo "Can't get contract address"
+    echo "$RES"
     exit
 fi
 echo ""
@@ -115,7 +120,9 @@ echo ""
 
 ## Register interchain account
 echo "Register interchain account"
-RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "{\"register\": {\"connection_id\": \"${CONNECTION_ID}\", \"interchain_account_id\": \"${INTERCHAIN_ACCOUNT_ID}\"}}" --from $NEUTRON_KEY_NAME  -y --chain-id ${NEUTRON_CHAIN_ID} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000)
+RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "{\"register\": {\"connection_id\": \"${CONNECTION_ID}\", \"interchain_account_id\": \"${INTERCHAIN_ACCOUNT_ID}\"}}" --from $NEUTRON_KEY_NAME  -y --chain-id ${NEUTRON_CHAIN_ID} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 2000000)
+echo "$RES"
+echo ""
 echo "Waiting for registering account..."
 
 ## Wait until ICA appears on the target chain
@@ -148,6 +155,7 @@ echo ""
 echo "Execute Interchain Delegate tx"
 RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "{\"delegate\": {\"interchain_account_id\": \"${INTERCHAIN_ACCOUNT_ID}\", \"validator\": \"${TARGET_VALIDATOR}\", \"denom\":\"${TARGET_DENOM}\", \"amount\":\"9000\"}}" --from ${NEUTRON_KEY_NAME}  -y --chain-id ${NEUTRON_CHAIN_ID} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000)
 CODE=$(echo $RES | jq -r '.code')
+echo "$RES"
 if [ $CODE != "0" ]
 then
     echo "Delegation failed"
@@ -155,21 +163,91 @@ fi
 echo "Waiting for delegation..."
 
 ## Wait until ackowledgement appears on the source chain
-j=40
+ACK=0
+j=60
 while [[ $j -gt 0 ]]
 do
     ((j--))
     RES=$(${BIN} query wasm contract-state smart ${CONTRACT_ADDRESS} "{\"acknowledgement_result\":{\"interchain_account_id\":\"${INTERCHAIN_ACCOUNT_ID}\", \"sequence_id\": 1}}" --chain-id ${NEUTRON_CHAIN_ID} --output json 2>/dev/null)
     if [ "$RES" = "{\"data\":{\"success\":[\"/cosmos.staking.v1beta1.MsgDelegate\"]}}" ]
     then
-	echo "Acknowledgement has  been received"
-	echo ""
-	echo "Now you can check your delegation here ${REMOTE_EXPLORER[$i]}/account/$ICA_ADDRESS"
-	echo "Hit return to exit"
-	read
-	exit
+	ACK=1
+	break
     fi
     sleep 5
 done
-echo "Error: Acknowledgement has not been received"
+
+if [ $ACK = "0" ] 
+then
+    echo "Error: Acknowledgement has not been received"
+    exit
+else
+   echo "Acknowledgement has  been received"
+   echo ""
+   echo "Now you can check your delegation here ${REMOTE_EXPLORER[$i]}/account/$ICA_ADDRESS"
+   echo "Hit return to continue"
+   read
+fi
+echo ""
+
+# Clear ACK results on contract before the next test
+echo "Clear ACK results on contract before the next test"
+RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "{\"clean_ack_results\": {}}" --from ${NEUTRON_KEY_NAME}  -y --chain-id ${NEUTRON_CHAIN_ID} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000)
+CODE=$(echo $RES | jq -r '.code')
+if [ $CODE != "0" ]
+then
+    echo "Cleaning failed"
+    echo "$RES"
+fi
+
+
+echo ""
+# Execute Interchain Delegate tx (with host chain error)
+echo "Execute Interchain Delegate tx (with host chain error)"
+RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "{\"delegate\": {\"interchain_account_id\": \"${INTERCHAIN_ACCOUNT_ID}\", \"validator\": \"fake_address\", \"denom\":\"${TARGET_DENOM}\", \"amount\":\"9000\"}}" --from ${NEUTRON_KEY_NAME}  -y --chain-id ${NEUTRON_CHAIN_ID} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000)
+CODE=$(echo $RES | jq -r '.code')
+echo "$RES"
+if [ $CODE != "0" ]
+then
+    echo "Delegation failed"
+fi
+echo "Waiting for delegation..."
+
+ACK=0
+j=60
+while [[ $j -gt 0 ]]
+do
+    ((j--))
+    RES=$(${BIN} query wasm contract-state smart ${CONTRACT_ADDRESS} "{\"acknowledgement_result\":{\"interchain_account_id\":\"${INTERCHAIN_ACCOUNT_ID}\", \"sequence_id\": 2}}" --chain-id ${NEUTRON_CHAIN_ID} --output json 2>/dev/null)
+    if [ "$RES" = "{\"data\":{\"error\":[\"message\",\"ABCI code: 1: error handling packet on host chain: see events for details\"]}}" ]
+    then
+	ACK=1
+	break
+    fi
+    sleep 5
+done
+
+if [ $ACK = "0" ] 
+then
+    echo "Error: Acknowledgement has not been received"
+    exit
+else
+   echo "Acknowledgement has been received"
+   echo "Hit return to continue"
+   read
+fi
+
+echo ""
+# Execute Interchain Delegate tx (with contract error)
+echo "Execute Interchain Delegate tx (with contract error)"
+RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "{\"delegate\": {\"interchain_account_id\": \"${INTERCHAIN_ACCOUNT_ID}\", \"validator\": \"${TARGET_VALIDATOR}\", \"denom\":\"${TARGET_DENOM}\", \"amount\":\"6666\"}}" --from ${NEUTRON_KEY_NAME}  -y --chain-id ${NEUTRON_CHAIN_ID} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000)
+echo "$RES"
+CODE=$(echo $RES | jq -r '.code')
+if [ $CODE != "0" ]
+then
+    echo "Delegation failed"
+fi
+echo "Waiting for delegation..."
+# TODO: query neutron for contract failures
+
 
