@@ -60,7 +60,7 @@ read
 echo "Upload the queries contract"
 RES=$(${BIN} tx wasm store ${CONTRACT} --from ${NEUTRON_KEY_NAME} --gas 50000000  --node ${NODE_URL} --chain-id ${NEUTRON_CHAIN_ID} --broadcast-mode=block --gas-prices ${GAS_PRICES}  -y --output json)
 CONTRACT_CODE_ID=$(echo $RES | jq -r '.logs[0].events[1].attributes[0].value')
-if [ $CONTRACT_CODE_ID = "null" ]
+if [[ $CONTRACT_CODE_ID == "null" ]]
 then
     echo "Can't get code id"
     echo "$RES"
@@ -75,7 +75,7 @@ RES=$(${BIN} tx wasm instantiate $CONTRACT_CODE_ID "$INIT_CONTRACT" --from $NEUT
 CONTRACT_ADDRESS=$(echo $RES | jq -r '.logs[0].events[0].attributes[0].value')
 echo "Contract address: $CONTRACT_ADDRESS"
 
-if [ $CONTRACT_ADDRESS = "null" ]
+if [[ $CONTRACT_ADDRESS == "null" ]]
 then
     echo "Can't get contract address"
     echo "$RES"
