@@ -89,7 +89,7 @@ fi
 
 ## Fund contract to be able to pay fees
 echo "Fund the contract to pay for IBC fees"
-RES=$(${BIN}tx bank send $NEUTRON_KEY_NAME ${CONTRACT_ADDRESS} 20000untrn --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --gas-prices 0${GAS_PRICES})
+RES=$(${BIN} tx bank send $NEUTRON_KEY_NAME ${CONTRACT_ADDRESS} 20000untrn --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --gas-prices 0${GAS_PRICES})
 echo ""
 
 ## Register interchain account
