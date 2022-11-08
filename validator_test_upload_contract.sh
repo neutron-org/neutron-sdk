@@ -43,9 +43,9 @@ echo "Chain id: $NEUTRON_CHAIN_ID"
 RES=$($BIN keys add $NEUTRON_KEY_NAME --output json)
 NEUTRON_ADDRESS=$(echo $RES | jq -r .address)
 MNEMONIC=$(echo $RES | jq -r .mnemonic)
-if [ $NEUTRON_ADDRESS = "null" ]
+if [ "$NEUTRON_ADDRESS" = "" ]
 then
-    echo "Can't get address from key"
+    echo "Can't get address from key. Probably key already exists and you should agree to override the existing name"
     exit
 fi
 
