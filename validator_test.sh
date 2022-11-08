@@ -225,7 +225,28 @@ then
     echo "Delegation failed"
     exit
 fi
-echo "Waiting for delegation..."
-# TODO: query neutron for contract failures
+echo "Waiting for delegation...it may take a lot of time"
 
+j=100
+ACK=0
+while [[ $j -gt 0 ]]
+do
+    ((j--))
+    RES=$(${BIN} query contractmanager failures ${CONTRACT_ADDRESS} --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --output json 2>/dev/null | jq -r '.failures | .[] | .address')
+    if [ "$RES" = "$CONTRACT_ADDRESS" ]
+    then
+	ACK=1
+	break
+    fi
+    sleep 5
+done
 
+if [ $ACK = "0" ] 
+then
+    echo "Error: Acknowledgement has not been received"
+    exit
+else
+   echo "Acknowledgement has been received"
+   echo "Hit return to continue"
+   read
+fi
