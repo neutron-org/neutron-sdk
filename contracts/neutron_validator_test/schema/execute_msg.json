@@ -121,6 +121,44 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "set_fees"
+      ],
+      "properties": {
+        "set_fees": {
+          "type": "object",
+          "required": [
+            "ack_fee",
+            "denom",
+            "recv_fee",
+            "timeout_fee"
+          ],
+          "properties": {
+            "ack_fee": {
+              "type": "integer",
+              "format": "uint128",
+              "minimum": 0.0
+            },
+            "denom": {
+              "type": "string"
+            },
+            "recv_fee": {
+              "type": "integer",
+              "format": "uint128",
+              "minimum": 0.0
+            },
+            "timeout_fee": {
+              "type": "integer",
+              "format": "uint128",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
     }
   ]
 }

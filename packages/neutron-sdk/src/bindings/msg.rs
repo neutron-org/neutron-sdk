@@ -1,12 +1,21 @@
 use crate::{
     bindings::types::{KVKey, ProtobufAny},
     interchain_queries::types::{QueryPayload, QueryType, MAX_TX_FILTERS},
+    sudo::msg::RequestPacketTimeoutHeight,
     NeutronError, NeutronResult,
 };
-use cosmwasm_std::{CosmosMsg, CustomMsg, StdError};
+
+use cosmwasm_std::{Coin, CosmosMsg, CustomMsg, StdError};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json_wasm::to_string;
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+pub struct IbcFee {
+    pub recv_fee: Vec<Coin>,
+    pub ack_fee: Vec<Coin>,
+    pub timeout_fee: Vec<Coin>,
+}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -38,6 +47,9 @@ pub enum NeutronMsg {
 
         /// **timeout** is a timeout in seconds after which the packet times out
         timeout: u64,
+
+        /// ***fee** is an ibc fee for the transaction
+        fee: IbcFee,
     },
 
     /// RegisterInterchainQuery registers an interchain query
@@ -75,6 +87,26 @@ pub enum NeutronMsg {
         /// **query_id** is ID of the query we want to remove
         query_id: u64,
     },
+    /// IbcTransfer sends a fungible token packet over IBC
+    IbcTransfer {
+        // the port on which the packet will be sent
+        source_port: String,
+        // the channel by which the packet will be sent
+        source_channel: String,
+        // the tokens to be transferred
+        token: Coin,
+        // the sender address
+        sender: String,
+        // the recipient address on the destination chain
+        receiver: String,
+        // Timeout height relative to the current block height.
+        // The timeout is disabled when set to 0.
+        timeout_height: RequestPacketTimeoutHeight,
+        // Timeout timestamp in absolute nanoseconds since unix epoch.
+        // The timeout is disabled when set to 0.
+        timeout_timestamp: u64,
+        fee: IbcFee,
+    },
 }
 
 impl NeutronMsg {
@@ -103,6 +135,7 @@ impl NeutronMsg {
         msgs: Vec<ProtobufAny>,
         memo: String,
         timeout: u64,
+        fee: IbcFee,
     ) -> Self {
         NeutronMsg::SubmitTx {
             connection_id,
@@ -110,6 +143,7 @@ impl NeutronMsg {
             msgs,
             memo,
             timeout,
+            fee,
         }
     }
 
@@ -196,6 +230,16 @@ pub struct MsgRegisterInterchainQueryResponse {
 #[serde(rename_all = "snake_case")]
 /// MsgSubmitTxResponse defines the response for Msg/SubmitTx
 pub struct MsgSubmitTxResponse {
+    /// **sequence_id** is a channel's sequence_id for outgoing ibc packet. Unique per a channel.
+    pub sequence_id: u64,
+    /// **channel** is a src channel on neutron side trasaction was submitted from
+    pub channel: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+/// MsgSubmitTxResponse defines the response for Msg/IbcTransfer
+pub struct MsgIbcTransferResponse {
     /// **sequence_id** is a channel's sequence_id for outgoing ibc packet. Unique per a channel.
     pub sequence_id: u64,
     /// **channel** is a src channel on neutron side trasaction was submitted from
