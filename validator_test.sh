@@ -6,14 +6,14 @@ then
     exit
 fi
 
-if [[ ! -f /tmp/contract_address.tmp ]]
+if [[ ! -f ./contract_address.tmp ]]
 then
     echo "Run ./validator_test_upload_contract.sh first"
     exit
 fi
 
 
-CONTRACT_ADDRESS=$(cat /tmp/contract_address.tmp)
+CONTRACT_ADDRESS=$(cat ./contract_address.tmp)
 echo "Contract address: $CONTRACT_ADDRESS"
 
 

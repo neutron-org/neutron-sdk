@@ -79,4 +79,4 @@ then
     exit
 fi
 
-echo "$CONTRACT_ADDRESS" > /tmp/contract_address.tmp
+echo "$CONTRACT_ADDRESS" > ./contract_address.tmp
