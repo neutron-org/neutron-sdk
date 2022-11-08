@@ -133,6 +133,7 @@ echo "$RES"
 if [ $CODE != "0" ]
 then
     echo "Delegation failed"
+    exit
 fi
 echo "Waiting for delegation... it may take a lot of time"
 
@@ -172,6 +173,7 @@ if [ $CODE != "0" ]
 then
     echo "Cleaning failed"
     echo "$RES"
+    exit
 fi
 
 
@@ -184,6 +186,7 @@ echo "$RES"
 if [ $CODE != "0" ]
 then
     echo "Delegation failed"
+    exit
 fi
 echo "Waiting for delegation...it may take a lot of time"
 
@@ -220,6 +223,7 @@ CODE=$(echo $RES | jq -r '.code')
 if [ $CODE != "0" ]
 then
     echo "Delegation failed"
+    exit
 fi
 echo "Waiting for delegation..."
 # TODO: query neutron for contract failures
