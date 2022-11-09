@@ -18,6 +18,12 @@ pub enum QueryMsg {
         interchain_account_id: String,
         sequence_id: u64,
     },
+    Balance {
+        query_id: u64,
+    },
+    GetRecipientTxs {
+        recipient: String,
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -50,5 +56,20 @@ pub enum ExecuteMsg {
         recv_fee: u128,
         ack_fee: u128,
         timeout_fee: u128,
+    },
+    RegisterBalanceQuery {
+        connection_id: String,
+        update_period: u64,
+        addr: String,
+        denom: String,
+    },
+    RegisterTransfersQuery {
+        connection_id: String,
+        update_period: u64,
+        recipient: String,
+        min_height: Option<u64>,
+    },
+    RemoveInterchainQuery {
+        query_id: u64,
     },
 }
