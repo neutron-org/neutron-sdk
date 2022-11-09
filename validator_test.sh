@@ -305,7 +305,7 @@ echo "Hit enter to continue"
 read
 
 echo ""
-echo "Deleting TX query and colleting deposit back to contract…"
+echo "Deleting TX query and collecting deposit back to contract…"
 RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "$(printf '{"remove_interchain_query": {"query_id": %s}}' "$TX_QUERY_ID")" --from ${NEUTRON_KEY_NAME} -y --chain-id ${NEUTRON_CHAIN_ID} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000 --node ${NODE_URL})
 
 echo ""
