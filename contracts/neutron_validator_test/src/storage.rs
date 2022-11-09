@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 pub struct SudoPayload {
     pub message: String,
     pub port_id: String,
+    pub amount: u128,
 }
 
 pub const SUDO_PAYLOAD_REPLY_ID: u64 = 1;
@@ -22,6 +23,25 @@ pub const INTERCHAIN_ACCOUNTS: Map<String, Option<(String, String)>> =
 // interchain transaction responses - ack/err/timeout state to query later
 pub const ACKNOWLEDGEMENT_RESULTS: Map<(String, u64), AcknowledgementResult> =
     Map::new("acknowledgement_results");
+
+pub type Recipient = str;
+
+/// contains all transfers mapped by a recipient address observed by the contract.
+pub const RECIPIENT_TXS: Map<&Recipient, Vec<Transfer>> = Map::new("recipient_txs");
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct GetRecipientTxsResponse {
+    pub transfers: Vec<Transfer>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+pub struct Transfer {
+    pub recipient: String,
+    pub sender: String,
+    pub denom: String,
+    pub amount: String,
+}
 
 /// Serves for storing acknowledgement calls for interchain transactions
 #[derive(Serialize, Deserialize, Clone, PartialEq, Eq, JsonSchema, Debug)]
