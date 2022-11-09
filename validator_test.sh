@@ -209,45 +209,6 @@ then
 fi
 
 echo ""
-echo "Waiting 30 seconds for query results to arrive…"
-sleep 30
-
-echo ""
-echo "Checking TX query result"
-RES=$(${BIN} query wasm contract-state smart ${CONTRACT_ADDRESS} "{\"get_recipient_txs\":{\"recipient\":\"${ICA_ADDRESS}\"}}" --chain-id "$NEUTRON_CHAIN_ID" --output json --node ${NODE_URL})
-echo "$RES" | jq
-echo ""
-echo "Please make sure output contains a single transfer of 0.02$TARGET_DENOM from faucet"
-echo "Hit enter to continue"
-read
-
-echo ""
-echo "Checking KV query result"
-RES=$(${BIN} query wasm contract-state smart ${CONTRACT_ADDRESS} "{\"balance\":{\"query_id\":$KV_QUERY_ID}}" --chain-id "$NEUTRON_CHAIN_ID" --output json --node ${NODE_URL})
-echo "$RES" | jq
-echo ""
-echo "Please compare query result to value here ${REMOTE_EXPLORER[$i]}/account/$ICA_ADDRESS"
-echo "Hit enter to continue"
-read
-
-echo ""
-echo "Deleting TX query and colleting deposit back to contract…"
-RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "$(printf '{"remove_interchain_query": {"query_id": %s}}' "$TX_QUERY_ID")" --from ${NEUTRON_KEY_NAME} -y --chain-id ${NEUTRON_CHAIN_ID} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000 --node ${NODE_URL})
-
-echo ""
-echo -n "Checking that a single deposit has been returned to contract balance… "
-RES=$(${BIN} query bank balances ${CONTRACT_ADDRESS} --output json --node ${NODE_URL})
-BALANCE=$(echo $RES | jq --raw-output '[.balances[] | select(.denom == "untrn")][0].amount')
-if [[ $BALANCE -eq 1018000 ]]; then
-  echo "OK"
-else
-  echo
-  echo "ERROR: contract is expected to gain a single deposit back, but something went wrong:"
-  echo $RES | jq
-  exit 1
-fi
-
-echo ""
 # Execute Interchain Delegate tx (with host chain error)
 echo "Execute Interchain Delegate tx (with host chain error)"
 RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "{\"delegate\": {\"interchain_account_id\": \"${INTERCHAIN_ACCOUNT_ID}\", \"validator\": \"fake_address\", \"denom\":\"${TARGET_DENOM}\", \"amount\":\"9000\"}}" --from ${NEUTRON_KEY_NAME}  -y --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000)
@@ -319,4 +280,43 @@ else
    echo "Acknowledgement has been received"
    echo "Hit return to continue"
    read
+fi
+
+echo ""
+echo "Waiting 30 seconds for query results to arrive…"
+sleep 30
+
+echo ""
+echo "Checking TX query result"
+RES=$(${BIN} query wasm contract-state smart ${CONTRACT_ADDRESS} "{\"get_recipient_txs\":{\"recipient\":\"${ICA_ADDRESS}\"}}" --chain-id "$NEUTRON_CHAIN_ID" --output json --node ${NODE_URL})
+echo "$RES" | jq
+echo ""
+echo "Please make sure output contains a single transfer of 0.02$TARGET_DENOM from faucet"
+echo "Hit enter to continue"
+read
+
+echo ""
+echo "Checking KV query result"
+RES=$(${BIN} query wasm contract-state smart ${CONTRACT_ADDRESS} "{\"balance\":{\"query_id\":$KV_QUERY_ID}}" --chain-id "$NEUTRON_CHAIN_ID" --output json --node ${NODE_URL})
+echo "$RES" | jq
+echo ""
+echo "Please compare query result to value here ${REMOTE_EXPLORER[$i]}/account/$ICA_ADDRESS"
+echo "Hit enter to continue"
+read
+
+echo ""
+echo "Deleting TX query and colleting deposit back to contract…"
+RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "$(printf '{"remove_interchain_query": {"query_id": %s}}' "$TX_QUERY_ID")" --from ${NEUTRON_KEY_NAME} -y --chain-id ${NEUTRON_CHAIN_ID} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000 --node ${NODE_URL})
+
+echo ""
+echo -n "Checking that a single deposit has been returned to contract balance… "
+RES=$(${BIN} query bank balances ${CONTRACT_ADDRESS} --output json --node ${NODE_URL})
+BALANCE=$(echo $RES | jq --raw-output '[.balances[] | select(.denom == "untrn")][0].amount')
+if [[ $BALANCE -eq 1014000 ]]; then
+  echo "OK"
+else
+  echo
+  echo "ERROR: contract is expected to gain a single deposit back, but something went wrong:"
+  echo $RES | jq
+  exit 1
 fi
