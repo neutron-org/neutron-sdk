@@ -161,6 +161,7 @@ echo ""
 echo "Execute Interchain Delegate tx"
 RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "{\"delegate\": {\"interchain_account_id\": \"${INTERCHAIN_ACCOUNT_ID}\", \"validator\": \"${TARGET_VALIDATOR}\", \"denom\":\"${TARGET_DENOM}\", \"amount\":\"9000\"}}" --from ${NEUTRON_KEY_NAME}  -y --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000)
 CODE=$(echo $RES | jq -r '.code')
+DELEGATE_SUCCESS_TX_HASH=$(echo $RES | jq --raw-output '.txhash')
 echo "$RES"
 if [ $CODE != "0" ]
 then
@@ -213,6 +214,7 @@ echo ""
 echo "Execute Interchain Delegate tx (with host chain error)"
 RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "{\"delegate\": {\"interchain_account_id\": \"${INTERCHAIN_ACCOUNT_ID}\", \"validator\": \"fake_address\", \"denom\":\"${TARGET_DENOM}\", \"amount\":\"9000\"}}" --from ${NEUTRON_KEY_NAME}  -y --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000)
 CODE=$(echo $RES | jq -r '.code')
+DELEGATE_ERROR_TX_HASH=$(echo $RES | jq --raw-output '.txhash')
 echo "$RES"
 if [ $CODE != "0" ]
 then
@@ -251,6 +253,7 @@ echo "Execute Interchain Delegate tx (with contract error)"
 RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "{\"delegate\": {\"interchain_account_id\": \"${INTERCHAIN_ACCOUNT_ID}\", \"validator\": \"${TARGET_VALIDATOR}\", \"denom\":\"${TARGET_DENOM}\", \"amount\":\"6666\"}}" --from ${NEUTRON_KEY_NAME}  -y --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000)
 echo "$RES"
 CODE=$(echo $RES | jq -r '.code')
+DELEGATE_CONTRACT_ERROR_TX_HASH=$(echo $RES | jq --raw-output '.txhash')
 if [ $CODE != "0" ]
 then
     echo "Delegation failed"
@@ -307,6 +310,7 @@ read
 echo ""
 echo "Deleting TX query and collecting deposit back to contract…"
 RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "$(printf '{"remove_interchain_query": {"query_id": %s}}' "$TX_QUERY_ID")" --from ${NEUTRON_KEY_NAME} -y --chain-id ${NEUTRON_CHAIN_ID} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000 --node ${NODE_URL})
+TX_QUERY_DEL_TX_HASH=$(echo $RES | jq --raw-output '.txhash')
 
 echo ""
 echo -n "Checking that a single deposit has been returned to contract balance… "
@@ -320,3 +324,20 @@ else
   echo $RES | jq
   exit 1
 fi
+
+echo ""
+echo "Now you are ready to submit results of your activity to https://docs.google.com/forms/d/1JrjHcdMhMdNJHF8U6Xr3BJbNFRJ_TZJU3eAgZj8wVRc/edit"
+echo "TxQuery registration transaction hash: $TX_QUERY_REG_TX_HASH"
+echo "KvQuery registration transaction hash: $KV_QUERY_REG_TX_HASH"
+echo "TxQuery result submission transaction hash: go to $EXPLORER_URL and TODO"
+echo "KvQuery result submission transaction hash go to $EXPLORER_URL and TODO"
+echo "TxQuery deletion transaction hash: $TX_QUERY_DEL_TX_HASH"
+echo "KvQuery deletion transaction hash: you will have to delete it yourself (TODO)"
+echo "Interchain transaction hash (successful ACK, executed by you): $DELEGATE_SUCCESS_TX_HASH"
+echo "Interchain transaction hash (successful ACK, executed by your IBC relayer): you will have to find it yourself (TODO)"
+echo "Interchain transaction hash (error ACK, executed by you): $DELEGATE_ERROR_TX_HASH"
+echo "Interchain transaction hash (error ACK, executed by your IBC relayer): you will have to find it yourself (TODO)"
+echo "Interchain transaction hash (successful ACK, contract handler returned an error, executed by you): $DELEGATE_CONTRACT_ERROR_TX_HASH"
+echo "Interchain transaction hash (successful ACK, contract handler returned an error, executed by your IBC relayer): you will have to find it yourself (TODO)"
+echo "Press enter to exit"
+read
