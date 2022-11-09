@@ -326,18 +326,13 @@ else
 fi
 
 echo ""
-echo "Now you are ready to submit results of your activity to https://docs.google.com/forms/d/1JrjHcdMhMdNJHF8U6Xr3BJbNFRJ_TZJU3eAgZj8wVRc/edit"
+echo "Now you are ready to submit results of your activity to https://docs.google.com/forms/d/e/1FAIpQLScZGxOQ44_sY96e7IODGwG_qTRrVnrnJyI7vyRT8QN3cUSOwQ/viewform"
+echo "Test contract address: $CONTRACT_ADDRESS"
 echo "TxQuery registration transaction hash: $TX_QUERY_REG_TX_HASH"
 echo "KvQuery registration transaction hash: $KV_QUERY_REG_TX_HASH"
-echo "TxQuery result submission transaction hash: go to $EXPLORER_URL and TODO"
-echo "KvQuery result submission transaction hash go to $EXPLORER_URL and TODO"
 echo "TxQuery deletion transaction hash: $TX_QUERY_DEL_TX_HASH"
-echo "KvQuery deletion transaction hash: you will have to delete it yourself (TODO)"
 echo "Interchain transaction hash (successful ACK, executed by you): $DELEGATE_SUCCESS_TX_HASH"
-echo "Interchain transaction hash (successful ACK, executed by your IBC relayer): you will have to find it yourself (TODO)"
 echo "Interchain transaction hash (error ACK, executed by you): $DELEGATE_ERROR_TX_HASH"
-echo "Interchain transaction hash (error ACK, executed by your IBC relayer): you will have to find it yourself (TODO)"
 echo "Interchain transaction hash (successful ACK, contract handler returned an error, executed by you): $DELEGATE_CONTRACT_ERROR_TX_HASH"
-echo "Interchain transaction hash (successful ACK, contract handler returned an error, executed by your IBC relayer): you will have to find it yourself (TODO)"
 echo "Press enter to exit"
 read
