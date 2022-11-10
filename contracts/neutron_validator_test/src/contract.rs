@@ -12,13 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+use cosmos_sdk_proto::cosmos::bank::v1beta1::MsgSend;
 use cosmos_sdk_proto::cosmos::base::v1beta1::Coin;
 use cosmos_sdk_proto::cosmos::staking::v1beta1::{MsgDelegate, MsgUndelegate};
+use cosmos_sdk_proto::cosmos::tx::v1beta1::{TxBody, TxRaw};
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Binary, Coin as CosmosCoin, CosmosMsg, CustomQuery, Deps, DepsMut, Env, MessageInfo,
-    Reply, Response, StdError, StdResult, SubMsg, Uint128,
+    coin, to_binary, Binary, Coin as CosmosCoin, CosmosMsg, CustomQuery, Deps, DepsMut, Env,
+    MessageInfo, Reply, Response, StdError, StdResult, SubMsg,
 };
 use cw2::set_contract_version;
 use prost::Message;
@@ -27,16 +29,26 @@ use serde::{Deserialize, Serialize};
 
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 use neutron_sdk::bindings::msg::{IbcFee, MsgSubmitTxResponse, NeutronMsg};
-use neutron_sdk::bindings::query::{InterchainQueries, QueryInterchainAccountAddressResponse};
+use neutron_sdk::bindings::query::{
+    InterchainQueries, QueryInterchainAccountAddressResponse, QueryRegisteredQueryResponse,
+};
 use neutron_sdk::bindings::types::ProtobufAny;
+use neutron_sdk::interchain_queries::queries::{get_registered_query, query_balance};
+use neutron_sdk::interchain_queries::types::{
+    TransactionFilterItem, TransactionFilterOp, TransactionFilterValue,
+    COSMOS_SDK_TRANSFER_MSG_URL, RECIPIENT_FIELD,
+};
+use neutron_sdk::interchain_queries::{
+    new_register_balance_query_msg, new_register_transfers_query_msg,
+};
 use neutron_sdk::interchain_txs::helpers::{decode_acknowledgement_response, get_port_id};
 use neutron_sdk::sudo::msg::{RequestPacket, SudoMsg};
-use neutron_sdk::NeutronResult;
+use neutron_sdk::{NeutronError, NeutronResult};
 
 use crate::storage::{
     read_reply_payload, read_sudo_payload, save_reply_payload, save_sudo_payload,
-    AcknowledgementResult, SudoPayload, ACKNOWLEDGEMENT_RESULTS, IBC_FEE, INTERCHAIN_ACCOUNTS,
-    SUDO_PAYLOAD_REPLY_ID,
+    AcknowledgementResult, GetRecipientTxsResponse, SudoPayload, Transfer, ACKNOWLEDGEMENT_RESULTS,
+    IBC_FEE, INTERCHAIN_ACCOUNTS, RECIPIENT_TXS, SUDO_PAYLOAD_REPLY_ID,
 };
 
 // Default timeout for SubmitTX is two weeks
@@ -74,7 +86,7 @@ pub fn execute(
     env: Env,
     _: MessageInfo,
     msg: ExecuteMsg,
-) -> StdResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response<NeutronMsg>> {
     deps.api
         .debug(format!("WASMDEBUG: execute: received msg: {:?}", msg).as_str());
     match msg {
@@ -118,7 +130,20 @@ pub fn execute(
             recv_fee,
             ack_fee,
             timeout_fee,
-        } => execute_set_fees(deps, denom, recv_fee, ack_fee, timeout_fee),
+        } => execute_set_fees(deps, recv_fee, ack_fee, timeout_fee, denom),
+        ExecuteMsg::RegisterBalanceQuery {
+            connection_id,
+            addr,
+            denom,
+            update_period,
+        } => register_balance_query(connection_id, addr, denom, update_period),
+        ExecuteMsg::RegisterTransfersQuery {
+            connection_id,
+            recipient,
+            update_period,
+            min_height,
+        } => register_transfers_query(connection_id, recipient, update_period, min_height),
+        ExecuteMsg::RemoveInterchainQuery { query_id } => remove_interchain_query(query_id),
     }
 }
 
@@ -136,6 +161,8 @@ pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> NeutronR
             interchain_account_id,
             sequence_id,
         } => query_acknowledgement_result(deps, env, interchain_account_id, sequence_id),
+        QueryMsg::Balance { query_id } => Ok(to_binary(&query_balance(deps, env, query_id)?)?),
+        QueryMsg::GetRecipientTxs { recipient } => query_recipient_txs(deps, recipient),
     }
 }
 
@@ -174,6 +201,13 @@ pub fn query_acknowledgement_result(
     Ok(to_binary(&res)?)
 }
 
+fn query_recipient_txs(deps: Deps<InterchainQueries>, recipient: String) -> NeutronResult<Binary> {
+    let txs = RECIPIENT_TXS
+        .load(deps.storage, &recipient)
+        .unwrap_or_default();
+    Ok(to_binary(&GetRecipientTxsResponse { transfers: txs })?)
+}
+
 fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
     deps: DepsMut,
     msg: C,
@@ -183,28 +217,29 @@ fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
     Ok(SubMsg::reply_on_success(msg, SUDO_PAYLOAD_REPLY_ID))
 }
 
+fn get_fee_item(denom: String, amount: u128) -> Vec<CosmosCoin> {
+    if amount == 0 {
+        vec![]
+    } else {
+        vec![coin(amount, denom)]
+    }
+}
+
 fn execute_set_fees(
     deps: DepsMut,
-    denom: String,
     recv_fee: u128,
     ack_fee: u128,
     timeout_fee: u128,
-) -> StdResult<Response<NeutronMsg>> {
-    let fees = IbcFee {
-        recv_fee: vec![CosmosCoin {
-            denom: denom.clone(),
-            amount: Uint128::from(recv_fee),
-        }],
-        ack_fee: vec![CosmosCoin {
-            denom: denom.clone(),
-            amount: Uint128::from(ack_fee),
-        }],
-        timeout_fee: vec![CosmosCoin {
-            denom,
-            amount: Uint128::from(timeout_fee),
-        }],
+    denom: String,
+) -> NeutronResult<Response<NeutronMsg>> {
+    let fee = IbcFee {
+        recv_fee: get_fee_item(denom.clone(), recv_fee),
+        ack_fee: get_fee_item(denom.clone(), ack_fee),
+        timeout_fee: get_fee_item(denom, timeout_fee),
     };
-    IBC_FEE.save(deps.storage, &fees)?;
+
+    IBC_FEE.save(deps.storage, &fee)?;
+
     Ok(Response::default())
 }
 
@@ -213,7 +248,7 @@ fn execute_register_ica(
     env: Env,
     connection_id: String,
     interchain_account_id: String,
-) -> StdResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response<NeutronMsg>> {
     let register =
         NeutronMsg::register_interchain_account(connection_id, interchain_account_id.clone());
     let key = get_port_id(env.contract.address.as_str(), &interchain_account_id);
@@ -229,7 +264,7 @@ fn execute_delegate(
     amount: u128,
     denom: String,
     timeout: Option<u64>,
-) -> StdResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response<NeutronMsg>> {
     let fee = IBC_FEE.load(deps.storage)?;
     let (delegator, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
     let delegate_msg = MsgDelegate {
@@ -243,7 +278,10 @@ fn execute_delegate(
     let mut buf = Vec::with_capacity(delegate_msg.encoded_len());
 
     if let Err(e) = delegate_msg.encode(&mut buf) {
-        return Err(StdError::generic_err(format!("Encode error: {}", e)));
+        return Err(NeutronError::Std(StdError::generic_err(format!(
+            "Encode error: {}",
+            e
+        ))));
     }
 
     let any_msg = ProtobufAny {
@@ -268,6 +306,7 @@ fn execute_delegate(
         SudoPayload {
             port_id: get_port_id(env.contract.address.as_str(), &interchain_account_id),
             message: "message".to_string(),
+            amount,
         },
     )?;
 
@@ -282,7 +321,7 @@ fn execute_undelegate(
     amount: u128,
     denom: String,
     timeout: Option<u64>,
-) -> StdResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response<NeutronMsg>> {
     let fee = IBC_FEE.load(deps.storage)?;
     let (delegator, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
     let delegate_msg = MsgUndelegate {
@@ -297,7 +336,10 @@ fn execute_undelegate(
     buf.reserve(delegate_msg.encoded_len());
 
     if let Err(e) = delegate_msg.encode(&mut buf) {
-        return Err(StdError::generic_err(format!("Encode error: {}", e)));
+        return Err(NeutronError::Std(StdError::generic_err(format!(
+            "Encode error: {}",
+            e
+        ))));
     }
 
     let any_msg = ProtobufAny {
@@ -320,13 +362,14 @@ fn execute_undelegate(
         SudoPayload {
             port_id: get_port_id(env.contract.address.as_str(), &interchain_account_id),
             message: "message".to_string(),
+            amount,
         },
     )?;
 
     Ok(Response::default().add_submessages(vec![submsg]))
 }
 
-fn execute_clean_ack_results(deps: DepsMut) -> StdResult<Response<NeutronMsg>> {
+fn execute_clean_ack_results(deps: DepsMut) -> NeutronResult<Response<NeutronMsg>> {
     let keys: Vec<StdResult<(String, u64)>> = ACKNOWLEDGEMENT_RESULTS
         .keys(deps.storage, None, None, cosmwasm_std::Order::Descending)
         .collect();
@@ -336,8 +379,36 @@ fn execute_clean_ack_results(deps: DepsMut) -> StdResult<Response<NeutronMsg>> {
     Ok(Response::default())
 }
 
+pub fn register_balance_query(
+    connection_id: String,
+    addr: String,
+    denom: String,
+    update_period: u64,
+) -> NeutronResult<Response<NeutronMsg>> {
+    let msg = new_register_balance_query_msg(connection_id, addr, denom, update_period)?;
+
+    Ok(Response::new().add_message(msg))
+}
+
+pub fn register_transfers_query(
+    connection_id: String,
+    recipient: String,
+    update_period: u64,
+    min_height: Option<u64>,
+) -> NeutronResult<Response<NeutronMsg>> {
+    let msg =
+        new_register_transfers_query_msg(connection_id, recipient, update_period, min_height)?;
+
+    Ok(Response::new().add_message(msg))
+}
+
+pub fn remove_interchain_query(query_id: u64) -> NeutronResult<Response<NeutronMsg>> {
+    let remove_msg = NeutronMsg::remove_interchain_query(query_id);
+    Ok(Response::new().add_message(remove_msg))
+}
+
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn sudo(deps: DepsMut, env: Env, msg: SudoMsg) -> StdResult<Response> {
+pub fn sudo(deps: DepsMut<InterchainQueries>, env: Env, msg: SudoMsg) -> NeutronResult<Response> {
     deps.api
         .debug(format!("WASMDEBUG: sudo: received sudo msg: {:?}", msg).as_str());
     match msg {
@@ -357,18 +428,23 @@ pub fn sudo(deps: DepsMut, env: Env, msg: SudoMsg) -> StdResult<Response> {
             counterparty_channel_id,
             counterparty_version,
         ),
+        SudoMsg::TxQueryResult {
+            query_id,
+            height,
+            data,
+        } => sudo_tx_query_result(deps, env, query_id, height, data),
         _ => Ok(Response::default()),
     }
 }
 
 fn sudo_open_ack(
-    deps: DepsMut,
+    deps: DepsMut<InterchainQueries>,
     _env: Env,
     port_id: String,
     _channel_id: String,
     _counterparty_channel_id: String,
     counterparty_version: String,
-) -> StdResult<Response> {
+) -> NeutronResult<Response> {
     let parsed_version: Result<OpenAckVersion, _> =
         serde_json_wasm::from_str(counterparty_version.as_str());
     if let Ok(parsed_version) = parsed_version {
@@ -382,10 +458,103 @@ fn sudo_open_ack(
         )?;
         return Ok(Response::default());
     }
-    Err(StdError::generic_err("Can't parse counterparty_version"))
+    Err(NeutronError::Std(StdError::generic_err(
+        "Can't parse counterparty_version",
+    )))
 }
 
-fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResult<Response> {
+pub fn sudo_tx_query_result(
+    deps: DepsMut<InterchainQueries>,
+    _env: Env,
+    query_id: u64,
+    _height: u64,
+    data: Binary,
+) -> NeutronResult<Response> {
+    // Decode the transaction data
+    let tx: TxRaw = TxRaw::decode(data.as_slice())?;
+    let body: TxBody = TxBody::decode(tx.body_bytes.as_slice())?;
+
+    // Get the registered query by ID and retrieve the raw query string
+    let registered_query: QueryRegisteredQueryResponse =
+        get_registered_query(deps.as_ref(), query_id)?;
+    let transactions_filter = registered_query.registered_query.transactions_filter;
+
+    #[allow(clippy::match_single_binding)]
+    // Depending of the query type, check the transaction data to see whether is satisfies
+    // the original query. If you don't write specific checks for a transaction query type,
+    // all submitted results will be treated as valid.
+    //
+    // TODO: come up with solution to determine transactions filter type
+    match registered_query.registered_query.query_type {
+        _ => {
+            // For transfer queries, query data looks like `[{"field:"transfer.recipient", "op":"eq", "value":"some_address"}]`
+            let query_data: Vec<TransactionFilterItem> =
+                serde_json_wasm::from_str(transactions_filter.as_str())?;
+
+            let recipient = query_data
+                .iter()
+                .find(|x| x.field == RECIPIENT_FIELD && x.op == TransactionFilterOp::Eq)
+                .map(|x| match &x.value {
+                    TransactionFilterValue::String(v) => v.as_str(),
+                    _ => "",
+                })
+                .unwrap_or("");
+
+            let deposits = recipient_deposits_from_tx_body(body, recipient)?;
+            // If we didn't find a Send message with the correct recipient, return an error, and
+            // this query result will be rejected by Neutron: no data will be saved to state.
+            if deposits.is_empty() {
+                return Err(NeutronError::Std(StdError::generic_err(
+                    "failed to find a matching transaction message",
+                )));
+            }
+
+            let mut stored_deposits: Vec<Transfer> = RECIPIENT_TXS
+                .load(deps.storage, recipient)
+                .unwrap_or_default();
+            stored_deposits.extend(deposits);
+            RECIPIENT_TXS.save(deps.storage, recipient, &stored_deposits)?;
+            Ok(Response::new())
+        }
+    }
+}
+
+fn recipient_deposits_from_tx_body(
+    tx_body: TxBody,
+    recipient: &str,
+) -> NeutronResult<Vec<Transfer>> {
+    let mut deposits: Vec<Transfer> = vec![];
+    // Only handle up to MAX_ALLOWED_MESSAGES messages, everything else
+    // will be ignored to prevent 'out of gas' conditions.
+    // Note: in real contracts you will have to somehow save ignored
+    // data in order to handle it later.
+    for msg in tx_body.messages.iter().take(20) {
+        // Skip all messages in this transaction that are not Send messages.
+        if msg.type_url != *COSMOS_SDK_TRANSFER_MSG_URL.to_string() {
+            continue;
+        }
+
+        // Parse a Send message and check that it has the required recipient.
+        let transfer_msg: MsgSend = MsgSend::decode(msg.value.as_slice())?;
+        if transfer_msg.to_address == recipient {
+            for coin in transfer_msg.amount {
+                deposits.push(Transfer {
+                    sender: transfer_msg.from_address.clone(),
+                    amount: coin.amount.clone(),
+                    denom: coin.denom,
+                    recipient: recipient.to_string(),
+                });
+            }
+        }
+    }
+    Ok(deposits)
+}
+
+fn sudo_response(
+    deps: DepsMut<InterchainQueries>,
+    request: RequestPacket,
+    data: Binary,
+) -> NeutronResult<Response> {
     deps.api.debug(
         format!(
             "WASMDEBUG: sudo_response: sudo received: {:?} {:?}",
@@ -402,6 +571,14 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
     let payload = read_sudo_payload(deps.storage, channel_id, seq_id)?;
     deps.api
         .debug(format!("WASMDEBUG: sudo_response: sudo payload: {:?}", payload).as_str());
+
+    if payload.amount == 6666 {
+        // This one is for testing contract failures
+        deps.api.debug("WASMDEBUG: This is a expected test error");
+        return Err(NeutronError::Std(StdError::generic_err(
+            "This is a expected test error",
+        )));
+    }
 
     let parsed_data = decode_acknowledgement_response(data)?;
 
@@ -426,7 +603,11 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
     Ok(Response::default())
 }
 
-fn sudo_timeout(deps: DepsMut, _env: Env, request: RequestPacket) -> StdResult<Response> {
+fn sudo_timeout(
+    deps: DepsMut<InterchainQueries>,
+    _env: Env,
+    request: RequestPacket,
+) -> NeutronResult<Response> {
     deps.api
         .debug(format!("WASMDEBUG: sudo timeout request: {:?}", request).as_str());
 
@@ -453,7 +634,11 @@ fn sudo_timeout(deps: DepsMut, _env: Env, request: RequestPacket) -> StdResult<R
     Ok(Response::default())
 }
 
-fn sudo_error(deps: DepsMut, request: RequestPacket, details: String) -> StdResult<Response> {
+fn sudo_error(
+    deps: DepsMut<InterchainQueries>,
+    request: RequestPacket,
+    details: String,
+) -> NeutronResult<Response> {
     deps.api
         .debug(format!("WASMDEBUG: sudo error: {}", details).as_str());
     deps.api
