@@ -21,6 +21,9 @@ use crate::{
     state::{IntegrationTestsSudoMock, INTEGRATION_TESTS_SUDO_MOCK},
 };
 
+// Default timeout for IbcTransfer is 10000000 blocks
+const DEFAULT_TIMEOUT_HEIGHT: u64 = 10000000;
+
 const CONTRACT_NAME: &str = concat!("crates.io:neutron-contracts__", env!("CARGO_PKG_NAME"));
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
@@ -47,6 +50,7 @@ pub enum ExecuteMsg {
         to: String,
         denom: String,
         amount: u128,
+        timeout_height: Option<u64>,
     },
     SetFees {
         recv_fee: u128,
@@ -81,7 +85,8 @@ pub fn execute(
             to,
             denom,
             amount,
-        } => execute_send(deps, env, channel, to, denom, amount),
+            timeout_height,
+        } => execute_send(deps, env, channel, to, denom, amount, timeout_height),
 
         ExecuteMsg::SetFees {
             recv_fee,
@@ -197,6 +202,7 @@ fn execute_send(
     to: String,
     denom: String,
     amount: u128,
+    timeout_height: Option<u64>,
 ) -> StdResult<Response<NeutronMsg>> {
     let fee = IBC_FEE.load(deps.storage)?;
     let coin1 = coin(amount, denom.clone());
@@ -208,7 +214,7 @@ fn execute_send(
         token: coin1,
         timeout_height: RequestPacketTimeoutHeight {
             revision_number: Some(2),
-            revision_height: Some(10000000),
+            revision_height: timeout_height.or(Some(DEFAULT_TIMEOUT_HEIGHT)),
         },
         timeout_timestamp: 0,
         fee: fee.clone(),
@@ -222,7 +228,7 @@ fn execute_send(
         token: coin2,
         timeout_height: RequestPacketTimeoutHeight {
             revision_number: Some(2),
-            revision_height: Some(10000000),
+            revision_height: timeout_height.or(Some(DEFAULT_TIMEOUT_HEIGHT)),
         },
         timeout_timestamp: 0,
         fee,
