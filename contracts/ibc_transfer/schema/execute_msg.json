@@ -28,6 +28,14 @@
             "denom": {
               "type": "string"
             },
+            "timeout_height": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint64",
+              "minimum": 0.0
+            },
             "to": {
               "type": "string"
             }
