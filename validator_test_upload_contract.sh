@@ -5,8 +5,8 @@ CONTRACT=${args[0]}
 
 NEUTRON_KEY_NAME=validator_test
 GAS_PRICES=0.01untrn
-EXPLORER_URL=http://23.109.159.28:3333/
-FAUCET_URL=http://23.109.159.28/
+EXPLORER_URL=http://explorer.quark.ntrn.info/
+FAUCET_URL=https://t.me/+Y_BQropm0_VlZjVi
 NODE_URL="${NODE_URL:-tcp://localhost:26657}"
 
 echo "Node url: $NODE_URL"
@@ -50,6 +50,15 @@ then
 fi
 
 echo "Local address in neutron: $NEUTRON_ADDRESS"
+echo ""
+echo " #####                                                                                              ### ### ### "
+echo "#     #   ##   #    # ######    #    # #####     #    # #    # ###### #    #  ####  #    # #  ####  ### ### ### "
+echo "#        #  #  #    # #         #    # #    #    ##  ## ##   # #      ##  ## #    # ##   # # #    # ### ### ### "
+echo " #####  #    # #    # #####     #    # #    #    # ## # # #  # #####  # ## # #    # # #  # # #       #   #   #  "
+echo "      # ###### #    # #         #    # #####     #    # #  # # #      #    # #    # #  # # # #                  "
+echo "#     # #    #  #  #  #         #    # #   #     #    # #   ## #      #    # #    # #   ## # #    # ### ### ### "
+echo " #####  #    #   ##   ######     ####  #    #    #    # #    # ###### #    #  ####  #    # #  ####  ### ### ### "
+echo ""
 echo "Key mnemonic: $MNEMONIC"
 echo "Key name: $NEUTRON_KEY_NAME"
 echo ""
