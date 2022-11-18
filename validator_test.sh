@@ -86,10 +86,18 @@ then
     exit
 fi
 
+ICQ_REG_DEPOSIT=1000000
+CONTRACT_FUNDING=$((2*$ICQ_REG_DEPOSIT+500000))
 
 ## Fund contract to be able to pay fees
-echo "Fund the contract to pay for IBC fees"
-RES=$(${BIN} tx bank send $NEUTRON_KEY_NAME ${CONTRACT_ADDRESS} 20000untrn --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --gas-prices ${GAS_PRICES} -y  --broadcast-mode=block)
+echo "Fund the contract to pay for IBC fees and ICQ registration with $CONTRACT_FUNDING untrn"
+RES=$(${BIN} tx bank send $NEUTRON_KEY_NAME ${CONTRACT_ADDRESS} "$CONTRACT_FUNDING"untrn --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --gas-prices ${GAS_PRICES} -y --output json --broadcast-mode=block)
+CODE=$(echo $RES | jq -r '.code')
+if [ $CODE != "0" ]
+then
+    echo "Funding failed. Make sure you have at least $CONTRACT_FUNDING untrn at the $NEUTRON_KEY_NAME wallet"
+    exit
+fi
 echo ""
 
 ## Register interchain account
@@ -120,9 +128,8 @@ then
 fi
 echo "ICA address: $ICA_ADDRESS"
 
-echo ""
-echo "Sending two deposits to ICQ contract"
-RES=$(${BIN} tx bank send $NEUTRON_KEY_NAME "$CONTRACT_ADDRESS" 2000000untrn -y --chain-id "$NEUTRON_CHAIN_ID" --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000 --node ${NODE_URL})
+RES=$(${BIN} query bank balances ${CONTRACT_ADDRESS} --output json --node ${NODE_URL})
+BALANCE_BEFORE_ICQ_REG=$(echo $RES | jq --raw-output '[.balances[] | select(.denom == "untrn")][0].amount')
 
 echo ""
 echo "Registering interchain KV query..."
@@ -138,16 +145,17 @@ TX_QUERY_ID=$(echo $RES | jq --raw-output '[[.logs[0].events[] | select(.type ==
 TX_QUERY_REG_TX_HASH=$(echo $RES | jq --raw-output '.txhash')
 echo "TX Query ID: $TX_QUERY_ID, TX hash: $TX_QUERY_REG_TX_HASH"
 
+sleep 5
 echo ""
-echo -n "Checking that deposits have been deducted completely from contract balance… "
+echo -n "Checking that the deposit have been deducted completely from contract balance… "
+
 RES=$(${BIN} query bank balances ${CONTRACT_ADDRESS} --output json --node ${NODE_URL})
-BALANCE=$(echo $RES | jq --raw-output '[.balances[] | select(.denom == "untrn")][0].amount')
-if [[ $BALANCE -eq 20000 ]]; then
+BALANCE_AFTER_ICQ_REG=$(echo $RES | jq --raw-output '[.balances[] | select(.denom == "untrn")][0].amount')
+if [[ $(($BALANCE_BEFORE_ICQ_REG-$BALANCE_AFTER_ICQ_REG)) -eq 2000000 ]]; then
   echo "OK"
 else
   echo
-  echo "ERROR: contract is expected to drain all of its money on deposits (except 20000untrn for fees), but somehow different amount of tokens is left on its balance:"
-  echo $RES | jq
+  echo "ERROR: contract is expected to spend the whole deposit for the queries registration (2,000,000 untrn), but somehow a different amount has been spent: $(($BALANCE_BEFORE_ICQ_REG-$BALANCE_AFTER_ICQ_REG))"
   exit 1
 fi
 
@@ -156,6 +164,12 @@ echo "Please send 0.02 ${DENOMS[$i]} to $ICA_ADDRESS"
 echo "hit enter when you are ready"
 read
 echo ""
+
+RES=$(${BIN} query wasm contract-state smart ${CONTRACT_ADDRESS} "{\"last_ack_seq_id\":{}}" --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --output json 2>/dev/null)
+LAST_SEQ_ID_BEFORE_DELEGATE=$(echo $RES | jq -r '.data')
+if [ -z "$LAST_SEQ_ID_BEFORE_DELEGATE" ] || ! [ "$LAST_SEQ_ID_BEFORE_DELEGATE" -eq "$LAST_SEQ_ID_BEFORE_DELEGATE" ] 2>/dev/null; then
+    LAST_SEQ_ID_BEFORE_DELEGATE=0
+fi
 
 ## Execute Interchain Delegate tx
 echo "Execute Interchain Delegate tx"
@@ -176,11 +190,11 @@ j=100
 while [[ $j -gt 0 ]]
 do
     ((j--))
-    RES=$(${BIN} query wasm contract-state smart ${CONTRACT_ADDRESS} "{\"acknowledgement_result\":{\"interchain_account_id\":\"${INTERCHAIN_ACCOUNT_ID}\", \"sequence_id\": 1}}" --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --output json 2>/dev/null)
-    if [ "$RES" = "{\"data\":{\"success\":[\"/cosmos.staking.v1beta1.MsgDelegate\"]}}" ]
-    then
-	ACK=1
-	break
+    RES=$(${BIN} query wasm contract-state smart ${CONTRACT_ADDRESS} "{\"last_ack_seq_id\":{}}" --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --output json 2>/dev/null)
+    LAST_SEQ_ID_AFTER_DELEGATE=$(echo $RES | jq -r '.data')
+    if [ "$LAST_SEQ_ID_AFTER_DELEGATE" -gt "$LAST_SEQ_ID_BEFORE_DELEGATE" ] 2>/dev/null; then
+        ACK=1
+        break
     fi
     sleep 5
 done
@@ -190,11 +204,19 @@ then
     echo "Error: Acknowledgement has not been received"
     exit
 else
-   echo "Acknowledgement has  been received"
-   echo ""
-   echo "Now you can check your delegation here ${REMOTE_EXPLORER[$i]}/account/$ICA_ADDRESS"
-   echo "Hit return to continue"
-   read
+    RES=$(${BIN} query wasm contract-state smart ${CONTRACT_ADDRESS} "{\"acknowledgement_result\":{\"interchain_account_id\":\"${INTERCHAIN_ACCOUNT_ID}\", \"sequence_id\": $LAST_SEQ_ID_AFTER_DELEGATE}}" --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --output json 2>/dev/null)
+    if [ "$RES" = "{\"data\":{\"success\":[\"/cosmos.staking.v1beta1.MsgDelegate\"]}}" ]
+    then
+        echo "Acknowledgement has been received"
+        echo ""
+        echo "Now you can check your delegation here ${REMOTE_EXPLORER[$i]}/account/$ICA_ADDRESS"
+        echo "Hit return to continue"
+        read
+    else
+        echo "Acknowledgement is expected to contain a successful cosmos.staking.v1beta1.MsgDelegate, but another one has been received:"
+        echo "$RES"
+        exit    
+    fi
 fi
 echo ""
 
@@ -207,6 +229,12 @@ then
     echo "Cleaning failed"
     echo "$RES"
     exit
+fi
+
+RES=$(${BIN} query wasm contract-state smart ${CONTRACT_ADDRESS} "{\"last_ack_seq_id\":{}}" --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --output json 2>/dev/null)
+LAST_SEQ_ID_BEFORE_ERR_DELEGATE=$(echo $RES | jq -r '.data')
+if [ -z "$LAST_SEQ_ID_BEFORE_ERR_DELEGATE" ] || ! [ "$LAST_SEQ_ID_BEFORE_ERR_DELEGATE" -eq "$LAST_SEQ_ID_BEFORE_ERR_DELEGATE" ] 2>/dev/null; then
+    LAST_SEQ_ID_BEFORE_ERR_DELEGATE=0
 fi
 
 echo ""
@@ -223,16 +251,17 @@ then
 fi
 echo "Waiting for delegation...it may take a lot of time"
 
+## Wait until ackowledgement appears on the source chain
 ACK=0
 j=100
 while [[ $j -gt 0 ]]
 do
     ((j--))
-    RES=$(${BIN} query wasm contract-state smart ${CONTRACT_ADDRESS} "{\"acknowledgement_result\":{\"interchain_account_id\":\"${INTERCHAIN_ACCOUNT_ID}\", \"sequence_id\": 2}}" --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --output json 2>/dev/null)
-    if [ "$RES" = "{\"data\":{\"error\":[\"message\",\"ABCI code: 1: error handling packet on host chain: see events for details\"]}}" ]
-    then
-	ACK=1
-	break
+    RES=$(${BIN} query wasm contract-state smart ${CONTRACT_ADDRESS} "{\"last_ack_seq_id\":{}}" --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --output json 2>/dev/null)
+    LAST_SEQ_ID_AFTER_ERR_DELEGATE=$(echo $RES | jq -r '.data')
+    if [ "$LAST_SEQ_ID_AFTER_ERR_DELEGATE" -gt "$LAST_SEQ_ID_BEFORE_ERR_DELEGATE" ] 2>/dev/null; then
+        ACK=1
+        break
     fi
     sleep 5
 done
@@ -242,9 +271,17 @@ then
     echo "Error: Acknowledgement has not been received"
     exit
 else
-   echo "Acknowledgement has been received"
-   echo "Hit return to continue"
-   read
+    RES=$(${BIN} query wasm contract-state smart ${CONTRACT_ADDRESS} "{\"acknowledgement_result\":{\"interchain_account_id\":\"${INTERCHAIN_ACCOUNT_ID}\", \"sequence_id\": ${LAST_SEQ_ID_AFTER_ERR_DELEGATE}}}" --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --output json 2>/dev/null)
+    if [ "$RES" = "{\"data\":{\"error\":[\"message\",\"ABCI code: 1: error handling packet on host chain: see events for details\"]}}" ]
+    then
+        echo "Acknowledgement has been received"
+        echo "Hit return to continue"
+        read
+    else
+        echo "Acknowledgement is expected to contain a host chain error, but another one has been received:"
+        echo "$RES"
+        exit    
+    fi
 fi
 
 echo ""
@@ -294,7 +331,7 @@ echo "Checking TX query result"
 RES=$(${BIN} query wasm contract-state smart ${CONTRACT_ADDRESS} "{\"get_recipient_txs\":{\"recipient\":\"${ICA_ADDRESS}\"}}" --chain-id "$NEUTRON_CHAIN_ID" --output json --node ${NODE_URL})
 echo "$RES" | jq
 echo ""
-echo "Please make sure output contains a single transfer of 0.02$TARGET_DENOM from faucet"
+echo "Please make sure output contains only your single transfer of 0.02$TARGET_DENOM (or several 0.02$TARGET_DENOM transfers if you made them, but the number of transfers in the output should be equal to the number of your sendings)"
 echo "Hit enter to continue"
 read
 
@@ -307,20 +344,25 @@ echo "Please compare query result to value here ${REMOTE_EXPLORER[$i]}/account/$
 echo "Hit enter to continue"
 read
 
+RES=$(${BIN} query bank balances ${CONTRACT_ADDRESS} --output json --node ${NODE_URL})
+BALANCE_BEFORE_ICQ_DEL=$(echo $RES | jq --raw-output '[.balances[] | select(.denom == "untrn")][0].amount')
+
 echo ""
 echo "Deleting TX query and collecting deposit back to contract…"
 RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "$(printf '{"remove_interchain_query": {"query_id": %s}}' "$TX_QUERY_ID")" --from ${NEUTRON_KEY_NAME} -y --chain-id ${NEUTRON_CHAIN_ID} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000 --node ${NODE_URL})
 TX_QUERY_DEL_TX_HASH=$(echo $RES | jq --raw-output '.txhash')
 
+RES=$(${BIN} query bank balances ${CONTRACT_ADDRESS} --output json --node ${NODE_URL})
+BALANCE_AFTER_ICQ_DEL=$(echo $RES | jq --raw-output '[.balances[] | select(.denom == "untrn")][0].amount')
+
 echo ""
 echo -n "Checking that a single deposit has been returned to contract balance… "
-RES=$(${BIN} query bank balances ${CONTRACT_ADDRESS} --output json --node ${NODE_URL})
-BALANCE=$(echo $RES | jq --raw-output '[.balances[] | select(.denom == "untrn")][0].amount')
-if [[ $BALANCE -eq 1014000 ]]; then
+DIFF=$((BALANCE_AFTER_ICQ_DEL-BALANCE_BEFORE_ICQ_DEL))
+if [[ $DIFF -eq $ICQ_REG_DEPOSIT ]]; then
   echo "OK"
 else
   echo
-  echo "ERROR: contract is expected to gain a single deposit back, but something went wrong:"
+  echo "ERROR: contract is expected to get a single deposit back ($ICQ_REG_DEPOSIT untrn), but got $DIFF"
   echo $RES | jq
   exit 1
 fi

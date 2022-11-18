@@ -48,7 +48,7 @@ use neutron_sdk::{NeutronError, NeutronResult};
 use crate::storage::{
     read_reply_payload, read_sudo_payload, save_reply_payload, save_sudo_payload,
     AcknowledgementResult, GetRecipientTxsResponse, SudoPayload, Transfer, ACKNOWLEDGEMENT_RESULTS,
-    IBC_FEE, INTERCHAIN_ACCOUNTS, RECIPIENT_TXS, SUDO_PAYLOAD_REPLY_ID,
+    IBC_FEE, INTERCHAIN_ACCOUNTS, LAST_SEQ_ID, RECIPIENT_TXS, SUDO_PAYLOAD_REPLY_ID,
 };
 
 // Default timeout for SubmitTX is two weeks
@@ -161,6 +161,7 @@ pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> NeutronR
             interchain_account_id,
             sequence_id,
         } => query_acknowledgement_result(deps, env, interchain_account_id, sequence_id),
+        QueryMsg::LastAckSeqId {} => query_last_ack_seq_id(deps),
         QueryMsg::Balance { query_id } => Ok(to_binary(&query_balance(deps, env, query_id)?)?),
         QueryMsg::GetRecipientTxs { recipient } => query_recipient_txs(deps, recipient),
     }
@@ -198,6 +199,11 @@ pub fn query_acknowledgement_result(
 ) -> NeutronResult<Binary> {
     let port_id = get_port_id(env.contract.address.as_str(), &interchain_account_id);
     let res = ACKNOWLEDGEMENT_RESULTS.may_load(deps.storage, (port_id, sequence_id))?;
+    Ok(to_binary(&res)?)
+}
+
+pub fn query_last_ack_seq_id(deps: Deps<InterchainQueries>) -> NeutronResult<Binary> {
+    let res = LAST_SEQ_ID.may_load(deps.storage)?;
     Ok(to_binary(&res)?)
 }
 
@@ -376,6 +382,7 @@ fn execute_clean_ack_results(deps: DepsMut) -> NeutronResult<Response<NeutronMsg
     for key in keys {
         ACKNOWLEDGEMENT_RESULTS.remove(deps.storage, key?);
     }
+    LAST_SEQ_ID.remove(deps.storage);
     Ok(Response::default())
 }
 
@@ -599,6 +606,7 @@ fn sudo_response(
             }
         },
     )?;
+    LAST_SEQ_ID.save(deps.storage, &seq_id)?;
 
     Ok(Response::default())
 }
@@ -630,6 +638,7 @@ fn sudo_timeout(
             }
         },
     )?;
+    LAST_SEQ_ID.save(deps.storage, &seq_id)?;
 
     Ok(Response::default())
 }
@@ -662,6 +671,7 @@ fn sudo_error(
             }
         },
     )?;
+    LAST_SEQ_ID.save(deps.storage, &seq_id)?;
 
     Ok(Response::default())
 }
