@@ -120,7 +120,8 @@ pub fn execute(
             query_id,
             new_keys,
             new_update_period,
-        } => update_interchain_query(query_id, new_keys, new_update_period),
+            new_recipient,
+        } => update_interchain_query(query_id, new_keys, new_update_period, new_recipient),
         ExecuteMsg::RemoveInterchainQuery { query_id } => remove_interchain_query(query_id),
         ExecuteMsg::IntegrationTestsSetKvQueryMock {} => set_kv_query_mock(deps),
         ExecuteMsg::IntegrationTestsUnsetKvQueryMock {} => unset_kv_query_mock(deps),
@@ -277,8 +278,18 @@ pub fn update_interchain_query(
     query_id: u64,
     new_keys: Option<Vec<KVKey>>,
     new_update_period: Option<u64>,
+    new_recipient: Option<String>,
 ) -> NeutronResult<Response<NeutronMsg>> {
-    let update_msg = NeutronMsg::update_interchain_query(query_id, new_keys, new_update_period);
+    let new_filter = new_recipient.map(|recipient| {
+        vec![TransactionFilterItem {
+            field: RECIPIENT_FIELD.to_string(),
+            op: TransactionFilterOp::Eq,
+            value: TransactionFilterValue::String(recipient),
+        }]
+    });
+
+    let update_msg =
+        NeutronMsg::update_interchain_query(query_id, new_keys, new_update_period, new_filter)?;
     Ok(Response::new().add_message(update_msg))
 }
 

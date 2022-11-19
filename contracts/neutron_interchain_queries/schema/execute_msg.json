@@ -259,6 +259,12 @@
                 "$ref": "#/definitions/KVKey"
               }
             },
+            "new_recipient": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
             "new_update_period": {
               "type": [
                 "integer",

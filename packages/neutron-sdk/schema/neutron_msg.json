@@ -156,6 +156,13 @@
                 "$ref": "#/definitions/KVKey"
               }
             },
+            "new_transactions_filter": {
+              "description": "*new_transactions_filter** is a new transactions filter of the query",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
             "new_update_period": {
               "description": "*new_update_period** is a new update period of the query",
               "type": [
