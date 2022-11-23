@@ -151,11 +151,11 @@ echo -n "Checking that the deposit have been deducted completely from contract b
 
 RES=$(${BIN} query bank balances ${CONTRACT_ADDRESS} --output json --node ${NODE_URL})
 BALANCE_AFTER_ICQ_REG=$(echo $RES | jq --raw-output '[.balances[] | select(.denom == "untrn")][0].amount')
-if [[ $(($BALANCE_BEFORE_ICQ_REG-$BALANCE_AFTER_ICQ_REG)) -eq 2000000 ]]; then
+if [[ $(($BALANCE_BEFORE_ICQ_REG-$BALANCE_AFTER_ICQ_REG)) -eq $((2*$ICQ_REG_DEPOSIT)) ]]; then
   echo "OK"
 else
   echo
-  echo "ERROR: contract is expected to spend the whole deposit for the queries registration (2,000,000 untrn), but somehow a different amount has been spent: $(($BALANCE_BEFORE_ICQ_REG-$BALANCE_AFTER_ICQ_REG))"
+  echo "ERROR: contract is expected to spend the whole deposit for the queries registration ($((2*$ICQ_REG_DEPOSIT)) untrn), but somehow a different amount has been spent: $(($BALANCE_BEFORE_ICQ_REG-$BALANCE_AFTER_ICQ_REG))"
   exit 1
 fi
 
