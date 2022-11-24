@@ -1,6 +1,6 @@
 use crate::{
     bindings::types::{KVKey, ProtobufAny},
-    interchain_queries::types::{QueryPayload, QueryType, MAX_TX_FILTERS},
+    interchain_queries::types::{QueryPayload, QueryType, TransactionFilterItem, MAX_TX_FILTERS},
     sudo::msg::RequestPacketTimeoutHeight,
     NeutronError, NeutronResult,
 };
@@ -80,6 +80,9 @@ pub enum NeutronMsg {
 
         /// **new_update_period** is a new update period of the query
         new_update_period: Option<u64>,
+
+        /// **new_transactions_filter** is a new transactions filter of the query
+        new_transactions_filter: Option<String>,
     },
 
     /// RemoveInterchainQuery removes as interchain query
@@ -195,12 +198,28 @@ impl NeutronMsg {
         query_id: u64,
         new_keys: Option<Vec<KVKey>>,
         new_update_period: Option<u64>,
-    ) -> Self {
-        NeutronMsg::UpdateInterchainQuery {
+        new_transactions_filter: Option<Vec<TransactionFilterItem>>,
+    ) -> NeutronResult<Self> {
+        Ok(NeutronMsg::UpdateInterchainQuery {
             query_id,
             new_keys,
             new_update_period,
-        }
+            new_transactions_filter: match new_transactions_filter {
+                Some(filters) => {
+                    if filters.len() > MAX_TX_FILTERS {
+                        return Err(NeutronError::TooManyTransactionFilters {
+                            max: MAX_TX_FILTERS,
+                        });
+                    } else {
+                        Some(
+                            to_string(&filters)
+                                .map_err(|e| StdError::generic_err(e.to_string()))?,
+                        )
+                    }
+                }
+                None => None,
+            },
+        })
     }
 
     /// Basic helper to define a remove interchain query message:
