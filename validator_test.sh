@@ -89,19 +89,6 @@ fi
 ICQ_REG_DEPOSIT=1000000
 CONTRACT_FUNDING=$((2*$ICQ_REG_DEPOSIT+500000))
 
-RES=$(${BIN} query wasm contract-state smart ${CONTRACT_ADDRESS} "{\"get_recipient_txs\":{\"recipient\":\"${ICA_ADDRESS}\"}}" --chain-id "$NEUTRON_CHAIN_ID" --output json --node ${NODE_URL})
-if [ $(echo $RES | jq -r '.data.transfers | length') -ne 0 ]; then
-    echo "Clean contract state before the test"
-    RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "{\"clean_recipient_txs\": {}}" --from ${NEUTRON_KEY_NAME}  -y --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000)
-    CODE=$(echo $RES | jq -r '.code')
-    if [ $CODE != "0" ]
-    then
-        echo "Cleaning failed"
-        echo "$RES"
-        exit
-    fi
-fi
-
 ## Fund contract to be able to pay fees
 echo "Fund the contract to pay for IBC fees and ICQ registration with $CONTRACT_FUNDING untrn"
 RES=$(${BIN} tx bank send $NEUTRON_KEY_NAME ${CONTRACT_ADDRESS} "$CONTRACT_FUNDING"untrn --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --gas-prices ${GAS_PRICES} -y --output json --broadcast-mode=block)
@@ -140,6 +127,19 @@ then
     exit
 fi
 echo "ICA address: $ICA_ADDRESS"
+
+RES=$(${BIN} query wasm contract-state smart ${CONTRACT_ADDRESS} "{\"get_recipient_txs\":{\"recipient\":\"${ICA_ADDRESS}\"}}" --chain-id "$NEUTRON_CHAIN_ID" --output json --node ${NODE_URL})
+if [ $(echo $RES | jq -r '.data.transfers | length') -ne 0 ]; then
+    echo "Clean contract state before the test"
+    RES=$(${BIN} tx wasm execute ${CONTRACT_ADDRESS} "{\"clean_recipient_txs\": {}}" --from ${NEUTRON_KEY_NAME}  -y --chain-id ${NEUTRON_CHAIN_ID} --node ${NODE_URL} --output json --broadcast-mode=block --gas-prices ${GAS_PRICES} --gas 1000000)
+    CODE=$(echo $RES | jq -r '.code')
+    if [ $CODE != "0" ]
+    then
+        echo "Cleaning failed"
+        echo "$RES"
+        exit
+    fi
+fi
 
 RES=$(${BIN} query bank balances ${CONTRACT_ADDRESS} --output json --node ${NODE_URL})
 BALANCE_BEFORE_ICQ_REG=$(echo $RES | jq --raw-output '[.balances[] | select(.denom == "untrn")][0].amount')
