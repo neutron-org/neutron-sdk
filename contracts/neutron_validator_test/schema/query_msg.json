@@ -76,6 +76,18 @@
     {
       "type": "object",
       "required": [
+        "last_ack_seq_id"
+      ],
+      "properties": {
+        "last_ack_seq_id": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
         "balance"
       ],
       "properties": {

@@ -18,6 +18,8 @@ pub enum QueryMsg {
         interchain_account_id: String,
         sequence_id: u64,
     },
+    // this query returns the sequence ID of the channel the last ack came from
+    LastAckSeqId {},
     Balance {
         query_id: u64,
     },
@@ -51,6 +53,7 @@ pub enum ExecuteMsg {
         timeout: Option<u64>,
     },
     CleanAckResults {},
+    CleanRecipientTxs {},
     SetFees {
         denom: String,
         recv_fee: u128,

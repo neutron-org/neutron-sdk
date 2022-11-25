@@ -125,6 +125,18 @@
     {
       "type": "object",
       "required": [
+        "clean_recipient_txs"
+      ],
+      "properties": {
+        "clean_recipient_txs": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
         "set_fees"
       ],
       "properties": {
