@@ -3,6 +3,12 @@
   "title": "ExecuteMsg",
   "oneOf": [
     {
+      "type": "string",
+      "enum": [
+        "clean_recipient_txs"
+      ]
+    },
+    {
       "type": "object",
       "required": [
         "register"

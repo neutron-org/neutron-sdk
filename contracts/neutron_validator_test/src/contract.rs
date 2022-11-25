@@ -125,6 +125,7 @@ pub fn execute(
             timeout,
         ),
         ExecuteMsg::CleanAckResults {} => execute_clean_ack_results(deps),
+        ExecuteMsg::CleanRecipientTxs {} => execute_clean_recipient_txs(deps),
         ExecuteMsg::SetFees {
             denom,
             recv_fee,
@@ -383,6 +384,16 @@ fn execute_clean_ack_results(deps: DepsMut) -> NeutronResult<Response<NeutronMsg
         ACKNOWLEDGEMENT_RESULTS.remove(deps.storage, key?);
     }
     LAST_SEQ_ID.remove(deps.storage);
+    Ok(Response::default())
+}
+
+fn execute_clean_recipient_txs(deps: DepsMut) -> NeutronResult<Response<NeutronMsg>> {
+    let keys: Vec<StdResult<String>> = RECIPIENT_TXS
+        .keys(deps.storage, None, None, cosmwasm_std::Order::Descending)
+        .collect();
+    for key in keys {
+        RECIPIENT_TXS.remove(deps.storage, &key?);
+    }
     Ok(Response::default())
 }
 
