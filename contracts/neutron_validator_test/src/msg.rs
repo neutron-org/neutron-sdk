@@ -53,7 +53,7 @@ pub enum ExecuteMsg {
         timeout: Option<u64>,
     },
     CleanAckResults {},
-    CleanRecipientTxs,
+    CleanRecipientTxs {},
     SetFees {
         denom: String,
         recv_fee: u128,
