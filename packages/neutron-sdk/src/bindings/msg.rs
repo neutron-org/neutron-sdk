@@ -1,9 +1,23 @@
-use crate::bindings::types::{KVKey, ProtobufAny};
-use cosmwasm_std::{CosmosMsg, CustomMsg};
+use crate::{
+    bindings::types::{KVKey, ProtobufAny},
+    interchain_queries::types::{QueryPayload, QueryType, TransactionFilterItem, MAX_TX_FILTERS},
+    sudo::msg::RequestPacketTimeoutHeight,
+    NeutronError, NeutronResult,
+};
+
+use cosmwasm_std::{Coin, CosmosMsg, CustomMsg, StdError};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use serde_json_wasm::to_string;
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+pub struct IbcFee {
+    pub recv_fee: Vec<Coin>,
+    pub ack_fee: Vec<Coin>,
+    pub timeout_fee: Vec<Coin>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 /// A number of Custom messages that can call into the Neutron bindings
 pub enum NeutronMsg {
@@ -33,6 +47,9 @@ pub enum NeutronMsg {
 
         /// **timeout** is a timeout in seconds after which the packet times out
         timeout: u64,
+
+        /// ***fee** is an ibc fee for the transaction
+        fee: IbcFee,
     },
 
     /// RegisterInterchainQuery registers an interchain query
@@ -63,12 +80,35 @@ pub enum NeutronMsg {
 
         /// **new_update_period** is a new update period of the query
         new_update_period: Option<u64>,
+
+        /// **new_transactions_filter** is a new transactions filter of the query
+        new_transactions_filter: Option<String>,
     },
 
     /// RemoveInterchainQuery removes as interchain query
     RemoveInterchainQuery {
         /// **query_id** is ID of the query we want to remove
         query_id: u64,
+    },
+    /// IbcTransfer sends a fungible token packet over IBC
+    IbcTransfer {
+        // the port on which the packet will be sent
+        source_port: String,
+        // the channel by which the packet will be sent
+        source_channel: String,
+        // the tokens to be transferred
+        token: Coin,
+        // the sender address
+        sender: String,
+        // the recipient address on the destination chain
+        receiver: String,
+        // Timeout height relative to the current block height.
+        // The timeout is disabled when set to 0.
+        timeout_height: RequestPacketTimeoutHeight,
+        // Timeout timestamp in absolute nanoseconds since unix epoch.
+        // The timeout is disabled when set to 0.
+        timeout_timestamp: u64,
+        fee: IbcFee,
     },
 }
 
@@ -98,6 +138,7 @@ impl NeutronMsg {
         msgs: Vec<ProtobufAny>,
         memo: String,
         timeout: u64,
+        fee: IbcFee,
     ) -> Self {
         NeutronMsg::SubmitTx {
             connection_id,
@@ -105,29 +146,48 @@ impl NeutronMsg {
             msgs,
             memo,
             timeout,
+            fee,
         }
     }
 
     /// Basic helper to define a register interchain query message:
-    /// * **query_type** is a query type identifier ('tx' or 'kv' for now)
-    /// * **keys** is the KV-storage keys for which we want to get values from remote chain
-    /// * **transactions_filter** is the filter for transaction search ICQ
+    /// * **query** is a query type identifier ('tx' or 'kv' for now) with a payload:
+    ///   - when the query enum is 'kv' then payload is the KV-storage keys for which we want to get
+    ///     values from remote chain;
+    ///   - when the query enum is 'tx' then payload is the filters for transaction search ICQ,
+    ///     maximum allowed number of filters is 32.
     /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
     /// * **update_period** is used to say how often the query must be updated.
     pub fn register_interchain_query(
-        query_type: String,
-        keys: Vec<KVKey>,
-        transactions_filter: String,
+        query: QueryPayload,
         connection_id: String,
         update_period: u64,
-    ) -> Self {
-        NeutronMsg::RegisterInterchainQuery {
-            query_type,
-            keys,
-            transactions_filter,
-            connection_id,
-            update_period,
-        }
+    ) -> NeutronResult<Self> {
+        Ok(match query {
+            QueryPayload::KV(keys) => NeutronMsg::RegisterInterchainQuery {
+                query_type: QueryType::KV.into(),
+                keys,
+                transactions_filter: String::new(),
+                connection_id,
+                update_period,
+            },
+            QueryPayload::TX(transactions_filters) => {
+                if transactions_filters.len() > MAX_TX_FILTERS {
+                    return Err(NeutronError::TooManyTransactionFilters {
+                        max: MAX_TX_FILTERS,
+                    });
+                } else {
+                    NeutronMsg::RegisterInterchainQuery {
+                        query_type: QueryType::TX.into(),
+                        keys: vec![],
+                        transactions_filter: to_string(&transactions_filters)
+                            .map_err(|e| StdError::generic_err(e.to_string()))?,
+                        connection_id,
+                        update_period,
+                    }
+                }
+            }
+        })
     }
 
     /// Basic helper to define a update interchain query message:
@@ -138,12 +198,28 @@ impl NeutronMsg {
         query_id: u64,
         new_keys: Option<Vec<KVKey>>,
         new_update_period: Option<u64>,
-    ) -> Self {
-        NeutronMsg::UpdateInterchainQuery {
+        new_transactions_filter: Option<Vec<TransactionFilterItem>>,
+    ) -> NeutronResult<Self> {
+        Ok(NeutronMsg::UpdateInterchainQuery {
             query_id,
             new_keys,
             new_update_period,
-        }
+            new_transactions_filter: match new_transactions_filter {
+                Some(filters) => {
+                    if filters.len() > MAX_TX_FILTERS {
+                        return Err(NeutronError::TooManyTransactionFilters {
+                            max: MAX_TX_FILTERS,
+                        });
+                    } else {
+                        Some(
+                            to_string(&filters)
+                                .map_err(|e| StdError::generic_err(e.to_string()))?,
+                        )
+                    }
+                }
+                None => None,
+            },
+        })
     }
 
     /// Basic helper to define a remove interchain query message:
@@ -161,7 +237,7 @@ impl From<NeutronMsg> for CosmosMsg<NeutronMsg> {
 
 impl CustomMsg for NeutronMsg {}
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 /// Describes response structure for **RegisterInterchainQuery** msg
 pub struct MsgRegisterInterchainQueryResponse {
@@ -169,10 +245,20 @@ pub struct MsgRegisterInterchainQueryResponse {
     pub id: u64,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 /// MsgSubmitTxResponse defines the response for Msg/SubmitTx
 pub struct MsgSubmitTxResponse {
+    /// **sequence_id** is a channel's sequence_id for outgoing ibc packet. Unique per a channel.
+    pub sequence_id: u64,
+    /// **channel** is a src channel on neutron side trasaction was submitted from
+    pub channel: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+/// MsgSubmitTxResponse defines the response for Msg/IbcTransfer
+pub struct MsgIbcTransferResponse {
     /// **sequence_id** is a channel's sequence_id for outgoing ibc packet. Unique per a channel.
     pub sequence_id: u64,
     /// **channel** is a src channel on neutron side trasaction was submitted from

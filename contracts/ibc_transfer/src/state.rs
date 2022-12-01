@@ -1,11 +1,16 @@
 use cosmwasm_std::{from_binary, to_vec, Binary, StdResult, Storage};
 use cw_storage_plus::{Item, Map};
+use neutron_sdk::bindings::msg::IbcFee;
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 use crate::contract::SudoPayload;
 
 pub const IBC_SUDO_ID_RANGE_START: u64 = 1_000_000_000;
 pub const IBC_SUDO_ID_RANGE_SIZE: u64 = 1_000;
 pub const IBC_SUDO_ID_RANGE_END: u64 = IBC_SUDO_ID_RANGE_START + IBC_SUDO_ID_RANGE_SIZE;
+
+pub const IBC_FEE: Item<IbcFee> = Item::new("ibc_fee");
 
 pub const REPLY_QUEUE_ID: Map<u64, Vec<u8>> = Map::new("reply_queue_id");
 
@@ -60,4 +65,14 @@ pub fn read_sudo_payload(
 ) -> StdResult<SudoPayload> {
     let data = SUDO_PAYLOAD.load(store, (channel_id, seq_id))?;
     from_binary(&Binary(data))
+}
+
+/// Used only in integration tests framework to simulate failures.
+pub const INTEGRATION_TESTS_SUDO_MOCK: Item<IntegrationTestsSudoMock> =
+    Item::new("integration_tests_sudo_mock");
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+pub enum IntegrationTestsSudoMock {
+    Enabled,
+    Disabled,
 }

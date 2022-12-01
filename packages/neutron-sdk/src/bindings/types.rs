@@ -1,13 +1,15 @@
+use cosmwasm_std::{Binary, Coin};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use std::fmt::Write as _;
 
-use cosmwasm_std::{Binary, Coin};
+use crate::interchain_queries::types::QueryType;
 
 /// Encodes bytes slice into hex string
 pub fn encode_hex(bytes: &[u8]) -> String {
     let mut s = String::with_capacity(bytes.len() * 2);
     for &b in bytes {
-        s.push_str(&format!("{:02x}", b));
+        let _ = write!(s, "{:02x}", b);
     }
     s
 }
@@ -20,7 +22,7 @@ pub fn decode_hex(s: &str) -> Option<Vec<u8>> {
         .collect()
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct RegisteredQuery {
     /// The unique id of the registered query.
@@ -30,7 +32,7 @@ pub struct RegisteredQuery {
     /// The KV-storage keys for which we want to get values from remote chain
     pub keys: Vec<KVKey>,
     /// The query type identifier (i.e. 'kv' or 'tx' for now)
-    pub query_type: String,
+    pub query_type: QueryType,
     /// The filter for transaction search ICQ
     pub transactions_filter: String,
     /// The IBC connection ID for getting ConsensusState to verify proofs.
@@ -52,7 +54,7 @@ pub struct RegisteredQuery {
 }
 
 /// InterchainQueryResult is a result data for a registered query
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct InterchainQueryResult {
     /// **kv_results** is a raw key-value pairs of query result
@@ -66,7 +68,7 @@ pub struct InterchainQueryResult {
     pub revision: u64,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 /// Describes value in the Cosmos-SDK KV-storage on remote chain
 pub struct StorageValue {
@@ -80,7 +82,7 @@ pub struct StorageValue {
     pub value: Binary,
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema, Debug)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, JsonSchema, Debug)]
 #[serde(rename_all = "snake_case")]
 /// Type for wrapping any protobuf message
 pub struct ProtobufAny {
@@ -103,7 +105,7 @@ impl ProtobufAny {
 const KV_PATH_KEY_DELIMITER: &str = "/";
 const KV_KEYS_DELIMITER: &str = ",";
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 /// Describes a KV key for which you want to get value from the storage on remote chain
 pub struct KVKey {

@@ -16,3 +16,5 @@
 
 pub mod contract;
 pub mod state;
+
+mod integration_tests_mock_handlers;

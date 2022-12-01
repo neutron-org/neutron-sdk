@@ -39,6 +39,133 @@
     {
       "type": "object",
       "required": [
+        "register_bank_total_supply_query"
+      ],
+      "properties": {
+        "register_bank_total_supply_query": {
+          "type": "object",
+          "required": [
+            "connection_id",
+            "denoms",
+            "update_period"
+          ],
+          "properties": {
+            "connection_id": {
+              "type": "string"
+            },
+            "denoms": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "update_period": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "register_distribution_fee_pool_query"
+      ],
+      "properties": {
+        "register_distribution_fee_pool_query": {
+          "type": "object",
+          "required": [
+            "connection_id",
+            "update_period"
+          ],
+          "properties": {
+            "connection_id": {
+              "type": "string"
+            },
+            "update_period": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "register_staking_validators_query"
+      ],
+      "properties": {
+        "register_staking_validators_query": {
+          "type": "object",
+          "required": [
+            "connection_id",
+            "update_period",
+            "validators"
+          ],
+          "properties": {
+            "connection_id": {
+              "type": "string"
+            },
+            "update_period": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "validators": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "register_government_proposals_query"
+      ],
+      "properties": {
+        "register_government_proposals_query": {
+          "type": "object",
+          "required": [
+            "connection_id",
+            "proposals_ids",
+            "update_period"
+          ],
+          "properties": {
+            "connection_id": {
+              "type": "string"
+            },
+            "proposals_ids": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "uint64",
+                "minimum": 0.0
+              }
+            },
+            "update_period": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
         "register_transfers_query"
       ],
       "properties": {
@@ -58,7 +185,7 @@
                 "integer",
                 "null"
               ],
-              "format": "uint128",
+              "format": "uint64",
               "minimum": 0.0
             },
             "recipient": {
@@ -132,6 +259,12 @@
                 "$ref": "#/definitions/KVKey"
               }
             },
+            "new_recipient": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
             "new_update_period": {
               "type": [
                 "integer",
@@ -173,6 +306,69 @@
       "additionalProperties": false
     },
     {
+      "description": "Used only in integration tests framework to simulate failures. It tries to register query where keys is an empty array.",
+      "type": "object",
+      "required": [
+        "integration_tests_register_query_empty_keys"
+      ],
+      "properties": {
+        "integration_tests_register_query_empty_keys": {
+          "type": "object",
+          "required": [
+            "connection_id"
+          ],
+          "properties": {
+            "connection_id": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "Used only in integration tests framework to simulate failures. It tries to register query where in keys array there is a key with empty path.",
+      "type": "object",
+      "required": [
+        "integration_tests_register_query_empty_path"
+      ],
+      "properties": {
+        "integration_tests_register_query_empty_path": {
+          "type": "object",
+          "required": [
+            "connection_id"
+          ],
+          "properties": {
+            "connection_id": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "Used only in integration tests framework to simulate failures. It tries to register query where in keys array there is a key with empty id.",
+      "type": "object",
+      "required": [
+        "integration_tests_register_query_empty_id"
+      ],
+      "properties": {
+        "integration_tests_register_query_empty_id": {
+          "type": "object",
+          "required": [
+            "connection_id"
+          ],
+          "properties": {
+            "connection_id": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
       "description": "Used only in integration tests framework to simulate failures. After executing this message, contract will attempt to alter state, zero out kv query statistics and then fail, all of this happening in sudo kv callback handler.",
       "type": "object",
       "required": [
@@ -201,7 +397,7 @@
   ],
   "definitions": {
     "Binary": {
-      "description": "Binary is a wrapper around Vec<u8> to add base64 de/serialization with serde. It also adds some helper methods to help encode inline.\n\nThis is only needed as serde-json-{core,wasm} has a horrible encoding for Vec<u8>",
+      "description": "Binary is a wrapper around Vec<u8> to add base64 de/serialization with serde. It also adds some helper methods to help encode inline.\n\nThis is only needed as serde-json-{core,wasm} has a horrible encoding for Vec<u8>. See also <https://github.com/CosmWasm/cosmwasm/blob/main/docs/MESSAGE_TYPES.md>.",
       "type": "string"
     },
     "KVKey": {

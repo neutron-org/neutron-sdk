@@ -17,6 +17,8 @@ use cosmos_sdk_proto::cosmos::tx::v1beta1::{TxBody, TxRaw};
 use cosmwasm_std::{
     entry_point, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult,
 };
+use cw2::set_contract_version;
+use neutron_sdk::interchain_queries::register_queries::new_register_interchain_query_msg;
 use prost::Message as ProstMessage;
 
 use crate::msg::{
@@ -31,33 +33,41 @@ use neutron_sdk::bindings::msg::NeutronMsg;
 use neutron_sdk::bindings::query::{InterchainQueries, QueryRegisteredQueryResponse};
 use neutron_sdk::bindings::types::KVKey;
 use neutron_sdk::interchain_queries::queries::{
-    get_registered_query, query_balance, query_delegations,
+    get_registered_query, query_balance, query_bank_total, query_delegations,
+    query_distribution_fee_pool, query_government_proposals, query_staking_validators,
 };
 use neutron_sdk::interchain_queries::{
-    register_balance_query_msg, register_delegator_delegations_query_msg,
-    register_transfers_query_msg,
+    new_register_balance_query_msg, new_register_bank_total_supply_query_msg,
+    new_register_delegator_delegations_query_msg, new_register_distribution_fee_pool_query_msg,
+    new_register_gov_proposal_query_msg, new_register_staking_validators_query_msg,
+    new_register_transfers_query_msg,
 };
 use neutron_sdk::sudo::msg::SudoMsg;
 use neutron_sdk::{NeutronError, NeutronResult};
 
 use crate::integration_tests_mock_handlers::{set_kv_query_mock, unset_kv_query_mock};
 use neutron_sdk::interchain_queries::types::{
-    TransactionFilterItem, TransactionFilterOp, TransactionFilterValue,
+    QueryType, TransactionFilterItem, TransactionFilterOp, TransactionFilterValue,
     COSMOS_SDK_TRANSFER_MSG_URL, RECIPIENT_FIELD,
 };
 use serde_json_wasm;
 
 /// defines the incoming transfers limit to make a case of failed callback possible.
 const MAX_ALLOWED_TRANSFER: u64 = 20000;
+const MAX_ALLOWED_MESSAGES: usize = 20;
+
+const CONTRACT_NAME: &str = concat!("crates.io:neutron-contracts__", env!("CARGO_PKG_NAME"));
+const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
-    _deps: DepsMut,
+    deps: DepsMut,
     _env: Env,
     _info: MessageInfo,
     _msg: InstantiateMsg,
 ) -> NeutronResult<Response> {
-    //TODO
+    deps.api.debug("WASMDEBUG: instantiate");
+    set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
     Ok(Response::default())
 }
 
@@ -74,68 +84,116 @@ pub fn execute(
             addr,
             denom,
             update_period,
-        } => register_balance_query(deps, env, connection_id, addr, denom, update_period),
+        } => register_balance_query(connection_id, addr, denom, update_period),
+        ExecuteMsg::RegisterBankTotalSupplyQuery {
+            connection_id,
+            denoms,
+            update_period,
+        } => register_bank_total_supply_query(connection_id, denoms, update_period),
+        ExecuteMsg::RegisterDistributionFeePoolQuery {
+            connection_id,
+            update_period,
+        } => register_distribution_fee_pool_query(connection_id, update_period),
+        ExecuteMsg::RegisterGovernmentProposalsQuery {
+            connection_id,
+            proposals_ids,
+            update_period,
+        } => register_gov_proposal_query(connection_id, proposals_ids, update_period),
+        ExecuteMsg::RegisterStakingValidatorsQuery {
+            connection_id,
+            validators,
+            update_period,
+        } => register_staking_validators_query(connection_id, validators, update_period),
         ExecuteMsg::RegisterDelegatorDelegationsQuery {
             connection_id,
             delegator,
             validators,
             update_period,
-        } => register_delegations_query(
-            deps,
-            env,
-            connection_id,
-            delegator,
-            validators,
-            update_period,
-        ),
+        } => register_delegations_query(connection_id, delegator, validators, update_period),
         ExecuteMsg::RegisterTransfersQuery {
             connection_id,
             recipient,
             update_period,
             min_height,
-        } => register_transfers_query(
-            deps,
-            env,
-            connection_id,
-            recipient,
-            update_period,
-            min_height,
-        ),
+        } => register_transfers_query(connection_id, recipient, update_period, min_height),
         ExecuteMsg::UpdateInterchainQuery {
             query_id,
             new_keys,
             new_update_period,
-        } => update_interchain_query(query_id, new_keys, new_update_period),
+            new_recipient,
+        } => update_interchain_query(query_id, new_keys, new_update_period, new_recipient),
         ExecuteMsg::RemoveInterchainQuery { query_id } => remove_interchain_query(query_id),
         ExecuteMsg::IntegrationTestsSetKvQueryMock {} => set_kv_query_mock(deps),
         ExecuteMsg::IntegrationTestsUnsetKvQueryMock {} => unset_kv_query_mock(deps),
+        ExecuteMsg::IntegrationTestsRegisterQueryEmptyId { connection_id } => {
+            register_query_empty_id(deps, env, connection_id)
+        }
+        ExecuteMsg::IntegrationTestsRegisterQueryEmptyPath { connection_id } => {
+            register_query_empty_path(deps, env, connection_id)
+        }
+        ExecuteMsg::IntegrationTestsRegisterQueryEmptyKeys { connection_id } => {
+            register_query_empty_keys(deps, env, connection_id)
+        }
     }
 }
 
 pub fn register_balance_query(
-    deps: DepsMut<InterchainQueries>,
-    env: Env,
     connection_id: String,
     addr: String,
     denom: String,
     update_period: u64,
 ) -> NeutronResult<Response<NeutronMsg>> {
-    let msg = register_balance_query_msg(deps, env, connection_id, addr, denom, update_period)?;
+    let msg = new_register_balance_query_msg(connection_id, addr, denom, update_period)?;
+
+    Ok(Response::new().add_message(msg))
+}
+
+pub fn register_bank_total_supply_query(
+    connection_id: String,
+    denoms: Vec<String>,
+    update_period: u64,
+) -> NeutronResult<Response<NeutronMsg>> {
+    let msg = new_register_bank_total_supply_query_msg(connection_id, denoms, update_period)?;
+
+    Ok(Response::new().add_message(msg))
+}
+
+pub fn register_distribution_fee_pool_query(
+    connection_id: String,
+    update_period: u64,
+) -> NeutronResult<Response<NeutronMsg>> {
+    let msg = new_register_distribution_fee_pool_query_msg(connection_id, update_period)?;
+
+    Ok(Response::new().add_message(msg))
+}
+
+pub fn register_gov_proposal_query(
+    connection_id: String,
+    proposals_ids: Vec<u64>,
+    update_period: u64,
+) -> NeutronResult<Response<NeutronMsg>> {
+    let msg = new_register_gov_proposal_query_msg(connection_id, proposals_ids, update_period)?;
+
+    Ok(Response::new().add_message(msg))
+}
+
+pub fn register_staking_validators_query(
+    connection_id: String,
+    validators: Vec<String>,
+    update_period: u64,
+) -> NeutronResult<Response<NeutronMsg>> {
+    let msg = new_register_staking_validators_query_msg(connection_id, validators, update_period)?;
 
     Ok(Response::new().add_message(msg))
 }
 
 pub fn register_delegations_query(
-    deps: DepsMut<InterchainQueries>,
-    env: Env,
     connection_id: String,
     delegator: String,
     validators: Vec<String>,
     update_period: u64,
 ) -> NeutronResult<Response<NeutronMsg>> {
-    let msg = register_delegator_delegations_query_msg(
-        deps,
-        env,
+    let msg = new_register_delegator_delegations_query_msg(
         connection_id,
         delegator,
         validators,
@@ -146,22 +204,73 @@ pub fn register_delegations_query(
 }
 
 pub fn register_transfers_query(
-    deps: DepsMut<InterchainQueries>,
-    env: Env,
     connection_id: String,
     recipient: String,
     update_period: u64,
-    min_height: Option<u128>,
+    min_height: Option<u64>,
 ) -> NeutronResult<Response<NeutronMsg>> {
-    let msg = register_transfers_query_msg(
+    let msg =
+        new_register_transfers_query_msg(connection_id, recipient, update_period, min_height)?;
+
+    Ok(Response::new().add_message(msg))
+}
+
+pub fn register_query_empty_id(
+    deps: DepsMut<InterchainQueries>,
+    env: Env,
+    connection_id: String,
+) -> NeutronResult<Response<NeutronMsg>> {
+    let kv_key = KVKey {
+        path: "test".to_string(),
+        key: Binary(vec![]),
+    };
+    let msg = new_register_interchain_query_msg(
         deps,
         env,
         connection_id,
-        recipient,
-        update_period,
-        min_height,
+        QueryType::KV,
+        vec![kv_key],
+        vec![],
+        10,
     )?;
+    Ok(Response::new().add_message(msg))
+}
 
+pub fn register_query_empty_path(
+    deps: DepsMut<InterchainQueries>,
+    env: Env,
+    connection_id: String,
+) -> NeutronResult<Response<NeutronMsg>> {
+    let kv_key = KVKey {
+        path: "".to_string(),
+        key: Binary("test".as_bytes().to_vec()),
+    };
+    let msg = new_register_interchain_query_msg(
+        deps,
+        env,
+        connection_id,
+        QueryType::KV,
+        vec![kv_key],
+        vec![],
+        10,
+    )?;
+    Ok(Response::new().add_message(msg))
+}
+
+pub fn register_query_empty_keys(
+    deps: DepsMut<InterchainQueries>,
+    env: Env,
+    connection_id: String,
+) -> NeutronResult<Response<NeutronMsg>> {
+    let msg = new_register_interchain_query_msg(
+        deps,
+        env,
+        connection_id,
+        QueryType::KV,
+        vec![],
+        vec![],
+        10,
+    )?;
     Ok(Response::new().add_message(msg))
 }
 
@@ -169,8 +278,18 @@ pub fn update_interchain_query(
     query_id: u64,
     new_keys: Option<Vec<KVKey>>,
     new_update_period: Option<u64>,
+    new_recipient: Option<String>,
 ) -> NeutronResult<Response<NeutronMsg>> {
-    let update_msg = NeutronMsg::update_interchain_query(query_id, new_keys, new_update_period);
+    let new_filter = new_recipient.map(|recipient| {
+        vec![TransactionFilterItem {
+            field: RECIPIENT_FIELD.to_string(),
+            op: TransactionFilterOp::Eq,
+            value: TransactionFilterValue::String(recipient),
+        }]
+    });
+
+    let update_msg =
+        NeutronMsg::update_interchain_query(query_id, new_keys, new_update_period, new_filter)?;
     Ok(Response::new().add_message(update_msg))
 }
 
@@ -184,6 +303,18 @@ pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> NeutronR
     match msg {
         //TODO: check if query.result.height is too old (for all interchain queries)
         QueryMsg::Balance { query_id } => Ok(to_binary(&query_balance(deps, env, query_id)?)?),
+        QueryMsg::BankTotalSupply { query_id } => {
+            Ok(to_binary(&query_bank_total(deps, env, query_id)?)?)
+        }
+        QueryMsg::DistributionFeePool { query_id } => Ok(to_binary(&query_distribution_fee_pool(
+            deps, env, query_id,
+        )?)?),
+        QueryMsg::StakingValidators { query_id } => {
+            Ok(to_binary(&query_staking_validators(deps, env, query_id)?)?)
+        }
+        QueryMsg::GovernmentProposals { query_id } => Ok(to_binary(&query_government_proposals(
+            deps, env, query_id,
+        )?)?),
         QueryMsg::GetDelegations { query_id } => {
             Ok(to_binary(&query_delegations(deps, env, query_id)?)?)
         }
@@ -191,7 +322,7 @@ pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> NeutronR
             Ok(to_binary(&get_registered_query(deps, query_id)?)?)
         }
         QueryMsg::GetRecipientTxs { recipient } => query_recipient_txs(deps, recipient),
-        QueryMsg::GetTransfersAmount {} => query_transfers_amount(deps),
+        QueryMsg::GetTransfersNumber {} => query_transfers_number(deps),
         QueryMsg::KvCallbackStats { query_id } => query_kv_callback_stats(deps, query_id),
     }
 }
@@ -203,11 +334,10 @@ fn query_recipient_txs(deps: Deps<InterchainQueries>, recipient: String) -> Neut
     Ok(to_binary(&GetRecipientTxsResponse { transfers: txs })?)
 }
 
-fn query_transfers_amount(deps: Deps<InterchainQueries>) -> NeutronResult<Binary> {
-    let transfers_amount = TRANSFERS.load(deps.storage).unwrap_or_default();
-    Ok(to_binary(&GetTransfersAmountResponse {
-        amount: transfers_amount,
-    })?)
+/// Returns the number of transfers made on remote chain and queried with ICQ
+fn query_transfers_number(deps: Deps<InterchainQueries>) -> NeutronResult<Binary> {
+    let transfers_number = TRANSFERS.load(deps.storage).unwrap_or_default();
+    Ok(to_binary(&GetTransfersAmountResponse { transfers_number })?)
 }
 
 /// Returns block height of last KV query callback execution
@@ -223,7 +353,8 @@ pub fn query_kv_callback_stats(
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
+pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
+    deps.api.debug("WASMDEBUG: migrate");
     Ok(Response::default())
 }
 
@@ -264,7 +395,7 @@ pub fn sudo_tx_query_result(
     // all submitted results will be treated as valid.
     //
     // TODO: come up with solution to determine transactions filter type
-    match registered_query.registered_query.query_type.as_str() {
+    match registered_query.registered_query.query_type {
         _ => {
             // For transfer queries, query data looks like `[{"field:"transfer.recipient", "op":"eq", "value":"some_address"}]`
             let query_data: Vec<TransactionFilterItem> =
@@ -309,7 +440,11 @@ fn recipient_deposits_from_tx_body(
     recipient: &str,
 ) -> NeutronResult<Vec<Transfer>> {
     let mut deposits: Vec<Transfer> = vec![];
-    for msg in tx_body.messages {
+    // Only handle up to MAX_ALLOWED_MESSAGES messages, everything else
+    // will be ignored to prevent 'out of gas' conditions.
+    // Note: in real contracts you will have to somehow save ignored
+    // data in order to handle it later.
+    for msg in tx_body.messages.iter().take(MAX_ALLOWED_MESSAGES) {
         // Skip all messages in this transaction that are not Send messages.
         if msg.type_url != *COSMOS_SDK_TRANSFER_MSG_URL.to_string() {
             continue;

@@ -12,6 +12,8 @@
           "type": "object",
           "required": [
             "amount",
+            "channel",
+            "denom",
             "to"
           ],
           "properties": {
@@ -20,10 +22,88 @@
               "format": "uint128",
               "minimum": 0.0
             },
+            "channel": {
+              "type": "string"
+            },
+            "denom": {
+              "type": "string"
+            },
+            "timeout_height": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint64",
+              "minimum": 0.0
+            },
             "to": {
               "type": "string"
             }
           }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "set_fees"
+      ],
+      "properties": {
+        "set_fees": {
+          "type": "object",
+          "required": [
+            "ack_fee",
+            "denom",
+            "recv_fee",
+            "timeout_fee"
+          ],
+          "properties": {
+            "ack_fee": {
+              "type": "integer",
+              "format": "uint128",
+              "minimum": 0.0
+            },
+            "denom": {
+              "type": "string"
+            },
+            "recv_fee": {
+              "type": "integer",
+              "format": "uint128",
+              "minimum": 0.0
+            },
+            "timeout_fee": {
+              "type": "integer",
+              "format": "uint128",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "Used only in integration tests framework to simulate failures. After executing this message, contract will fail, all of this happening in sudo callback handler.",
+      "type": "object",
+      "required": [
+        "integration_tests_set_sudo_failure_mock"
+      ],
+      "properties": {
+        "integration_tests_set_sudo_failure_mock": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "Used only in integration tests framework to simulate failures. After executing this message, contract will revert back to normal behaviour.",
+      "type": "object",
+      "required": [
+        "integration_tests_unset_sudo_failure_mock"
+      ],
+      "properties": {
+        "integration_tests_unset_sudo_failure_mock": {
+          "type": "object"
         }
       },
       "additionalProperties": false

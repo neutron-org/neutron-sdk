@@ -19,15 +19,17 @@ use cosmos_sdk_proto::cosmos::staking::v1beta1::{
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Binary, CosmosMsg, CustomQuery, Deps, DepsMut, Env, MessageInfo, Reply, Response,
-    StdError, StdResult, SubMsg,
+    to_binary, Binary, Coin as CosmosCoin, CosmosMsg, CustomQuery, Deps, DepsMut, Env, MessageInfo,
+    Reply, Response, StdError, StdResult, SubMsg, Uint128,
 };
+use cw2::set_contract_version;
 use prost::Message;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+use crate::integration_tests_mock_handlers::{set_sudo_failure_mock, unset_sudo_failure_mock};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
-use neutron_sdk::bindings::msg::{MsgSubmitTxResponse, NeutronMsg};
+use neutron_sdk::bindings::msg::{IbcFee, MsgSubmitTxResponse, NeutronMsg};
 use neutron_sdk::bindings::query::{InterchainQueries, QueryInterchainAccountAddressResponse};
 use neutron_sdk::bindings::types::ProtobufAny;
 use neutron_sdk::interchain_txs::helpers::{
@@ -37,13 +39,17 @@ use neutron_sdk::sudo::msg::{RequestPacket, SudoMsg};
 use neutron_sdk::NeutronResult;
 
 use crate::storage::{
-    read_reply_payload, read_sudo_payload, save_reply_payload, save_sudo_payload,
-    AcknowledgementResult, SudoPayload, ACKNOWLEDGEMENT_RESULTS, INTERCHAIN_ACCOUNTS,
-    SUDO_PAYLOAD_REPLY_ID,
+    add_error_to_queue, read_errors_from_queue, read_reply_payload, read_sudo_payload,
+    save_reply_payload, save_sudo_payload, AcknowledgementResult, IntegrationTestsSudoMock,
+    SudoPayload, ACKNOWLEDGEMENT_RESULTS, IBC_FEE, INTEGRATION_TESTS_SUDO_MOCK,
+    INTERCHAIN_ACCOUNTS, SUDO_PAYLOAD_REPLY_ID,
 };
 
 // Default timeout for SubmitTX is two weeks
 const DEFAULT_TIMEOUT_SECONDS: u64 = 60 * 60 * 24 * 7 * 2;
+
+const CONTRACT_NAME: &str = concat!("crates.io:neutron-contracts__", env!("CARGO_PKG_NAME"));
+const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -58,11 +64,13 @@ struct OpenAckVersion {
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
-    _deps: DepsMut,
+    deps: DepsMut,
     _env: Env,
     _info: MessageInfo,
     _msg: InstantiateMsg,
 ) -> NeutronResult<Response<NeutronMsg>> {
+    deps.api.debug("WASMDEBUG: instantiate");
+    set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
     Ok(Response::default())
 }
 
@@ -110,7 +118,18 @@ pub fn execute(
             denom,
             timeout,
         ),
+        ExecuteMsg::SetFees {
+            denom,
+            recv_fee,
+            ack_fee,
+            timeout_fee,
+        } => execute_set_fees(deps, denom, recv_fee, ack_fee, timeout_fee),
         ExecuteMsg::CleanAckResults {} => execute_clean_ack_results(deps),
+        // Used only in integration tests framework to simulate failures.
+        // After executing this message, contract fail, all of this happening
+        // in sudo callback handler.
+        ExecuteMsg::IntegrationTestsSetSudoFailureMock {} => set_sudo_failure_mock(deps),
+        ExecuteMsg::IntegrationTestsUnsetSudoFailureMock {} => unset_sudo_failure_mock(deps),
     }
 }
 
@@ -126,7 +145,9 @@ pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> NeutronR
         } => query_interchain_address_contract(deps, env, interchain_account_id),
         QueryMsg::AcknowledgementResult {
             interchain_account_id,
-        } => query_acknowledgement_result(deps, env, interchain_account_id),
+            sequence_id,
+        } => query_acknowledgement_result(deps, env, interchain_account_id, sequence_id),
+        QueryMsg::ErrorsQueue {} => query_errors_queue(deps),
     }
 }
 
@@ -158,9 +179,15 @@ pub fn query_acknowledgement_result(
     deps: Deps<InterchainQueries>,
     env: Env,
     interchain_account_id: String,
+    sequence_id: u64,
 ) -> NeutronResult<Binary> {
-    let key = get_port_id(env.contract.address.as_str(), &interchain_account_id);
-    let res = ACKNOWLEDGEMENT_RESULTS.may_load(deps.storage, key)?;
+    let port_id = get_port_id(env.contract.address.as_str(), &interchain_account_id);
+    let res = ACKNOWLEDGEMENT_RESULTS.may_load(deps.storage, (port_id, sequence_id))?;
+    Ok(to_binary(&res)?)
+}
+
+pub fn query_errors_queue(deps: Deps<InterchainQueries>) -> NeutronResult<Binary> {
+    let res = read_errors_from_queue(deps.storage)?;
     Ok(to_binary(&res)?)
 }
 
@@ -171,6 +198,31 @@ fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
 ) -> StdResult<SubMsg<T>> {
     save_reply_payload(deps.storage, payload)?;
     Ok(SubMsg::reply_on_success(msg, SUDO_PAYLOAD_REPLY_ID))
+}
+
+fn execute_set_fees(
+    deps: DepsMut,
+    denom: String,
+    recv_fee: u128,
+    ack_fee: u128,
+    timeout_fee: u128,
+) -> StdResult<Response<NeutronMsg>> {
+    let fees = IbcFee {
+        recv_fee: vec![CosmosCoin {
+            denom: denom.clone(),
+            amount: Uint128::from(recv_fee),
+        }],
+        ack_fee: vec![CosmosCoin {
+            denom: denom.clone(),
+            amount: Uint128::from(ack_fee),
+        }],
+        timeout_fee: vec![CosmosCoin {
+            denom,
+            amount: Uint128::from(timeout_fee),
+        }],
+    };
+    IBC_FEE.save(deps.storage, &fees)?;
+    Ok(Response::default())
 }
 
 fn execute_register_ica(
@@ -195,6 +247,7 @@ fn execute_delegate(
     denom: String,
     timeout: Option<u64>,
 ) -> StdResult<Response<NeutronMsg>> {
+    let fee = IBC_FEE.load(deps.storage)?;
     let (delegator, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
     let delegate_msg = MsgDelegate {
         delegator_address: delegator,
@@ -222,6 +275,7 @@ fn execute_delegate(
         vec![any_msg],
         "".to_string(),
         timeout.unwrap_or(DEFAULT_TIMEOUT_SECONDS),
+        fee,
     );
 
     // We use a submessage here because we need the process message reply to save
@@ -247,6 +301,7 @@ fn execute_undelegate(
     denom: String,
     timeout: Option<u64>,
 ) -> StdResult<Response<NeutronMsg>> {
+    let fee = IBC_FEE.load(deps.storage)?;
     let (delegator, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
     let delegate_msg = MsgUndelegate {
         delegator_address: delegator,
@@ -274,6 +329,7 @@ fn execute_undelegate(
         vec![any_msg],
         "".to_string(),
         timeout.unwrap_or(DEFAULT_TIMEOUT_SECONDS),
+        fee,
     );
 
     let submsg = msg_with_sudo_callback(
@@ -289,7 +345,7 @@ fn execute_undelegate(
 }
 
 fn execute_clean_ack_results(deps: DepsMut) -> StdResult<Response<NeutronMsg>> {
-    let keys: Vec<StdResult<String>> = ACKNOWLEDGEMENT_RESULTS
+    let keys: Vec<StdResult<(String, u64)>> = ACKNOWLEDGEMENT_RESULTS
         .keys(deps.storage, None, None, cosmwasm_std::Order::Descending)
         .collect();
     for key in keys {
@@ -302,6 +358,19 @@ fn execute_clean_ack_results(deps: DepsMut) -> StdResult<Response<NeutronMsg>> {
 pub fn sudo(deps: DepsMut, env: Env, msg: SudoMsg) -> StdResult<Response> {
     deps.api
         .debug(format!("WASMDEBUG: sudo: received sudo msg: {:?}", msg).as_str());
+
+    if let Some(IntegrationTestsSudoMock::Enabled {}) =
+        INTEGRATION_TESTS_SUDO_MOCK.may_load(deps.storage)?
+    {
+        // Used only in integration tests framework to simulate failures.
+        deps.api
+            .debug("WASMDEBUG: sudo: mocked failure on the handler");
+
+        return Err(StdError::GenericErr {
+            msg: "Integations test mock error".to_string(),
+        });
+    }
+
     match msg {
         SudoMsg::Response { request, data } => sudo_response(deps, request, data),
         SudoMsg::Error { request, details } => sudo_error(deps, request, details),
@@ -324,7 +393,8 @@ pub fn sudo(deps: DepsMut, env: Env, msg: SudoMsg) -> StdResult<Response> {
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
+pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
+    deps.api.debug("WASMDEBUG: migrate");
     Ok(Response::default())
 }
 
@@ -360,17 +430,48 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
         )
         .as_str(),
     );
+
+    // WARNING: RETURNING THIS ERROR CLOSES THE CHANNEL.
+    // AN ALTERNATIVE IS TO MAINTAIN AN ERRORS QUEUE AND PUT THE FAILED REQUEST THERE
+    // FOR LATER INSPECTION.
+    // In this particular case, we return an error because not having the sequence id
+    // in the request value implies that a fatal error occurred on Neutron side.
     let seq_id = request
         .sequence
         .ok_or_else(|| StdError::generic_err("sequence not found"))?;
+
+    // WARNING: RETURNING THIS ERROR CLOSES THE CHANNEL.
+    // AN ALTERNATIVE IS TO MAINTAIN AN ERRORS QUEUE AND PUT THE FAILED REQUEST THERE
+    // FOR LATER INSPECTION.
+    // In this particular case, we return an error because not having the sequence id
+    // in the request value implies that a fatal error occurred on Neutron side.
     let channel_id = request
         .source_channel
         .ok_or_else(|| StdError::generic_err("channel_id not found"))?;
-    let payload = read_sudo_payload(deps.storage, channel_id, seq_id)?;
+
+    // NOTE: NO ERROR IS RETURNED HERE. THE CHANNEL LIVES ON.
+    // In this particular example, this is a matter of developer's choice. Not being able to read
+    // the payload here means that there was a problem with the contract while submitting an
+    // interchain transaction. You can decide that this is not worth killing the channel,
+    // write an error log and / or save the acknowledgement to an errors queue for later manual
+    // processing. The decision is based purely on your application logic.
+    let payload = read_sudo_payload(deps.storage, channel_id, seq_id).ok();
+    if payload.is_none() {
+        let error_msg = "WASMDEBUG: Error: Unable to read sudo payload";
+        deps.api.debug(error_msg);
+        add_error_to_queue(deps.storage, error_msg.to_string());
+        return Ok(Response::default());
+    }
+
     deps.api
         .debug(format!("WASMDEBUG: sudo_response: sudo payload: {:?}", payload).as_str());
 
-    // handle response
+    // WARNING: RETURNING THIS ERROR CLOSES THE CHANNEL.
+    // AN ALTERNATIVE IS TO MAINTAIN AN ERRORS QUEUE AND PUT THE FAILED REQUEST THERE
+    // FOR LATER INSPECTION.
+    // In this particular case, we return an error because not being able to parse this data
+    // that a fatal error occurred on Neutron side, or that the remote chain sent us unexpected data.
+    // Both cases require immediate attention.
     let parsed_data = decode_acknowledgement_response(data)?;
 
     let mut item_types = vec![];
@@ -379,14 +480,32 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
         item_types.push(item_type.to_string());
         match item_type {
             "/cosmos.staking.v1beta1.MsgUndelegate" => {
+                // WARNING: RETURNING THIS ERROR CLOSES THE CHANNEL.
+                // AN ALTERNATIVE IS TO MAINTAIN AN ERRORS QUEUE AND PUT THE FAILED REQUEST THERE
+                // FOR LATER INSPECTION.
+                // In this particular case, a mismatch between the string message type and the
+                // serialised data layout looks like a fatal error that has to be investigated.
                 let out: MsgUndelegateResponse = decode_message_response(&item.data)?;
-                let completion_time = out
-                    .completion_time
-                    .ok_or_else(|| StdError::generic_err("failed to get completion time"))?;
+
+                // NOTE: NO ERROR IS RETURNED HERE. THE CHANNEL LIVES ON.
+                // In this particular case, we demonstrate that minor errors should not
+                // close the channel, and should be treated in a forgiving manner.
+                let completion_time = out.completion_time.or_else(|| {
+                    let error_msg = "WASMDEBUG: sudo_response: Recoverable error. Failed to get completion time";
+                    deps.api
+                        .debug(error_msg);
+                    add_error_to_queue(deps.storage, error_msg.to_string());
+                    Some(prost_types::Timestamp::default())
+                });
                 deps.api
                     .debug(format!("Undelegation completion time: {:?}", completion_time).as_str());
             }
             "/cosmos.staking.v1beta1.MsgDelegate" => {
+                // WARNING: RETURNING THIS ERROR CLOSES THE CHANNEL.
+                // AN ALTERNATIVE IS TO MAINTAIN AN ERRORS QUEUE AND PUT THE FAILED REQUEST THERE
+                // FOR LATER INSPECTION.
+                // In this particular case, a mismatch between the string message type and the
+                // serialised data layout looks like a fatal error that has to be investigated.
                 let _out: MsgDelegateResponse = decode_message_response(&item.data)?;
             }
             _ => {
@@ -401,11 +520,19 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
         }
     }
 
-    ACKNOWLEDGEMENT_RESULTS.save(
-        deps.storage,
-        payload.port_id,
-        &AcknowledgementResult::Success(item_types),
-    )?;
+    if let Some(payload) = payload {
+        // update but also check that we don't update same seq_id twice
+        ACKNOWLEDGEMENT_RESULTS.update(
+            deps.storage,
+            (payload.port_id, seq_id),
+            |maybe_ack| -> StdResult<AcknowledgementResult> {
+                match maybe_ack {
+                    Some(_ack) => Err(StdError::generic_err("trying to update same seq_id")),
+                    None => Ok(AcknowledgementResult::Success(item_types)),
+                }
+            },
+        )?;
+    }
 
     Ok(Response::default())
 }
@@ -414,19 +541,51 @@ fn sudo_timeout(deps: DepsMut, _env: Env, request: RequestPacket) -> StdResult<R
     deps.api
         .debug(format!("WASMDEBUG: sudo timeout request: {:?}", request).as_str());
 
+    // WARNING: RETURNING THIS ERROR CLOSES THE CHANNEL.
+    // AN ALTERNATIVE IS TO MAINTAIN AN ERRORS QUEUE AND PUT THE FAILED REQUEST THERE
+    // FOR LATER INSPECTION.
+    // In this particular case, we return an error because not having the sequence id
+    // in the request value implies that a fatal error occurred on Neutron side.
     let seq_id = request
         .sequence
         .ok_or_else(|| StdError::generic_err("sequence not found"))?;
+
+    // WARNING: RETURNING THIS ERROR CLOSES THE CHANNEL.
+    // AN ALTERNATIVE IS TO MAINTAIN AN ERRORS QUEUE AND PUT THE FAILED REQUEST THERE
+    // FOR LATER INSPECTION.
+    // In this particular case, we return an error because not having the sequence id
+    // in the request value implies that a fatal error occurred on Neutron side.
     let channel_id = request
         .source_channel
         .ok_or_else(|| StdError::generic_err("channel_id not found"))?;
-    let payload = read_sudo_payload(deps.storage, channel_id, seq_id)?;
 
-    ACKNOWLEDGEMENT_RESULTS.save(
-        deps.storage,
-        payload.port_id,
-        &AcknowledgementResult::Timeout(payload.message),
-    )?;
+    // update but also check that we don't update same seq_id twice
+    // NOTE: NO ERROR IS RETURNED HERE. THE CHANNEL LIVES ON.
+    // In this particular example, this is a matter of developer's choice. Not being able to read
+    // the payload here means that there was a problem with the contract while submitting an
+    // interchain transaction. You can decide that this is not worth killing the channel,
+    // write an error log and / or save the acknowledgement to an errors queue for later manual
+    // processing. The decision is based purely on your application logic.
+    // Please be careful because it may lead to an unexpected state changes because state might
+    // has been changed before this call and will not be reverted because of supressed error.
+    let payload = read_sudo_payload(deps.storage, channel_id, seq_id).ok();
+    if let Some(payload) = payload {
+        // update but also check that we don't update same seq_id twice
+        ACKNOWLEDGEMENT_RESULTS.update(
+            deps.storage,
+            (payload.port_id, seq_id),
+            |maybe_ack| -> StdResult<AcknowledgementResult> {
+                match maybe_ack {
+                    Some(_ack) => Err(StdError::generic_err("trying to update same seq_id")),
+                    None => Ok(AcknowledgementResult::Timeout(payload.message)),
+                }
+            },
+        )?;
+    } else {
+        let error_msg = "WASMDEBUG: Error: Unable to read sudo payload";
+        deps.api.debug(error_msg);
+        add_error_to_queue(deps.storage, error_msg.to_string());
+    }
 
     Ok(Response::default())
 }
@@ -436,19 +595,43 @@ fn sudo_error(deps: DepsMut, request: RequestPacket, details: String) -> StdResu
         .debug(format!("WASMDEBUG: sudo error: {}", details).as_str());
     deps.api
         .debug(format!("WASMDEBUG: request packet: {:?}", request).as_str());
+
+    // WARNING: RETURNING THIS ERROR CLOSES THE CHANNEL.
+    // AN ALTERNATIVE IS TO MAINTAIN AN ERRORS QUEUE AND PUT THE FAILED REQUEST THERE
+    // FOR LATER INSPECTION.
+    // In this particular case, we return an error because not having the sequence id
+    // in the request value implies that a fatal error occurred on Neutron side.
     let seq_id = request
         .sequence
         .ok_or_else(|| StdError::generic_err("sequence not found"))?;
+
+    // WARNING: RETURNING THIS ERROR CLOSES THE CHANNEL.
+    // AN ALTERNATIVE IS TO MAINTAIN AN ERRORS QUEUE AND PUT THE FAILED REQUEST THERE
+    // FOR LATER INSPECTION.
+    // In this particular case, we return an error because not having the sequence id
+    // in the request value implies that a fatal error occurred on Neutron side.
     let channel_id = request
         .source_channel
         .ok_or_else(|| StdError::generic_err("channel_id not found"))?;
-    let payload = read_sudo_payload(deps.storage, channel_id, seq_id)?;
+    let payload = read_sudo_payload(deps.storage, channel_id, seq_id).ok();
 
-    ACKNOWLEDGEMENT_RESULTS.save(
-        deps.storage,
-        payload.port_id,
-        &AcknowledgementResult::Error((payload.message, details)),
-    )?;
+    if let Some(payload) = payload {
+        // update but also check that we don't update same seq_id twice
+        ACKNOWLEDGEMENT_RESULTS.update(
+            deps.storage,
+            (payload.port_id, seq_id),
+            |maybe_ack| -> StdResult<AcknowledgementResult> {
+                match maybe_ack {
+                    Some(_ack) => Err(StdError::generic_err("trying to update same seq_id")),
+                    None => Ok(AcknowledgementResult::Error((payload.message, details))),
+                }
+            },
+        )?;
+    } else {
+        let error_msg = "WASMDEBUG: Error: Unable to read sudo payload";
+        deps.api.debug(error_msg);
+        add_error_to_queue(deps.storage, error_msg.to_string());
+    }
 
     Ok(Response::default())
 }
