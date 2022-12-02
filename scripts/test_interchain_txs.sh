@@ -14,7 +14,7 @@ FAUCET=demowallet3
 ADDRESS_2=cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw
 ADMIN=neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2
 
-VAL2=cosmos1qnk2n4nlkpw9xfqntladh74w6ujtulwn7j8za9
+VAL2=cosmosvaloper1qnk2n4nlkpw9xfqntladh74w6ujtulwnmxnh3k
 TEST_WALLET=test_wallet
 
 yes | ${BIN} keys add ${TEST_WALLET} --home ${HOME_1} --keyring-backend=test
@@ -35,6 +35,8 @@ RES=$(${BIN} tx wasm instantiate $CONTRACT_CODE_ID "$INIT_CONTRACT" --from ${TES
 CONTRACT_ADDRESS=$(echo $RES | jq -r '.logs[0].events[0].attributes[0].value')
 echo $CONTRACT_ADDRESS
 
+${BIN} tx bank send ${TEST_WALLET} ${CONTRACT_ADDRESS} 20000000stake --chain-id ${CHAIN_ID_1} --home ${HOME_1} --node tcp://localhost:16657 --keyring-backend test -y --gas-prices 0.0025stake --broadcast-mode=block
+
 #Register interchain account
 RES=$(${BIN} tx wasm execute $CONTRACT_ADDRESS "{\"register\": {\"connection_id\": \"connection-0\", \"interchain_account_id\": \"test\"}}" --from ${TEST_ADDR}  -y --chain-id ${CHAIN_ID_1} --output json --broadcast-mode=block --gas-prices 0.0025stake --gas 1000000 --keyring-backend test --home ${HOME_1} --node tcp://127.0.0.1:16657)
 echo $RES
@@ -48,6 +50,10 @@ echo $ICA_ADDRESS
 #Send some money to ICA
 RES=$(${GAIAD_BIN} tx bank send ${ADDRESS_2} ${ICA_ADDRESS} 10000stake --chain-id ${CHAIN_ID_2}  --broadcast-mode=block --gas-prices 0.0025stake -y --output json --keyring-backend test --home ${HOME_2} --node tcp://127.0.0.1:26657)
 echo $RES
+
+echo "Set IBC fees"
+RES=$(${BIN} tx wasm execute $CONTRACT_ADDRESS "{\"set_fees\": {\"ack_fee\": \"2000\", \"recv_fee\": \"0\",\"timeout_fee\": \"2000\", \"denom\": \"stake\"}}" --from $TEST_ADDR  -y --chain-id ${CHAIN_ID_1} --node tcp://127.0.0.1:16657 --output json --broadcast-mode=block --gas-prices 0.0025stake --gas 1000000 --keyring-backend test --home ${HOME_1})
+
 
 #Delegate
 RES=$(${BIN} tx wasm execute $CONTRACT_ADDRESS "{\"delegate\": {\"interchain_account_id\": \"test\", \"validator\": \"${VAL2}\", \"amount\":\"5000\",\"denom\":\"stake\"}}" --from ${TEST_ADDR}  -y --chain-id ${CHAIN_ID_1} --output json --broadcast-mode=block --gas-prices 0.0025stake --gas 1000000 --keyring-backend test --home ${HOME_1} --node tcp://127.0.0.1:16657)

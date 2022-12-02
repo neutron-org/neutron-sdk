@@ -17,7 +17,7 @@ KEY_2=$(gaiad keys show ${USERNAME_2} -a --keyring-backend test --home ${HOME_2}
 ADMIN=$(neutrond keys show ${USERNAME_1} -a --keyring-backend test --home ${HOME_1})
 
 TARGET_ADDRESS=cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs
-VAL2=cosmos1qnk2n4nlkpw9xfqntladh74w6ujtulwn7j8za9
+VAL2=cosmosvaloper1qnk2n4nlkpw9xfqntladh74w6ujtulwnmxnh3k
 TEST_WALLET=test_wallet
 
 yes | ${BIN} keys add ${TEST_WALLET} --home ${HOME_1} --keyring-backend=test

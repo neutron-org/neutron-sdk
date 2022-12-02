@@ -15,7 +15,7 @@ KEY_2=$(neutrond keys show demowallet2 -a --keyring-backend test --home ${HOME_2
 ADMIN=$(neutrond keys show demowallet1 -a --keyring-backend test --home ${HOME_1})
 
 TARGET_ADDRESS=neutron1mjk79fjjgpplak5wq838w0yd982gzkyf8fxu8u
-VAL2=neutronvaloper1qnk2n4nlkpw9xfqntladh74w6ujtulwnqshepx
+VAL2=cosmosvaloper1qnk2n4nlkpw9xfqntladh74w6ujtulwnmxnh3k
 
 
 # Upload the queries contract
