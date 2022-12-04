@@ -1,3 +1,12 @@
+#!/bin/bash
+
+SCRIPT_DIR=$(dirname $0)
+
+source "${SCRIPT_DIR}/utils.sh"
+
+wait_for_tx "http://127.0.0.1:1316/wasm/contract/$CONTRACT_ADDRESS/smart/eyJpbnRlcmNoYWluX2FjY291bnRfYWRkcmVzc19mcm9tX2NvbnRyYWN0Ijp7ImludGVyY2hhaW5fYWNjb3VudF9pZCI6InRlc3QifX0\=?encoding\=base64" ".result.smart"
+
+
 BIN=neutrond
 GAIAD_BIN=gaiad
 
@@ -40,9 +49,11 @@ ${BIN} tx bank send ${TEST_WALLET} ${CONTRACT_ADDRESS} 20000000stake --chain-id 
 #Register interchain account
 RES=$(${BIN} tx wasm execute $CONTRACT_ADDRESS "{\"register\": {\"connection_id\": \"connection-0\", \"interchain_account_id\": \"test\"}}" --from ${TEST_ADDR}  -y --chain-id ${CHAIN_ID_1} --output json --broadcast-mode=block --gas-prices 0.0025stake --gas 1000000 --keyring-backend test --home ${HOME_1} --node tcp://127.0.0.1:16657)
 echo $RES
-sleep 20
 
-RES=$(curl http://127.0.0.1:1316/wasm/contract/$CONTRACT_ADDRESS/smart/eyJpbnRlcmNoYWluX2FjY291bnRfYWRkcmVzc19mcm9tX2NvbnRyYWN0Ijp7ImludGVyY2hhaW5fYWNjb3VudF9pZCI6InRlc3QifX0\=?encoding\=base64 | jq -r ".result.smart")
+wait_for_tx "http://127.0.0.1:1316/wasm/contract/$CONTRACT_ADDRESS/smart/eyJpbnRlcmNoYWluX2FjY291bnRfYWRkcmVzc19mcm9tX2NvbnRyYWN0Ijp7ImludGVyY2hhaW5fYWNjb3VudF9pZCI6InRlc3QifX0\=?encoding\=base64" ".result.smart"
+RES=$FUNC_RETURN
+
+#RES=$(curl http://127.0.0.1:1316/wasm/contract/$CONTRACT_ADDRESS/smart/eyJpbnRlcmNoYWluX2FjY291bnRfYWRkcmVzc19mcm9tX2NvbnRyYWN0Ijp7ImludGVyY2hhaW5fYWNjb3VudF9pZCI6InRlc3QifX0\=?encoding\=base64 | jq -r ".result.smart")
 echo $RES
 ICA_ADDRESS=$(echo $RES | base64 --decode | jq -r ".[0]")
 echo $ICA_ADDRESS
