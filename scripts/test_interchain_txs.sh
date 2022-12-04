@@ -4,9 +4,6 @@ SCRIPT_DIR=$(dirname $0)
 
 source "${SCRIPT_DIR}/utils.sh"
 
-wait_for_tx "http://127.0.0.1:1316/wasm/contract/$CONTRACT_ADDRESS/smart/eyJpbnRlcmNoYWluX2FjY291bnRfYWRkcmVzc19mcm9tX2NvbnRyYWN0Ijp7ImludGVyY2hhaW5fYWNjb3VudF9pZCI6InRlc3QifX0\=?encoding\=base64" ".result.smart"
-
-
 BIN=neutrond
 GAIAD_BIN=gaiad
 

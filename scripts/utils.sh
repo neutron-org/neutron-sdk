@@ -5,7 +5,7 @@ wait_for_tx () {
     local SELECTOR=$2
 
     echo "Waiting for transaction to be committed..."
-    for RETRY_NUM in $( eval echo {0..60} )
+    for RETRY_NUM in {0..60}
     do
         RES=$(eval "curl -s ${QUERY}" | jq -r "${SELECTOR}")
         echo -n "."
@@ -20,7 +20,7 @@ wait_for_tx () {
         sleep 1
     done
 
-    echo ""
+echo ""
     echo "Timeout waiting for tx"
     exit 1    
 }
