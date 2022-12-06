@@ -1,26 +1,34 @@
 #!/bin/bash
 
 wait_for_tx () {
-    local QUERY=$1
-    local SELECTOR=$2
+    local NEUTROND_BIN=$1
+    local CONTRACT_ADDRESS=$2
+    local NEUTRON_CHAIN_ID=$3
+    local NODE_URL=$4
+    local QUERY=$5
+    local SELECTOR=$6
 
     echo "Waiting for transaction to be committed..."
     for RETRY_NUM in {0..60}
     do
-        RES=$(eval "curl -s ${QUERY}" | jq -r "${SELECTOR}")
-        echo -n "."
+        RES=$(${NEUTROND_BIN} query wasm contract-state smart \
+            ${CONTRACT_ADDRESS} "${QUERY}" \
+            --chain-id "$NEUTRON_CHAIN_ID" \
+            --output json \
+            --node ${NODE_URL} 2>&1)
 
-        if [ "$RES" != "null" ]
+        CONRACT_CALL_ERROR=$?
+
+        if [ "$CONRACT_CALL_ERROR" != "0" ]
         then
-            echo ""
-            FUNC_RETURN=$RES
-            return 
+            sleep 1
+            continue
         fi
-
-        sleep 1
+        
+        FUNC_RETURN=$(echo "$RES" | jq -r "${SELECTOR}")
+        return 
     done
 
-echo ""
     echo "Timeout waiting for tx"
     exit 1    
 }
