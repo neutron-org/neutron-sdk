@@ -17,11 +17,11 @@ pub struct Transfer {
     pub amount: String,
 }
 
-pub const INTEGRATION_TESTS_KV_MOCK: Item<IntegrationTestsKvMock> =
+pub const INTEGRATION_TESTS_QUERY_MOCK: Item<IntegrationTestsQueryMock> =
     Item::new("integration_tests_kv_mock");
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-pub enum IntegrationTestsKvMock {
+pub enum IntegrationTestsQueryMock {
     Enabled,
     Disabled,
 }
