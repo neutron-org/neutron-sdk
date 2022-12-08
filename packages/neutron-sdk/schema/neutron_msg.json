@@ -257,6 +257,27 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "description": "SubmitProposal sends a proposal to neutron's Admin module",
+      "type": "object",
+      "required": [
+        "submit_proposal"
+      ],
+      "properties": {
+        "submit_proposal": {
+          "type": "object",
+          "required": [
+            "proposals"
+          ],
+          "properties": {
+            "proposals": {
+              "$ref": "#/definitions/Proposals"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
     }
   ],
   "definitions": {
@@ -326,6 +347,72 @@
         "path": {
           "description": "*path** is a path to the storage (storage prefix) where you want to read value by key (usually name of cosmos-sdk module: 'staking', 'bank', etc.)",
           "type": "string"
+        }
+      }
+    },
+    "ParamChange": {
+      "description": "ParamChange defines the struct for parameter change request",
+      "type": "object",
+      "required": [
+        "key",
+        "subspace",
+        "value"
+      ],
+      "properties": {
+        "key": {
+          "description": "*key** is a name of parameter. Unique for subspace",
+          "type": "string"
+        },
+        "subspace": {
+          "description": "*subspace** is a key of module to which the parameter to change belongs. Unique for each module",
+          "type": "string"
+        },
+        "value": {
+          "description": "*value** is a new value for given parameter. Non unique",
+          "type": "string"
+        }
+      }
+    },
+    "ParamChangeProposal": {
+      "description": "ParamChangeProposal defines the struct for single parameter change proposal",
+      "type": "object",
+      "required": [
+        "description",
+        "param_changes",
+        "title"
+      ],
+      "properties": {
+        "description": {
+          "description": "*descriptionr** is a text description of proposal. Non unique",
+          "type": "string"
+        },
+        "param_changes": {
+          "description": "*param_changes** is a vector of params to be changed. Non unique",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ParamChange"
+          }
+        },
+        "title": {
+          "description": "*title** is a text title of proposal. Non unique",
+          "type": "string"
+        }
+      }
+    },
+    "Proposals": {
+      "description": "Proposals defines the struct for various proposals which neutron may accept (currently only parameter change)",
+      "type": "object",
+      "properties": {
+        "param_change_proposal": {
+          "description": "*param_change_proposal** is a parameter change proposal field",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ParamChangeProposal"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       }
     },
