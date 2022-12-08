@@ -111,11 +111,8 @@ pub enum NeutronMsg {
         fee: IbcFee,
     },
     /// SubmitProposal sends a proposal to neutron's Admin module
-    SubmitProposal {
-        proposals: Proposals
-    },
+    SubmitProposal { proposals: Proposals },
 }
-
 
 impl NeutronMsg {
     /// Basic helper to define a register interchain account message:
