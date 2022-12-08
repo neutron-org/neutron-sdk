@@ -383,7 +383,7 @@ pub fn sudo_tx_query_result(
     if let Some(IntegrationTestsQueryMock::Enabled {}) =
         INTEGRATION_TESTS_QUERY_MOCK.may_load(deps.storage)?
     {
-        // simulate error on tx query submit for integartion tests
+        // simulate error on tx query submit for integration tests
         return Err(NeutronError::IntegrationTestsMock {});
     }
     // Decode the transaction data
