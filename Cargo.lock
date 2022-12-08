@@ -19,6 +19,7 @@ name = "band-feed"
 version = "0.1.0"
 dependencies = [
  "base64",
+ "cosmos-sdk-proto",
  "cosmwasm-schema",
  "cosmwasm-std",
  "cosmwasm-storage",
