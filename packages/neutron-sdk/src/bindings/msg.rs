@@ -19,78 +19,78 @@ pub struct IbcFee {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-/// A number of Custom messages that can call into the Neutron bindings
+/// A number of Custom messages that can call into the Neutron bindings.
 pub enum NeutronMsg {
-    /// RegisterInterchainAccount registers an interchain account on remote chain
+    /// RegisterInterchainAccount registers an interchain account on remote chain.
     RegisterInterchainAccount {
-        /// **connection_id** is an IBC connection identifier between Neutron and remote chain
+        /// **connection_id** is an IBC connection identifier between Neutron and remote chain.
         connection_id: String,
 
-        /// **interchain_account_id** is an identifier of your new interchain account. Can be any string
-        /// This identifier allows contracts to have multiple interchain accounts on remote chains
+        /// **interchain_account_id** is an identifier of your new interchain account. Can be any string.
+        /// This identifier allows contracts to have multiple interchain accounts on remote chains.
         interchain_account_id: String,
     },
 
-    /// SubmitTx starts the process of executing any Cosmos-SDK *msgs* on remote chain
+    /// SubmitTx starts the process of executing any Cosmos-SDK *msgs* on remote chain.
     SubmitTx {
-        /// **connection_id** is an IBC connection identifier between Neutron and remote chain
+        /// **connection_id** is an IBC connection identifier between Neutron and remote chain.
         connection_id: String,
 
-        /// **interchain_account_id** is an identifier of your interchain account from which you want to execute msgs
+        /// **interchain_account_id** is an identifier of your interchain account from which you want to execute msgs.
         interchain_account_id: String,
 
-        /// **msgs** is a list of protobuf encoded Cosmos-SDK messages you want to execute on remote chain
+        /// **msgs** is a list of protobuf encoded Cosmos-SDK messages you want to execute on remote chain.
         msgs: Vec<ProtobufAny>,
 
-        /// **memo** is a memo you want to attach to your interchain transaction.It behaves like a memo in usual Cosmos transaction
+        /// **memo** is a memo you want to attach to your interchain transaction.It behaves like a memo in usual Cosmos transaction.
         memo: String,
 
-        /// **timeout** is a timeout in seconds after which the packet times out
+        /// **timeout** is a timeout in seconds after which the packet times out.
         timeout: u64,
 
-        /// ***fee** is an ibc fee for the transaction
+        /// ***fee** is an ibc fee for the transaction.
         fee: IbcFee,
     },
 
-    /// RegisterInterchainQuery registers an interchain query
+    /// RegisterInterchainQuery registers an interchain query.
     RegisterInterchainQuery {
-        /// **query_type** is a query type identifier ('tx' or 'kv' for now)
+        /// **query_type** is a query type identifier ('tx' or 'kv' for now).
         query_type: String,
 
-        /// **keys** is the KV-storage keys for which we want to get values from remote chain
+        /// **keys** is the KV-storage keys for which we want to get values from remote chain.
         keys: Vec<KVKey>,
 
-        /// **transactions_filter** is the filter for transaction search ICQ
+        /// **transactions_filter** is the filter for transaction search ICQ.
         transactions_filter: String,
 
-        /// **connection_id** is an IBC connection identifier between Neutron and remote chain
+        /// **connection_id** is an IBC connection identifier between Neutron and remote chain.
         connection_id: String,
 
         /// **update_period** is used to say how often the query must be updated.
         update_period: u64,
     },
 
-    /// RegisterInterchainQuery updates an interchain query
+    /// RegisterInterchainQuery updates an interchain query.
     UpdateInterchainQuery {
-        /// **query_id** is the ID of the query we want to update
+        /// **query_id** is the ID of the query we want to update.
         query_id: u64,
 
-        /// **new_keys** is the new query keys to retrive
+        /// **new_keys** is the new query keys to retrive.
         new_keys: Option<Vec<KVKey>>,
 
-        /// **new_update_period** is a new update period of the query
+        /// **new_update_period** is a new update period of the query.
         new_update_period: Option<u64>,
 
-        /// **new_transactions_filter** is a new transactions filter of the query
+        /// **new_transactions_filter** is a new transactions filter of the query.
         new_transactions_filter: Option<String>,
     },
 
-    /// RemoveInterchainQuery removes as interchain query
+    /// RemoveInterchainQuery removes as interchain query.
     RemoveInterchainQuery {
-        /// **query_id** is ID of the query we want to remove
+        /// **query_id** is ID of the query we want to remove.
         query_id: u64,
     },
-    /// IbcTransfer sends a fungible token packet over IBC
+    /// IbcTransfer sends a fungible token packet over IBC.
     IbcTransfer {
         // the port on which the packet will be sent
         source_port: String,
@@ -110,8 +110,9 @@ pub enum NeutronMsg {
         timeout_timestamp: u64,
         fee: IbcFee,
     },
-    /// SubmitProposal sends a proposal to neutron's Admin module
-    SubmitProposal { proposals: Proposals },
+    /// SubmitAdminProposal sends a proposal to neutron's Admin module.
+    /// This type of messages can be only executed by Neutron DAO.
+    SubmitProposal { admin_proposal: AdminProposal },
 }
 
 impl NeutronMsg {
@@ -193,7 +194,7 @@ impl NeutronMsg {
     }
 
     /// Basic helper to define a update interchain query message:
-    /// * **query_id** is ID of the query we want to update
+    /// * **query_id** is ID of the query we want to update;
     /// * **new_keys** is encoded keys to query;
     /// * **new_update_period** is used to say how often the query must be updated.
     pub fn update_interchain_query(
@@ -225,16 +226,16 @@ impl NeutronMsg {
     }
 
     /// Basic helper to define a remove interchain query message:
-    /// * **query_id** is ID of the query we want to remove
+    /// * **query_id** is ID of the query we want to remove.
     pub fn remove_interchain_query(query_id: u64) -> Self {
         NeutronMsg::RemoveInterchainQuery { query_id }
     }
 
     /// Basic helper to define a parameter change proposal passed to AdminModule:
-    /// * **proposal** is struct which contains proposal that should change network parameter
+    /// * **proposal** is struct which contains proposal that should change network parameter.
     pub fn submit_param_change_proposal(proposal: ParamChangeProposal) -> Self {
         NeutronMsg::SubmitProposal {
-            proposals: Proposals {
+            admin_proposal: AdminProposal {
                 param_change_proposal: Option::from(proposal),
             },
         }
@@ -251,60 +252,61 @@ impl CustomMsg for NeutronMsg {}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-/// Describes response structure for **RegisterInterchainQuery** msg
+/// Describes response structure for **RegisterInterchainQuery** msg.
 pub struct MsgRegisterInterchainQueryResponse {
-    /// **id** is an identifier of newly registered interchain query
+    /// **id** is an identifier of newly registered interchain query.
     pub id: u64,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-/// MsgSubmitTxResponse defines the response for Msg/SubmitTx
+/// MsgSubmitTxResponse defines the response for Msg/SubmitTx.
 pub struct MsgSubmitTxResponse {
     /// **sequence_id** is a channel's sequence_id for outgoing ibc packet. Unique per a channel.
     pub sequence_id: u64,
-    /// **channel** is a src channel on neutron side trasaction was submitted from
+    /// **channel** is a src channel on neutron side trasaction was submitted from.
     pub channel: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-/// MsgSubmitTxResponse defines the response for Msg/IbcTransfer
+/// MsgSubmitTxResponse defines the response for Msg/IbcTransfer.
 pub struct MsgIbcTransferResponse {
     /// **sequence_id** is a channel's sequence_id for outgoing ibc packet. Unique per a channel.
     pub sequence_id: u64,
-    /// **channel** is a src channel on neutron side trasaction was submitted from
+    /// **channel** is a src channel on neutron side trasaction was submitted from.
     pub channel: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-/// Proposals defines the struct for various proposals which neutron may accept (currently only parameter change)
-pub struct Proposals {
-    /// **param_change_proposal** is a parameter change proposal field
+/// AdminProposal defines the struct for various proposals which Neutron may accept.
+/// Currently only parameter change proposals are implemented, new types of admin proposals may be implemented in future.
+pub struct AdminProposal {
+    /// **param_change_proposal** is a parameter change proposal field.
     pub param_change_proposal: Option<ParamChangeProposal>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-/// ParamChangeProposal defines the struct for single parameter change proposal
+/// ParamChangeProposal defines the struct for single parameter change proposal.
 pub struct ParamChangeProposal {
-    /// **title** is a text title of proposal. Non unique
+    /// **title** is a text title of proposal. Non unique.
     pub title: String,
-    /// **descriptionr** is a text description of proposal. Non unique
+    /// **descriptionr** is a text description of proposal. Non unique.
     pub description: String,
-    /// **param_changes** is a vector of params to be changed. Non unique
+    /// **param_changes** is a vector of params to be changed. Non unique.
     pub param_changes: Vec<ParamChange>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-/// ParamChange defines the struct for parameter change request
+/// ParamChange defines the struct for parameter change request.
 pub struct ParamChange {
-    /// **subspace** is a key of module to which the parameter to change belongs. Unique for each module
+    /// **subspace** is a key of module to which the parameter to change belongs. Unique for each module.
     pub subspace: String,
-    /// **key** is a name of parameter. Unique for subspace
+    /// **key** is a name of parameter. Unique for subspace.
     pub key: String,
-    /// **value** is a new value for given parameter. Non unique
+    /// **value** is a new value for given parameter. Non unique.
     pub value: String,
 }
