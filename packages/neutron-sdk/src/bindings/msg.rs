@@ -110,7 +110,12 @@ pub enum NeutronMsg {
         timeout_timestamp: u64,
         fee: IbcFee,
     },
+    /// SubmitProposal sends a proposal to neutron's Admin module
+    SubmitProposal {
+        proposals: Proposals
+    },
 }
+
 
 impl NeutronMsg {
     /// Basic helper to define a register interchain account message:
@@ -227,6 +232,16 @@ impl NeutronMsg {
     pub fn remove_interchain_query(query_id: u64) -> Self {
         NeutronMsg::RemoveInterchainQuery { query_id }
     }
+
+    /// Basic helper to define a parameter change proposal passed to AdminModule:
+    /// * **proposal** is struct which contains proposal that should change network parameter
+    pub fn submit_param_change_proposal(proposal: ParamChangeProposal) -> Self {
+        NeutronMsg::SubmitProposal {
+            proposals: Proposals {
+                param_change_proposal: Option::from(proposal),
+            },
+        }
+    }
 }
 
 impl From<NeutronMsg> for CosmosMsg<NeutronMsg> {
@@ -237,7 +252,7 @@ impl From<NeutronMsg> for CosmosMsg<NeutronMsg> {
 
 impl CustomMsg for NeutronMsg {}
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 /// Describes response structure for **RegisterInterchainQuery** msg
 pub struct MsgRegisterInterchainQueryResponse {
@@ -263,4 +278,36 @@ pub struct MsgIbcTransferResponse {
     pub sequence_id: u64,
     /// **channel** is a src channel on neutron side trasaction was submitted from
     pub channel: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+/// Proposals defines the struct for various proposals which neutron may accept (currently only parameter change)
+pub struct Proposals {
+    /// **param_change_proposal** is a parameter change proposal field
+    pub param_change_proposal: Option<ParamChangeProposal>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+/// ParamChangeProposal defines the struct for single parameter change proposal
+pub struct ParamChangeProposal {
+    /// **title** is a text title of proposal. Non unique
+    pub title: String,
+    /// **descriptionr** is a text description of proposal. Non unique
+    pub description: String,
+    /// **param_changes** is a vector of params to be changed. Non unique
+    pub param_changes: Vec<ParamChange>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+/// ParamChange defines the struct for parameter change request
+pub struct ParamChange {
+    /// **subspace** is a key of module to which the parameter to change belongs. Unique for each module
+    pub subspace: String,
+    /// **key** is a name of parameter. Unique for subspace
+    pub key: String,
+    /// **value** is a new value for given parameter. Non unique
+    pub value: String,
 }
