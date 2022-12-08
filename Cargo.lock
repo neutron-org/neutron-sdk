@@ -18,6 +18,7 @@ checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
 name = "band-feed"
 version = "0.1.0"
 dependencies = [
+ "base64",
  "cosmwasm-schema",
  "cosmwasm-std",
  "cosmwasm-storage",
@@ -25,6 +26,10 @@ dependencies = [
  "cw-multi-test",
  "cw-storage-plus 0.15.1",
  "cw2",
+ "neutron-sdk",
+ "prost 0.11.0",
+ "prost-types 0.11.1",
+ "protobuf",
  "schemars",
  "serde",
  "thiserror",
