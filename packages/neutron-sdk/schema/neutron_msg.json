@@ -262,10 +262,10 @@
       "description": "SubmitAdminProposal sends a proposal to neutron's Admin module. This type of messages can be only executed by Neutron DAO.",
       "type": "object",
       "required": [
-        "submit_proposal"
+        "submit_admin_proposal"
       ],
       "properties": {
-        "submit_proposal": {
+        "submit_admin_proposal": {
           "type": "object",
           "required": [
             "admin_proposal"

@@ -112,7 +112,7 @@ pub enum NeutronMsg {
     },
     /// SubmitAdminProposal sends a proposal to neutron's Admin module.
     /// This type of messages can be only executed by Neutron DAO.
-    SubmitProposal { admin_proposal: AdminProposal },
+    SubmitAdminProposal { admin_proposal: AdminProposal },
 }
 
 impl NeutronMsg {
@@ -234,7 +234,7 @@ impl NeutronMsg {
     /// Basic helper to define a parameter change proposal passed to AdminModule:
     /// * **proposal** is struct which contains proposal that should change network parameter.
     pub fn submit_param_change_proposal(proposal: ParamChangeProposal) -> Self {
-        NeutronMsg::SubmitProposal {
+        NeutronMsg::SubmitAdminProposal {
             admin_proposal: AdminProposal {
                 param_change_proposal: Option::from(proposal),
             },
