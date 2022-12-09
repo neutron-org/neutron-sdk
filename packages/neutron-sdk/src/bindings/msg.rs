@@ -280,7 +280,7 @@ pub struct MsgIbcTransferResponse {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-/// AdminProposal defines the struct for various proposals which Neutron may accept.
+/// AdminProposal defines the struct for various proposals which Neutron's Admin Module may accept.
 /// Currently only parameter change proposals are implemented, new types of admin proposals may be implemented in future.
 pub struct AdminProposal {
     /// **param_change_proposal** is a parameter change proposal field.

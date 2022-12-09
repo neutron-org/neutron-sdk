@@ -282,7 +282,7 @@
   ],
   "definitions": {
     "AdminProposal": {
-      "description": "AdminProposal defines the struct for various proposals which Neutron may accept. Currently only parameter change proposals are implemented, new types of admin proposals may be implemented in future.",
+      "description": "AdminProposal defines the struct for various proposals which Neutron's Admin Module may accept. Currently only parameter change proposals are implemented, new types of admin proposals may be implemented in future.",
       "type": "object",
       "properties": {
         "param_change_proposal": {
