@@ -1,0 +1,56 @@
+{
+  "contract_name": "band-feed",
+  "contract_version": "0.1.0",
+  "idl_version": "1.0.0",
+  "instantiate": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "InstantiateMsg",
+    "type": "object"
+  },
+  "execute": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "ExecuteMsg",
+    "oneOf": [
+      {
+        "type": "object",
+        "required": [
+          "ask_price"
+        ],
+        "properties": {
+          "ask_price": {
+            "type": "object"
+          }
+        },
+        "additionalProperties": false
+      }
+    ]
+  },
+  "query": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "QueryMsg",
+    "oneOf": [
+      {
+        "type": "object",
+        "required": [
+          "get_price"
+        ],
+        "properties": {
+          "get_price": {
+            "type": "object"
+          }
+        },
+        "additionalProperties": false
+      }
+    ]
+  },
+  "migrate": null,
+  "sudo": null,
+  "responses": {
+    "get_price": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "double",
+      "type": "number",
+      "format": "double"
+    }
+  }
+}

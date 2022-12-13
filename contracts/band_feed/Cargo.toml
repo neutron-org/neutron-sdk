@@ -55,6 +55,12 @@ schemars = "0.8.10"
 serde = { version = "1.0.145", default-features = false, features = ["derive"] }
 cosmos-sdk-proto = { version = "0.14.0", default-features = false }
 thiserror = { version = "1.0.31" }
+# FIXME: find normal lib or git path
+#obi = { path = "../../../github.com/obi-rs/obi" }
+obi = "0.0.2"
+owasm-kit = "0.3.0"
+strum = "0.24.1"
+strum_macros = "0.24.3"
 
 [dev-dependencies]
 cw-multi-test = "0.15.1"

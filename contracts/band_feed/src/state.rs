@@ -1,4 +1,4 @@
 use cw_storage_plus::Item;
-use neutron_sdk::bindings::msg::IbcFee;
 
-pub const PRICE: Item<IbcFee> = Item::new("price");
+pub const PRICES: Item<(String, Option<Vec<u64>>)> = Item::new("price");
+pub const CHANNEL: Item<String> = Item::new("oracle-channel");

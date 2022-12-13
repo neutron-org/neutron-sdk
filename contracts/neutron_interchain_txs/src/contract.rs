@@ -367,7 +367,7 @@ pub fn sudo(deps: DepsMut, env: Env, msg: SudoMsg) -> StdResult<Response> {
             .debug("WASMDEBUG: sudo: mocked failure on the handler");
 
         return Err(StdError::GenericErr {
-            msg: "Integations test mock error".to_string(),
+            msg: "Integrations test mock error".to_string(),
         });
     }
 
