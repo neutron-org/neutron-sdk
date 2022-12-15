@@ -372,10 +372,10 @@
       "description": "Used only in integration tests framework to simulate failures. After executing this message, contract will attempt to alter state, zero out kv query statistics and then fail, all of this happening in sudo kv callback handler.",
       "type": "object",
       "required": [
-        "integration_tests_set_kv_query_mock"
+        "integration_tests_set_query_mock"
       ],
       "properties": {
-        "integration_tests_set_kv_query_mock": {
+        "integration_tests_set_query_mock": {
           "type": "object"
         }
       },
@@ -385,10 +385,10 @@
       "description": "Used only in integration tests framework to simulate failures. After executing this message, contract will revert back to normal behaviour.",
       "type": "object",
       "required": [
-        "integration_tests_unset_kv_query_mock"
+        "integration_tests_unset_query_mock"
       ],
       "properties": {
-        "integration_tests_unset_kv_query_mock": {
+        "integration_tests_unset_query_mock": {
           "type": "object"
         }
       },

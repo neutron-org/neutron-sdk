@@ -71,10 +71,10 @@ pub enum ExecuteMsg {
     /// After executing this message, contract will attempt to alter state,
     /// zero out kv query statistics and then fail, all of this happening
     /// in sudo kv callback handler.
-    IntegrationTestsSetKvQueryMock {},
+    IntegrationTestsSetQueryMock {},
     /// Used only in integration tests framework to simulate failures.
     /// After executing this message, contract will revert back to normal behaviour.
-    IntegrationTestsUnsetKvQueryMock {},
+    IntegrationTestsUnsetQueryMock {},
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
