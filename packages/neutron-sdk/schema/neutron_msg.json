@@ -1,10 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "NeutronMsg",
-  "description": "A number of Custom messages that can call into the Neutron bindings",
+  "description": "A number of Custom messages that can call into the Neutron bindings.",
   "oneOf": [
     {
-      "description": "RegisterInterchainAccount registers an interchain account on remote chain",
+      "description": "RegisterInterchainAccount registers an interchain account on remote chain.",
       "type": "object",
       "required": [
         "register_interchain_account"
@@ -18,11 +18,11 @@
           ],
           "properties": {
             "connection_id": {
-              "description": "*connection_id** is an IBC connection identifier between Neutron and remote chain",
+              "description": "*connection_id** is an IBC connection identifier between Neutron and remote chain.",
               "type": "string"
             },
             "interchain_account_id": {
-              "description": "**interchain_account_id** is an identifier of your new interchain account. Can be any string This identifier allows contracts to have multiple interchain accounts on remote chains",
+              "description": "**interchain_account_id** is an identifier of your new interchain account. Can be any string. This identifier allows contracts to have multiple interchain accounts on remote chains.",
               "type": "string"
             }
           }
@@ -31,7 +31,7 @@
       "additionalProperties": false
     },
     {
-      "description": "SubmitTx starts the process of executing any Cosmos-SDK *msgs* on remote chain",
+      "description": "SubmitTx starts the process of executing any Cosmos-SDK *msgs* on remote chain.",
       "type": "object",
       "required": [
         "submit_tx"
@@ -49,11 +49,11 @@
           ],
           "properties": {
             "connection_id": {
-              "description": "*connection_id** is an IBC connection identifier between Neutron and remote chain",
+              "description": "*connection_id** is an IBC connection identifier between Neutron and remote chain.",
               "type": "string"
             },
             "fee": {
-              "description": "**fee** is an ibc fee for the transaction",
+              "description": "**fee** is an ibc fee for the transaction.",
               "allOf": [
                 {
                   "$ref": "#/definitions/IbcFee"
@@ -61,22 +61,22 @@
               ]
             },
             "interchain_account_id": {
-              "description": "*interchain_account_id** is an identifier of your interchain account from which you want to execute msgs",
+              "description": "*interchain_account_id** is an identifier of your interchain account from which you want to execute msgs.",
               "type": "string"
             },
             "memo": {
-              "description": "*memo** is a memo you want to attach to your interchain transaction.It behaves like a memo in usual Cosmos transaction",
+              "description": "*memo** is a memo you want to attach to your interchain transaction.It behaves like a memo in usual Cosmos transaction.",
               "type": "string"
             },
             "msgs": {
-              "description": "*msgs** is a list of protobuf encoded Cosmos-SDK messages you want to execute on remote chain",
+              "description": "*msgs** is a list of protobuf encoded Cosmos-SDK messages you want to execute on remote chain.",
               "type": "array",
               "items": {
                 "$ref": "#/definitions/ProtobufAny"
               }
             },
             "timeout": {
-              "description": "*timeout** is a timeout in seconds after which the packet times out",
+              "description": "*timeout** is a timeout in seconds after which the packet times out.",
               "type": "integer",
               "format": "uint64",
               "minimum": 0.0
@@ -87,7 +87,7 @@
       "additionalProperties": false
     },
     {
-      "description": "RegisterInterchainQuery registers an interchain query",
+      "description": "RegisterInterchainQuery registers an interchain query.",
       "type": "object",
       "required": [
         "register_interchain_query"
@@ -104,22 +104,22 @@
           ],
           "properties": {
             "connection_id": {
-              "description": "*connection_id** is an IBC connection identifier between Neutron and remote chain",
+              "description": "*connection_id** is an IBC connection identifier between Neutron and remote chain.",
               "type": "string"
             },
             "keys": {
-              "description": "*keys** is the KV-storage keys for which we want to get values from remote chain",
+              "description": "*keys** is the KV-storage keys for which we want to get values from remote chain.",
               "type": "array",
               "items": {
                 "$ref": "#/definitions/KVKey"
               }
             },
             "query_type": {
-              "description": "*query_type** is a query type identifier ('tx' or 'kv' for now)",
+              "description": "*query_type** is a query type identifier ('tx' or 'kv' for now).",
               "type": "string"
             },
             "transactions_filter": {
-              "description": "*transactions_filter** is the filter for transaction search ICQ",
+              "description": "*transactions_filter** is the filter for transaction search ICQ.",
               "type": "string"
             },
             "update_period": {
@@ -134,7 +134,7 @@
       "additionalProperties": false
     },
     {
-      "description": "RegisterInterchainQuery updates an interchain query",
+      "description": "RegisterInterchainQuery updates an interchain query.",
       "type": "object",
       "required": [
         "update_interchain_query"
@@ -147,7 +147,7 @@
           ],
           "properties": {
             "new_keys": {
-              "description": "*new_keys** is the new query keys to retrive",
+              "description": "*new_keys** is the new query keys to retrive.",
               "type": [
                 "array",
                 "null"
@@ -157,14 +157,14 @@
               }
             },
             "new_transactions_filter": {
-              "description": "*new_transactions_filter** is a new transactions filter of the query",
+              "description": "*new_transactions_filter** is a new transactions filter of the query.",
               "type": [
                 "string",
                 "null"
               ]
             },
             "new_update_period": {
-              "description": "*new_update_period** is a new update period of the query",
+              "description": "*new_update_period** is a new update period of the query.",
               "type": [
                 "integer",
                 "null"
@@ -173,7 +173,7 @@
               "minimum": 0.0
             },
             "query_id": {
-              "description": "*query_id** is the ID of the query we want to update",
+              "description": "*query_id** is the ID of the query we want to update.",
               "type": "integer",
               "format": "uint64",
               "minimum": 0.0
@@ -184,7 +184,7 @@
       "additionalProperties": false
     },
     {
-      "description": "RemoveInterchainQuery removes as interchain query",
+      "description": "RemoveInterchainQuery removes as interchain query.",
       "type": "object",
       "required": [
         "remove_interchain_query"
@@ -197,7 +197,7 @@
           ],
           "properties": {
             "query_id": {
-              "description": "*query_id** is ID of the query we want to remove",
+              "description": "*query_id** is ID of the query we want to remove.",
               "type": "integer",
               "format": "uint64",
               "minimum": 0.0
@@ -208,7 +208,7 @@
       "additionalProperties": false
     },
     {
-      "description": "IbcTransfer sends a fungible token packet over IBC",
+      "description": "IbcTransfer sends a fungible token packet over IBC.",
       "type": "object",
       "required": [
         "ibc_transfer"
@@ -257,9 +257,47 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "description": "SubmitAdminProposal sends a proposal to neutron's Admin module. This type of messages can be only executed by Neutron DAO.",
+      "type": "object",
+      "required": [
+        "submit_admin_proposal"
+      ],
+      "properties": {
+        "submit_admin_proposal": {
+          "type": "object",
+          "required": [
+            "admin_proposal"
+          ],
+          "properties": {
+            "admin_proposal": {
+              "$ref": "#/definitions/AdminProposal"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
     }
   ],
   "definitions": {
+    "AdminProposal": {
+      "description": "AdminProposal defines the struct for various proposals which Neutron's Admin Module may accept. Currently only parameter change proposals are implemented, new types of admin proposals may be implemented in future.",
+      "type": "object",
+      "properties": {
+        "param_change_proposal": {
+          "description": "*param_change_proposal** is a parameter change proposal field.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ParamChangeProposal"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
     "Binary": {
       "description": "Binary is a wrapper around Vec<u8> to add base64 de/serialization with serde. It also adds some helper methods to help encode inline.\n\nThis is only needed as serde-json-{core,wasm} has a horrible encoding for Vec<u8>. See also <https://github.com/CosmWasm/cosmwasm/blob/main/docs/MESSAGE_TYPES.md>.",
       "type": "string"
@@ -325,6 +363,55 @@
         },
         "path": {
           "description": "*path** is a path to the storage (storage prefix) where you want to read value by key (usually name of cosmos-sdk module: 'staking', 'bank', etc.)",
+          "type": "string"
+        }
+      }
+    },
+    "ParamChange": {
+      "description": "ParamChange defines the struct for parameter change request.",
+      "type": "object",
+      "required": [
+        "key",
+        "subspace",
+        "value"
+      ],
+      "properties": {
+        "key": {
+          "description": "*key** is a name of parameter. Unique for subspace.",
+          "type": "string"
+        },
+        "subspace": {
+          "description": "*subspace** is a key of module to which the parameter to change belongs. Unique for each module.",
+          "type": "string"
+        },
+        "value": {
+          "description": "*value** is a new value for given parameter. Non unique.",
+          "type": "string"
+        }
+      }
+    },
+    "ParamChangeProposal": {
+      "description": "ParamChangeProposal defines the struct for single parameter change proposal.",
+      "type": "object",
+      "required": [
+        "description",
+        "param_changes",
+        "title"
+      ],
+      "properties": {
+        "description": {
+          "description": "*descriptionr** is a text description of proposal. Non unique.",
+          "type": "string"
+        },
+        "param_changes": {
+          "description": "*param_changes** is a vector of params to be changed. Non unique.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ParamChange"
+          }
+        },
+        "title": {
+          "description": "*title** is a text title of proposal. Non unique.",
           "type": "string"
         }
       }
