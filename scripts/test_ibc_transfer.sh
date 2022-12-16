@@ -27,12 +27,25 @@ echo $RES
 TRANSFER_CONTRACT_ADDRESS=$(echo $RES | jq -r '.logs[0].events[0].attributes[0].value')
 echo $TRANSFER_CONTRACT_ADDRESS
 
-${NEUTROND_BIN} tx bank send ${FAUCET} ${TRANSFER_CONTRACT_ADDRESS} 10000stake --chain-id ${CHAINID} --home ${HOME} --node tcp://localhost:16657 --keyring-backend test -y --gas-prices 0.0025stake --broadcast-mode=block
+${NEUTROND_BIN} tx bank send ${FAUCET} ${TRANSFER_CONTRACT_ADDRESS} 100000stake --chain-id ${CHAINID} --home ${HOME} --node tcp://localhost:16657 --keyring-backend test -y --gas-prices 0.0025stake --broadcast-mode=block
 
+echo "Set IBC fees"
+RES=$(${NEUTROND_BIN} tx wasm execute $TRANSFER_CONTRACT_ADDRESS \
+    '{"set_fees":{"denom":"stake","recv_fee":"0","ack_fee":"2000","timeout_fee":"2000"}}' \
+    --from ${TEST_ADDR}  -y \
+    --chain-id ${CHAINID} \
+    --output json \
+    --broadcast-mode=block \
+    --gas-prices 0.0025stake \
+    --gas 1000000 \
+    --keyring-backend test \
+    --home ${HOME} \
+    --node tcp://127.0.0.1:16657)
+echo $RES | jq
 
 echo "Tranfer coins from test-1 to test-2"
 RES=$(${NEUTROND_BIN} tx wasm execute $TRANSFER_CONTRACT_ADDRESS \
-    '{"send":{"to":"cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw","amount":"1000", "denom": "stake", "channel": "channel-0"}}' \
+    '{"send":{"to":"cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw","amount":"5000", "denom": "stake", "channel": "channel-0"}}' \
     --from ${TEST_ADDR}  -y \
     --chain-id ${CHAINID} \
     --output json \
@@ -70,7 +83,7 @@ sleep 20
 
 echo "Send coins from test-2 to test-1"
 RES=$(${NEUTROND_BIN} tx wasm execute $TRANSFER_CONTRACT_ADDRESS \
-    '{"send":{"to":"cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw","amount":"1000", "denom": "stake", "channel": "channel-0"}}' \
+    '{"send":{"to":"cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw","amount":"5000", "denom": "stake", "channel": "channel-0"}}' \
     --from ${TEST_ADDR}  -y \
     --chain-id ${CHAINID} \
     --output json \
