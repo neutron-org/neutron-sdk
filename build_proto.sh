@@ -5,4 +5,4 @@ docker run --rm \
 protoc_builder sh -c "protoc \
 -I/opt/proto \
 /opt/proto/transfer/v1/*.proto \
---rust_out /opt/packages/neutron-sdk/src/proto_types/"
+--rust_out /opt/src/proto_types/"
