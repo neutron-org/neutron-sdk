@@ -1,0 +1,114 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ExecuteMsg",
+  "oneOf": [
+    {
+      "type": "object",
+      "required": [
+        "register"
+      ],
+      "properties": {
+        "register": {
+          "type": "object",
+          "required": [
+            "connection_id",
+            "interchain_account_id"
+          ],
+          "properties": {
+            "connection_id": {
+              "type": "string"
+            },
+            "interchain_account_id": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "delegate"
+      ],
+      "properties": {
+        "delegate": {
+          "type": "object",
+          "required": [
+            "amount",
+            "denom",
+            "interchain_account_id",
+            "validator"
+          ],
+          "properties": {
+            "amount": {
+              "type": "integer",
+              "format": "uint128",
+              "minimum": 0.0
+            },
+            "denom": {
+              "type": "string"
+            },
+            "interchain_account_id": {
+              "type": "string"
+            },
+            "timeout": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "validator": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "undelegate"
+      ],
+      "properties": {
+        "undelegate": {
+          "type": "object",
+          "required": [
+            "amount",
+            "denom",
+            "interchain_account_id",
+            "validator"
+          ],
+          "properties": {
+            "amount": {
+              "type": "integer",
+              "format": "uint128",
+              "minimum": 0.0
+            },
+            "denom": {
+              "type": "string"
+            },
+            "interchain_account_id": {
+              "type": "string"
+            },
+            "timeout": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "validator": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  ]
+}

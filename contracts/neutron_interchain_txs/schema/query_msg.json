@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "QueryMsg",
+  "oneOf": [
+    {
+      "description": "this query goes to neutron and get stored ICA with a specific query",
+      "type": "object",
+      "required": [
+        "interchain_account_address"
+      ],
+      "properties": {
+        "interchain_account_address": {
+          "type": "object",
+          "required": [
+            "connection_id",
+            "interchain_account_id"
+          ],
+          "properties": {
+            "connection_id": {
+              "type": "string"
+            },
+            "interchain_account_id": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "interchain_account_address_from_contract"
+      ],
+      "properties": {
+        "interchain_account_address_from_contract": {
+          "type": "object",
+          "required": [
+            "interchain_account_id"
+          ],
+          "properties": {
+            "interchain_account_id": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "acknowledgement_result"
+      ],
+      "properties": {
+        "acknowledgement_result": {
+          "type": "object",
+          "required": [
+            "interchain_account_id",
+            "sequence_id"
+          ],
+          "properties": {
+            "interchain_account_id": {
+              "type": "string"
+            },
+            "sequence_id": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "errors_queue"
+      ],
+      "properties": {
+        "errors_queue": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    }
+  ]
+}

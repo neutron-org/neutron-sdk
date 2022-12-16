@@ -1,28 +1,39 @@
-# Neutron CosmWasm SDK
+# Neutron Cosmwasm SDK
 
-This repository contains the source code of Neutron CosmWasm SDK for interacting with [Neutron blockchain](https://github.com/neutron-org/neutron)
+This repository contains the source code of Neutron Cosmwasm SDK for interacting with [Neutron blockchain](https://github.com/neutron-org/neutron)
 
 ## Overview
 
 ### Neutron SDK
 
-The Neutron SDK is contained inside `src` folder and consists of the following subpackages:
+The Neutron SDK is contained inside `packages` folder and consists of the following subpackages:
 
-| Package                         | Reference                                                                   | Description                                                                                      |
-|---------------------------------|-----------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|
-| Neutron Interchain Queries      | https://github.com/neutron-org/neutron-sdk/tree/main/src/interchain_queries | Queries, messages and helper methods for interacting with Neutron Interchain Queries Module      |
-| Neutron Interchain Transactions | https://github.com/neutron-org/neutron-sdk/tree/main/src/interchain_txs     | Queries, messages and helper methods for interacting with Neutron Interchain Transactions Module |
-| Neutron Bindings                | https://github.com/neutron-org/neutron-sdk/tree/main/src/bindings           | Structures and helper methods for interacting with Neutron blockchain                            |
-| Neutron Sudo                    | https://github.com/neutron-org/neutron-sdk/tree/main/src/sudo               | Structures for Sudo Contract callbacks from Neutron blockchain                                   |
-| Neutron Errors                  | https://github.com/neutron-org/neutron-sdk/tree/main/src/errors             | Structures and helpers for Neutron specific error and result types                               |
-| Neutron Proto Types             | https://github.com/neutron-org/neutron-sdk/tree/main/src/proto_types        | Neutron specific protobuf types.                                                                 |
+| Package                         | Reference                                                                                        | Description                                                                                      |
+|---------------------------------|--------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|
+| Neutron Interchain Queries      | https://github.com/neutron-org/neutron-sdk/tree/main/packages/neutron-sdk/src/interchain_queries | Queries, messages and helper methods for interacting with Neutron Interchain Queries Module      |
+| Neutron Interchain Transactions | https://github.com/neutron-org/neutron-sdk/tree/main/packages/neutron-sdk/src/interchain_txs     | Queries, messages and helper methods for interacting with Neutron Interchain Transactions Module |
+| Neutron Bindings                | https://github.com/neutron-org/neutron-sdk/tree/main/packages/neutron-sdk/src/bindings           | Structures and helper methods for interacting with Neutron blockchain                            |
+| Neutron Sudo                    | https://github.com/neutron-org/neutron-sdk/tree/main/packages/neutron-sdk/src/sudo               | Structures for Sudo Contract callbacks from Neutron blockchain                                   |
+| Neutron Errors                  | https://github.com/neutron-org/neutron-sdk/tree/main/packages/neutron-sdk/src/errors             | Structures and helpers for Neutron specific error and result types                               |
+| Neutron Proto Types             | https://github.com/neutron-org/neutron-sdk/tree/main/packages/neutron-sdk/src/proto_types        | Neutron specific protobuf types.                                                                 |
+
+### Example Contracts
+
+We provide sample contracts that either implement or consume these specifications to both provide examples, and provide a basis for code you can extend for more custom contacts, without worrying about reinventing the wheel each time:
+
+| Contract                                         | Reference                                                                                 | Description                                                                                                                                                                                                                                                                                                                            |
+|--------------------------------------------------|-------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Neutron Interchain Queries Example Contract      | https://github.com/neutron-org/neutron-sdk/tree/main/contracts/neutron-interchain-queries | The contract shows how to properly work with [Interchain Queries Module](https://github.com/neutron-org/neutron/tree/master/x/interchainqueries) using [Interchain Queries SDK package](https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron-sdk/src/interchain_queries) via CosmWasm smart-contract.           |
+| Neutron Interchain Transactions Example Contract | https://github.com/neutron-org/neutron-sdk/tree/main/contracts/neutron_interchain_txs     | The contract shows how to properly work with [Neutron Interchain Transactions Module](https://github.com/neutron-org/neutron/tree/master/x/interchaintxs) using [Interchain Transactions SDK package](https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron-sdk/src/interchain_txs) via CosmWasm smart-contract. |
+| Neutron IBC Transfer Example Contract            | https://github.com/neutron-org/neutron-sdk/tree/main/contracts/ibc_transfer               | The contract shows how to properly work with [Neutron Sudo Package](https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron_sudo) to handle a callback from IBC transfer.                                                                                                                                          |
 
 ## Development
 
 ### Environment Setup
 
-- Rust v1.63.0+
+- Rust v1.60.0+
 - `wasm32-unknown-unknown` target
+- Docker
 
 1. Install `rustup` via https://rustup.rs/
 
@@ -33,15 +44,35 @@ rustup default stable
 rustup target add wasm32-unknown-unknown
 ```
 
+3. Make sure [Docker](https://www.docker.com/) is installed
+
 ### Unit Tests
+
+Each contract contains Rust unit tests embedded within the contract source directories. You can run:
 
 ```sh
 make test
 ```
 
+### Generating schema
+
+```sh
+make schema
+```
+
+### Production
+
+For production builds, run the following:
+
+```sh
+make build
+```
+
+This performs several optimizations which can significantly reduce the final size of the contract binaries, which will be available inside the `artifacts/` directory.
+
 ## Documentation
 
-Check out our documentation at https://docs.neutron.org
+Check out our documentation at https://docs.neutron.org.
 
 ## License
 
