@@ -122,7 +122,7 @@ pub fn create_validator_key<AddrBytes: AsRef<[u8]>>(
 }
 
 /// Creates Cosmos-SDK distribution key for fee pool
-/// https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/distribution/types/keys.go#L46
+/// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/distribution/types/keys.go#L46>
 pub fn create_fee_pool_key() -> NeutronResult<Vec<u8>> {
     let key: Vec<u8> = vec![FEE_POOL_KEY];
 
@@ -130,7 +130,7 @@ pub fn create_fee_pool_key() -> NeutronResult<Vec<u8>> {
 }
 
 /// Creates Cosmos-SDK governance key for proposal with specific id
-/// https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/gov/types/keys.go#L41
+/// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/gov/types/keys.go#L41>
 pub fn create_gov_proposal_key(proposal_id: u64) -> NeutronResult<Vec<u8>> {
     let mut key: Vec<u8> = vec![PROPOSALS_KEY_PREFIX];
     key.extend_from_slice(proposal_id.to_be_bytes().as_slice());

@@ -173,8 +173,8 @@ fn execute_send(
     // See more info here: https://docs.neutron.org/neutron/feerefunder/overview
     let fee = IbcFee {
         recv_fee: vec![],
-        ack_fee: vec![Coin::new(1000u128, "untrn")],
-        timeout_fee: vec![Coin::new(1000u128, "untrn")],
+        ack_fee: vec![Coin::new(1000u128, "stake")],
+        timeout_fee: vec![Coin::new(1000u128, "stake")],
     };
     let coin1 = coin(amount, denom.clone());
     let msg1 = NeutronMsg::IbcTransfer {

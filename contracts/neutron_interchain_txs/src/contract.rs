@@ -217,8 +217,8 @@ fn execute_delegate(
     // See more info here: https://docs.neutron.org/neutron/feerefunder/overview
     let fee = IbcFee {
         recv_fee: vec![],
-        ack_fee: vec![CosmosCoin::new(1000u128, "untrn")],
-        timeout_fee: vec![CosmosCoin::new(1000u128, "untrn")],
+        ack_fee: vec![CosmosCoin::new(1000u128, "stake")],
+        timeout_fee: vec![CosmosCoin::new(1000u128, "stake")],
     };
     let (delegator, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
     let delegate_msg = MsgDelegate {
@@ -277,8 +277,8 @@ fn execute_undelegate(
     // See more info here: https://docs.neutron.org/neutron/feerefunder/overview
     let fee = IbcFee {
         recv_fee: vec![],
-        ack_fee: vec![CosmosCoin::new(1000u128, "untrn")],
-        timeout_fee: vec![CosmosCoin::new(1000u128, "untrn")],
+        ack_fee: vec![CosmosCoin::new(1000u128, "stake")],
+        timeout_fee: vec![CosmosCoin::new(1000u128, "stake")],
     };
     let (delegator, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
     let delegate_msg = MsgUndelegate {
