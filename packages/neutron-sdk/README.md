@@ -1,6 +1,6 @@
 # Neutron Cosmwasm SDK
 
-The CosmWasm library with helpers methods and structures for interacting with [Neutron blockchain](https://github.com/neutron-org/neutron)
+The CosmWasm library with helper methods and structures for interacting with [Neutron blockchain](https://github.com/neutron-org/neutron)
 
 ## Overview
 
