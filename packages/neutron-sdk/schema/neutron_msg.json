@@ -362,7 +362,7 @@
           ]
         },
         "path": {
-          "description": "*path** is a path to the storage (storage prefix) where you want to read value by key (usually name of cosmos-sdk module: 'staking', 'bank', etc.)",
+          "description": "*path** is a path to the storage (storage prefix) where you want to read value by key (usually name of cosmos-packages module: 'staking', 'bank', etc.)",
           "type": "string"
         }
       }

@@ -1,5 +1,12 @@
-# Neutron Interchain Txs Contract
+# Neutron Interchain Txs Example Contract
 
-The contract provides a convenient interface for interacting with [Interchain Txs Module](https://github.com/neutron-org/neutron/tree/master/x/interchaintxs).
+The example contract shows how to use and interact with [Interchain Txs Module](https://docs.neutron.org/neutron/interchain-txs/overview).
 
-The contract responsible for providing sudo endpoint receiving various acknowledgments 
+## How to test
+
+1. `cargo install --version 1.0.0 ibc-relayer-cli --bin hermes --locked`
+2. `git clone git@github.com:neutron-org/neutron.git`
+3. `cd neutron && make init && make start-rly`
+4. `bash test_interchain_txs.sh` (in the Neutron SDK `scripts` directory)
+5. Checkout logs from test-1 chain
+   `tail -f ./data/test-1.log | grep -E 'WASMDEBUG'` (in neutron dir).

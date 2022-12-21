@@ -1,17 +1,3 @@
-// Copyright 2022 Neutron
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 use cosmos_sdk_proto::cosmos::base::v1beta1::Coin;
 use cosmos_sdk_proto::cosmos::staking::v1beta1::{
     MsgDelegate, MsgDelegateResponse, MsgUndelegate, MsgUndelegateResponse,
@@ -20,14 +6,13 @@ use cosmos_sdk_proto::cosmos::staking::v1beta1::{
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
     to_binary, Binary, Coin as CosmosCoin, CosmosMsg, CustomQuery, Deps, DepsMut, Env, MessageInfo,
-    Reply, Response, StdError, StdResult, SubMsg, Uint128,
+    Reply, Response, StdError, StdResult, SubMsg,
 };
 use cw2::set_contract_version;
 use prost::Message;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use crate::integration_tests_mock_handlers::{set_sudo_failure_mock, unset_sudo_failure_mock};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use neutron_sdk::bindings::msg::{IbcFee, MsgSubmitTxResponse, NeutronMsg};
 use neutron_sdk::bindings::query::{InterchainQueries, QueryInterchainAccountAddressResponse};
@@ -40,9 +25,8 @@ use neutron_sdk::NeutronResult;
 
 use crate::storage::{
     add_error_to_queue, read_errors_from_queue, read_reply_payload, read_sudo_payload,
-    save_reply_payload, save_sudo_payload, AcknowledgementResult, IntegrationTestsSudoMock,
-    SudoPayload, ACKNOWLEDGEMENT_RESULTS, IBC_FEE, INTEGRATION_TESTS_SUDO_MOCK,
-    INTERCHAIN_ACCOUNTS, SUDO_PAYLOAD_REPLY_ID,
+    save_reply_payload, save_sudo_payload, AcknowledgementResult, SudoPayload,
+    ACKNOWLEDGEMENT_RESULTS, INTERCHAIN_ACCOUNTS, SUDO_PAYLOAD_REPLY_ID,
 };
 
 // Default timeout for SubmitTX is two weeks
@@ -118,18 +102,6 @@ pub fn execute(
             denom,
             timeout,
         ),
-        ExecuteMsg::SetFees {
-            denom,
-            recv_fee,
-            ack_fee,
-            timeout_fee,
-        } => execute_set_fees(deps, denom, recv_fee, ack_fee, timeout_fee),
-        ExecuteMsg::CleanAckResults {} => execute_clean_ack_results(deps),
-        // Used only in integration tests framework to simulate failures.
-        // After executing this message, contract fail, all of this happening
-        // in sudo callback handler.
-        ExecuteMsg::IntegrationTestsSetSudoFailureMock {} => set_sudo_failure_mock(deps),
-        ExecuteMsg::IntegrationTestsUnsetSudoFailureMock {} => unset_sudo_failure_mock(deps),
     }
 }
 
@@ -151,6 +123,7 @@ pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> NeutronR
     }
 }
 
+// returns ICA address from Neutron ICA SDK module
 pub fn query_interchain_address(
     deps: Deps<InterchainQueries>,
     env: Env,
@@ -167,6 +140,7 @@ pub fn query_interchain_address(
     Ok(to_binary(&res)?)
 }
 
+// returns ICA address from the contract storage. The address was saved in sudo_open_ack method
 pub fn query_interchain_address_contract(
     deps: Deps<InterchainQueries>,
     env: Env,
@@ -175,6 +149,7 @@ pub fn query_interchain_address_contract(
     Ok(to_binary(&get_ica(deps, &env, &interchain_account_id)?)?)
 }
 
+// returns the result
 pub fn query_acknowledgement_result(
     deps: Deps<InterchainQueries>,
     env: Env,
@@ -191,6 +166,7 @@ pub fn query_errors_queue(deps: Deps<InterchainQueries>) -> NeutronResult<Binary
     Ok(to_binary(&res)?)
 }
 
+// saves payload to process later to the storage and returns a SubmitTX Cosmos SubMsg with necessary reply id
 fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
     deps: DepsMut,
     msg: C,
@@ -198,31 +174,6 @@ fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
 ) -> StdResult<SubMsg<T>> {
     save_reply_payload(deps.storage, payload)?;
     Ok(SubMsg::reply_on_success(msg, SUDO_PAYLOAD_REPLY_ID))
-}
-
-fn execute_set_fees(
-    deps: DepsMut,
-    denom: String,
-    recv_fee: u128,
-    ack_fee: u128,
-    timeout_fee: u128,
-) -> StdResult<Response<NeutronMsg>> {
-    let fees = IbcFee {
-        recv_fee: vec![CosmosCoin {
-            denom: denom.clone(),
-            amount: Uint128::from(recv_fee),
-        }],
-        ack_fee: vec![CosmosCoin {
-            denom: denom.clone(),
-            amount: Uint128::from(ack_fee),
-        }],
-        timeout_fee: vec![CosmosCoin {
-            denom,
-            amount: Uint128::from(timeout_fee),
-        }],
-    };
-    IBC_FEE.save(deps.storage, &fees)?;
-    Ok(Response::default())
 }
 
 fn execute_register_ica(
@@ -234,6 +185,7 @@ fn execute_register_ica(
     let register =
         NeutronMsg::register_interchain_account(connection_id, interchain_account_id.clone());
     let key = get_port_id(env.contract.address.as_str(), &interchain_account_id);
+    // we are saving empty data here because we handle response of registering ICA in sudo_open_ack method
     INTERCHAIN_ACCOUNTS.save(deps.storage, key, &None)?;
     Ok(Response::new().add_message(register))
 }
@@ -247,7 +199,13 @@ fn execute_delegate(
     denom: String,
     timeout: Option<u64>,
 ) -> StdResult<Response<NeutronMsg>> {
-    let fee = IBC_FEE.load(deps.storage)?;
+    // contract must pay for relaying of acknowledgements
+    // See more info here: https://docs.neutron.org/neutron/feerefunder/overview
+    let fee = IbcFee {
+        recv_fee: vec![],
+        ack_fee: vec![CosmosCoin::new(1000u128, "stake")],
+        timeout_fee: vec![CosmosCoin::new(1000u128, "stake")],
+    };
     let (delegator, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
     let delegate_msg = MsgDelegate {
         delegator_address: delegator,
@@ -301,7 +259,13 @@ fn execute_undelegate(
     denom: String,
     timeout: Option<u64>,
 ) -> StdResult<Response<NeutronMsg>> {
-    let fee = IBC_FEE.load(deps.storage)?;
+    // contract must pay for relaying of acknowledgements
+    // See more info here: https://docs.neutron.org/neutron/feerefunder/overview
+    let fee = IbcFee {
+        recv_fee: vec![],
+        ack_fee: vec![CosmosCoin::new(1000u128, "stake")],
+        timeout_fee: vec![CosmosCoin::new(1000u128, "stake")],
+    };
     let (delegator, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
     let delegate_msg = MsgUndelegate {
         delegator_address: delegator,
@@ -332,6 +296,8 @@ fn execute_undelegate(
         fee,
     );
 
+    // We use a submessage here because we need the process message reply to save
+    // the outgoing IBC packet identifier for later.
     let submsg = msg_with_sudo_callback(
         deps.branch(),
         cosmos_msg,
@@ -344,37 +310,22 @@ fn execute_undelegate(
     Ok(Response::default().add_submessages(vec![submsg]))
 }
 
-fn execute_clean_ack_results(deps: DepsMut) -> StdResult<Response<NeutronMsg>> {
-    let keys: Vec<StdResult<(String, u64)>> = ACKNOWLEDGEMENT_RESULTS
-        .keys(deps.storage, None, None, cosmwasm_std::Order::Descending)
-        .collect();
-    for key in keys {
-        ACKNOWLEDGEMENT_RESULTS.remove(deps.storage, key?);
-    }
-    Ok(Response::default())
-}
-
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn sudo(deps: DepsMut, env: Env, msg: SudoMsg) -> StdResult<Response> {
     deps.api
         .debug(format!("WASMDEBUG: sudo: received sudo msg: {:?}", msg).as_str());
 
-    if let Some(IntegrationTestsSudoMock::Enabled {}) =
-        INTEGRATION_TESTS_SUDO_MOCK.may_load(deps.storage)?
-    {
-        // Used only in integration tests framework to simulate failures.
-        deps.api
-            .debug("WASMDEBUG: sudo: mocked failure on the handler");
-
-        return Err(StdError::GenericErr {
-            msg: "Integations test mock error".to_string(),
-        });
-    }
-
     match msg {
+        // For handling successful (non-error) acknowledgements.
         SudoMsg::Response { request, data } => sudo_response(deps, request, data),
+
+        // For handling error acknowledgements.
         SudoMsg::Error { request, details } => sudo_error(deps, request, details),
+
+        // For handling error timeouts.
         SudoMsg::Timeout { request } => sudo_timeout(deps, env, request),
+
+        // For handling successful registering of ICA
         SudoMsg::OpenAck {
             port_id,
             channel_id,
@@ -398,6 +349,7 @@ pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response
     Ok(Response::default())
 }
 
+// handler
 fn sudo_open_ack(
     deps: DepsMut,
     _env: Env,
@@ -406,8 +358,12 @@ fn sudo_open_ack(
     _counterparty_channel_id: String,
     counterparty_version: String,
 ) -> StdResult<Response> {
+    // The version variable contains a JSON value with multiple fields,
+    // including the generated account address.
     let parsed_version: Result<OpenAckVersion, _> =
         serde_json_wasm::from_str(counterparty_version.as_str());
+
+    // Update the storage record associated with the interchain account.
     if let Ok(parsed_version) = parsed_version {
         INTERCHAIN_ACCOUNTS.save(
             deps.storage,
@@ -636,6 +592,10 @@ fn sudo_error(deps: DepsMut, request: RequestPacket, details: String) -> StdResu
     Ok(Response::default())
 }
 
+// prepare_sudo_payload is called from reply handler
+// The method is used to extract sequence id and channel from SubmitTxResponse to process sudo payload defined in msg_with_sudo_callback later in Sudo handler.
+// Such flow msg_with_sudo_callback() -> reply() -> prepare_sudo_payload() -> sudo() allows you "attach" some payload to your SubmitTx message
+// and process this payload when an acknowledgement for the SubmitTx message is received in Sudo handler
 fn prepare_sudo_payload(mut deps: DepsMut, _env: Env, msg: Reply) -> StdResult<Response> {
     let payload = read_reply_payload(deps.storage)?;
     let resp: MsgSubmitTxResponse = serde_json_wasm::from_slice(

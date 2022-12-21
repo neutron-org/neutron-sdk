@@ -36,27 +36,6 @@ jobs:
           profile: minimal
           override: true
       - run: cargo fmt -- --check
-  
-  checkbuild:
-    name: Actions - check artifacts hash sums
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-        with:
-          fetch-depth: 1
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: 1.60.0
-          components: rustfmt
-          profile: minimal
-          override: true
-      - name: Get hash of checksum file
-        id: checksum
-        run: echo "::set-output name=DATA::$(shasum -a 256 ./artifacts/checksums.txt | cut -f1 -d ' ')"
-      - name: Rebuild artifacts
-        run: make build_proto && make schema && ./build_release.sh
-      - name: Verify
-        run: if [[ "${{steps.checksum.outputs.DATA}}" != $(shasum -a 256 ./artifacts/checksums.txt | cut -f1 -d ' ') ]]; then return 2; fi
 
   unit-test:
     name: Actions - unit test

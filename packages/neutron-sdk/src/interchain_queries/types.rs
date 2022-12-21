@@ -33,7 +33,7 @@ pub const COSMOS_SDK_TRANSFER_MSG_URL: &str = "/cosmos.bank.v1beta1.MsgSend";
 pub const BALANCES_PREFIX: u8 = 0x02;
 
 /// Storage prefix for bank supply store
-/// https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/bank/types/key.go#L28
+/// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/bank/types/key.go#L28>
 pub const SUPPLY_PREFIX: u8 = 0x00;
 
 /// Key for delegations in the **staking** module's storage
@@ -45,11 +45,11 @@ pub const DELEGATION_KEY: u8 = 0x31;
 pub const VALIDATORS_KEY: u8 = 0x21;
 
 /// Key for Fee Pool in the **distribution** module's storage
-/// https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/distribution/types/keys.go#L46
+/// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/distribution/types/keys.go#L46>
 pub const FEE_POOL_KEY: u8 = 0x00;
 
 /// Key for Proposals in the **gov** module's storage
-/// https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/gov/types/keys.go#L41
+/// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/gov/types/keys.go#L41>
 pub const PROPOSALS_KEY_PREFIX: u8 = 0x00;
 
 /// Maximum length of address

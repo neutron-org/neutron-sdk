@@ -1,6 +1,6 @@
-CONTRACT=./artifacts/ibc_transfer.wasm
+CONTRACT=../artifacts/ibc_transfer.wasm
 CHAINID=test-1
-NEUTRON_DIR=${NEUTRON_DIR:-../neutron}
+NEUTRON_DIR=${NEUTRON_DIR:-../../neutron}
 HOME=${NEUTRON_DIR}/data/test-1/
 HOME2=${NEUTRON_DIR}/data/test-2/
 KEY=demowallet1
@@ -24,7 +24,7 @@ ${BIN} tx bank send demowallet1 ${TRANSFER_CONTRACT_ADDRESS} 10000stake --chain-
 
 echo "Tranfer coins from test-1 to test-2"
 RES=$(${BIN} tx wasm execute $TRANSFER_CONTRACT_ADDRESS \
-    '{"send":{"to":"neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2","amount":"1000", "denom": "stake", "channel": "channel-0"}}' \
+    '{"send":{"to":"cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs","amount":"1000", "denom": "stake", "channel": "channel-0"}}' \
     --from ${KEY}  -y \
     --chain-id ${CHAINID} \
     --output json \
@@ -35,64 +35,3 @@ RES=$(${BIN} tx wasm execute $TRANSFER_CONTRACT_ADDRESS \
     --home ${HOME} \
     --node tcp://127.0.0.1:16657)
 echo $RES | jq
-
-echo "Try to transfer coins from test-1 to test-2 again with failing sudo handler"
-echo "Wait for previous transactions to be processed and turn off sudo handler"
-sleep 10
-echo "Get failures list before test"
-FAILURES_BEFORE_TEST=$(${BIN} q contractmanager failures $TRANSFER_CONTRACT_ADDRESS \
-    --output json \
-    --node tcp://127.0.0.1:16657)
-
-
-echo "Turn off sudo handler"
-RES=$(${BIN} tx wasm execute $TRANSFER_CONTRACT_ADDRESS \
-    '{"integration_tests_set_sudo_failure_mock":{}}' \
-    --from ${KEY}  -y \
-    --chain-id ${CHAINID} \
-    --output json \
-    --broadcast-mode=block \
-    --gas-prices 0.0025stake \
-    --gas 1000000 \
-    --keyring-backend test \
-    --home ${HOME} \
-    --node tcp://127.0.0.1:16657)
-echo $RES | jq
-
-echo "Send coins from test-2 to test-1"
-RES=$(${BIN} tx wasm execute $TRANSFER_CONTRACT_ADDRESS \
-    '{"send":{"to":"neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2","amount":"1000", "denom": "stake", "channel": "channel-0"}}' \
-    --from ${KEY}  -y \
-    --chain-id ${CHAINID} \
-    --output json \
-    --broadcast-mode=block \
-    --gas-prices 0.0025stake \
-    --gas 1000000 \
-    --keyring-backend test \
-    --home ${HOME} \
-    --node tcp://127.0.0.1:16657)
-echo $RES | jq
-
-echo "Wait for message to be processed and turn on sudo handler"
-sleep 10
-RES=$(${BIN} tx wasm execute $TRANSFER_CONTRACT_ADDRESS \
-    '{"integration_tests_unset_sudo_failure_mock":{}}' \
-    --from ${KEY}  -y \
-    --chain-id ${CHAINID} \
-    --output json \
-    --broadcast-mode=block \
-    --gas-prices 0.0025stake \
-    --gas 1000000 \
-    --keyring-backend test \
-    --home ${HOME} \
-    --node tcp://127.0.0.1:16657)
-echo $RES | jq
-
-echo "Failures before test. Should be empty"
-echo "${FAILURES_BEFORE_TEST}" | jq ''
-
-echo "Show failures after test"
-${BIN} q contractmanager failures $TRANSFER_CONTRACT_ADDRESS \
-    --output json \
-    --node tcp://127.0.0.1:16657 | jq ''
-

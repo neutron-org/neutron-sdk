@@ -1,9 +1,10 @@
 use cosmwasm_std::{from_binary, to_vec, Binary, Order, StdResult, Storage};
 use cw_storage_plus::{Item, Map};
-use neutron_sdk::bindings::msg::IbcFee;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+/// SudoPayload is a type that stores information about a transaction that we try to execute
+/// on the host chain. This is a type introduced for our convenience.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct SudoPayload {
@@ -13,7 +14,6 @@ pub struct SudoPayload {
 
 pub const SUDO_PAYLOAD_REPLY_ID: u64 = 1;
 
-pub const IBC_FEE: Item<IbcFee> = Item::new("ibc_fee");
 pub const REPLY_ID_STORAGE: Item<Vec<u8>> = Item::new("reply_queue_id");
 pub const SUDO_PAYLOAD: Map<(String, u64), Vec<u8>> = Map::new("sudo_payload");
 pub const INTERCHAIN_ACCOUNTS: Map<String, Option<(String, String)>> =
@@ -79,14 +79,4 @@ pub fn save_sudo_payload(
     payload: SudoPayload,
 ) -> StdResult<()> {
     SUDO_PAYLOAD.save(store, (channel_id, seq_id), &to_vec(&payload)?)
-}
-
-/// Used only in integration tests framework to simulate failures.
-pub const INTEGRATION_TESTS_SUDO_MOCK: Item<IntegrationTestsSudoMock> =
-    Item::new("integration_tests_sudo_mock");
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-pub enum IntegrationTestsSudoMock {
-    Enabled,
-    Disabled,
 }

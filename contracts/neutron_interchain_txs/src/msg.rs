@@ -35,12 +35,6 @@ pub enum ExecuteMsg {
         connection_id: String,
         interchain_account_id: String,
     },
-    SetFees {
-        denom: String,
-        recv_fee: u128,
-        ack_fee: u128,
-        timeout_fee: u128,
-    },
     Delegate {
         interchain_account_id: String,
         validator: String,
@@ -55,12 +49,4 @@ pub enum ExecuteMsg {
         denom: String,
         timeout: Option<u64>,
     },
-    CleanAckResults {},
-    /// Used only in integration tests framework to simulate failures.
-    /// After executing this message, contract will fail, all of this happening
-    /// in sudo callback handler.
-    IntegrationTestsSetSudoFailureMock {},
-    /// Used only in integration tests framework to simulate failures.
-    /// After executing this message, contract will revert back to normal behaviour.
-    IntegrationTestsUnsetSudoFailureMock {},
 }

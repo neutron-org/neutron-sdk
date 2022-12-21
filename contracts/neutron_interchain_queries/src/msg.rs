@@ -55,26 +55,6 @@ pub enum ExecuteMsg {
     RemoveInterchainQuery {
         query_id: u64,
     },
-    /// Used only in integration tests framework to simulate failures. It tries to register query where keys is an empty array.
-    IntegrationTestsRegisterQueryEmptyKeys {
-        connection_id: String,
-    },
-    /// Used only in integration tests framework to simulate failures. It tries to register query where in keys array there is a key with empty path.
-    IntegrationTestsRegisterQueryEmptyPath {
-        connection_id: String,
-    },
-    /// Used only in integration tests framework to simulate failures. It tries to register query where in keys array there is a key with empty id.
-    IntegrationTestsRegisterQueryEmptyId {
-        connection_id: String,
-    },
-    /// Used only in integration tests framework to simulate failures.
-    /// After executing this message, contract will attempt to alter state,
-    /// zero out kv query statistics and then fail, all of this happening
-    /// in sudo kv callback handler.
-    IntegrationTestsSetQueryMock {},
-    /// Used only in integration tests framework to simulate failures.
-    /// After executing this message, contract will revert back to normal behaviour.
-    IntegrationTestsUnsetQueryMock {},
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -88,8 +68,6 @@ pub enum QueryMsg {
     GetDelegations { query_id: u64 },
     GetRegisteredQuery { query_id: u64 },
     GetRecipientTxs { recipient: String },
-    KvCallbackStats { query_id: u64 },
-    GetTransfersNumber {},
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -99,16 +77,4 @@ pub struct GetRecipientTxsResponse {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct GetTransfersAmountResponse {
-    pub transfers_number: u64,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct MigrateMsg {}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct KvCallbackStatsResponse {
-    pub last_update_height: u64,
-}

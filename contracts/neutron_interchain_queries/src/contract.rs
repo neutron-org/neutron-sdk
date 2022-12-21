@@ -1,34 +1,13 @@
-// Copyright 2022 Neutron
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 use cosmos_sdk_proto::cosmos::bank::v1beta1::MsgSend;
 use cosmos_sdk_proto::cosmos::tx::v1beta1::{TxBody, TxRaw};
 use cosmwasm_std::{
     entry_point, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult,
 };
 use cw2::set_contract_version;
-use neutron_sdk::interchain_queries::register_queries::new_register_interchain_query_msg;
 use prost::Message as ProstMessage;
 
-use crate::msg::{
-    ExecuteMsg, GetRecipientTxsResponse, GetTransfersAmountResponse, InstantiateMsg,
-    KvCallbackStatsResponse, MigrateMsg, QueryMsg,
-};
-use crate::state::{
-    IntegrationTestsQueryMock, Transfer, INTEGRATION_TESTS_QUERY_MOCK, KV_CALLBACK_STATS,
-    RECIPIENT_TXS, TRANSFERS,
-};
+use crate::msg::{ExecuteMsg, GetRecipientTxsResponse, InstantiateMsg, MigrateMsg, QueryMsg};
+use crate::state::{Transfer, RECIPIENT_TXS, TRANSFERS};
 use neutron_sdk::bindings::msg::NeutronMsg;
 use neutron_sdk::bindings::query::{InterchainQueries, QueryRegisteredQueryResponse};
 use neutron_sdk::bindings::types::KVKey;
@@ -45,9 +24,8 @@ use neutron_sdk::interchain_queries::{
 use neutron_sdk::sudo::msg::SudoMsg;
 use neutron_sdk::{NeutronError, NeutronResult};
 
-use crate::integration_tests_mock_handlers::{set_query_mock, unset_query_mock};
 use neutron_sdk::interchain_queries::types::{
-    QueryType, TransactionFilterItem, TransactionFilterOp, TransactionFilterValue,
+    TransactionFilterItem, TransactionFilterOp, TransactionFilterValue,
     COSMOS_SDK_TRANSFER_MSG_URL, RECIPIENT_FIELD,
 };
 use serde_json_wasm;
@@ -73,8 +51,8 @@ pub fn instantiate(
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
-    deps: DepsMut<InterchainQueries>,
-    env: Env,
+    _deps: DepsMut<InterchainQueries>,
+    _env: Env,
     _: MessageInfo,
     msg: ExecuteMsg,
 ) -> NeutronResult<Response<NeutronMsg>> {
@@ -123,17 +101,6 @@ pub fn execute(
             new_recipient,
         } => update_interchain_query(query_id, new_keys, new_update_period, new_recipient),
         ExecuteMsg::RemoveInterchainQuery { query_id } => remove_interchain_query(query_id),
-        ExecuteMsg::IntegrationTestsSetQueryMock {} => set_query_mock(deps),
-        ExecuteMsg::IntegrationTestsUnsetQueryMock {} => unset_query_mock(deps),
-        ExecuteMsg::IntegrationTestsRegisterQueryEmptyId { connection_id } => {
-            register_query_empty_id(deps, env, connection_id)
-        }
-        ExecuteMsg::IntegrationTestsRegisterQueryEmptyPath { connection_id } => {
-            register_query_empty_path(deps, env, connection_id)
-        }
-        ExecuteMsg::IntegrationTestsRegisterQueryEmptyKeys { connection_id } => {
-            register_query_empty_keys(deps, env, connection_id)
-        }
     }
 }
 
@@ -215,65 +182,6 @@ pub fn register_transfers_query(
     Ok(Response::new().add_message(msg))
 }
 
-pub fn register_query_empty_id(
-    deps: DepsMut<InterchainQueries>,
-    env: Env,
-    connection_id: String,
-) -> NeutronResult<Response<NeutronMsg>> {
-    let kv_key = KVKey {
-        path: "test".to_string(),
-        key: Binary(vec![]),
-    };
-    let msg = new_register_interchain_query_msg(
-        deps,
-        env,
-        connection_id,
-        QueryType::KV,
-        vec![kv_key],
-        vec![],
-        10,
-    )?;
-    Ok(Response::new().add_message(msg))
-}
-
-pub fn register_query_empty_path(
-    deps: DepsMut<InterchainQueries>,
-    env: Env,
-    connection_id: String,
-) -> NeutronResult<Response<NeutronMsg>> {
-    let kv_key = KVKey {
-        path: "".to_string(),
-        key: Binary("test".as_bytes().to_vec()),
-    };
-    let msg = new_register_interchain_query_msg(
-        deps,
-        env,
-        connection_id,
-        QueryType::KV,
-        vec![kv_key],
-        vec![],
-        10,
-    )?;
-    Ok(Response::new().add_message(msg))
-}
-
-pub fn register_query_empty_keys(
-    deps: DepsMut<InterchainQueries>,
-    env: Env,
-    connection_id: String,
-) -> NeutronResult<Response<NeutronMsg>> {
-    let msg = new_register_interchain_query_msg(
-        deps,
-        env,
-        connection_id,
-        QueryType::KV,
-        vec![],
-        vec![],
-        10,
-    )?;
-    Ok(Response::new().add_message(msg))
-}
-
 pub fn update_interchain_query(
     query_id: u64,
     new_keys: Option<Vec<KVKey>>,
@@ -322,8 +230,6 @@ pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> NeutronR
             Ok(to_binary(&get_registered_query(deps, query_id)?)?)
         }
         QueryMsg::GetRecipientTxs { recipient } => query_recipient_txs(deps, recipient),
-        QueryMsg::GetTransfersNumber {} => query_transfers_number(deps),
-        QueryMsg::KvCallbackStats { query_id } => query_kv_callback_stats(deps, query_id),
     }
 }
 
@@ -332,24 +238,6 @@ fn query_recipient_txs(deps: Deps<InterchainQueries>, recipient: String) -> Neut
         .load(deps.storage, &recipient)
         .unwrap_or_default();
     Ok(to_binary(&GetRecipientTxsResponse { transfers: txs })?)
-}
-
-/// Returns the number of transfers made on remote chain and queried with ICQ
-fn query_transfers_number(deps: Deps<InterchainQueries>) -> NeutronResult<Binary> {
-    let transfers_number = TRANSFERS.load(deps.storage).unwrap_or_default();
-    Ok(to_binary(&GetTransfersAmountResponse { transfers_number })?)
-}
-
-/// Returns block height of last KV query callback execution
-pub fn query_kv_callback_stats(
-    deps: Deps<InterchainQueries>,
-    query_id: u64,
-) -> NeutronResult<Binary> {
-    Ok(to_binary(&KvCallbackStatsResponse {
-        last_update_height: KV_CALLBACK_STATS
-            .may_load(deps.storage, query_id)?
-            .unwrap_or(0),
-    })?)
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -361,11 +249,14 @@ pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response
 #[entry_point]
 pub fn sudo(deps: DepsMut<InterchainQueries>, env: Env, msg: SudoMsg) -> NeutronResult<Response> {
     match msg {
+        // For handling tx query result
         SudoMsg::TxQueryResult {
             query_id,
             height,
             data,
         } => sudo_tx_query_result(deps, env, query_id, height, data),
+
+        // For handling kv query result
         SudoMsg::KVQueryResult { query_id } => sudo_kv_query_result(deps, env, query_id),
         _ => Ok(Response::default()),
     }
@@ -380,12 +271,6 @@ pub fn sudo_tx_query_result(
     _height: u64,
     data: Binary,
 ) -> NeutronResult<Response> {
-    if let Some(IntegrationTestsQueryMock::Enabled {}) =
-        INTEGRATION_TESTS_QUERY_MOCK.may_load(deps.storage)?
-    {
-        // simulate error on tx query submit for integration tests
-        return Err(NeutronError::IntegrationTestsMock {});
-    }
     // Decode the transaction data
     let tx: TxRaw = TxRaw::decode(data.as_slice())?;
     let body: TxBody = TxBody::decode(tx.body_bytes.as_slice())?;
@@ -499,7 +384,7 @@ fn check_deposits_size(deposits: &Vec<Transfer>) -> StdResult<()> {
 /// id is provided, so you need to read the query result from the state.
 pub fn sudo_kv_query_result(
     deps: DepsMut<InterchainQueries>,
-    env: Env,
+    _env: Env,
     query_id: u64,
 ) -> NeutronResult<Response> {
     deps.api.debug(
@@ -509,19 +394,6 @@ pub fn sudo_kv_query_result(
         )
         .as_str(),
     );
-
-    if let Some(IntegrationTestsQueryMock::Enabled {}) =
-        INTEGRATION_TESTS_QUERY_MOCK.may_load(deps.storage)?
-    {
-        // doesn't really matter whatever data we try to save here, it should all be reverted
-        // since we return an error in this branch anyway. in fact, this branch exists for the
-        // sole reason of testing this particular revert behaviour.
-        KV_CALLBACK_STATS.save(deps.storage, query_id, &0)?;
-        return Err(NeutronError::IntegrationTestsMock {});
-    }
-
-    // store last KV callback update time
-    KV_CALLBACK_STATS.save(deps.storage, query_id, &env.block.height)?;
 
     // TODO: provide an actual example. Currently to many things are going to change
     // after @pro0n00gler's PRs to implement this.

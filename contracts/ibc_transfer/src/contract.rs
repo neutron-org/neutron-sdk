@@ -12,13 +12,8 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::state::{
-    read_reply_payload, read_sudo_payload, save_reply_payload, save_sudo_payload, IBC_FEE,
+    read_reply_payload, read_sudo_payload, save_reply_payload, save_sudo_payload,
     IBC_SUDO_ID_RANGE_END, IBC_SUDO_ID_RANGE_START,
-};
-
-use crate::{
-    integration_tests_mock_handlers::{set_sudo_failure_mock, unset_sudo_failure_mock},
-    state::{IntegrationTestsSudoMock, INTEGRATION_TESTS_SUDO_MOCK},
 };
 
 // Default timeout for IbcTransfer is 10000000 blocks
@@ -37,7 +32,6 @@ pub fn instantiate(
     _info: MessageInfo,
     _msg: InstantiateMsg,
 ) -> StdResult<Response> {
-    deps.api.debug("WASMDEBUG: instantiate");
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
     Ok(Response::default())
 }
@@ -52,19 +46,6 @@ pub enum ExecuteMsg {
         amount: u128,
         timeout_height: Option<u64>,
     },
-    SetFees {
-        recv_fee: u128,
-        ack_fee: u128,
-        timeout_fee: u128,
-        denom: String,
-    },
-    /// Used only in integration tests framework to simulate failures.
-    /// After executing this message, contract will fail, all of this happening
-    /// in sudo callback handler.
-    IntegrationTestsSetSudoFailureMock {},
-    /// Used only in integration tests framework to simulate failures.
-    /// After executing this message, contract will revert back to normal behaviour.
-    IntegrationTestsUnsetSudoFailureMock {},
 }
 
 #[entry_point]
@@ -74,8 +55,6 @@ pub fn execute(
     _: MessageInfo,
     msg: ExecuteMsg,
 ) -> StdResult<Response<NeutronMsg>> {
-    deps.api
-        .debug(format!("WASMDEBUG: execute: received msg: {:?}", msg).as_str());
     match msg {
         // NOTE: this is an example contract that shows how to make IBC transfers!
         // Please add necessary authorization or other protection mechanisms
@@ -87,21 +66,10 @@ pub fn execute(
             amount,
             timeout_height,
         } => execute_send(deps, env, channel, to, denom, amount, timeout_height),
-
-        ExecuteMsg::SetFees {
-            recv_fee,
-            ack_fee,
-            timeout_fee,
-            denom,
-        } => execute_set_fees(deps, recv_fee, ack_fee, timeout_fee, denom),
-        // Used only in integration tests framework to simulate failures.
-        // After executing this message, contract fail, all of this happening
-        // in sudo callback handler.
-        ExecuteMsg::IntegrationTestsSetSudoFailureMock {} => set_sudo_failure_mock(deps),
-        ExecuteMsg::IntegrationTestsUnsetSudoFailureMock {} => unset_sudo_failure_mock(deps),
     }
 }
 
+// Example of different payload types
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct Type1 {
@@ -114,24 +82,28 @@ pub struct Type2 {
     pub data: String,
 }
 
+// a callback handler for payload of Type1
 fn sudo_callback1(deps: Deps, payload: Type1) -> StdResult<Response> {
     deps.api
         .debug(format!("WASMDEBUG: callback1: sudo payload: {:?}", payload).as_str());
     Ok(Response::new())
 }
 
+// a callback handler for payload of Type2
 fn sudo_callback2(deps: Deps, payload: Type2) -> StdResult<Response> {
     deps.api
         .debug(format!("WASMDEBUG: callback2: sudo payload: {:?}", payload).as_str());
     Ok(Response::new())
 }
 
+// Enum representing payload to process during handling acknowledgement messages in Sudo handler
 #[derive(Serialize, Deserialize)]
 pub enum SudoPayload {
     HandlerPayload1(Type1),
     HandlerPayload2(Type2),
 }
 
+// saves payload to process later to the storage and returns a SubmitTX Cosmos SubMsg with necessary reply id
 fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
     deps: DepsMut,
     msg: C,
@@ -141,6 +113,10 @@ fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
     Ok(SubMsg::reply_on_success(msg, id))
 }
 
+// prepare_sudo_payload is called from reply handler
+// The method is used to extract sequence id and channel from SubmitTxResponse to process sudo payload defined in msg_with_sudo_callback later in Sudo handler.
+// Such flow msg_with_sudo_callback() -> reply() -> prepare_sudo_payload() -> sudo() allows you "attach" some payload to your Transfer message
+// and process this payload when an acknowledgement for the SubmitTx message is received in Sudo handler
 fn prepare_sudo_payload(mut deps: DepsMut, _env: Env, msg: Reply) -> StdResult<Response> {
     let payload = read_reply_payload(deps.storage, msg.id)?;
     let resp: MsgIbcTransferResponse = serde_json_wasm::from_slice(
@@ -161,38 +137,13 @@ fn prepare_sudo_payload(mut deps: DepsMut, _env: Env, msg: Reply) -> StdResult<R
 #[entry_point]
 pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> StdResult<Response> {
     match msg.id {
+        // It's convenient to use range of ID's to handle multiple reply messages
         IBC_SUDO_ID_RANGE_START..=IBC_SUDO_ID_RANGE_END => prepare_sudo_payload(deps, env, msg),
         _ => Err(StdError::generic_err(format!(
             "unsupported reply message id {}",
             msg.id
         ))),
     }
-}
-
-fn get_fee_item(denom: String, amount: u128) -> Vec<Coin> {
-    if amount == 0 {
-        vec![]
-    } else {
-        vec![coin(amount, denom)]
-    }
-}
-
-fn execute_set_fees(
-    deps: DepsMut,
-    recv_fee: u128,
-    ack_fee: u128,
-    timeout_fee: u128,
-    denom: String,
-) -> StdResult<Response<NeutronMsg>> {
-    let fee = IbcFee {
-        recv_fee: get_fee_item(denom.clone(), recv_fee),
-        ack_fee: get_fee_item(denom.clone(), ack_fee),
-        timeout_fee: get_fee_item(denom, timeout_fee),
-    };
-
-    IBC_FEE.save(deps.storage, &fee)?;
-
-    Ok(Response::default())
 }
 
 fn execute_send(
@@ -204,7 +155,13 @@ fn execute_send(
     amount: u128,
     timeout_height: Option<u64>,
 ) -> StdResult<Response<NeutronMsg>> {
-    let fee = IBC_FEE.load(deps.storage)?;
+    // contract must pay for relaying of acknowledgements
+    // See more info here: https://docs.neutron.org/neutron/feerefunder/overview
+    let fee = IbcFee {
+        recv_fee: vec![],
+        ack_fee: vec![Coin::new(1000u128, "stake")],
+        timeout_fee: vec![Coin::new(1000u128, "stake")],
+    };
     let coin1 = coin(amount, denom.clone());
     let msg1 = NeutronMsg::IbcTransfer {
         source_port: "transfer".to_string(),
@@ -233,6 +190,7 @@ fn execute_send(
         timeout_timestamp: 0,
         fee,
     };
+    // prepare first transfer message with payload of Type1
     let submsg1 = msg_with_sudo_callback(
         deps.branch(),
         msg1,
@@ -240,6 +198,8 @@ fn execute_send(
             message: "message".to_string(),
         }),
     )?;
+    // prepare second transfer message with payload of Type2
+    // both messages have different reply ids, which allows to send them in one tx and handle both replies separately
     let submsg2 = msg_with_sudo_callback(
         deps.branch(),
         msg2,
@@ -258,21 +218,14 @@ fn execute_send(
 
 #[entry_point]
 pub fn sudo(deps: DepsMut, _env: Env, msg: TransferSudoMsg) -> StdResult<Response> {
-    if let Some(IntegrationTestsSudoMock::Enabled {}) =
-        INTEGRATION_TESTS_SUDO_MOCK.may_load(deps.storage)?
-    {
-        // Used only in integration tests framework to simulate failures.
-        deps.api
-            .debug("WASMDEBUG: sudo: mocked failure on the handler");
-
-        return Err(StdError::GenericErr {
-            msg: "Integations test mock error".to_string(),
-        });
-    }
-
     match msg {
+        // For handling successful (non-error) acknowledgements
         TransferSudoMsg::Response { request, data } => sudo_response(deps, request, data),
+
+        // For handling error acknowledgements
         TransferSudoMsg::Error { request, details } => sudo_error(deps, request, details),
+
+        // For handling error timeouts
         TransferSudoMsg::Timeout { request } => sudo_timeout(deps, request),
     }
 }
@@ -313,7 +266,12 @@ fn sudo_response(deps: DepsMut, req: RequestPacket, data: Binary) -> StdResult<R
     let channel_id = req
         .source_channel
         .ok_or_else(|| StdError::generic_err("channel_id not found"))?;
+
     match read_sudo_payload(deps.storage, channel_id, seq_id)? {
+        // here we can do different logic depending on the type of the payload we saved in msg_with_sudo_callback() call
+        // This allows us to distinguish different transfer message from each other.
+        // For example some protocols can send one transfer to refund user for some action and another transfer to top up some balance.
+        // Such different actions may require different handling of their responses.
         SudoPayload::HandlerPayload1(t1) => sudo_callback1(deps.as_ref(), t1),
         SudoPayload::HandlerPayload2(t2) => sudo_callback2(deps.as_ref(), t2),
     }

@@ -1,8 +1,5 @@
 use cosmwasm_std::{from_binary, to_vec, Binary, StdResult, Storage};
 use cw_storage_plus::{Item, Map};
-use neutron_sdk::bindings::msg::IbcFee;
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
 
 use crate::contract::SudoPayload;
 
@@ -10,15 +7,13 @@ pub const IBC_SUDO_ID_RANGE_START: u64 = 1_000_000_000;
 pub const IBC_SUDO_ID_RANGE_SIZE: u64 = 1_000;
 pub const IBC_SUDO_ID_RANGE_END: u64 = IBC_SUDO_ID_RANGE_START + IBC_SUDO_ID_RANGE_SIZE;
 
-pub const IBC_FEE: Item<IbcFee> = Item::new("ibc_fee");
-
 pub const REPLY_QUEUE_ID: Map<u64, Vec<u8>> = Map::new("reply_queue_id");
 
 const REPLY_ID: Item<u64> = Item::new("reply_id");
 
 /// get_next_id gives us an id for a reply msg
 /// dynamic reply id helps us to pass sudo payload to sudo handler via reply handler
-/// by setting unique(in transaction lifetime) id to the reply and mapping our paload to the id
+/// by setting unique(in transaction lifetime) id to the reply and mapping our payload to the id
 /// execute ->(unique reply.id) reply (channel_id,seq_id)-> sudo handler
 /// Since id uniqueless id only matters inside a transaction,
 /// we can safely reuse the same id set in every new transaction
@@ -65,14 +60,4 @@ pub fn read_sudo_payload(
 ) -> StdResult<SudoPayload> {
     let data = SUDO_PAYLOAD.load(store, (channel_id, seq_id))?;
     from_binary(&Binary(data))
-}
-
-/// Used only in integration tests framework to simulate failures.
-pub const INTEGRATION_TESTS_SUDO_MOCK: Item<IntegrationTestsSudoMock> =
-    Item::new("integration_tests_sudo_mock");
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-pub enum IntegrationTestsSudoMock {
-    Enabled,
-    Disabled,
 }

@@ -1,7 +1,11 @@
 [package]
 name = "neutron-sdk"
+description = "Neutron CosmWasm SDK for interacting with Neutron blockchain"
 version = "0.1.0"
 edition = "2021"
+license = "Apache-2.0"
+repository = "https://github.com/neutron-org/neutron-sdk"
+homepage = "https://neutron.org"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -18,17 +22,18 @@ overflow-checks = true
 
 [dependencies]
 cosmwasm-std = { version = "1.0.0", features = ["staking"] }
-cosmos-sdk-proto = { version = "0.14.0", default-features = false }
+cosmos-sdk-proto = { version = "0.16.0", default-features = false }
 prost = "0.11"
 serde = { version = "1.0.147", default-features = false, features = ["derive"] }
 schemars = "0.8.10"
 serde-json-wasm = "0.4.1"
-cw-storage-plus = { version = "0.16.0", features = ["iterator"]}
-base64 = "0.13.0"
+cw-storage-plus = { version = "1.0.1", features = ["iterator"]}
+base64 = "0.20.0"
 bech32 = "0.9.0"
 thiserror = { version = "1.0" }
 serde_json = { version = "1.0.87" }
 protobuf = { version = "3.2.0", features = ["with-bytes"] }
+cosmwasm-schema = "1.1.0"
 
 [dev-dependencies]
 cosmwasm-schema = { version = "1.0.0", default-features = false }
