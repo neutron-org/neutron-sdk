@@ -295,6 +295,17 @@
               "type": "null"
             }
           ]
+        },
+        "software_upgrade_proposal": {
+          "description": "*software_upgrade_proposal** is a software upgrade proposal field.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/SoftwareUpgradeProposal"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       }
     },
@@ -400,7 +411,7 @@
       ],
       "properties": {
         "description": {
-          "description": "*descriptionr** is a text description of proposal. Non unique.",
+          "description": "*description** is a text description of proposal. Non unique.",
           "type": "string"
         },
         "param_changes": {
@@ -412,6 +423,30 @@
         },
         "title": {
           "description": "*title** is a text title of proposal. Non unique.",
+          "type": "string"
+        }
+      }
+    },
+    "Plan": {
+      "description": "Plan defines the struct for planned upgrade.",
+      "type": "object",
+      "required": [
+        "height",
+        "info",
+        "name"
+      ],
+      "properties": {
+        "height": {
+          "description": "*height** is a height at which the upgrade must be performed",
+          "type": "integer",
+          "format": "int64"
+        },
+        "info": {
+          "description": "*info** is any application specific upgrade info to be included on-chain",
+          "type": "string"
+        },
+        "name": {
+          "description": "*name** is a name for the upgrade",
           "type": "string"
         }
       }
@@ -456,6 +491,33 @@
           ],
           "format": "uint64",
           "minimum": 0.0
+        }
+      }
+    },
+    "SoftwareUpgradeProposal": {
+      "description": "SoftwareUpgradeProposal defines the struct for software upgrade proposal.",
+      "type": "object",
+      "required": [
+        "description",
+        "plan",
+        "title"
+      ],
+      "properties": {
+        "description": {
+          "description": "*description** is a text description of proposal. Non unique.",
+          "type": "string"
+        },
+        "plan": {
+          "description": "*plan** is a plan of upgrade.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Plan"
+            }
+          ]
+        },
+        "title": {
+          "description": "*title** is a text title of proposal. Non unique.",
+          "type": "string"
         }
       }
     },

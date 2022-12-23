@@ -237,6 +237,18 @@ impl NeutronMsg {
         NeutronMsg::SubmitAdminProposal {
             admin_proposal: AdminProposal {
                 param_change_proposal: Option::from(proposal),
+                software_upgrade_proposal: None,
+            },
+        }
+    }
+
+    /// Basic helper to define a parameter change proposal passed to AdminModule:
+    /// * **proposal** is struct which contains proposal that should change network parameter.
+    pub fn submit_software_upgrade_proposal(proposal: SoftwareUpgradeProposal) -> Self {
+        NeutronMsg::SubmitAdminProposal {
+            admin_proposal: AdminProposal {
+                param_change_proposal: None,
+                software_upgrade_proposal: Option::from(proposal),
             },
         }
     }
@@ -285,6 +297,8 @@ pub struct MsgIbcTransferResponse {
 pub struct AdminProposal {
     /// **param_change_proposal** is a parameter change proposal field.
     pub param_change_proposal: Option<ParamChangeProposal>,
+    /// **software_upgrade_proposal** is a software upgrade proposal field.
+    pub software_upgrade_proposal: Option<SoftwareUpgradeProposal>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -293,7 +307,7 @@ pub struct AdminProposal {
 pub struct ParamChangeProposal {
     /// **title** is a text title of proposal. Non unique.
     pub title: String,
-    /// **descriptionr** is a text description of proposal. Non unique.
+    /// **description** is a text description of proposal. Non unique.
     pub description: String,
     /// **param_changes** is a vector of params to be changed. Non unique.
     pub param_changes: Vec<ParamChange>,
@@ -309,4 +323,28 @@ pub struct ParamChange {
     pub key: String,
     /// **value** is a new value for given parameter. Non unique.
     pub value: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+/// SoftwareUpgradeProposal defines the struct for software upgrade proposal.
+pub struct SoftwareUpgradeProposal {
+    /// **title** is a text title of proposal. Non unique.
+    pub title: String,
+    /// **description** is a text description of proposal. Non unique.
+    pub description: String,
+    /// **plan** is a plan of upgrade.
+    pub plan: Plan,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+/// Plan defines the struct for planned upgrade.
+pub struct Plan {
+    /// **name** is a name for the upgrade
+    pub name: String,
+    /// **height** is a height at which the upgrade must be performed
+    pub height: i64,
+    /// **info** is any application specific upgrade info to be included on-chain
+    pub info: String,
 }
