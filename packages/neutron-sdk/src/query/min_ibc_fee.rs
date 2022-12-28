@@ -1,5 +1,5 @@
 use crate::{
-    bindings::{msg::IbcFee, query::InterchainQueries},
+    bindings::{msg::IbcFee, query::NeutronQuery},
     NeutronResult,
 };
 use cosmwasm_std::Deps;
@@ -12,7 +12,7 @@ pub struct MinIbcFeeResponse {
     pub min_fee: IbcFee,
 }
 
-pub fn query_min_ibc_fee(deps: Deps<InterchainQueries>) -> NeutronResult<MinIbcFeeResponse> {
-    let query = InterchainQueries::MinIbcFee {};
+pub fn query_min_ibc_fee(deps: Deps<NeutronQuery>) -> NeutronResult<MinIbcFeeResponse> {
+    let query = NeutronQuery::MinIbcFee {};
     Ok(deps.querier.query(&query.into())?)
 }

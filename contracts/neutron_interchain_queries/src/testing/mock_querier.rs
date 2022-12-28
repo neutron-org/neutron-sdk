@@ -9,7 +9,7 @@ use cosmwasm_std::{
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use neutron_sdk::bindings::query::InterchainQueries;
+use neutron_sdk::bindings::query::NeutronQuery;
 
 pub const MOCK_CONTRACT_ADDR: &str = "cosmos2contract";
 
@@ -22,7 +22,7 @@ impl CustomQuery for CustomQueryWrapper {}
 
 pub fn mock_dependencies(
     contract_balance: &[Coin],
-) -> OwnedDeps<MockStorage, MockApi, WasmMockQuerier, InterchainQueries> {
+) -> OwnedDeps<MockStorage, MockApi, WasmMockQuerier, NeutronQuery> {
     let contract_addr = MOCK_CONTRACT_ADDR;
     let custom_querier: WasmMockQuerier =
         WasmMockQuerier::new(MockQuerier::new(&[(contract_addr, contract_balance)]));
@@ -36,14 +36,14 @@ pub fn mock_dependencies(
 }
 
 pub struct WasmMockQuerier {
-    base: MockQuerier<InterchainQueries>,
+    base: MockQuerier<NeutronQuery>,
     query_reponses: HashMap<u64, Binary>,
     registred_queries: HashMap<u64, Binary>,
 }
 
 impl Querier for WasmMockQuerier {
     fn raw_query(&self, bin_request: &[u8]) -> QuerierResult {
-        let request: QueryRequest<InterchainQueries> = match from_slice(bin_request) {
+        let request: QueryRequest<NeutronQuery> = match from_slice(bin_request) {
             Ok(v) => v,
             Err(e) => {
                 return QuerierResult::Err(SystemError::InvalidRequest {
@@ -57,26 +57,26 @@ impl Querier for WasmMockQuerier {
 }
 
 impl WasmMockQuerier {
-    pub fn handle_query(&self, request: &QueryRequest<InterchainQueries>) -> QuerierResult {
+    pub fn handle_query(&self, request: &QueryRequest<NeutronQuery>) -> QuerierResult {
         match &request {
-            QueryRequest::Custom(InterchainQueries::InterchainQueryResult { query_id }) => {
+            QueryRequest::Custom(NeutronQuery::InterchainQueryResult { query_id }) => {
                 SystemResult::Ok(ContractResult::Ok(
                     (*self.query_reponses.get(query_id).unwrap()).clone(),
                 ))
             }
-            QueryRequest::Custom(InterchainQueries::RegisteredInterchainQuery { query_id }) => {
+            QueryRequest::Custom(NeutronQuery::RegisteredInterchainQuery { query_id }) => {
                 SystemResult::Ok(ContractResult::Ok(
                     (*self.registred_queries.get(query_id).unwrap()).clone(),
                 ))
             }
-            QueryRequest::Custom(InterchainQueries::RegisteredInterchainQueries {
+            QueryRequest::Custom(NeutronQuery::RegisteredInterchainQueries {
                 owners: _owners,
                 connection_id: _connection_id,
                 pagination: _pagination,
             }) => {
                 todo!()
             }
-            QueryRequest::Custom(InterchainQueries::InterchainAccountAddress { .. }) => {
+            QueryRequest::Custom(NeutronQuery::InterchainAccountAddress { .. }) => {
                 todo!()
             }
             _ => self.base.handle_query(request),
@@ -111,7 +111,7 @@ pub struct TokenQuerier {
 }
 
 impl WasmMockQuerier {
-    pub fn new(base: MockQuerier<InterchainQueries>) -> Self {
+    pub fn new(base: MockQuerier<NeutronQuery>) -> Self {
         WasmMockQuerier {
             base,
             query_reponses: HashMap::new(),

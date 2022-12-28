@@ -3,9 +3,11 @@ use cosmwasm_std::{
     StdError, StdResult, SubMsg,
 };
 use cw2::set_contract_version;
-use neutron_sdk::bindings::query::InterchainQueries;
 use neutron_sdk::{
-    bindings::msg::{IbcFee, MsgIbcTransferResponse, NeutronMsg},
+    bindings::{
+        msg::{IbcFee, MsgIbcTransferResponse, NeutronMsg},
+        query::NeutronQuery,
+    },
     query::min_ibc_fee::query_min_ibc_fee,
     sudo::msg::{RequestPacket, RequestPacketTimeoutHeight, TransferSudoMsg},
     NeutronResult,
@@ -41,7 +43,7 @@ pub fn instantiate(
 
 #[entry_point]
 pub fn execute(
-    deps: DepsMut<InterchainQueries>,
+    deps: DepsMut<NeutronQuery>,
     env: Env,
     _: MessageInfo,
     msg: ExecuteMsg,
@@ -96,7 +98,7 @@ pub enum SudoPayload {
 
 // saves payload to process later to the storage and returns a SubmitTX Cosmos SubMsg with necessary reply id
 fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
-    deps: DepsMut<InterchainQueries>,
+    deps: DepsMut<NeutronQuery>,
     msg: C,
     payload: SudoPayload,
 ) -> StdResult<SubMsg<T>> {
@@ -138,7 +140,7 @@ pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> StdResult<Response> {
 }
 
 fn execute_send(
-    mut deps: DepsMut<InterchainQueries>,
+    mut deps: DepsMut<NeutronQuery>,
     env: Env,
     channel: String,
     to: String,
