@@ -238,17 +238,33 @@ impl NeutronMsg {
             admin_proposal: AdminProposal {
                 param_change_proposal: Option::from(proposal),
                 software_upgrade_proposal: None,
+                cancel_software_upgrade_proposal: None,
             },
         }
     }
 
     /// Basic helper to define a parameter change proposal passed to AdminModule:
-    /// * **proposal** is struct which contains proposal that should change network parameter.
+    /// * **proposal** is struct which contains proposal that sets upgrade block.
     pub fn submit_software_upgrade_proposal(proposal: SoftwareUpgradeProposal) -> Self {
         NeutronMsg::SubmitAdminProposal {
             admin_proposal: AdminProposal {
                 param_change_proposal: None,
                 software_upgrade_proposal: Option::from(proposal),
+                cancel_software_upgrade_proposal: None,
+            },
+        }
+    }
+
+    /// Basic helper to define a parameter change proposal passed to AdminModule:
+    /// * **proposal** is struct which contains proposal that cancels software upgrade.
+    pub fn submit_cancel_software_upgrade_proposal(
+        proposal: CancelSoftwareUpgradeProposal,
+    ) -> Self {
+        NeutronMsg::SubmitAdminProposal {
+            admin_proposal: AdminProposal {
+                param_change_proposal: None,
+                software_upgrade_proposal: None,
+                cancel_software_upgrade_proposal: Option::from(proposal),
             },
         }
     }
@@ -299,6 +315,8 @@ pub struct AdminProposal {
     pub param_change_proposal: Option<ParamChangeProposal>,
     /// **software_upgrade_proposal** is a software upgrade proposal field.
     pub software_upgrade_proposal: Option<SoftwareUpgradeProposal>,
+    /// **cancel_software_upgrade_proposal** is a cancel software upgrade proposal field.
+    pub cancel_software_upgrade_proposal: Option<CancelSoftwareUpgradeProposal>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -335,6 +353,16 @@ pub struct SoftwareUpgradeProposal {
     pub description: String,
     /// **plan** is a plan of upgrade.
     pub plan: Plan,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+/// CancelSoftwareUpgradeProposal defines the struct for cancel software upgrade proposal.
+pub struct CancelSoftwareUpgradeProposal {
+    /// **title** is a text title of proposal. Non unique.
+    pub title: String,
+    /// **description** is a text description of proposal. Non unique.
+    pub description: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
