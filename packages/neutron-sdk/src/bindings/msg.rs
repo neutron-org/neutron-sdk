@@ -235,11 +235,7 @@ impl NeutronMsg {
     /// * **proposal** is struct which contains proposal that should change network parameter.
     pub fn submit_param_change_proposal(proposal: ParamChangeProposal) -> Self {
         NeutronMsg::SubmitAdminProposal {
-            admin_proposal: AdminProposal {
-                param_change_proposal: Option::from(proposal),
-                software_upgrade_proposal: None,
-                cancel_software_upgrade_proposal: None,
-            },
+            admin_proposal: AdminProposal::ParamChangeProposal(proposal),
         }
     }
 
@@ -247,11 +243,7 @@ impl NeutronMsg {
     /// * **proposal** is struct which contains proposal that sets upgrade block.
     pub fn submit_software_upgrade_proposal(proposal: SoftwareUpgradeProposal) -> Self {
         NeutronMsg::SubmitAdminProposal {
-            admin_proposal: AdminProposal {
-                param_change_proposal: None,
-                software_upgrade_proposal: Option::from(proposal),
-                cancel_software_upgrade_proposal: None,
-            },
+            admin_proposal: AdminProposal::SoftwareUpgradeProposal(proposal),
         }
     }
 
@@ -261,11 +253,7 @@ impl NeutronMsg {
         proposal: CancelSoftwareUpgradeProposal,
     ) -> Self {
         NeutronMsg::SubmitAdminProposal {
-            admin_proposal: AdminProposal {
-                param_change_proposal: None,
-                software_upgrade_proposal: None,
-                cancel_software_upgrade_proposal: Option::from(proposal),
-            },
+            admin_proposal: AdminProposal::CancelSoftwareUpgradeProposal(proposal)
         }
     }
 }
@@ -309,14 +297,13 @@ pub struct MsgIbcTransferResponse {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 /// AdminProposal defines the struct for various proposals which Neutron's Admin Module may accept.
-/// Currently only parameter change proposals are implemented, new types of admin proposals may be implemented in future.
-pub struct AdminProposal {
+pub enum AdminProposal {
     /// **param_change_proposal** is a parameter change proposal field.
-    pub param_change_proposal: Option<ParamChangeProposal>,
+    ParamChangeProposal(ParamChangeProposal),
     /// **software_upgrade_proposal** is a software upgrade proposal field.
-    pub software_upgrade_proposal: Option<SoftwareUpgradeProposal>,
+    SoftwareUpgradeProposal(SoftwareUpgradeProposal),
     /// **cancel_software_upgrade_proposal** is a cancel software upgrade proposal field.
-    pub cancel_software_upgrade_proposal: Option<CancelSoftwareUpgradeProposal>,
+    CancelSoftwareUpgradeProposal(CancelSoftwareUpgradeProposal),
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]

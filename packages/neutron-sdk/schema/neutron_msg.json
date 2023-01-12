@@ -282,43 +282,48 @@
   ],
   "definitions": {
     "AdminProposal": {
-      "description": "AdminProposal defines the struct for various proposals which Neutron's Admin Module may accept. Currently only parameter change proposals are implemented, new types of admin proposals may be implemented in future.",
-      "type": "object",
-      "properties": {
-        "cancel_software_upgrade_proposal": {
-          "description": "*cancel_software_upgrade_proposal** is a cancel software upgrade proposal field.",
-          "anyOf": [
-            {
-              "$ref": "#/definitions/CancelSoftwareUpgradeProposal"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "param_change_proposal": {
+      "description": "AdminProposal defines the struct for various proposals which Neutron's Admin Module may accept.",
+      "oneOf": [
+        {
           "description": "*param_change_proposal** is a parameter change proposal field.",
-          "anyOf": [
-            {
+          "type": "object",
+          "required": [
+            "param_change_proposal"
+          ],
+          "properties": {
+            "param_change_proposal": {
               "$ref": "#/definitions/ParamChangeProposal"
-            },
-            {
-              "type": "null"
             }
-          ]
+          },
+          "additionalProperties": false
         },
-        "software_upgrade_proposal": {
+        {
           "description": "*software_upgrade_proposal** is a software upgrade proposal field.",
-          "anyOf": [
-            {
+          "type": "object",
+          "required": [
+            "software_upgrade_proposal"
+          ],
+          "properties": {
+            "software_upgrade_proposal": {
               "$ref": "#/definitions/SoftwareUpgradeProposal"
-            },
-            {
-              "type": "null"
             }
-          ]
+          },
+          "additionalProperties": false
+        },
+        {
+          "description": "*cancel_software_upgrade_proposal** is a cancel software upgrade proposal field.",
+          "type": "object",
+          "required": [
+            "cancel_software_upgrade_proposal"
+          ],
+          "properties": {
+            "cancel_software_upgrade_proposal": {
+              "$ref": "#/definitions/CancelSoftwareUpgradeProposal"
+            }
+          },
+          "additionalProperties": false
         }
-      }
+      ]
     },
     "Binary": {
       "description": "Binary is a wrapper around Vec<u8> to add base64 de/serialization with serde. It also adds some helper methods to help encode inline.\n\nThis is only needed as serde-json-{core,wasm} has a horrible encoding for Vec<u8>. See also <https://github.com/CosmWasm/cosmwasm/blob/main/docs/MESSAGE_TYPES.md>.",
