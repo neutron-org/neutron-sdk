@@ -253,7 +253,7 @@ impl NeutronMsg {
         proposal: CancelSoftwareUpgradeProposal,
     ) -> Self {
         NeutronMsg::SubmitAdminProposal {
-            admin_proposal: AdminProposal::CancelSoftwareUpgradeProposal(proposal)
+            admin_proposal: AdminProposal::CancelSoftwareUpgradeProposal(proposal),
         }
     }
 }
