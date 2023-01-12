@@ -14,7 +14,5 @@ pub fn query_total_burned_neutrons(
     deps: Deps<InterchainQueries>,
 ) -> NeutronResult<TotalBurnedNeutronsAmountResponse> {
     let query = InterchainQueries::TotalBurnedNeutronsAmount {};
-
-    let res: TotalBurnedNeutronsAmountResponse = deps.querier.query(&query.into())?;
-    Ok(res)
+    Ok(deps.querier.query(&query.into())?)
 }
