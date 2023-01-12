@@ -298,11 +298,11 @@ pub struct MsgIbcTransferResponse {
 #[serde(rename_all = "snake_case")]
 /// AdminProposal defines the struct for various proposals which Neutron's Admin Module may accept.
 pub enum AdminProposal {
-    /// **param_change_proposal** is a parameter change proposal field.
+    /// **ParamChangeProposal** is a parameter change proposal field.
     ParamChangeProposal(ParamChangeProposal),
-    /// **software_upgrade_proposal** is a software upgrade proposal field.
+    /// **SoftwareUpgradeProposal** is a software upgrade proposal field.
     SoftwareUpgradeProposal(SoftwareUpgradeProposal),
-    /// **cancel_software_upgrade_proposal** is a cancel software upgrade proposal field.
+    /// **CancelSoftwareUpgradeProposal** is a cancel software upgrade proposal field.
     CancelSoftwareUpgradeProposal(CancelSoftwareUpgradeProposal),
 }
 
