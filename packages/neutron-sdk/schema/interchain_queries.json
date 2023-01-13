@@ -114,6 +114,19 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "description": "Query total amount of burned neutron fees",
+      "type": "object",
+      "required": [
+        "total_burned_neutrons_amount"
+      ],
+      "properties": {
+        "total_burned_neutrons_amount": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
     }
   ],
   "definitions": {

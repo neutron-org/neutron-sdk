@@ -39,6 +39,9 @@ pub enum InterchainQueries {
         /// **query_id** is an ID registered interchain query
         query_id: u64,
     },
+
+    /// Query total amount of burned neutron fees
+    TotalBurnedNeutronsAmount {},
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
