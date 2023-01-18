@@ -28,17 +28,17 @@ const _PROTOBUF_VERSION_CHECK: () = ::protobuf::VERSION_3_2_0;
 ///  MsgTransferResponse is the modified response type for
 ///  ibc-go MsgTransfer.
 #[derive(PartialEq,Clone,Default,Debug)]
-// @@protoc_insertion_point(message:neutron.interchainadapter.transfer.MsgTransferResponse)
+// @@protoc_insertion_point(message:neutron.transfer.MsgTransferResponse)
 pub struct MsgTransferResponse {
     // message fields
     ///  channel's sequence_id for outgoing ibc packet. Unique per a channel.
-    // @@protoc_insertion_point(field:neutron.interchainadapter.transfer.MsgTransferResponse.sequence_id)
+    // @@protoc_insertion_point(field:neutron.transfer.MsgTransferResponse.sequence_id)
     pub sequence_id: u64,
     ///  channel src channel on neutron side trasaction was submitted from
-    // @@protoc_insertion_point(field:neutron.interchainadapter.transfer.MsgTransferResponse.channel)
+    // @@protoc_insertion_point(field:neutron.transfer.MsgTransferResponse.channel)
     pub channel: ::std::string::String,
     // special fields
-    // @@protoc_insertion_point(special_field:neutron.interchainadapter.transfer.MsgTransferResponse.special_fields)
+    // @@protoc_insertion_point(special_field:neutron.transfer.MsgTransferResponse.special_fields)
     pub special_fields: ::protobuf::SpecialFields,
 }
 
@@ -170,22 +170,21 @@ impl ::protobuf::reflect::ProtobufValue for MsgTransferResponse {
 }
 
 static file_descriptor_proto_data: &'static [u8] = b"\
-    \n\x1atransfer/v1/transfer.proto\x12\"neutron.interchainadapter.transfer\
-    \"P\n\x13MsgTransferResponse\x12\x1f\n\x0bsequence_id\x18\x01\x20\x01(\
-    \x04R\nsequenceId\x12\x18\n\x07channel\x18\x02\x20\x01(\tR\x07channelJ\
-    \xfd\x02\n\x06\x12\x04\0\0\x0b\x01\n\x08\n\x01\x0c\x12\x03\0\0\x12\n\x08\
-    \n\x01\x02\x12\x03\x02\0+\nX\n\x02\x04\0\x12\x04\x06\0\x0b\x01\x1aL\x20M\
-    sgTransferResponse\x20is\x20the\x20modified\x20response\x20type\x20for\n\
-    \x20ibc-go\x20MsgTransfer.\n\n\n\n\x03\x04\0\x01\x12\x03\x06\x08\x1b\nS\
-    \n\x04\x04\0\x02\0\x12\x03\x08\x02\x19\x1aF\x20channel's\x20sequence_id\
-    \x20for\x20outgoing\x20ibc\x20packet.\x20Unique\x20per\x20a\x20channel.\
-    \n\n\x0c\n\x05\x04\0\x02\0\x05\x12\x03\x08\x02\x08\n\x0c\n\x05\x04\0\x02\
-    \0\x01\x12\x03\x08\t\x14\n\x0c\n\x05\x04\0\x02\0\x03\x12\x03\x08\x17\x18\
-    \nP\n\x04\x04\0\x02\x01\x12\x03\n\x02\x15\x1aC\x20channel\x20src\x20chan\
-    nel\x20on\x20neutron\x20side\x20trasaction\x20was\x20submitted\x20from\n\
-    \n\x0c\n\x05\x04\0\x02\x01\x05\x12\x03\n\x02\x08\n\x0c\n\x05\x04\0\x02\
-    \x01\x01\x12\x03\n\t\x10\n\x0c\n\x05\x04\0\x02\x01\x03\x12\x03\n\x13\x14\
-    b\x06proto3\
+    \n\x1atransfer/v1/transfer.proto\x12\x10neutron.transfer\"P\n\x13MsgTran\
+    sferResponse\x12\x1f\n\x0bsequence_id\x18\x01\x20\x01(\x04R\nsequenceId\
+    \x12\x18\n\x07channel\x18\x02\x20\x01(\tR\x07channelJ\xfd\x02\n\x06\x12\
+    \x04\0\0\x0b\x01\n\x08\n\x01\x0c\x12\x03\0\0\x12\n\x08\n\x01\x02\x12\x03\
+    \x02\0\x19\nX\n\x02\x04\0\x12\x04\x06\0\x0b\x01\x1aL\x20MsgTransferRespo\
+    nse\x20is\x20the\x20modified\x20response\x20type\x20for\n\x20ibc-go\x20M\
+    sgTransfer.\n\n\n\n\x03\x04\0\x01\x12\x03\x06\x08\x1b\nS\n\x04\x04\0\x02\
+    \0\x12\x03\x08\x02\x19\x1aF\x20channel's\x20sequence_id\x20for\x20outgoi\
+    ng\x20ibc\x20packet.\x20Unique\x20per\x20a\x20channel.\n\n\x0c\n\x05\x04\
+    \0\x02\0\x05\x12\x03\x08\x02\x08\n\x0c\n\x05\x04\0\x02\0\x01\x12\x03\x08\
+    \t\x14\n\x0c\n\x05\x04\0\x02\0\x03\x12\x03\x08\x17\x18\nP\n\x04\x04\0\
+    \x02\x01\x12\x03\n\x02\x15\x1aC\x20channel\x20src\x20channel\x20on\x20ne\
+    utron\x20side\x20trasaction\x20was\x20submitted\x20from\n\n\x0c\n\x05\
+    \x04\0\x02\x01\x05\x12\x03\n\x02\x08\n\x0c\n\x05\x04\0\x02\x01\x01\x12\
+    \x03\n\t\x10\n\x0c\n\x05\x04\0\x02\x01\x03\x12\x03\n\x13\x14b\x06proto3\
 ";
 
 /// `FileDescriptorProto` object which was a source for this generated file
