@@ -205,6 +205,7 @@ fn execute_delegate(
         recv_fee: vec![],
         ack_fee: vec![CosmosCoin::new(1000u128, "stake")],
         timeout_fee: vec![CosmosCoin::new(1000u128, "stake")],
+        payer: None,
     };
     let (delegator, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
     let delegate_msg = MsgDelegate {
@@ -265,6 +266,7 @@ fn execute_undelegate(
         recv_fee: vec![],
         ack_fee: vec![CosmosCoin::new(1000u128, "stake")],
         timeout_fee: vec![CosmosCoin::new(1000u128, "stake")],
+        payer: None,
     };
     let (delegator, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
     let delegate_msg = MsgUndelegate {

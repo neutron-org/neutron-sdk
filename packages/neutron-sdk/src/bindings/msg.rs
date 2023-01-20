@@ -5,7 +5,7 @@ use crate::{
     NeutronError, NeutronResult,
 };
 
-use cosmwasm_std::{Coin, CosmosMsg, CustomMsg, StdError};
+use cosmwasm_std::{Addr, Coin, CosmosMsg, CustomMsg, StdError};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json_wasm::to_string;
@@ -15,6 +15,7 @@ pub struct IbcFee {
     pub recv_fee: Vec<Coin>,
     pub ack_fee: Vec<Coin>,
     pub timeout_fee: Vec<Coin>,
+    pub payer: Option<Addr>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
