@@ -34,7 +34,7 @@ use serde_json_wasm;
 const MAX_ALLOWED_TRANSFER: u64 = 20000;
 const MAX_ALLOWED_MESSAGES: usize = 20;
 
-const CONTRACT_NAME: &str = concat!("crates.io:neutron-contracts__", env!("CARGO_PKG_NAME"));
+const CONTRACT_NAME: &str = concat!("crates.io:neutron-sdk__", env!("CARGO_PKG_NAME"));
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[cfg_attr(not(feature = "library"), entry_point)]
