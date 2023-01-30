@@ -1,5 +1,6 @@
 use cosmwasm_std::{from_binary, to_vec, Binary, Order, StdResult, Storage};
 use cw_storage_plus::{Item, Map};
+use neutron_sdk::bindings::msg::IbcFee;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -24,6 +25,10 @@ pub const ACKNOWLEDGEMENT_RESULTS: Map<(String, u64), AcknowledgementResult> =
     Map::new("acknowledgement_results");
 
 pub const ERRORS_QUEUE: Map<u32, String> = Map::new("errors_queue");
+
+// contract must pay for relaying of acknowledgements
+// See more info here: https://docs.neutron.org/neutron/feerefunder/overview
+pub const IBC_FEE: Item<IbcFee> = Item::new("ibc_fee");
 
 /// Serves for storing acknowledgement calls for interchain transactions
 #[derive(Serialize, Deserialize, Clone, PartialEq, Eq, JsonSchema, Debug)]

@@ -11,9 +11,13 @@ use neutron_sdk::{
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use crate::state::{
-    read_reply_payload, read_sudo_payload, save_reply_payload, save_sudo_payload,
-    IBC_SUDO_ID_RANGE_END, IBC_SUDO_ID_RANGE_START,
+use crate::state::IBC_FEE;
+use crate::{
+    msg::{ExecuteMsg, InstantiateMsg, MigrateMsg},
+    state::{
+        read_reply_payload, read_sudo_payload, save_reply_payload, save_sudo_payload,
+        IBC_SUDO_ID_RANGE_END, IBC_SUDO_ID_RANGE_START,
+    },
 };
 
 // Default timeout for IbcTransfer is 10000000 blocks
@@ -21,9 +25,6 @@ const DEFAULT_TIMEOUT_HEIGHT: u64 = 10000000;
 
 const CONTRACT_NAME: &str = concat!("crates.io:neutron-contracts__", env!("CARGO_PKG_NAME"));
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-pub struct InstantiateMsg {}
 
 #[entry_point]
 pub fn instantiate(
@@ -34,18 +35,6 @@ pub fn instantiate(
 ) -> StdResult<Response> {
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
     Ok(Response::default())
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub enum ExecuteMsg {
-    Send {
-        channel: String,
-        to: String,
-        denom: String,
-        amount: u128,
-        timeout_height: Option<u64>,
-    },
 }
 
 #[entry_point]
@@ -66,6 +55,12 @@ pub fn execute(
             amount,
             timeout_height,
         } => execute_send(deps, env, channel, to, denom, amount, timeout_height),
+        ExecuteMsg::SetFees {
+            recv_fee,
+            ack_fee,
+            timeout_fee,
+            denom,
+        } => execute_set_fees(deps, recv_fee, ack_fee, timeout_fee, denom),
     }
 }
 
@@ -155,13 +150,7 @@ fn execute_send(
     amount: u128,
     timeout_height: Option<u64>,
 ) -> StdResult<Response<NeutronMsg>> {
-    // contract must pay for relaying of acknowledgements
-    // See more info here: https://docs.neutron.org/neutron/feerefunder/overview
-    let fee = IbcFee {
-        recv_fee: vec![],
-        ack_fee: vec![Coin::new(1000u128, "stake")],
-        timeout_fee: vec![Coin::new(1000u128, "stake")],
-    };
+    let fee = IBC_FEE.load(deps.storage)?;
     let coin1 = coin(amount, denom.clone());
     let msg1 = NeutronMsg::IbcTransfer {
         source_port: "transfer".to_string(),
@@ -214,6 +203,32 @@ fn execute_send(
         .debug(format!("WASMDEBUG: execute_send: sent submsg2: {:?}", submsg2).as_str());
 
     Ok(Response::default().add_submessages(vec![submsg1, submsg2]))
+}
+
+fn execute_set_fees(
+    deps: DepsMut,
+    recv_fee: u128,
+    ack_fee: u128,
+    timeout_fee: u128,
+    denom: String,
+) -> StdResult<Response<NeutronMsg>> {
+    let fee = IbcFee {
+        recv_fee: get_fee_item(denom.clone(), recv_fee),
+        ack_fee: get_fee_item(denom.clone(), ack_fee),
+        timeout_fee: get_fee_item(denom, timeout_fee),
+    };
+
+    IBC_FEE.save(deps.storage, &fee)?;
+
+    Ok(Response::default())
+}
+
+fn get_fee_item(denom: String, amount: u128) -> Vec<Coin> {
+    if amount == 0 {
+        vec![]
+    } else {
+        vec![coin(amount, denom)]
+    }
 }
 
 #[entry_point]
@@ -278,9 +293,6 @@ fn sudo_response(deps: DepsMut, req: RequestPacket, data: Binary) -> StdResult<R
     // at this place we can safely remove the data under (channel_id, seq_id) key
     // but it costs an extra gas, so its on you how to use the storage
 }
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-pub struct MigrateMsg {}
 
 #[entry_point]
 pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
