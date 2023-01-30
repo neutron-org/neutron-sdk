@@ -1,49 +1,84 @@
-BIN=neutrond
-GAIA_BIN=gaiad
+#!/usr/bin/env bash
 
-CONTRACT=../artifacts/neutron_interchain_queries.wasm
+# http://redsymbol.net/articles/unofficial-bash-strict-mode/
+set -euo pipefail
+IFS=$'\n\t'
 
-CHAIN_ID_1=test-1
-CHAIN_ID_2=test-2
+BIN="neutrond"
+GAIA_BIN="gaiad"
+CONTRACT_PATH="../artifacts/neutron_interchain_queries.wasm"
+CHAIN_ID_1="test-1"
+CHAIN_ID_2="test-2"
+NEUTRON_DIR="${NEUTRON_DIR:-../../neutron}"
+HOME_1="${NEUTRON_DIR}/data/test-1/"
+HOME_2="${NEUTRON_DIR}/data/test-2/"
+ADDRESS_1="neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2"
+ADDRESS_2="cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw"
+ADMIN="neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2"
+VALIDATOR="cosmos1qnk2n4nlkpw9xfqntladh74w6ujtulwn7j8za9"
+NEUTRON_NODE="tcp://127.0.0.1:16657"
+GAIA_NODE="tcp://127.0.0.1:26657"
 
-NEUTRON_DIR=${NEUTRON_DIR:-../../neutron}
-HOME_1=${NEUTRON_DIR}/data/test-1/
-HOME_2=${NEUTRON_DIR}/data/test-2/
+code_id="$("$BIN" tx wasm store "$CONTRACT_PATH"                \
+    --from "$ADDRESS_1" --gas 50000000 --chain-id "$CHAIN_ID_1" \
+    --broadcast-mode=block --gas-prices 0.0025untrn -y          \
+    --output json  --keyring-backend=test --home "$HOME_1"      \
+    --node "$NEUTRON_NODE"                                      \
+    | jq -r '.logs[0].events[] | select(.type == "store_code").attributes[] | select(.key == "code_id").value')"
+echo "Code ID: $code_id"
 
-ADDRESS_1=neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2
-ADDRESS_2=cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw
-ADMIN=neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2
+contract_address="$("$BIN" tx wasm instantiate "$code_id" '{}'                 \
+    --from "$ADDRESS_1" --admin "$ADMIN" -y --chain-id "$CHAIN_ID_1"           \
+    --output json --broadcast-mode=block --label "init" --keyring-backend=test \
+    --gas-prices 0.0025untrn --home "$HOME_1" --node "$NEUTRON_NODE"           \
+    | jq -r '.logs[0].events[] | select(.type == "instantiate").attributes[] | select(.key == "_contract_address").value')"
+echo "Contract address: $contract_address"
 
-VAL2=cosmos1qnk2n4nlkpw9xfqntladh74w6ujtulwn7j8za9
+tx_result="$("$BIN" tx bank send "$ADDRESS_1" "$contract_address" 10000000untrn \
+    -y --chain-id "$CHAIN_ID_1" --output json --broadcast-mode=block            \
+    --gas-prices 0.0025untrn --gas 300000 --keyring-backend=test                \
+    --home "$HOME_1" --node "$NEUTRON_NODE")"
+code="$(echo "$tx_result" | jq '.code')"
+if [[ ! "$code" -eq 0 ]]; then
+  echo "Failed to send money to contract: $(echo "$tx_result" | jq '.raw_log')" && exit 1
+fi
+echo "Sent money to contract to pay for deposit"
 
-# Upload the queries contract
-echo "Upload the queries contract"
-RES=$(${BIN} tx wasm store ${CONTRACT} --from ${ADDRESS_1} --gas 50000000  --chain-id ${CHAIN_ID_1} --broadcast-mode=block --gas-prices 0.0025stake  -y --output json  --keyring-backend test --home ${HOME_1} --node tcp://127.0.0.1:16657)
-QUERIES_CONTRACT_CODE_ID=$(echo $RES | jq -r '.logs[0].events[1].attributes[0].value')
-echo $RES
-echo $QUERIES_CONTRACT_CODE_ID
+msg="$(printf '{"register_transfers_query": {
+  "connection_id": "connection-0",
+  "recipient": "%s",
+  "update_period": 5,
+  "min_height": 1
+}}' "$VALIDATOR")"
+tx_result="$("$BIN" tx wasm execute "$contract_address" "$msg"    \
+    --from "$ADDRESS_1" -y --chain-id "$CHAIN_ID_1" --output json \
+    --broadcast-mode=block --gas-prices 0.0025untrn --gas 1000000 \
+    --keyring-backend=test --home "$HOME_1" --node "$NEUTRON_NODE")"
+code="$(echo "$tx_result" | jq '.code')"
+if [[ ! "$code" -eq 0 ]]; then
+  echo "Failed to register ICQ: $(echo "$tx_result" | jq '.raw_log')" && exit 1
+fi
+echo "Registered transfers ICQ"
 
-# Instantiate the queries contract
-echo "Instantiate the queries contract"
-INIT_QUERIES_CONTRACT='{}'
+tx_result="$("$GAIA_BIN" tx bank send "$ADDRESS_2" "$VALIDATOR" 1000stake \
+    --gas 50000000 --gas-adjustment 1.4 --output json -y                  \
+    --gas-prices 0.5stake --broadcast-mode=block --chain-id "$CHAIN_ID_2" \
+    --keyring-backend=test --home "$HOME_2" --node "$GAIA_NODE")"
+code="$(echo "$tx_result" | jq '.code')"
+if [[ ! "$code" -eq 0 ]]; then
+  echo "Failed to transfer funds to trigger TX ICQ: $(echo "$tx_result" | jq '.raw_log')" && exit 1
+fi
+echo "Triggered TX ICQ via transferring funds to watched address"
 
-RES=$(${BIN} tx wasm instantiate $QUERIES_CONTRACT_CODE_ID "$INIT_QUERIES_CONTRACT" --from ${ADDRESS_1} --admin ${ADMIN} -y --chain-id ${CHAIN_ID_1} --output json --broadcast-mode=block --label "init"  --keyring-backend test --gas-prices 0.0025stake --home ${HOME_1} --node tcp://127.0.0.1:16657)
-echo $RES
-QUERIES_CONTRACT_ADDRESS=$(echo $RES | jq -r '.logs[0].events[0].attributes[0].value')
-echo $QUERIES_CONTRACT_ADDRESS
+echo "Waiting 10 seconds for ICQ result to arrive…"
+# shellcheck disable=SC2034
+for i in $(seq 10); do
+  sleep 1
+  echo -n .
+done
+echo " done"
 
-# Send coins from USERNAME_1 to QUERIES_CONTRACT_ADDRESS to perform register_interchain_query message
-echo "Send coins from ${ADDRESS_1} to ${QUERIES_CONTRACT_ADDRESS} to perform register_interchain_query message"
-echo $(${BIN} tx bank send ${ADDRESS_1} ${QUERIES_CONTRACT_ADDRESS} 10000000stake -y --chain-id ${CHAIN_ID_1} --output json --broadcast-mode=block --gas-prices 0.0025stake --gas 300000 --keyring-backend test --home ${HOME_1} --node tcp://127.0.0.1:16657)
-
-# Register a query for Send transactions
-RES=$(${BIN} tx wasm execute $QUERIES_CONTRACT_ADDRESS "{\"register_transfers_query\": {\"connection_id\": \"connection-0\", \"recipient\": \"${VAL2}\", \"update_period\": 5, \"min_height\": 1}}" --from ${ADDRESS_1}  -y --chain-id ${CHAIN_ID_1} --output json --broadcast-mode=block --gas-prices 0.0025stake --gas 1000000 --keyring-backend test --home ${HOME_1} --node tcp://127.0.0.1:16657)
-echo $RES
-
-RES=$(${GAIA_BIN} tx bank send ${ADDRESS_2} ${VAL2} 1000stake --from ${ADDRESS_2} --gas 50000000 --gas-adjustment 1.4 --gas-prices 0.5stake --broadcast-mode block --chain-id ${CHAIN_ID_2} --keyring-backend test --home ${HOME_2} --node tcp://127.0.0.1:26657 -y)
-echo $RES
-
-sleep 5
-
+echo
 echo "TX query response:"
-${BIN} query wasm contract-state smart ${QUERIES_CONTRACT_ADDRESS} "{\"get_recipient_txs\": {\"recipient\": \"${VAL2}\"}}" --node tcp://127.0.0.1:16657
+query="$(printf '{"get_recipient_txs": {"recipient": "%s"}}' "$VALIDATOR")"
+"$BIN" query wasm contract-state smart "$contract_address" "$query" --node "$NEUTRON_NODE" --output json | jq

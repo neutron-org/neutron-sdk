@@ -43,16 +43,16 @@ msg='{"register_bank_total_supply_query":{
   "denoms": ["stake"],
   "update_period": 5
 }}'
-tx_result=$(${BIN} tx wasm execute "$contract_address" "$msg"     \
+tx_result="$("$BIN" tx wasm execute "$contract_address" "$msg"    \
     --from "$ADDRESS_1" -y --chain-id "$CHAIN_ID_1" --output json \
     --broadcast-mode=block --gas-prices 0.0025untrn --gas 1000000 \
-    --keyring-backend=test --home "$HOME_1" --node "$NODE")
+    --keyring-backend=test --home "$HOME_1" --node "$NODE")"
 code="$(echo "$tx_result" | jq '.code')"
 if [[ ! "$code" -eq 0 ]]; then
   echo "Failed to register ICQ: $(echo "$tx_result" | jq '.raw_log')" && exit 1
 fi
-echo "Registered total supply ICQ"
-# TODO: get query ID and use it below
+query_id="$(echo "$tx_result" | jq -r '.logs[0].events[] | select(.type == "neutron").attributes[] | select(.key == "query_id").value')"
+echo "Registered total supply ICQ with query ID: $query_id"
 
 echo "Waiting 10 seconds for ICQ result to arrive…"
 # shellcheck disable=SC2034
@@ -64,5 +64,5 @@ echo " done"
 
 echo
 echo "KV query total supply response:"
-query='{"bank_total_supply": {"query_id": 1}}'
-${BIN} query wasm contract-state smart "$contract_address" "$query" --node "$NODE" --output json | jq
+query="$(printf '{"bank_total_supply": {"query_id": %s}}' "$query_id")"
+"$BIN" query wasm contract-state smart "$contract_address" "$query" --node "$NODE" --output json | jq
