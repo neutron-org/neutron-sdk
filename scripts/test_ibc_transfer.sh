@@ -11,6 +11,7 @@ HOME="$NEUTRON_DIR/data/test-1/"
 KEY="demowallet1"
 ADMIN="neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2"
 BIN="neutrond"
+GAIA_BIN="gaiad"
 NODE="tcp://127.0.0.1:16657"
 
 code_id="$("$BIN" tx wasm store "$CONTRACT_PATH"  \
@@ -69,12 +70,19 @@ code="$(echo "$tx_result" | jq '.code')"
 if [[ ! "$code" -eq 0 ]]; then
   echo "Failed to execute contract: $(echo "$tx_result" | jq '.raw_log')" && exit 1
 fi
-echo "Performed IBC transfer through contract"
-echo "Done!"
 
-# the message above asks contract to send 1000untrn, but this example contract
-# always sends triple the amount of money, hence we advise user to expect 3000untrn
+echo "Waiting 20 seconds for IBC transfer to complete…"
+# shellcheck disable=SC2034
+for i in $(seq 20); do
+  sleep 1
+  echo -n .
+done
+echo " done"
+
 echo
-echo "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs should receive 3000untrn soon"
-echo -n "To check that, you can run "
-echo "'gaiad query bank balances cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs --node tcp://localhost:26657'"
+echo "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs should have 3000untrn now:"
+"$GAIA_BIN" query bank balances "cosmos17dtl0mjt3t77kpuhg2edqzjpszulwhgzuj9ljs" \
+    --node tcp://localhost:26657 --output json | jq '.balances'
+
+echo
+echo "If you see more than 3000untrn, you have already run this test several times before"
