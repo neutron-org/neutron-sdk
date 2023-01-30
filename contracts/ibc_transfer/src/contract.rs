@@ -1,29 +1,32 @@
 use cosmwasm_std::{
-    coin, entry_point, Binary, Coin, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Reply, Response,
+    coin, entry_point, Binary, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Reply, Response,
     StdError, StdResult, SubMsg,
 };
 use cw2::set_contract_version;
-use neutron_sdk::bindings::msg::MsgIbcTransferResponse;
+use neutron_sdk::bindings::query::InterchainQueries;
 use neutron_sdk::{
-    bindings::msg::{IbcFee, NeutronMsg},
+    bindings::msg::{IbcFee, MsgIbcTransferResponse, NeutronMsg},
+    query::min_ibc_fee::query_min_ibc_fee,
     sudo::msg::{RequestPacket, RequestPacketTimeoutHeight, TransferSudoMsg},
+    NeutronResult,
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use crate::state::{
-    read_reply_payload, read_sudo_payload, save_reply_payload, save_sudo_payload,
-    IBC_SUDO_ID_RANGE_END, IBC_SUDO_ID_RANGE_START,
+use crate::{
+    msg::{ExecuteMsg, InstantiateMsg, MigrateMsg},
+    state::{
+        read_reply_payload, read_sudo_payload, save_reply_payload, save_sudo_payload,
+        IBC_SUDO_ID_RANGE_END, IBC_SUDO_ID_RANGE_START,
+    },
 };
 
 // Default timeout for IbcTransfer is 10000000 blocks
 const DEFAULT_TIMEOUT_HEIGHT: u64 = 10000000;
+const FEE_DENOM: &str = "untrn";
 
 const CONTRACT_NAME: &str = concat!("crates.io:neutron-sdk__", env!("CARGO_PKG_NAME"));
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-pub struct InstantiateMsg {}
 
 #[entry_point]
 pub fn instantiate(
@@ -36,25 +39,13 @@ pub fn instantiate(
     Ok(Response::default())
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub enum ExecuteMsg {
-    Send {
-        channel: String,
-        to: String,
-        denom: String,
-        amount: u128,
-        timeout_height: Option<u64>,
-    },
-}
-
 #[entry_point]
 pub fn execute(
-    deps: DepsMut,
+    deps: DepsMut<InterchainQueries>,
     env: Env,
     _: MessageInfo,
     msg: ExecuteMsg,
-) -> StdResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response<NeutronMsg>> {
     match msg {
         // NOTE: this is an example contract that shows how to make IBC transfers!
         // Please add necessary authorization or other protection mechanisms
@@ -105,7 +96,7 @@ pub enum SudoPayload {
 
 // saves payload to process later to the storage and returns a SubmitTX Cosmos SubMsg with necessary reply id
 fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
-    deps: DepsMut,
+    deps: DepsMut<InterchainQueries>,
     msg: C,
     payload: SudoPayload,
 ) -> StdResult<SubMsg<T>> {
@@ -147,21 +138,17 @@ pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> StdResult<Response> {
 }
 
 fn execute_send(
-    mut deps: DepsMut,
+    mut deps: DepsMut<InterchainQueries>,
     env: Env,
     channel: String,
     to: String,
     denom: String,
     amount: u128,
     timeout_height: Option<u64>,
-) -> StdResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response<NeutronMsg>> {
     // contract must pay for relaying of acknowledgements
     // See more info here: https://docs.neutron.org/neutron/feerefunder/overview
-    let fee = IbcFee {
-        recv_fee: vec![],
-        ack_fee: vec![Coin::new(1000u128, "stake")],
-        timeout_fee: vec![Coin::new(1000u128, "stake")],
-    };
+    let fee = min_ntrn_ibc_fee(query_min_ibc_fee(deps.as_ref())?.min_fee);
     let coin1 = coin(amount, denom.clone());
     let msg1 = NeutronMsg::IbcTransfer {
         source_port: "transfer".to_string(),
@@ -279,11 +266,24 @@ fn sudo_response(deps: DepsMut, req: RequestPacket, data: Binary) -> StdResult<R
     // but it costs an extra gas, so its on you how to use the storage
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-pub struct MigrateMsg {}
-
 #[entry_point]
 pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
     deps.api.debug("WASMDEBUG: migrate");
     Ok(Response::default())
+}
+
+fn min_ntrn_ibc_fee(fee: IbcFee) -> IbcFee {
+    IbcFee {
+        recv_fee: fee.recv_fee,
+        ack_fee: fee
+            .ack_fee
+            .into_iter()
+            .filter(|a| a.denom == FEE_DENOM)
+            .collect(),
+        timeout_fee: fee
+            .timeout_fee
+            .into_iter()
+            .filter(|a| a.denom == FEE_DENOM)
+            .collect(),
+    }
 }

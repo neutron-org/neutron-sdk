@@ -161,18 +161,17 @@
       "type": "string"
     },
     "Height": {
-      "description": "Height represents an ibc Height type",
       "type": "object",
       "properties": {
         "revision_height": {
-          "description": "*revision** is a revision of remote chain",
+          "description": "*height** is a height of remote chain",
           "default": 0,
           "type": "integer",
           "format": "uint64",
           "minimum": 0.0
         },
         "revision_number": {
-          "description": "*revision_number** is a height of remote chain",
+          "description": "the revision that the client is currently on",
           "default": 0,
           "type": "integer",
           "format": "uint64",

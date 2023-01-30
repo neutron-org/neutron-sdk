@@ -3,7 +3,7 @@ use std::fs::create_dir_all;
 
 use cosmwasm_schema::{export_schema, remove_schemas, schema_for};
 
-use ibc_transfer::contract::{ExecuteMsg, InstantiateMsg};
+use ibc_transfer::msg::{ExecuteMsg, InstantiateMsg};
 
 fn main() {
     let mut out_dir = current_dir().unwrap();
