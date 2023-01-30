@@ -6,7 +6,7 @@ use cosmos_sdk_proto::cosmos::staking::v1beta1::{
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
     to_binary, Binary, Coin as CosmosCoin, CosmosMsg, CustomQuery, Deps, DepsMut, Env, MessageInfo,
-    Reply, Response, StdError, StdResult, SubMsg, Uint128,
+    Reply, Response, StdError, StdResult, SubMsg,
 };
 use cw2::set_contract_version;
 use prost::Message;
@@ -26,7 +26,7 @@ use neutron_sdk::NeutronResult;
 use crate::storage::{
     add_error_to_queue, read_errors_from_queue, read_reply_payload, read_sudo_payload,
     save_reply_payload, save_sudo_payload, AcknowledgementResult, SudoPayload,
-    ACKNOWLEDGEMENT_RESULTS, IBC_FEE, INTERCHAIN_ACCOUNTS, SUDO_PAYLOAD_REPLY_ID,
+    ACKNOWLEDGEMENT_RESULTS, INTERCHAIN_ACCOUNTS, SUDO_PAYLOAD_REPLY_ID,
 };
 
 // Default timeout for SubmitTX is two weeks
@@ -102,12 +102,6 @@ pub fn execute(
             denom,
             timeout,
         ),
-        ExecuteMsg::SetFees {
-            denom,
-            recv_fee,
-            ack_fee,
-            timeout_fee,
-        } => execute_set_fees(deps, denom, recv_fee, ack_fee, timeout_fee),
     }
 }
 
@@ -205,7 +199,13 @@ fn execute_delegate(
     denom: String,
     timeout: Option<u64>,
 ) -> StdResult<Response<NeutronMsg>> {
-    let fee = IBC_FEE.load(deps.storage)?;
+    // contract must pay for relaying of acknowledgements
+    // See more info here: https://docs.neutron.org/neutron/feerefunder/overview
+    let fee = IbcFee {
+        recv_fee: vec![],
+        ack_fee: vec![CosmosCoin::new(2000u128, "untrn")],
+        timeout_fee: vec![CosmosCoin::new(2000u128, "untrn")],
+    };
     let (delegator, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
     let delegate_msg = MsgDelegate {
         delegator_address: delegator,
@@ -259,7 +259,13 @@ fn execute_undelegate(
     denom: String,
     timeout: Option<u64>,
 ) -> StdResult<Response<NeutronMsg>> {
-    let fee = IBC_FEE.load(deps.storage)?;
+    // contract must pay for relaying of acknowledgements
+    // See more info here: https://docs.neutron.org/neutron/feerefunder/overview
+    let fee = IbcFee {
+        recv_fee: vec![],
+        ack_fee: vec![CosmosCoin::new(2000u128, "untrn")],
+        timeout_fee: vec![CosmosCoin::new(2000u128, "untrn")],
+    };
     let (delegator, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
     let delegate_msg = MsgUndelegate {
         delegator_address: delegator,
@@ -302,31 +308,6 @@ fn execute_undelegate(
     )?;
 
     Ok(Response::default().add_submessages(vec![submsg]))
-}
-
-fn execute_set_fees(
-    deps: DepsMut,
-    denom: String,
-    recv_fee: u128,
-    ack_fee: u128,
-    timeout_fee: u128,
-) -> StdResult<Response<NeutronMsg>> {
-    let fees = IbcFee {
-        recv_fee: vec![CosmosCoin {
-            denom: denom.clone(),
-            amount: Uint128::from(recv_fee),
-        }],
-        ack_fee: vec![CosmosCoin {
-            denom: denom.clone(),
-            amount: Uint128::from(ack_fee),
-        }],
-        timeout_fee: vec![CosmosCoin {
-            denom,
-            amount: Uint128::from(timeout_fee),
-        }],
-    };
-    IBC_FEE.save(deps.storage, &fees)?;
-    Ok(Response::default())
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]

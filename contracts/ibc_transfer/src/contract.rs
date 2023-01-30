@@ -11,7 +11,6 @@ use neutron_sdk::{
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use crate::state::IBC_FEE;
 use crate::{
     msg::{ExecuteMsg, InstantiateMsg, MigrateMsg},
     state::{
@@ -55,12 +54,6 @@ pub fn execute(
             amount,
             timeout_height,
         } => execute_send(deps, env, channel, to, denom, amount, timeout_height),
-        ExecuteMsg::SetFees {
-            recv_fee,
-            ack_fee,
-            timeout_fee,
-            denom,
-        } => execute_set_fees(deps, recv_fee, ack_fee, timeout_fee, denom),
     }
 }
 
@@ -150,7 +143,13 @@ fn execute_send(
     amount: u128,
     timeout_height: Option<u64>,
 ) -> StdResult<Response<NeutronMsg>> {
-    let fee = IBC_FEE.load(deps.storage)?;
+    // contract must pay for relaying of acknowledgements
+    // See more info here: https://docs.neutron.org/neutron/feerefunder/overview
+    let fee = IbcFee {
+        recv_fee: vec![],
+        ack_fee: vec![Coin::new(2000u128, "untrn")],
+        timeout_fee: vec![Coin::new(2000u128, "untrn")],
+    };
     let coin1 = coin(amount, denom.clone());
     let msg1 = NeutronMsg::IbcTransfer {
         source_port: "transfer".to_string(),
@@ -203,32 +202,6 @@ fn execute_send(
         .debug(format!("WASMDEBUG: execute_send: sent submsg2: {:?}", submsg2).as_str());
 
     Ok(Response::default().add_submessages(vec![submsg1, submsg2]))
-}
-
-fn execute_set_fees(
-    deps: DepsMut,
-    recv_fee: u128,
-    ack_fee: u128,
-    timeout_fee: u128,
-    denom: String,
-) -> StdResult<Response<NeutronMsg>> {
-    let fee = IbcFee {
-        recv_fee: get_fee_item(denom.clone(), recv_fee),
-        ack_fee: get_fee_item(denom.clone(), ack_fee),
-        timeout_fee: get_fee_item(denom, timeout_fee),
-    };
-
-    IBC_FEE.save(deps.storage, &fee)?;
-
-    Ok(Response::default())
-}
-
-fn get_fee_item(denom: String, amount: u128) -> Vec<Coin> {
-    if amount == 0 {
-        vec![]
-    } else {
-        vec![coin(amount, denom)]
-    }
 }
 
 #[entry_point]

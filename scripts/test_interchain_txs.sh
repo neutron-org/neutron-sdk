@@ -46,23 +46,6 @@ if [[ ! "$code" -eq 0 ]]; then
 fi
 echo "Sent money to contract to pay fees"
 
-msg='{"set_fees":{
-  "denom": "untrn",
-  "ack_fee": "2000",
-  "recv_fee": "0",
-  "timeout_fee": "2000"
-}}'
-tx_result="$("$BIN" tx wasm execute "$contract_address" "$msg"    \
-    --from "$ADDRESS_1" -y --chain-id "$CHAIN_ID_1" --output json \
-    --broadcast-mode=block --gas-prices 0.0025untrn               \
-    --gas 1000000 --keyring-backend test --home "$HOME_1"         \
-    --node "$NEUTRON_NODE")"
-code="$(echo "$tx_result" | jq '.code')"
-if [[ ! "$code" -eq 0 ]]; then
-  echo "Failed to set fees: $(echo "$tx_result" | jq '.raw_log')" && exit 1
-fi
-echo "Set fees"
-
 msg='{"register":{
   "connection_id": "connection-0",
   "interchain_account_id": "test"
