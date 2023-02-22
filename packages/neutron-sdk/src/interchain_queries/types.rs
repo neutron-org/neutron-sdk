@@ -424,6 +424,11 @@ impl KVReconstruct for Delegations {
         let mut delegations: Vec<cosmwasm_std::Delegation> =
             Vec::with_capacity(storage_values.len() / 2);
 
+        if storage_values.is_empty() {
+            return Err(NeutronError::InvalidQueryResultFormat(
+                "storage_values length is 0".into(),
+            ))
+        }
         // first StorageValue is denom
         if storage_values[0].value.is_empty() {
             // Incoming denom cannot be empty, it should always be configured on chain.
