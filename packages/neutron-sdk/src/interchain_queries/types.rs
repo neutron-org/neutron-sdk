@@ -427,7 +427,7 @@ impl KVReconstruct for Delegations {
         if storage_values.is_empty() {
             return Err(NeutronError::InvalidQueryResultFormat(
                 "storage_values length is 0".into(),
-            ))
+            ));
         }
         // first StorageValue is denom
         if storage_values[0].value.is_empty() {
