@@ -1,3 +1,4 @@
+use std::ops::Deref;
 use crate::errors::error::{NeutronError, NeutronResult};
 use crate::interchain_queries::types::{
     AddressBytes, BALANCES_PREFIX, DELEGATION_KEY, FEE_POOL_KEY, MAX_ADDR_LEN,
@@ -164,8 +165,10 @@ pub fn get_update_time(commission: &Option<ValidatorCommission>) -> Option<u64> 
 
 /// Returns denom for total supply from StorageValue key
 pub fn get_total_supply_denom(denom: &Binary) -> Option<String> {
-    let check_denom =  denom.get(0);
-    if check_denom.is_some() && *check_denom? == SUPPLY_PREFIX {
+    if denom.len() <= 2 {
+        return None
+    }
+    if *denom.get(0)? == SUPPLY_PREFIX {
         // We need to cut off first byte because it contains storage key following by denom.
         return from_utf8(&denom[1..]).ok().map(|d| d.to_string());
     }
