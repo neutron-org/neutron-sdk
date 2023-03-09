@@ -303,7 +303,7 @@ impl NeutronMsg {
         proposal: SudoContractProposal,
     ) -> Self {
         NeutronMsg::SubmitAdminProposal {
-            admin_proposal: AdminProposal::(proposal),
+            admin_proposal: AdminProposal::SudoContractProposal(proposal),
         }
     }
 }
@@ -487,6 +487,6 @@ pub struct SudoContractProposal {
     pub description: String,
     /// **contract**
     pub contract: String,
-    ///
+    /// ***msg***
     pub msg: Binary,
 }
