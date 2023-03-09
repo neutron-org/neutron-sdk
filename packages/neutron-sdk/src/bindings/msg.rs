@@ -5,7 +5,7 @@ use crate::{
     NeutronError, NeutronResult,
 };
 
-use cosmwasm_std::{Coin, CosmosMsg, CustomMsg, StdError, Uint64};
+use cosmwasm_std::{Binary, Coin, CosmosMsg, CustomMsg, StdError, Uint64};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json_wasm::to_string;
@@ -296,6 +296,16 @@ impl NeutronMsg {
             admin_proposal: AdminProposal::ClientUpdateProposal(proposal),
         }
     }
+
+    /// Basic helper to define a parameter change proposal passed to AdminModule:
+    /// * **proposal** is struct which contains proposal that cancels software upgrade.
+    pub fn submit_sudo_contract_proposal(
+        proposal: SudoContractProposal,
+    ) -> Self {
+        NeutronMsg::SubmitAdminProposal {
+            admin_proposal: AdminProposal::(proposal),
+        }
+    }
 }
 
 impl From<NeutronMsg> for CosmosMsg<NeutronMsg> {
@@ -352,6 +362,8 @@ pub enum AdminProposal {
     PinCodesProposal(PinCodesProposal),
     ///
     UnpinCodesProposal(UnpinCodesProposal),
+    ///
+    SudoContractProposal(SudoContractProposal),
 
 }
 
@@ -455,7 +467,7 @@ pub struct PinCodesProposal {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-/// UpgradeProposal defines the struct for  upgrade proposal.
+/// UnpinCodesProposal defines the struct for  upgrade proposal.
 pub struct UnpinCodesProposal {
     /// **title** is a text title of proposal. Non unique.
     pub title: String,
@@ -463,4 +475,18 @@ pub struct UnpinCodesProposal {
     pub description: String,
     /// **subject_client_id**
     pub code_ids: Vec<Uint64>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+/// UpgradeProposal defines the struct for  upgrade proposal.
+pub struct SudoContractProposal {
+    /// **title** is a text title of proposal. Non unique.
+    pub title: String,
+    /// **description** is a text description of proposal. Non unique.
+    pub description: String,
+    /// **contract**
+    pub contract: String,
+    ///
+    pub msg: Binary,
 }
