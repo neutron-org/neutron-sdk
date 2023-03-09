@@ -1,4 +1,3 @@
-use std::ops::Deref;
 use crate::errors::error::{NeutronError, NeutronResult};
 use crate::interchain_queries::types::{
     AddressBytes, BALANCES_PREFIX, DELEGATION_KEY, FEE_POOL_KEY, MAX_ADDR_LEN,
