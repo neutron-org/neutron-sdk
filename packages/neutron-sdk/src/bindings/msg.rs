@@ -259,9 +259,7 @@ impl NeutronMsg {
 
     /// Basic helper to define a parameter change proposal passed to AdminModule:
     /// * **proposal** is struct which contains proposal that cancels software upgrade.
-    pub fn submit_upgrade_proposal(
-        proposal: UpgradeProposal,
-    ) -> Self {
+    pub fn submit_upgrade_proposal(proposal: UpgradeProposal) -> Self {
         NeutronMsg::SubmitAdminProposal {
             admin_proposal: AdminProposal::UpgradeProposal(proposal),
         }
@@ -269,9 +267,7 @@ impl NeutronMsg {
 
     /// Basic helper to define a parameter change proposal passed to AdminModule:
     /// * **proposal** is struct which contains proposal that cancels software upgrade.
-    pub fn submit_pin_codes_proposal(
-        proposal: PinCodesProposal,
-    ) -> Self {
+    pub fn submit_pin_codes_proposal(proposal: PinCodesProposal) -> Self {
         NeutronMsg::SubmitAdminProposal {
             admin_proposal: AdminProposal::PinCodesProposal(proposal),
         }
@@ -279,9 +275,7 @@ impl NeutronMsg {
 
     /// Basic helper to define a parameter change proposal passed to AdminModule:
     /// * **proposal** is struct which contains proposal that cancels software upgrade.
-    pub fn submit_unpin_codes_proposal(
-        proposal: UnpinCodesProposal,
-    ) -> Self {
+    pub fn submit_unpin_codes_proposal(proposal: UnpinCodesProposal) -> Self {
         NeutronMsg::SubmitAdminProposal {
             admin_proposal: AdminProposal::UnpinCodesProposal(proposal),
         }
@@ -289,9 +283,7 @@ impl NeutronMsg {
 
     /// Basic helper to define a parameter change proposal passed to AdminModule:
     /// * **proposal** is struct which contains proposal that cancels software upgrade.
-    pub fn submit_client_update_proposal(
-        proposal: ClientUpdateProposal,
-    ) -> Self {
+    pub fn submit_client_update_proposal(proposal: ClientUpdateProposal) -> Self {
         NeutronMsg::SubmitAdminProposal {
             admin_proposal: AdminProposal::ClientUpdateProposal(proposal),
         }
@@ -299,9 +291,7 @@ impl NeutronMsg {
 
     /// Basic helper to define a parameter change proposal passed to AdminModule:
     /// * **proposal** is struct which contains proposal that cancels software upgrade.
-    pub fn submit_sudo_contract_proposal(
-        proposal: SudoContractProposal,
-    ) -> Self {
+    pub fn submit_sudo_contract_proposal(proposal: SudoContractProposal) -> Self {
         NeutronMsg::SubmitAdminProposal {
             admin_proposal: AdminProposal::SudoContractProposal(proposal),
         }
@@ -364,7 +354,6 @@ pub enum AdminProposal {
     UnpinCodesProposal(UnpinCodesProposal),
     ///
     SudoContractProposal(SudoContractProposal),
-
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -436,7 +425,7 @@ pub struct UpgradeProposal {
     /// **plan** is a plan of upgrade
     pub plan: Plan,
     /// **updated_client_state** TODO
-    pub updated_client_state: ProtobufAny
+    pub updated_client_state: ProtobufAny,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -450,7 +439,7 @@ pub struct ClientUpdateProposal {
     /// **subject_client_id**
     pub subject_client_id: String,
     /// **updated_client_state**
-    pub substitute_client_id: String
+    pub substitute_client_id: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
