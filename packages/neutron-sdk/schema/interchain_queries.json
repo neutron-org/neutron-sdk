@@ -127,6 +127,19 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "description": "Query minimum IBC fee",
+      "type": "object",
+      "required": [
+        "minimum_ibc_fee"
+      ],
+      "properties": {
+        "minimum_ibc_fee": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
     }
   ],
   "definitions": {
