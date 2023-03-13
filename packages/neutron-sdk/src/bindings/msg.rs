@@ -444,8 +444,8 @@ pub struct UpgradeProposal {
     pub description: String,
     /// **plan** is a plan of upgrade.
     pub plan: Plan,
-    /// **updated_client_state** TODO
-    pub updated_client_state: ProtobufAny,
+    /// **upgraded_client_state** TODO
+    pub upgraded_client_state: ProtobufAny,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
