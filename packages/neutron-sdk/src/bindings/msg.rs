@@ -471,7 +471,7 @@ pub struct PinCodesProposal {
     /// **description** is a text description of proposal. Non unique.
     pub description: String,
     /// **subject_client_id**
-    pub code_ids: Vec<Uint64>,
+    pub code_ids: Vec<u64>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -483,7 +483,7 @@ pub struct UnpinCodesProposal {
     /// **description** is a text description of proposal. Non unique.
     pub description: String,
     /// **subject_client_id**
-    pub code_ids: Vec<Uint64>,
+    pub code_ids: Vec<u64>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
