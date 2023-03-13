@@ -258,7 +258,7 @@ impl NeutronMsg {
     }
 
     /// Basic helper to define a parameter change proposal passed to AdminModule:
-    /// * **proposal** is struct which contains proposal that cancels software upgrade.
+    /// * **proposal** is struct which contains proposal that upgrades network.
     pub fn submit_upgrade_proposal(proposal: UpgradeProposal) -> Self {
         NeutronMsg::SubmitAdminProposal {
             admin_proposal: AdminProposal::UpgradeProposal(proposal),
@@ -266,7 +266,7 @@ impl NeutronMsg {
     }
 
     /// Basic helper to define a parameter change proposal passed to AdminModule:
-    /// * **proposal** is struct which contains proposal that cancels software upgrade.
+    /// * **proposal** is struct which contains proposal that pins code ids.
     pub fn submit_pin_codes_proposal(proposal: PinCodesProposal) -> Self {
         NeutronMsg::SubmitAdminProposal {
             admin_proposal: AdminProposal::PinCodesProposal(proposal),
@@ -274,7 +274,7 @@ impl NeutronMsg {
     }
 
     /// Basic helper to define a parameter change proposal passed to AdminModule:
-    /// * **proposal** is struct which contains proposal that cancels software upgrade.
+    /// * **proposal** is struct which contains proposal that unpins codes ids.
     pub fn submit_unpin_codes_proposal(proposal: UnpinCodesProposal) -> Self {
         NeutronMsg::SubmitAdminProposal {
             admin_proposal: AdminProposal::UnpinCodesProposal(proposal),
@@ -290,10 +290,26 @@ impl NeutronMsg {
     }
 
     /// Basic helper to define a parameter change proposal passed to AdminModule:
-    /// * **proposal** is struct which contains proposal that cancels software upgrade.
+    /// * **proposal** is struct which contains proposal that executes sudo on contract.
     pub fn submit_sudo_contract_proposal(proposal: SudoContractProposal) -> Self {
         NeutronMsg::SubmitAdminProposal {
             admin_proposal: AdminProposal::SudoContractProposal(proposal),
+        }
+    }
+
+    /// Basic helper to define a parameter change proposal passed to AdminModule:
+    /// * **proposal** is struct which contains proposal updates admin of contract.
+    pub fn submit_update_admin_proposal(proposal: UpdateAdminProposal) -> Self {
+        NeutronMsg::SubmitAdminProposal {
+            admin_proposal: AdminProposal::UpdateAdminProposal(proposal),
+        }
+    }
+
+    /// Basic helper to define a parameter change proposal passed to AdminModule:
+    /// * **proposal** is struct which contains proposal that clears admin of contract.
+    pub fn submit_clear_admin_proposal(proposal: ClearAdminProposal) -> Self {
+        NeutronMsg::SubmitAdminProposal {
+            admin_proposal: AdminProposal::ClearAdminProposal(proposal),
         }
     }
 }
@@ -354,6 +370,10 @@ pub enum AdminProposal {
     UnpinCodesProposal(UnpinCodesProposal),
     ///
     SudoContractProposal(SudoContractProposal),
+    ///
+    UpdateAdminProposal(UpdateAdminProposal),
+    ///
+    ClearAdminProposal(ClearAdminProposal),
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -422,7 +442,7 @@ pub struct UpgradeProposal {
     pub title: String,
     /// **description** is a text description of proposal. Non unique.
     pub description: String,
-    /// **plan** is a plan of upgrade
+    /// **plan** is a plan of upgrade.
     pub plan: Plan,
     /// **updated_client_state** TODO
     pub updated_client_state: ProtobufAny,
@@ -430,7 +450,7 @@ pub struct UpgradeProposal {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-/// UpgradeProposal defines the struct for  upgrade proposal.
+/// ClientUpdateProposal defines the struct for client update proposal.
 pub struct ClientUpdateProposal {
     /// **title** is a text title of proposal. Non unique.
     pub title: String,
@@ -444,7 +464,7 @@ pub struct ClientUpdateProposal {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-/// UpgradeProposal defines the struct for  upgrade proposal.
+/// PinCodesProposal defines the struct for pin contract codes proposal.
 pub struct PinCodesProposal {
     /// **title** is a text title of proposal. Non unique.
     pub title: String,
@@ -456,7 +476,7 @@ pub struct PinCodesProposal {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-/// UnpinCodesProposal defines the struct for  upgrade proposal.
+/// UnpinCodesProposal defines the struct for unpin contract codes proposal.
 pub struct UnpinCodesProposal {
     /// **title** is a text title of proposal. Non unique.
     pub title: String,
@@ -468,14 +488,41 @@ pub struct UnpinCodesProposal {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-/// UpgradeProposal defines the struct for  upgrade proposal.
+/// SudoContractProposal defines the struct for sudo execution proposal.
 pub struct SudoContractProposal {
     /// **title** is a text title of proposal. Non unique.
     pub title: String,
     /// **description** is a text description of proposal. Non unique.
     pub description: String,
-    /// **contract**
+    /// **contract** is an address of contract to be executed. Unique
     pub contract: String,
-    /// ***msg***
+    /// ***msg*** is a sudo message. Non unique.
     pub msg: Binary,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+/// UpdateAdminProposal defines the struct for  update admin proposal.
+pub struct UpdateAdminProposal {
+    /// **title** is a text title of proposal. Non unique.
+    pub title: String,
+    /// **description** is a text description of proposal. Non unique.
+    pub description: String,
+    /// ***new_admin*** is an address of new admin
+    pub new_admin: String,
+    /// **contract** is an address of contract to update admin. Unique.
+    pub contract: String,
+
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+/// SudoContractProposal defines the struct for clear admin proposal.
+pub struct ClearAdminProposal {
+    /// **title** is a text title of proposal. Non unique.
+    pub title: String,
+    /// **description** is a text description of proposal. Non unique.
+    pub description: String,
+    /// **contract** is a address of contract admin will be removed. Unique
+    pub contract: String,
 }
