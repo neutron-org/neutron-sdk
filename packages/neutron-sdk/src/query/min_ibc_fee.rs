@@ -8,13 +8,11 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub struct MinimumIbcFeeResponse {
+pub struct MinIbcFeeResponse {
     pub min_fee: IbcFee,
 }
 
-pub fn query_minimum_ibc_fee(
-    deps: Deps<InterchainQueries>,
-) -> NeutronResult<MinimumIbcFeeResponse> {
-    let query = InterchainQueries::MinimumIbcFee {};
+pub fn query_min_ibc_fee(deps: Deps<InterchainQueries>) -> NeutronResult<MinIbcFeeResponse> {
+    let query = InterchainQueries::MinIbcFee {};
     Ok(deps.querier.query(&query.into())?)
 }

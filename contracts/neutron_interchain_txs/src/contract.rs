@@ -23,7 +23,7 @@ use neutron_sdk::{
     interchain_txs::helpers::{
         decode_acknowledgement_response, decode_message_response, get_port_id,
     },
-    query::minimum_ibc_fee::query_minimum_ibc_fee,
+    query::min_ibc_fee::query_min_ibc_fee,
     sudo::msg::{RequestPacket, SudoMsg},
     NeutronError, NeutronResult,
 };
@@ -206,7 +206,7 @@ fn execute_delegate(
 ) -> NeutronResult<Response<NeutronMsg>> {
     // contract must pay for relaying of acknowledgements
     // See more info here: https://docs.neutron.org/neutron/feerefunder/overview
-    let fee = query_minimum_ibc_fee(deps.as_ref())?.min_fee;
+    let fee = query_min_ibc_fee(deps.as_ref())?.min_fee;
     let (delegator, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
     let delegate_msg = MsgDelegate {
         delegator_address: delegator,
@@ -265,7 +265,7 @@ fn execute_undelegate(
 ) -> NeutronResult<Response<NeutronMsg>> {
     // contract must pay for relaying of acknowledgements
     // See more info here: https://docs.neutron.org/neutron/feerefunder/overview
-    let fee = query_minimum_ibc_fee(deps.as_ref())?.min_fee;
+    let fee = query_min_ibc_fee(deps.as_ref())?.min_fee;
     let (delegator, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
     let delegate_msg = MsgUndelegate {
         delegator_address: delegator,

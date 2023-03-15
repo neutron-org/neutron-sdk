@@ -44,7 +44,7 @@ pub enum InterchainQueries {
     TotalBurnedNeutronsAmount {},
 
     /// Query minimum IBC fee
-    MinimumIbcFee {},
+    MinIbcFee {},
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
