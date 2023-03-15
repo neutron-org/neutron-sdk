@@ -44,13 +44,25 @@ pub struct RegisteredQuery {
     pub last_submitted_result_local_height: u64,
     /// The remote chain last block height when the query result was updated.
     #[serde(default)]
-    pub last_submitted_result_remote_height: u64,
+    pub last_submitted_result_remote_height: Height,
     /// Amount of coins deposited for the query.
     #[serde(default)]
     pub deposit: Vec<Coin>,
     /// The remote chain last block height when the query result was updated.
     #[serde(default)]
     pub submit_timeout: u64,
+}
+
+/// Height represents an ibc Height type
+#[derive(Default, Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct Height {
+    /// **revision_number** is a height of remote chain
+    pub revision_number: u64,
+
+    #[serde(default)]
+    /// **revision** is a revision of remote chain
+    pub revision_height: u64,
 }
 
 /// InterchainQueryResult is a result data for a registered query
