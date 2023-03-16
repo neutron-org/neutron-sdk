@@ -1,6 +1,7 @@
 use cosmwasm_std::Binary;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use crate::bindings::types::Height;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct RequestPacket {
@@ -41,7 +42,7 @@ pub enum SudoMsg {
     },
     TxQueryResult {
         query_id: u64,
-        height: u64,
+        height: Height,
         data: Binary,
     },
     #[serde(rename = "kv_query_result")]
