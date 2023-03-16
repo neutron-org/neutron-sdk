@@ -51,6 +51,9 @@ pub struct RegisteredQuery {
     /// The remote chain last block height when the query result was updated.
     #[serde(default)]
     pub submit_timeout: u64,
+    /// The local chain height when the query was registered.
+    #[serde(default)]
+    pub registered_at_height: u64,
 }
 
 /// InterchainQueryResult is a result data for a registered query
