@@ -52,16 +52,13 @@ pub struct RegisteredQuery {
     pub submit_timeout: u64,
 }
 
-/// Height represents an ibc Height type
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct Height {
+    /// the revision that the client is currently on
     #[serde(default)]
-    /// **revision_number** is a height of remote chain
     pub revision_number: u64,
-
-    #[serde(default)]
-    /// **revision** is a revision of remote chain
+    /// **height** is a height of remote chain
     pub revision_height: u64,
 }
 
