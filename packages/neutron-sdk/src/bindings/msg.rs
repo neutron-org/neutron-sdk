@@ -512,7 +512,6 @@ pub struct UpdateAdminProposal {
     pub new_admin: String,
     /// **contract** is an address of contract to update admin. Unique.
     pub contract: String,
-
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
