@@ -5,7 +5,7 @@ use crate::{
     NeutronError, NeutronResult,
 };
 
-use cosmwasm_std::{Binary, Coin, CosmosMsg, CustomMsg, StdError, Uint64};
+use cosmwasm_std::{Binary, Coin, CosmosMsg, CustomMsg, StdError};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json_wasm::to_string;
@@ -282,18 +282,10 @@ impl NeutronMsg {
     }
 
     /// Basic helper to define a parameter change proposal passed to AdminModule:
-    /// * **proposal** is struct which contains proposal that cancels software upgrade.
+    /// * **proposal** is struct which contains proposal updates cliient.
     pub fn submit_client_update_proposal(proposal: ClientUpdateProposal) -> Self {
         NeutronMsg::SubmitAdminProposal {
             admin_proposal: AdminProposal::ClientUpdateProposal(proposal),
-        }
-    }
-
-    /// Basic helper to define a parameter change proposal passed to AdminModule:
-    /// * **proposal** is struct which contains proposal that executes sudo on contract.
-    pub fn submit_sudo_contract_proposal(proposal: SudoContractProposal) -> Self {
-        NeutronMsg::SubmitAdminProposal {
-            admin_proposal: AdminProposal::SudoContractProposal(proposal),
         }
     }
 
@@ -444,7 +436,7 @@ pub struct UpgradeProposal {
     pub description: String,
     /// **plan** is a plan of upgrade.
     pub plan: Plan,
-    /// **upgraded_client_state** TODO
+    /// **upgraded_client_state** is an upgraded client state.
     pub upgraded_client_state: ProtobufAny,
 }
 
@@ -456,9 +448,9 @@ pub struct ClientUpdateProposal {
     pub title: String,
     /// **description** is a text description of proposal. Non unique.
     pub description: String,
-    /// **subject_client_id**
+    /// **subject_client_id** is a subject client id.
     pub subject_client_id: String,
-    /// **updated_client_state**
+    /// **substitute_client_id** is a substitute client id.
     pub substitute_client_id: String,
 }
 
@@ -470,7 +462,7 @@ pub struct PinCodesProposal {
     pub title: String,
     /// **description** is a text description of proposal. Non unique.
     pub description: String,
-    /// **subject_client_id**
+    /// **code_ids** is an array of codes to be pined.
     pub code_ids: Vec<u64>,
 }
 
@@ -482,7 +474,7 @@ pub struct UnpinCodesProposal {
     pub title: String,
     /// **description** is a text description of proposal. Non unique.
     pub description: String,
-    /// **subject_client_id**
+    /// **code_ids** is an array of codes to be unpined.
     pub code_ids: Vec<u64>,
 }
 
