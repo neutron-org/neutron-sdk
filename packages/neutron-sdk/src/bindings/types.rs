@@ -43,6 +43,7 @@ pub struct RegisteredQuery {
     #[serde(default)]
     pub last_submitted_result_local_height: u64,
     /// The remote chain last block height when the query result was updated.
+    #[serde(default)]
     pub last_submitted_result_remote_height: Height,
     /// Amount of coins deposited for the query.
     #[serde(default)]
@@ -52,13 +53,14 @@ pub struct RegisteredQuery {
     pub submit_timeout: u64,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[derive(Default, Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct Height {
     /// the revision that the client is currently on
     #[serde(default)]
     pub revision_number: u64,
     /// **height** is a height of remote chain
+    #[serde(default)]
     pub revision_height: u64,
 }
 
