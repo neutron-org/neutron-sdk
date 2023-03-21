@@ -14,6 +14,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
+use neutron_sdk::bindings::msg::IbcFee;
 use neutron_sdk::{
     bindings::{
         msg::{MsgSubmitTxResponse, NeutronMsg},
@@ -36,6 +37,7 @@ use crate::storage::{
 
 // Default timeout for SubmitTX is two weeks
 const DEFAULT_TIMEOUT_SECONDS: u64 = 60 * 60 * 24 * 7 * 2;
+const FEE_DENOM: &str = "untrn";
 
 const CONTRACT_NAME: &str = concat!("crates.io:neutron-sdk__", env!("CARGO_PKG_NAME"));
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -206,7 +208,7 @@ fn execute_delegate(
 ) -> NeutronResult<Response<NeutronMsg>> {
     // contract must pay for relaying of acknowledgements
     // See more info here: https://docs.neutron.org/neutron/feerefunder/overview
-    let fee = query_min_ibc_fee(deps.as_ref())?.min_fee;
+    let fee = min_ntrn_ibc_fee(query_min_ibc_fee(deps.as_ref())?.min_fee);
     let (delegator, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
     let delegate_msg = MsgDelegate {
         delegator_address: delegator,
@@ -265,7 +267,7 @@ fn execute_undelegate(
 ) -> NeutronResult<Response<NeutronMsg>> {
     // contract must pay for relaying of acknowledgements
     // See more info here: https://docs.neutron.org/neutron/feerefunder/overview
-    let fee = query_min_ibc_fee(deps.as_ref())?.min_fee;
+    let fee = min_ntrn_ibc_fee(query_min_ibc_fee(deps.as_ref())?.min_fee);
     let (delegator, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
     let delegate_msg = MsgUndelegate {
         delegator_address: delegator,
@@ -640,5 +642,21 @@ pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> StdResult<Response> {
             "unsupported reply message id {}",
             msg.id
         ))),
+    }
+}
+
+fn min_ntrn_ibc_fee(fee: IbcFee) -> IbcFee {
+    IbcFee {
+        recv_fee: fee.recv_fee,
+        ack_fee: fee
+            .ack_fee
+            .into_iter()
+            .filter(|a| a.denom == FEE_DENOM)
+            .collect(),
+        timeout_fee: fee
+            .timeout_fee
+            .into_iter()
+            .filter(|a| a.denom == FEE_DENOM)
+            .collect(),
     }
 }
