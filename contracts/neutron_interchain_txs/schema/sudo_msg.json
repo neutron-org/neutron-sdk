@@ -120,9 +120,7 @@
               "$ref": "#/definitions/Binary"
             },
             "height": {
-              "type": "integer",
-              "format": "uint64",
-              "minimum": 0.0
+              "$ref": "#/definitions/Height"
             },
             "query_id": {
               "type": "integer",
@@ -161,6 +159,26 @@
     "Binary": {
       "description": "Binary is a wrapper around Vec<u8> to add base64 de/serialization with serde. It also adds some helper methods to help encode inline.\n\nThis is only needed as serde-json-{core,wasm} has a horrible encoding for Vec<u8>. See also <https://github.com/CosmWasm/cosmwasm/blob/main/docs/MESSAGE_TYPES.md>.",
       "type": "string"
+    },
+    "Height": {
+      "description": "Height represents an ibc Height type",
+      "type": "object",
+      "properties": {
+        "revision_height": {
+          "description": "*revision** is a revision of remote chain",
+          "default": 0,
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        },
+        "revision_number": {
+          "description": "*revision_number** is a height of remote chain",
+          "default": 0,
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        }
+      }
     },
     "RequestPacket": {
       "type": "object",
