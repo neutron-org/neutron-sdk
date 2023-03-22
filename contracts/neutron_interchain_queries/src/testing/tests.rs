@@ -21,7 +21,7 @@ use neutron_sdk::bindings::query::{
     InterchainQueries, QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse,
 };
 use neutron_sdk::bindings::types::{
-    decode_hex, InterchainQueryResult, KVKey, KVKeys, RegisteredQuery, StorageValue,
+    decode_hex, Height, InterchainQueryResult, KVKey, KVKeys, RegisteredQuery, StorageValue,
 };
 use neutron_sdk::interchain_queries::helpers::{
     create_account_denom_balance_key, create_fee_pool_key, create_gov_proposal_key,
@@ -62,12 +62,16 @@ fn build_registered_query_response(
             connection_id: "".to_string(),
             update_period: 0,
             last_submitted_result_local_height,
-            last_submitted_result_remote_height: 0,
+            last_submitted_result_remote_height: Height {
+                revision_number: 0,
+                revision_height: 0,
+            },
             deposit: Vec::from([Coin {
                 denom: "stake".to_string(),
                 amount: Uint128::from_str("100").unwrap(),
             }]),
             submit_timeout: 0,
+            registered_at_height: 0,
         },
     };
     match param {
@@ -705,7 +709,17 @@ fn test_sudo_tx_query_result_callback() {
     // simulate neutron's SudoTxQueryResult call with the following payload:
     // a sending from neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf to watched_addr of 10000 stake
     let data: Binary = Binary::from(base64::decode("CpMBCpABChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEnAKLm5ldXRyb24xMGg5c3RjNXY2bnRnZXlnZjV4Zjk0NW5qcXE1aDMycjU0cmY3a2YSLm5ldXRyb24xZmo2eXFya3B3NmZtcDdmN2poajU3ZHVqZnB3YWw0bTI1ZGFmengaDgoFc3Rha2USBTEwMDAwEmcKUApGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQJPYibh+Zef13ZkulPqI27rV5xswZ0H/vh1Tnymp1RHPhIECgIIARgAEhMKDQoFc3Rha2USBDEwMDAQwJoMGkAIiXNJXmA57KhyaWpKcLLr3602A5+hlvv/b4PgcDDm9y0qikC+biNZXin1dEMpHOvX9DwOWJ9utv6EKljiSyfT").unwrap());
-    sudo_tx_query_result(deps.as_mut(), env.clone(), query_id, height, data).unwrap();
+    sudo_tx_query_result(
+        deps.as_mut(),
+        env.clone(),
+        query_id,
+        Height {
+            revision_number: 0,
+            revision_height: height,
+        },
+        data,
+    )
+    .unwrap();
 
     // ensure the callback has worked and contract's state has changed
     let txs = RECIPIENT_TXS.load(&deps.storage, &watched_addr).unwrap();
@@ -722,7 +736,16 @@ fn test_sudo_tx_query_result_callback() {
     // simulate neutron's SudoTxQueryResult call with the following payload:
     // a sending from neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf to another addr of 10000 stake
     let data: Binary = Binary::from(base64::decode("CpMBCpABChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEnAKLm5ldXRyb24xMGg5c3RjNXY2bnRnZXlnZjV4Zjk0NW5qcXE1aDMycjU0cmY3a2YSLm5ldXRyb24xNHV4dnUyMmxocmF6eXhhZGFxdjVkNmxzd3UwcDI3NmxsN2hya2waDgoFc3Rha2USBTEwMDAwEmcKUApGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQJPYibh+Zef13ZkulPqI27rV5xswZ0H/vh1Tnymp1RHPhIECgIIARgAEhMKDQoFc3Rha2USBDEwMDAQwJoMGkBEv2CW/0gIrankNl4aGs9LXy2BKA6kAWyl4MUxmXnbnjRpgaNbQIyo4i7nUgVsuOpqzAdudM2M53OSU0Dmo5tF").unwrap());
-    let res = sudo_tx_query_result(deps.as_mut(), env.clone(), query_id, height, data);
+    let res = sudo_tx_query_result(
+        deps.as_mut(),
+        env.clone(),
+        query_id,
+        Height {
+            revision_number: 0,
+            revision_height: height,
+        },
+        data,
+    );
 
     // ensure the callback has returned an error and contract's state hasn't changed
     assert_eq!(
@@ -745,7 +768,17 @@ fn test_sudo_tx_query_result_callback() {
     // simulate neutron's SudoTxQueryResult call with the following payload:
     // a sending from neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf to watched_addr of 10000 stake
     let data: Binary = Binary::from(base64::decode("CpMBCpABChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEnAKLm5ldXRyb24xMGg5c3RjNXY2bnRnZXlnZjV4Zjk0NW5qcXE1aDMycjU0cmY3a2YSLm5ldXRyb24xZmo2eXFya3B3NmZtcDdmN2poajU3ZHVqZnB3YWw0bTI1ZGFmengaDgoFc3Rha2USBTEwMDAwEmcKUApGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQJPYibh+Zef13ZkulPqI27rV5xswZ0H/vh1Tnymp1RHPhIECgIIARgAEhMKDQoFc3Rha2USBDEwMDAQwJoMGkAIiXNJXmA57KhyaWpKcLLr3602A5+hlvv/b4PgcDDm9y0qikC+biNZXin1dEMpHOvX9DwOWJ9utv6EKljiSyfT").unwrap());
-    sudo_tx_query_result(deps.as_mut(), env, query_id, height, data).unwrap();
+    sudo_tx_query_result(
+        deps.as_mut(),
+        env,
+        query_id,
+        Height {
+            revision_number: 0,
+            revision_height: height,
+        },
+        data,
+    )
+    .unwrap();
 
     // ensure the callback has worked and contract's state has changed again
     let txs = RECIPIENT_TXS.load(&deps.storage, &watched_addr).unwrap();
@@ -800,7 +833,17 @@ fn test_sudo_tx_query_result_min_height_callback() {
     // simulate neutron's SudoTxQueryResult call with the following payload:
     // a sending from neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf to watched_addr of 10000 stake
     let data: Binary = Binary::from(base64::decode("CpMBCpABChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEnAKLm5ldXRyb24xMGg5c3RjNXY2bnRnZXlnZjV4Zjk0NW5qcXE1aDMycjU0cmY3a2YSLm5ldXRyb24xZmo2eXFya3B3NmZtcDdmN2poajU3ZHVqZnB3YWw0bTI1ZGFmengaDgoFc3Rha2USBTEwMDAwEmcKUApGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQJPYibh+Zef13ZkulPqI27rV5xswZ0H/vh1Tnymp1RHPhIECgIIARgAEhMKDQoFc3Rha2USBDEwMDAQwJoMGkAIiXNJXmA57KhyaWpKcLLr3602A5+hlvv/b4PgcDDm9y0qikC+biNZXin1dEMpHOvX9DwOWJ9utv6EKljiSyfT").unwrap());
-    sudo_tx_query_result(deps.as_mut(), env.clone(), query_id, height, data).unwrap();
+    sudo_tx_query_result(
+        deps.as_mut(),
+        env.clone(),
+        query_id,
+        Height {
+            revision_number: 0,
+            revision_height: height,
+        },
+        data,
+    )
+    .unwrap();
 
     // ensure the callback has worked and contract's state has changed
     let txs = RECIPIENT_TXS.load(&deps.storage, &watched_addr).unwrap();
@@ -817,7 +860,16 @@ fn test_sudo_tx_query_result_min_height_callback() {
     // simulate neutron's SudoTxQueryResult call with the following payload:
     // a sending from neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf to another addr of 10000 stake
     let data: Binary = Binary::from(base64::decode("CpMBCpABChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEnAKLm5ldXRyb24xMGg5c3RjNXY2bnRnZXlnZjV4Zjk0NW5qcXE1aDMycjU0cmY3a2YSLm5ldXRyb24xNHV4dnUyMmxocmF6eXhhZGFxdjVkNmxzd3UwcDI3NmxsN2hya2waDgoFc3Rha2USBTEwMDAwEmcKUApGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQJPYibh+Zef13ZkulPqI27rV5xswZ0H/vh1Tnymp1RHPhIECgIIARgAEhMKDQoFc3Rha2USBDEwMDAQwJoMGkBEv2CW/0gIrankNl4aGs9LXy2BKA6kAWyl4MUxmXnbnjRpgaNbQIyo4i7nUgVsuOpqzAdudM2M53OSU0Dmo5tF").unwrap());
-    let res = sudo_tx_query_result(deps.as_mut(), env.clone(), query_id, height, data);
+    let res = sudo_tx_query_result(
+        deps.as_mut(),
+        env.clone(),
+        query_id,
+        Height {
+            revision_number: 0,
+            revision_height: height,
+        },
+        data,
+    );
 
     // ensure the callback has returned an error and contract's state hasn't changed
     assert_eq!(
@@ -840,7 +892,17 @@ fn test_sudo_tx_query_result_min_height_callback() {
     // simulate neutron's SudoTxQueryResult call with the following payload:
     // a sending from neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf to watched_addr of 10000 stake
     let data: Binary = Binary::from(base64::decode("CpMBCpABChwvY29zbW9zLmJhbmsudjFiZXRhMS5Nc2dTZW5kEnAKLm5ldXRyb24xMGg5c3RjNXY2bnRnZXlnZjV4Zjk0NW5qcXE1aDMycjU0cmY3a2YSLm5ldXRyb24xZmo2eXFya3B3NmZtcDdmN2poajU3ZHVqZnB3YWw0bTI1ZGFmengaDgoFc3Rha2USBTEwMDAwEmcKUApGCh8vY29zbW9zLmNyeXB0by5zZWNwMjU2azEuUHViS2V5EiMKIQJPYibh+Zef13ZkulPqI27rV5xswZ0H/vh1Tnymp1RHPhIECgIIARgAEhMKDQoFc3Rha2USBDEwMDAQwJoMGkAIiXNJXmA57KhyaWpKcLLr3602A5+hlvv/b4PgcDDm9y0qikC+biNZXin1dEMpHOvX9DwOWJ9utv6EKljiSyfT").unwrap());
-    sudo_tx_query_result(deps.as_mut(), env, query_id, height, data).unwrap();
+    sudo_tx_query_result(
+        deps.as_mut(),
+        env,
+        query_id,
+        Height {
+            revision_number: 0,
+            revision_height: height,
+        },
+        data,
+    )
+    .unwrap();
 
     // ensure the callback has worked and contract's state has changed again
     let txs = RECIPIENT_TXS.load(&deps.storage, &watched_addr).unwrap();

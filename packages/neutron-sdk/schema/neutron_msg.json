@@ -285,7 +285,7 @@
       "description": "AdminProposal defines the struct for various proposals which Neutron's Admin Module may accept.",
       "oneOf": [
         {
-          "description": "*param_change_proposal** is a parameter change proposal field.",
+          "description": "*ParamChangeProposal** is a parameter change proposal field.",
           "type": "object",
           "required": [
             "param_change_proposal"
@@ -298,7 +298,7 @@
           "additionalProperties": false
         },
         {
-          "description": "*software_upgrade_proposal** is a software upgrade proposal field.",
+          "description": "*SoftwareUpgradeProposal** is a software upgrade proposal field.",
           "type": "object",
           "required": [
             "software_upgrade_proposal"
@@ -311,7 +311,7 @@
           "additionalProperties": false
         },
         {
-          "description": "*cancel_software_upgrade_proposal** is a cancel software upgrade proposal field.",
+          "description": "*CancelSoftwareUpgradeProposal** is a cancel software upgrade proposal field.",
           "type": "object",
           "required": [
             "cancel_software_upgrade_proposal"
@@ -363,6 +363,7 @@
       }
     },
     "IbcFee": {
+      "description": "IbcFee defines struct for fees that refund the relayer for `SudoMsg` messages submission. Unused fee kind will be returned back to message sender. Please refer to these links for more information: IBC transaction structure - https://docs.neutron.org/neutron/interchain-txs/messages/#msgsubmittx General mechanics of fee payments - https://docs.neutron.org/neutron/feerefunder/overview/#general-mechanics",
       "type": "object",
       "required": [
         "ack_fee",
@@ -371,18 +372,21 @@
       ],
       "properties": {
         "ack_fee": {
+          "description": "*ack_fee** is an amount of coins to refund relayer for submitting ack message for a particular IBC packet.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/Coin"
           }
         },
         "recv_fee": {
+          "description": "**recv_fee** currently is used for compatibility with ICS-29 interface only and must be set to zero (i.e. 0untrn), because Neutron's fee module can't refund relayer for submission of Recv IBC packets due to compatibility with target chains.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/Coin"
           }
         },
         "timeout_fee": {
+          "description": "*timeout_fee** amount of coins to refund relayer for submitting timeout message for a particular IBC packet.",
           "type": "array",
           "items": {
             "$ref": "#/definitions/Coin"

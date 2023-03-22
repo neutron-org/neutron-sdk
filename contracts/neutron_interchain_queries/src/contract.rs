@@ -10,7 +10,7 @@ use crate::msg::{ExecuteMsg, GetRecipientTxsResponse, InstantiateMsg, MigrateMsg
 use crate::state::{Transfer, RECIPIENT_TXS, TRANSFERS};
 use neutron_sdk::bindings::msg::NeutronMsg;
 use neutron_sdk::bindings::query::{InterchainQueries, QueryRegisteredQueryResponse};
-use neutron_sdk::bindings::types::KVKey;
+use neutron_sdk::bindings::types::{Height, KVKey};
 use neutron_sdk::interchain_queries::queries::{
     get_registered_query, query_balance, query_bank_total, query_delegations,
     query_distribution_fee_pool, query_government_proposals, query_staking_validators,
@@ -34,7 +34,7 @@ use serde_json_wasm;
 const MAX_ALLOWED_TRANSFER: u64 = 20000;
 const MAX_ALLOWED_MESSAGES: usize = 20;
 
-const CONTRACT_NAME: &str = concat!("crates.io:neutron-contracts__", env!("CARGO_PKG_NAME"));
+const CONTRACT_NAME: &str = concat!("crates.io:neutron-sdk__", env!("CARGO_PKG_NAME"));
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -268,7 +268,7 @@ pub fn sudo_tx_query_result(
     deps: DepsMut<InterchainQueries>,
     _env: Env,
     query_id: u64,
-    _height: u64,
+    _height: Height,
     data: Binary,
 ) -> NeutronResult<Response> {
     // Decode the transaction data
