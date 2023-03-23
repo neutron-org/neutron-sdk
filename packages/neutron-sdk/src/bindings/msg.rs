@@ -11,9 +11,18 @@ use serde::{Deserialize, Serialize};
 use serde_json_wasm::to_string;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+/// IbcFee defines struct for fees that refund the relayer for `SudoMsg` messages submission.
+/// Unused fee kind will be returned back to message sender.
+/// Please refer to these links for more information:
+/// IBC transaction structure - https://docs.neutron.org/neutron/interchain-txs/messages/#msgsubmittx
+/// General mechanics of fee payments - https://docs.neutron.org/neutron/feerefunder/overview/#general-mechanics
 pub struct IbcFee {
+    /// **recv_fee** currently is used for compatibility with ICS-29 interface only and must be set to zero (i.e. 0untrn),
+    /// because Neutron's fee module can't refund relayer for submission of Recv IBC packets due to compatibility with target chains.
     pub recv_fee: Vec<Coin>,
+    /// **ack_fee** is an amount of coins to refund relayer for submitting ack message for a particular IBC packet.
     pub ack_fee: Vec<Coin>,
+    /// **timeout_fee** amount of coins to refund relayer for submitting timeout message for a particular IBC packet.
     pub timeout_fee: Vec<Coin>,
 }
 
@@ -108,6 +117,8 @@ pub enum NeutronMsg {
         // Timeout timestamp in absolute nanoseconds since unix epoch.
         // The timeout is disabled when set to 0.
         timeout_timestamp: u64,
+        // Fees to refund relayer for different kinds of `SudoMsg` transmission
+        // Unused fee types will be returned to msg sender.
         fee: IbcFee,
     },
     /// SubmitAdminProposal sends a proposal to neutron's Admin module.
@@ -135,6 +146,7 @@ impl NeutronMsg {
     /// * **msgs** is a list of protobuf encoded Cosmos-SDK messages you want to execute on remote chain;
     /// * **memo** is a memo you want to attach to your interchain transaction. It behaves like a memo in usual Cosmos transaction;
     /// * **timeout** is a timeout in seconds after which the packet times out.
+    /// * **fee** is a fee that is used for different kinds of callbacks. Unused fee types will be returned to msg sender.
     pub fn submit_tx(
         connection_id: String,
         interchain_account_id: String,

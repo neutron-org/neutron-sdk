@@ -285,7 +285,7 @@
       "description": "AdminProposal defines the struct for various proposals which Neutron's Admin Module may accept.",
       "oneOf": [
         {
-          "description": "*param_change_proposal** is a parameter change proposal field.",
+          "description": "*ParamChangeProposal** is a parameter change proposal field.",
           "type": "object",
           "required": [
             "param_change_proposal"
@@ -298,7 +298,7 @@
           "additionalProperties": false
         },
         {
-          "description": "*software_upgrade_proposal** is a software upgrade proposal field.",
+          "description": "*SoftwareUpgradeProposal** is a software upgrade proposal field.",
           "type": "object",
           "required": [
             "software_upgrade_proposal"
@@ -311,7 +311,7 @@
           "additionalProperties": false
         },
         {
-          "description": "*cancel_software_upgrade_proposal** is a cancel software upgrade proposal field.",
+          "description": "*CancelSoftwareUpgradeProposal** is a cancel software upgrade proposal field.",
           "type": "object",
           "required": [
             "cancel_software_upgrade_proposal"
