@@ -358,25 +358,15 @@ pub struct MsgIbcTransferResponse {
 #[serde(rename_all = "snake_case")]
 /// AdminProposal defines the struct for various proposals which Neutron's Admin Module may accept.
 pub enum AdminProposal {
-    /// **ParamChangeProposal** is a parameter change proposal field.
     ParamChangeProposal(ParamChangeProposal),
-    /// **SoftwareUpgradeProposal** is a software upgrade proposal field.
     SoftwareUpgradeProposal(SoftwareUpgradeProposal),
-    /// **CancelSoftwareUpgradeProposal** is a cancel software upgrade proposal field.
     CancelSoftwareUpgradeProposal(CancelSoftwareUpgradeProposal),
-    ///
     UpgradeProposal(UpgradeProposal),
-    ///
     ClientUpdateProposal(ClientUpdateProposal),
-    ///
     PinCodesProposal(PinCodesProposal),
-    ///
     UnpinCodesProposal(UnpinCodesProposal),
-    ///
     SudoContractProposal(SudoContractProposal),
-    ///
     UpdateAdminProposal(UpdateAdminProposal),
-    ///
     ClearAdminProposal(ClearAdminProposal),
 }
 
@@ -442,9 +432,9 @@ pub struct Plan {
 #[serde(rename_all = "snake_case")]
 /// UpgradeProposal defines the struct for  upgrade proposal.
 pub struct UpgradeProposal {
-    /// **title** is a text title of proposal. Non unique.
+    /// **title** is a text title of proposal.
     pub title: String,
-    /// **description** is a text description of proposal. Non unique.
+    /// **description** is a text description of proposal.
     pub description: String,
     /// **plan** is a plan of upgrade.
     pub plan: Plan,
@@ -456,7 +446,7 @@ pub struct UpgradeProposal {
 #[serde(rename_all = "snake_case")]
 /// ClientUpdateProposal defines the struct for client update proposal.
 pub struct ClientUpdateProposal {
-    /// **title** is a text title of proposal. Non unique.
+    /// **title** is a text title of proposal.
     pub title: String,
     /// **description** is a text description of proposal. Non unique.
     pub description: String,
@@ -470,9 +460,9 @@ pub struct ClientUpdateProposal {
 #[serde(rename_all = "snake_case")]
 /// PinCodesProposal defines the struct for pin contract codes proposal.
 pub struct PinCodesProposal {
-    /// **title** is a text title of proposal. Non unique.
+    /// **title** is a text title of proposal.
     pub title: String,
-    /// **description** is a text description of proposal. Non unique.
+    /// **description** is a text description of proposal.
     pub description: String,
     /// **code_ids** is an array of codes to be pined.
     pub code_ids: Vec<u64>,
@@ -482,9 +472,9 @@ pub struct PinCodesProposal {
 #[serde(rename_all = "snake_case")]
 /// UnpinCodesProposal defines the struct for unpin contract codes proposal.
 pub struct UnpinCodesProposal {
-    /// **title** is a text title of proposal. Non unique.
+    /// **title** is a text title of proposal.
     pub title: String,
-    /// **description** is a text description of proposal. Non unique.
+    /// **description** is a text description of proposal.
     pub description: String,
     /// **code_ids** is an array of codes to be unpined.
     pub code_ids: Vec<u64>,
@@ -494,13 +484,13 @@ pub struct UnpinCodesProposal {
 #[serde(rename_all = "snake_case")]
 /// SudoContractProposal defines the struct for sudo execution proposal.
 pub struct SudoContractProposal {
-    /// **title** is a text title of proposal. Non unique.
+    /// **title** is a text title of proposal.
     pub title: String,
-    /// **description** is a text description of proposal. Non unique.
+    /// **description** is a text description of proposal.
     pub description: String,
-    /// **contract** is an address of contract to be executed. Unique
+    /// **contract** is an address of contract to be executed.
     pub contract: String,
-    /// ***msg*** is a sudo message. Non unique.
+    /// ***msg*** is a sudo message.
     pub msg: Binary,
 }
 
@@ -508,13 +498,13 @@ pub struct SudoContractProposal {
 #[serde(rename_all = "snake_case")]
 /// UpdateAdminProposal defines the struct for  update admin proposal.
 pub struct UpdateAdminProposal {
-    /// **title** is a text title of proposal. Non unique.
+    /// **title** is a text title of proposal.
     pub title: String,
-    /// **description** is a text description of proposal. Non unique.
+    /// **description** is a text description of proposal.
     pub description: String,
     /// ***new_admin*** is an address of new admin
     pub new_admin: String,
-    /// **contract** is an address of contract to update admin. Unique.
+    /// **contract** is an address of contract to update admin.
     pub contract: String,
 }
 
@@ -522,10 +512,10 @@ pub struct UpdateAdminProposal {
 #[serde(rename_all = "snake_case")]
 /// SudoContractProposal defines the struct for clear admin proposal.
 pub struct ClearAdminProposal {
-    /// **title** is a text title of proposal. Non unique.
+    /// **title** is a text title of proposal.
     pub title: String,
-    /// **description** is a text description of proposal. Non unique.
+    /// **description** is a text description of proposal.
     pub description: String,
-    /// **contract** is a address of contract admin will be removed. Unique
+    /// **contract** is a address of contract admin will be removed.
     pub contract: String,
 }
