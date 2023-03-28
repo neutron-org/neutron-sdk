@@ -138,6 +138,7 @@ pub enum NeutronMsg {
         msgs: Vec<MsgExecuteContract>,
     },
     /// RemoveSchedule removes the schedule with a given `name`.
+    /// [Permissioned - DAO or Security DAO only]
     RemoveSchedule { name: String },
 }
 

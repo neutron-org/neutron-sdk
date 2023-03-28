@@ -317,7 +317,7 @@
       "additionalProperties": false
     },
     {
-      "description": "RemoveSchedule removes the schedule with a given `name`.",
+      "description": "RemoveSchedule removes the schedule with a given `name`. [Permissioned - DAO or Security DAO only]",
       "type": "object",
       "required": [
         "remove_schedule"
@@ -494,6 +494,7 @@
           }
         },
         "msg": {
+          "description": "string msg to call the contract (not base64 encoded)",
           "type": "string"
         },
         "sender": {
