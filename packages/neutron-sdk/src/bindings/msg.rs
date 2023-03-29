@@ -540,7 +540,7 @@ pub struct ClearAdminProposal {
     pub title: String,
     /// **description** is a text description of proposal.
     pub description: String,
-    /// **contract** is a address of contract admin will be removed.
+    /// **contract** is an address of contract admin will be removed.
     pub contract: String,
 }
 
@@ -548,10 +548,14 @@ pub struct ClearAdminProposal {
 #[serde(rename_all = "snake_case")]
 /// MsgExecuteContract defines a call to the contract execution
 pub struct MsgExecuteContract {
-    // TODO: descriptions
+    /// **sender** is a sender of a message.
+    /// Note that in the case of schedule sender is not really a msg caller.
     pub sender: String,
+    /// **contract** is a contract address that will be called
     pub contract: String,
-    /// string msg to call the contract (not base64 encoded)
+    /// **msg** is a contract call message
     pub msg: String,
+    /// **funds** is funds that the message will be called with.
+    /// Note that these funds are not really sent to the contract.
     pub funds: Vec<Coin>,
 }
