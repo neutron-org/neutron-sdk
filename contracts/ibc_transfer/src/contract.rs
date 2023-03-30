@@ -161,6 +161,7 @@ fn execute_send(
         recv_fee: vec![],
         ack_fee: vec![Coin::new(1000u128, "stake")],
         timeout_fee: vec![Coin::new(1000u128, "stake")],
+        payer: None,
     };
     let coin1 = coin(amount, denom.clone());
     let msg1 = NeutronMsg::IbcTransfer {
