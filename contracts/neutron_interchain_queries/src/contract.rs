@@ -10,7 +10,7 @@ use crate::msg::{ExecuteMsg, GetRecipientTxsResponse, InstantiateMsg, MigrateMsg
 use crate::state::{Transfer, RECIPIENT_TXS, TRANSFERS};
 use neutron_sdk::bindings::msg::NeutronMsg;
 use neutron_sdk::bindings::query::{InterchainQueries, QueryRegisteredQueryResponse};
-use neutron_sdk::bindings::types::KVKey;
+use neutron_sdk::bindings::types::{Height, KVKey};
 use neutron_sdk::interchain_queries::queries::{
     get_registered_query, query_balance, query_bank_total, query_delegations,
     query_distribution_fee_pool, query_government_proposals, query_staking_validators,
@@ -268,7 +268,7 @@ pub fn sudo_tx_query_result(
     deps: DepsMut<InterchainQueries>,
     _env: Env,
     query_id: u64,
-    _height: u64,
+    _height: Height,
     data: Binary,
 ) -> NeutronResult<Response> {
     // Decode the transaction data
