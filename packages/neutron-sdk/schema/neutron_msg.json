@@ -282,6 +282,64 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "description": "AddSchedule adds new schedule with a given `name`. Until schedule is removed it will execute all `msgs` every `period` blocks. First execution is at least on `current_block + period` block. [Permissioned - DAO Only]",
+      "type": "object",
+      "required": [
+        "add_schedule"
+      ],
+      "properties": {
+        "add_schedule": {
+          "type": "object",
+          "required": [
+            "msgs",
+            "name",
+            "period"
+          ],
+          "properties": {
+            "msgs": {
+              "description": "list of cosmwasm messages to be executed",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/MsgExecuteContract"
+              }
+            },
+            "name": {
+              "description": "Name of a new schedule. Needed to be able to `RemoveSchedule` and to log information about it",
+              "type": "string"
+            },
+            "period": {
+              "description": "period in blocks with which `msgs` will be executed",
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "RemoveSchedule removes the schedule with a given `name`. [Permissioned - DAO or Security DAO only]",
+      "type": "object",
+      "required": [
+        "remove_schedule"
+      ],
+      "properties": {
+        "remove_schedule": {
+          "type": "object",
+          "required": [
+            "name"
+          ],
+          "properties": {
+            "name": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
     }
   ],
   "definitions": {
@@ -442,7 +500,7 @@
       ],
       "properties": {
         "contract": {
-          "description": "*contract** is a address of contract admin will be removed.",
+          "description": "*contract** is an address of contract admin will be removed.",
           "type": "string"
         },
         "description": {
@@ -548,6 +606,24 @@
         },
         "path": {
           "description": "*path** is a path to the storage (storage prefix) where you want to read value by key (usually name of cosmos-packages module: 'staking', 'bank', etc.)",
+          "type": "string"
+        }
+      }
+    },
+    "MsgExecuteContract": {
+      "description": "MsgExecuteContract defines a call to the contract execution",
+      "type": "object",
+      "required": [
+        "contract",
+        "msg"
+      ],
+      "properties": {
+        "contract": {
+          "description": "*contract** is a contract address that will be called",
+          "type": "string"
+        },
+        "msg": {
+          "description": "*msg** is a contract call message",
           "type": "string"
         }
       }
