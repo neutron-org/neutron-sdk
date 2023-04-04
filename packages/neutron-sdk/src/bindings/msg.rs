@@ -124,6 +124,22 @@ pub enum NeutronMsg {
     /// SubmitAdminProposal sends a proposal to neutron's Admin module.
     /// This type of messages can be only executed by Neutron DAO.
     SubmitAdminProposal { admin_proposal: AdminProposal },
+    /// AddSchedule adds new schedule with a given `name`.
+    /// Until schedule is removed it will execute all `msgs` every `period` blocks.
+    /// First execution is at least on `current_block + period` block.
+    /// [Permissioned - DAO Only]
+    AddSchedule {
+        /// Name of a new schedule.
+        /// Needed to be able to `RemoveSchedule` and to log information about it
+        name: String,
+        /// period in blocks with which `msgs` will be executed
+        period: u64,
+        /// list of cosmwasm messages to be executed
+        msgs: Vec<MsgExecuteContract>,
+    },
+    /// RemoveSchedule removes the schedule with a given `name`.
+    /// [Permissioned - DAO or Security DAO only]
+    RemoveSchedule { name: String },
 }
 
 impl NeutronMsg {
@@ -315,6 +331,14 @@ impl NeutronMsg {
         NeutronMsg::SubmitAdminProposal {
             admin_proposal: AdminProposal::ClearAdminProposal(proposal),
         }
+    }
+
+    pub fn submit_add_schedule(name: String, period: u64, msgs: Vec<MsgExecuteContract>) -> Self {
+        NeutronMsg::AddSchedule { name, period, msgs }
+    }
+
+    pub fn submit_remove_schedule(name: String) -> Self {
+        NeutronMsg::RemoveSchedule { name }
     }
 }
 
@@ -516,6 +540,16 @@ pub struct ClearAdminProposal {
     pub title: String,
     /// **description** is a text description of proposal.
     pub description: String,
-    /// **contract** is a address of contract admin will be removed.
+    /// **contract** is an address of contract admin will be removed.
     pub contract: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+/// MsgExecuteContract defines a call to the contract execution
+pub struct MsgExecuteContract {
+    /// **contract** is a contract address that will be called
+    pub contract: String,
+    /// **msg** is a contract call message
+    pub msg: String,
 }
