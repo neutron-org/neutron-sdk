@@ -218,6 +218,7 @@
           "type": "object",
           "required": [
             "fee",
+            "memo",
             "receiver",
             "sender",
             "source_channel",
@@ -229,6 +230,9 @@
           "properties": {
             "fee": {
               "$ref": "#/definitions/IbcFee"
+            },
+            "memo": {
+              "type": "string"
             },
             "receiver": {
               "type": "string"
@@ -611,28 +615,15 @@
       "type": "object",
       "required": [
         "contract",
-        "funds",
-        "msg",
-        "sender"
+        "msg"
       ],
       "properties": {
         "contract": {
           "description": "*contract** is a contract address that will be called",
           "type": "string"
         },
-        "funds": {
-          "description": "**funds** is funds that the message will be called with. Note that these funds are not really sent to the contract.",
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Coin"
-          }
-        },
         "msg": {
           "description": "*msg** is a contract call message",
-          "type": "string"
-        },
-        "sender": {
-          "description": "**sender** is a sender of a message. Note that in the case of schedule sender is not really a msg caller.",
           "type": "string"
         }
       }

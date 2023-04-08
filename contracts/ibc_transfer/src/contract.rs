@@ -174,6 +174,7 @@ fn execute_send(
             revision_height: timeout_height.or(Some(DEFAULT_TIMEOUT_HEIGHT)),
         },
         timeout_timestamp: 0,
+        memo: "".to_string(),
         fee: fee.clone(),
     };
     let coin2 = coin(2 * amount, denom);
@@ -188,6 +189,7 @@ fn execute_send(
             revision_height: timeout_height.or(Some(DEFAULT_TIMEOUT_HEIGHT)),
         },
         timeout_timestamp: 0,
+        memo: "".to_string(),
         fee,
     };
     // prepare first transfer message with payload of Type1

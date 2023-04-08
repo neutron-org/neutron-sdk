@@ -117,6 +117,8 @@ pub enum NeutronMsg {
         // Timeout timestamp in absolute nanoseconds since unix epoch.
         // The timeout is disabled when set to 0.
         timeout_timestamp: u64,
+        // Memo to be sent along with transaction.
+        memo: String,
         // Fees to refund relayer for different kinds of `SudoMsg` transmission
         // Unused fee types will be returned to msg sender.
         fee: IbcFee,
