@@ -1,4 +1,4 @@
-use crate::bindings::query::InterchainQueries;
+use crate::bindings::query::NeutronQuery;
 use crate::interchain_queries::types::{
     QueryType, TransactionFilterItem, TransactionFilterOp, TransactionFilterValue, BANK_STORE_KEY,
     DISTRIBUTION_STORE_KEY, GOV_STORE_KEY, HEIGHT_FIELD, KEY_BOND_DENOM, PARAMS_STORE_KEY,
@@ -21,7 +21,7 @@ use cosmwasm_std::{Binary, DepsMut, Env};
 #[allow(clippy::too_many_arguments)]
 /// Creates a message to register an Interchain Query with provided params
 pub fn new_register_interchain_query_msg(
-    _deps: DepsMut<InterchainQueries>,
+    _deps: DepsMut<NeutronQuery>,
     _env: Env,
     connection_id: String,
     query_type: QueryType,

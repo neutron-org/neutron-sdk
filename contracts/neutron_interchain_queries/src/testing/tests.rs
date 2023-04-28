@@ -18,7 +18,7 @@ use cosmwasm_std::{
     StdError, Uint128,
 };
 use neutron_sdk::bindings::query::{
-    InterchainQueries, QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse,
+    NeutronQuery, QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse,
 };
 use neutron_sdk::bindings::types::{
     decode_hex, Height, InterchainQueryResult, KVKey, KVKeys, RegisteredQuery, StorageValue,
@@ -211,7 +211,7 @@ fn build_interchain_query_balance_response(addr: Addr, denom: String, amount: St
 
 // registers an interchain query
 fn register_query(
-    deps: &mut OwnedDeps<MockStorage, MockApi, WasmMockQuerier, InterchainQueries>,
+    deps: &mut OwnedDeps<MockStorage, MockApi, WasmMockQuerier, NeutronQuery>,
     env: Env,
     info: MessageInfo,
     msg: ExecuteMsg,
