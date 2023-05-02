@@ -284,6 +284,111 @@
       "additionalProperties": false
     },
     {
+      "description": "TokenFactory message. Contracts can create denoms, namespaced under the contract's address. A contract may create any number of independent sub-denoms.",
+      "type": "object",
+      "required": [
+        "create_denom"
+      ],
+      "properties": {
+        "create_denom": {
+          "type": "object",
+          "required": [
+            "subdenom"
+          ],
+          "properties": {
+            "subdenom": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "TokenFactory message. Contracts can change the admin of a denom that they are the admin of.",
+      "type": "object",
+      "required": [
+        "change_admin"
+      ],
+      "properties": {
+        "change_admin": {
+          "type": "object",
+          "required": [
+            "denom",
+            "new_admin_address"
+          ],
+          "properties": {
+            "denom": {
+              "type": "string"
+            },
+            "new_admin_address": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "TokenFactory message. Contracts can mint native tokens for an existing factory denom that they are the admin of.",
+      "type": "object",
+      "required": [
+        "mint_tokens"
+      ],
+      "properties": {
+        "mint_tokens": {
+          "type": "object",
+          "required": [
+            "amount",
+            "denom",
+            "mint_to_address"
+          ],
+          "properties": {
+            "amount": {
+              "$ref": "#/definitions/Uint128"
+            },
+            "denom": {
+              "type": "string"
+            },
+            "mint_to_address": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "TokenFactory message. Contracts can burn native tokens for an existing factory denom that they are the admin of. Currently, the burn from address must be the admin contract.",
+      "type": "object",
+      "required": [
+        "burn_tokens"
+      ],
+      "properties": {
+        "burn_tokens": {
+          "type": "object",
+          "required": [
+            "amount",
+            "burn_from_address",
+            "denom"
+          ],
+          "properties": {
+            "amount": {
+              "$ref": "#/definitions/Uint128"
+            },
+            "burn_from_address": {
+              "description": "Must be set to `\"\"` for now",
+              "type": "string"
+            },
+            "denom": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
       "description": "AddSchedule adds new schedule with a given `name`. Until schedule is removed it will execute all `msgs` every `period` blocks. First execution is at least on `current_block + period` block. [Permissioned - DAO Only]",
       "type": "object",
       "required": [
@@ -557,7 +662,7 @@
       }
     },
     "IbcFee": {
-      "description": "IbcFee defines struct for fees that refund the relayer for `SudoMsg` messages submission. Unused fee kind will be returned back to message sender. Please refer to these links for more information: IBC transaction structure - https://docs.neutron.org/neutron/interchain-txs/messages/#msgsubmittx General mechanics of fee payments - https://docs.neutron.org/neutron/feerefunder/overview/#general-mechanics",
+      "description": "IbcFee defines struct for fees that refund the relayer for `SudoMsg` messages submission. Unused fee kind will be returned back to message sender. Please refer to these links for more information: IBC transaction structure - <https://docs.neutron.org/neutron/interchain-txs/messages/#msgsubmittx]> General mechanics of fee payments - <https://docs.neutron.org/neutron/feerefunder/overview/#general-mechanics>",
       "type": "object",
       "required": [
         "ack_fee",

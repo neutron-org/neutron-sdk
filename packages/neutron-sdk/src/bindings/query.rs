@@ -45,6 +45,17 @@ pub enum NeutronQuery {
 
     /// Query minimum IBC fee
     MinIbcFee {},
+
+    /// TokenFactory query. Given a subdenom minted by a contract via
+    /// [`NeutronMsg::MintTokens`](crate::bindings::msg::NeutronMsg::MintTokens),
+    /// returns the full denom as used by [`BankMsg::Send`](cosmwasm_std::BankMsg::Send).
+    FullDenom {
+        creator_addr: String,
+        subdenom: String,
+    },
+
+    /// TokenFactory query. Returns the admin of a denom, if the denom is a TokenFactory denom.
+    DenomAdmin { subdenom: String },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
