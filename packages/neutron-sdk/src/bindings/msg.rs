@@ -14,7 +14,7 @@ use serde_json_wasm::to_string;
 /// IbcFee defines struct for fees that refund the relayer for `SudoMsg` messages submission.
 /// Unused fee kind will be returned back to message sender.
 /// Please refer to these links for more information:
-/// IBC transaction structure - <https://docs.neutron.org/neutron/interchain-txs/messages/#msgsubmittx]>
+/// IBC transaction structure - <https://docs.neutron.org/neutron/interchain-txs/messages/#msgsubmittx>
 /// General mechanics of fee payments - <https://docs.neutron.org/neutron/feerefunder/overview/#general-mechanics>
 pub struct IbcFee {
     /// **recv_fee** currently is used for compatibility with ICS-29 interface only and must be set to zero (i.e. 0untrn),
