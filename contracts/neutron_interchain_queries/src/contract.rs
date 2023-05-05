@@ -11,11 +11,12 @@ use crate::state::{Transfer, RECIPIENT_TXS, TRANSFERS};
 use neutron_sdk::bindings::msg::NeutronMsg;
 use neutron_sdk::bindings::query::{InterchainQueries, QueryRegisteredQueryResponse};
 use neutron_sdk::bindings::types::{Height, KVKey};
-use neutron_sdk::interchain_queries::queries::{
-    get_registered_query, query_balance, query_bank_total, query_delegations,
-    query_distribution_fee_pool, query_government_proposals, query_staking_validators,
+use neutron_sdk::interchain_queries::get_registered_query;
+use neutron_sdk::interchain_queries::v045::queries::{
+    query_balance, query_bank_total, query_delegations, query_distribution_fee_pool,
+    query_government_proposals, query_staking_validators,
 };
-use neutron_sdk::interchain_queries::{
+use neutron_sdk::interchain_queries::v045::{
     new_register_balance_query_msg, new_register_bank_total_supply_query_msg,
     new_register_delegator_delegations_query_msg, new_register_distribution_fee_pool_query_msg,
     new_register_gov_proposal_query_msg, new_register_staking_validators_query_msg,
@@ -26,8 +27,8 @@ use neutron_sdk::{NeutronError, NeutronResult};
 
 use neutron_sdk::interchain_queries::types::{
     TransactionFilterItem, TransactionFilterOp, TransactionFilterValue,
-    COSMOS_SDK_TRANSFER_MSG_URL, RECIPIENT_FIELD,
 };
+use neutron_sdk::interchain_queries::v045::types::{COSMOS_SDK_TRANSFER_MSG_URL, RECIPIENT_FIELD};
 use serde_json_wasm;
 
 /// defines the incoming transfers limit to make a case of failed callback possible.

@@ -1,19 +1,19 @@
 use crate::bindings::query::InterchainQueries;
 use crate::interchain_queries::types::{
-    QueryType, TransactionFilterItem, TransactionFilterOp, TransactionFilterValue, BANK_STORE_KEY,
-    DISTRIBUTION_STORE_KEY, GOV_STORE_KEY, HEIGHT_FIELD, KEY_BOND_DENOM, PARAMS_STORE_KEY,
-    RECIPIENT_FIELD, STAKING_STORE_KEY,
+    QueryPayload, QueryType, TransactionFilterItem, TransactionFilterOp, TransactionFilterValue,
+};
+use crate::interchain_queries::v045::types::{
+    BANK_STORE_KEY, DISTRIBUTION_STORE_KEY, GOV_STORE_KEY, HEIGHT_FIELD, KEY_BOND_DENOM,
+    PARAMS_STORE_KEY, RECIPIENT_FIELD, STAKING_STORE_KEY,
 };
 use crate::{
     bindings::{msg::NeutronMsg, types::KVKey},
     errors::error::NeutronResult,
-    interchain_queries::{
-        helpers::{
-            create_account_denom_balance_key, create_delegation_key, create_fee_pool_key,
-            create_gov_proposal_key, create_params_store_key, create_total_denom_key,
-            create_validator_key, decode_and_convert,
-        },
-        types::QueryPayload,
+    interchain_queries::helpers::decode_and_convert,
+    interchain_queries::v045::helpers::{
+        create_account_denom_balance_key, create_delegation_key, create_fee_pool_key,
+        create_gov_proposal_key, create_params_store_key, create_total_denom_key,
+        create_validator_key,
     },
 };
 use cosmwasm_std::{Binary, DepsMut, Env};
