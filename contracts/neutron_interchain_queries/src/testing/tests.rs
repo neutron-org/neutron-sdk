@@ -338,7 +338,7 @@ fn test_distribution_fee_pool_query() {
         1,
         build_interchain_query_distribution_fee_pool_response(
             "uosmo".to_string(),
-            "8278104".to_string(),
+            "8278104000000000000000000".to_string(), // 8278104 + 18 zeros
         ),
     );
     let fee_pool_balance = QueryMsg::DistributionFeePool { query_id: 1 };

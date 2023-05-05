@@ -250,7 +250,17 @@ impl KVReconstruct for FeePool {
             let cosmos_pool: CosmosFeePool = CosmosFeePool::decode(kv.value.as_slice())?;
 
             for pool_coin in cosmos_pool.community_pool {
-                let amount = Uint128::from_str(pool_coin.amount.as_str())?;
+                // amount is stored as Dec which is gogo proto encoded to string without a decimal point.
+                // e.g. Dec(1) is 1 + 18 zeros
+                // https://github.com/cosmos/cosmos-sdk/blob/9c145c827001222df2e3e1101010874aeac20997/types/decimal_test.go#L498
+                let amount: Uint128 = Uint128::from_str(pool_coin.amount.as_str())
+                    .unwrap()
+                    .checked_div_floor(
+                        Decimal::one()
+                            .checked_mul(Decimal::from_ratio(10u64, 1u64).pow(18u32))
+                            .unwrap(),
+                    )
+                    .unwrap();
                 coins.push(Coin::new(amount.u128(), pool_coin.denom));
             }
         }
@@ -519,8 +529,20 @@ mod tests {
     use cosmwasm_std::{
         to_binary, Addr, Binary, Coin as StdCoin, Decimal, Delegation as StdDelegation, Uint128,
     };
+    use hex;
     use prost::Message as ProstMessage;
+    use std::ops::Mul;
     use std::str::FromStr;
+
+    // raw hex data from KV storage created using https://github.com/neutron-org/icq-compliance-officer.
+    pub const BALANCES_HEX_RESPONSE: &str = "0a057374616b6512083939393939303030";
+    pub const TOTAL_SUPPLY_HEX_RESPONSE: &str = "333030303031303938";
+    pub const FEE_POOL_HEX_RESPONSE: &str =
+        "0a1d0a057374616b6512143231393630303030303030303030303030303030";
+    pub const GOV_PROPOSAL_HEX_RESPONSE: &str = "0801129f010a202f636f736d6f732e676f762e763162657461312e5465787450726f706f73616c127b0a11416464204e65772056616c696461746f721266546869732070726f706f73616c20726571756573747320616464696e672061206e65772076616c696461746f7220746f20746865206e6574776f726b20746f20696d70726f766520646563656e7472616c697a6174696f6e20616e642073656375726974792e1801220c0a01301201301a01302201302a0c08c9fdd3a20610988990d103320c08c9c3dea20610988990d1033a0d0a057374616b65120431303030420b088092b8c398feffffff014a0b088092b8c398feffffff01";
+    pub const STAKING_DENOM_HEX_RESPONSE: &str = "227374616b6522";
+    pub const STAKING_VALIDATOR_HEX_RESPONSE: &str = "0a34636f736d6f7376616c6f706572313566716a706a39307275686a353771336c366135686461307274373767366d63656b326d747112430a1d2f636f736d6f732e63727970746f2e656432353531392e5075624b657912220a20b20c07b3eb900df72b48c24e9a2e06ff4fe73bbd255e433af8eae3b1988e698820032a09313030303030303030321b3130303030303030303030303030303030303030303030303030303a080a066d796e6f64654a00524a0a3b0a1231303030303030303030303030303030303012123230303030303030303030303030303030301a113130303030303030303030303030303030120b089cfcd3a20610e0dc890b5a0131";
+    pub const DELEGATOR_DELEGATIONS_HEX_RESPONSE: &str = "0a2d636f736d6f73313566716a706a39307275686a353771336c366135686461307274373767366d63757a3777386e1234636f736d6f7376616c6f706572313566716a706a39307275686a353771336c366135686461307274373767366d63656b326d74711a1b313030303030303030303030303030303030303030303030303030";
 
     #[test]
     fn test_balance_reconstruct() {
@@ -703,9 +725,9 @@ mod tests {
                     }),
                     commission: Some(Commission {
                         commission_rates: Some(CommissionRates {
-                            rate: "5".to_string(),
-                            max_rate: "20".to_string(),
-                            max_change_rate: "1".to_string(),
+                            rate: "5000000000000000000".to_string(), // Dec(5) is 5+18 zeros
+                            max_rate: "20000000000000000000".to_string(), // Dec(20) is 20+18 zeros
+                            max_change_rate: "1000000000000000000".to_string(), // Dec(1) is 1+18 zeros
                         }),
                         update_time: Some(prost_types::Timestamp {
                             seconds: 56324234,
@@ -1048,7 +1070,10 @@ mod tests {
             for coin in &ts.coins {
                 let balance_amount = DecCoin {
                     denom: coin.0.clone(),
-                    amount: coin.1.to_string(),
+                    amount: coin
+                        .1
+                        .mul(Uint128::one().mul(Uint128::from(10u64).pow(18u32))) // adjust to Dec gogo proto format
+                        .to_string(),
                 };
 
                 coins.push(balance_amount);
@@ -1251,5 +1276,188 @@ mod tests {
 
             assert_eq!(delegations, ts.expected_result)
         }
+    }
+
+    #[test]
+    fn test_balance_reconstruct_from_hex() {
+        let bytes = hex::decode(BALANCES_HEX_RESPONSE).unwrap(); // decode hex string to bytes
+        let base64_input = base64::encode(&bytes); // encode bytes to base64 string
+
+        let s = StorageValue {
+            storage_prefix: String::default(), // not used in reconstruct
+            key: Binary::default(),            // not used in reconstruct
+            value: Binary::from_base64(base64_input.as_str()).unwrap(),
+        };
+        let bank_balances = Balances::reconstruct(&[s]).unwrap();
+        assert_eq!(
+            bank_balances,
+            Balances {
+                coins: vec![StdCoin {
+                    denom: String::from("stake"),
+                    amount: Uint128::from(99999000u64),
+                }]
+            }
+        );
+    }
+
+    #[test]
+    fn test_bank_total_supply_reconstruct_from_hex() {
+        let bytes = hex::decode(TOTAL_SUPPLY_HEX_RESPONSE).unwrap(); // decode hex string to bytes
+        let base64_input = base64::encode(&bytes); // encode bytes to base64 string
+
+        let s = StorageValue {
+            storage_prefix: String::default(), // not used in reconstruct
+            key: Binary(create_total_denom_key("stake").unwrap()),
+            value: Binary::from_base64(base64_input.as_str()).unwrap(),
+        };
+        let total_supply = TotalSupply::reconstruct(&[s]).unwrap();
+        assert_eq!(
+            total_supply,
+            TotalSupply {
+                coins: vec![StdCoin {
+                    denom: String::from("stake"),
+                    amount: Uint128::from(300001098u64), // mutating
+                }]
+            }
+        );
+    }
+
+    #[test]
+    fn test_staking_validators_reconstruct_from_hex() {
+        let bytes = hex::decode(STAKING_VALIDATOR_HEX_RESPONSE).unwrap(); // decode hex string to bytes
+        let base64_input = base64::encode(&bytes); // encode bytes to base64 string
+
+        let s = StorageValue {
+            storage_prefix: String::default(), // not used in reconstruct
+            key: Binary::default(),            // not used in reconstruct
+            value: Binary::from_base64(base64_input.as_str()).unwrap(),
+        };
+        let staking_validator = StakingValidator::reconstruct(&[s]).unwrap();
+        assert_eq!(
+            staking_validator,
+            StakingValidator {
+                validators: vec![ContractValidator {
+                    operator_address: String::from(
+                        "cosmosvaloper15fqjpj90ruhj57q3l6a5hda0rt77g6mcek2mtq" // mutating
+                    ),
+                    jailed: false,
+                    status: 3,
+                    tokens: String::from("100000000"),
+                    delegator_shares: String::from("100000000000000000000000000"),
+                    moniker: Some(String::from("mynode")),
+                    identity: Some(String::from("")),
+                    website: Some(String::from("")),
+                    security_contact: Some(String::from("")),
+                    details: Some(String::from("")),
+                    unbonding_height: 0u64,
+                    unbonding_time: Some(0u64),
+                    rate: Some(Decimal::from_str("0.100000000000000000").unwrap()),
+                    max_rate: Some(Decimal::from_str("0.200000000000000000").unwrap()),
+                    max_change_rate: Some(Decimal::from_str("0.010000000000000000").unwrap()),
+                    update_time: Some(1683291676u64), // mutating
+                    min_self_delegation: Decimal::one(),
+                }]
+            }
+        );
+    }
+
+    #[test]
+    fn test_government_proposals_reconstruct_from_hex() {
+        let bytes = hex::decode(GOV_PROPOSAL_HEX_RESPONSE).unwrap(); // decode hex string to bytes
+        let base64_input = base64::encode(&bytes); // encode bytes to base64 string
+
+        let s = StorageValue {
+            storage_prefix: String::default(), // not used in reconstruct
+            key: Binary::default(),            // not used in reconstruct
+            value: Binary::from_base64(base64_input.as_str()).unwrap(),
+        };
+        let proposals = GovernmentProposal::reconstruct(&[s]).unwrap();
+        assert_eq!(
+            proposals,
+            GovernmentProposal {
+                proposals: vec![Proposal {
+                    proposal_id: 1u64,
+                    proposal_type: Some(String::from("/cosmos.gov.v1beta1.TextProposal")),
+                    total_deposit: vec![StdCoin {
+                        denom: String::from("stake"),
+                        amount: Uint128::from(1000u64)
+                    }],
+                    status: 1i32,
+                    submit_time: Some(1683291849u64), // mutating
+                    deposit_end_time: Some(1683464649u64), // mutating
+                    voting_start_time: Some(18446744011573954816u64), // 0001-01-01T00:00:00Z
+                    voting_end_time: Some(18446744011573954816u64), // 0001-01-01T00:00:00Z
+                    final_tally_result: Some(TallyResult {
+                        yes: String::from("0"),
+                        no: String::from("0"),
+                        abstain: String::from("0"),
+                        no_with_veto: String::from("0")
+                    }),
+                }]
+            }
+        );
+    }
+
+    #[test]
+    fn test_fee_pool_reconstruct_from_hex() {
+        let bytes = hex::decode(FEE_POOL_HEX_RESPONSE).unwrap(); // decode hex string to bytes
+        let base64_input = base64::encode(&bytes); // encode bytes to base64 string
+
+        let s = StorageValue {
+            storage_prefix: String::default(), // not used in reconstruct
+            key: Binary::default(),            // not used in reconstruct
+            value: Binary::from_base64(base64_input.as_str()).unwrap(),
+        };
+        let fee_pool = FeePool::reconstruct(&[s]).unwrap();
+        assert_eq!(
+            fee_pool,
+            FeePool {
+                coins: vec![StdCoin {
+                    denom: String::from("stake"),
+                    amount: Uint128::from(21u64), // mutating
+                }]
+            }
+        );
+    }
+
+    #[test]
+    fn test_delegations_reconstruct_from_hex() {
+        let staking_denom_bytes = hex::decode(STAKING_DENOM_HEX_RESPONSE).unwrap(); // decode hex string to bytes
+        let staking_denom_base64_input = base64::encode(&staking_denom_bytes); // encode bytes to base64 string
+        let staking_validator_bytes = hex::decode(STAKING_VALIDATOR_HEX_RESPONSE).unwrap(); // decode hex string to bytes
+        let staking_validator_base64_input = base64::encode(&staking_validator_bytes); // encode bytes to base64 string
+        let delegation_bytes = hex::decode(DELEGATOR_DELEGATIONS_HEX_RESPONSE).unwrap(); // decode hex string to bytes
+        let delegation_base64_input = base64::encode(&delegation_bytes); // encode bytes to base64 string
+
+        let mut st_values: Vec<StorageValue> = vec![StorageValue {
+            storage_prefix: String::default(), // not used in reconstruct
+            key: Binary::default(),            // not used in reconstruct
+            value: Binary::from_base64(staking_denom_base64_input.as_str()).unwrap(),
+        }];
+        st_values.push(StorageValue {
+            storage_prefix: String::default(), // not used in reconstruct
+            key: Binary::default(),            // not used in reconstruct
+            value: Binary::from_base64(delegation_base64_input.as_str()).unwrap(),
+        });
+        st_values.push(StorageValue {
+            storage_prefix: String::default(), // not used in reconstruct
+            key: Binary::default(),            // not used in reconstruct
+            value: Binary::from_base64(staking_validator_base64_input.as_str()).unwrap(),
+        });
+
+        let delegations = Delegations::reconstruct(&st_values).unwrap();
+        assert_eq!(
+            delegations,
+            Delegations {
+                delegations: vec![StdDelegation {
+                    delegator: Addr::unchecked("cosmos15fqjpj90ruhj57q3l6a5hda0rt77g6mcuz7w8n"), // mutating
+                    validator: String::from("cosmosvaloper15fqjpj90ruhj57q3l6a5hda0rt77g6mcek2mtq"), // mutating
+                    amount: StdCoin {
+                        denom: String::from("stake"),
+                        amount: Uint128::from(100000000u64)
+                    },
+                }],
+            }
+        );
     }
 }

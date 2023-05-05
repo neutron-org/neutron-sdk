@@ -141,19 +141,21 @@ pub fn create_gov_proposal_key(proposal_id: u64) -> NeutronResult<Vec<u8>> {
 /// Returns validator max change rate
 pub fn get_max_change_rate(commission: &Option<ValidatorCommission>) -> Option<Decimal> {
     let commission_rates = commission.as_ref().map(|v| v.commission_rates.as_ref())?;
-    commission_rates.map(|v| Decimal::from_str(v.max_change_rate.as_str()).unwrap_or_default())
+    commission_rates
+        .map(|v| Decimal::new(Uint128::from_str(v.max_change_rate.as_str()).unwrap_or_default()))
 }
 
 /// Returns validator max rate
 pub fn get_max_rate(commission: &Option<ValidatorCommission>) -> Option<Decimal> {
     let commission_rates = commission.as_ref().map(|v| v.commission_rates.as_ref())?;
-    commission_rates.map(|v| Decimal::from_str(v.max_rate.as_str()).unwrap_or_default())
+    commission_rates
+        .map(|v| Decimal::new(Uint128::from_str(v.max_rate.as_str()).unwrap_or_default()))
 }
 
 /// Returns current validator rate
 pub fn get_rate(commission: &Option<ValidatorCommission>) -> Option<Decimal> {
     let commission_rates = commission.as_ref().map(|v| v.commission_rates.as_ref())?;
-    commission_rates.map(|v| Decimal::from_str(v.rate.as_str()).unwrap_or_default())
+    commission_rates.map(|v| Decimal::new(Uint128::from_str(v.rate.as_str()).unwrap_or_default()))
 }
 
 /// Returns current validator rate
