@@ -18,7 +18,7 @@ use neutron_sdk::bindings::msg::IbcFee;
 use neutron_sdk::{
     bindings::{
         msg::{MsgSubmitTxResponse, NeutronMsg},
-        query::{InterchainQueries, QueryInterchainAccountAddressResponse},
+        query::{NeutronQuery, QueryInterchainAccountAddressResponse},
         types::ProtobufAny,
     },
     interchain_txs::helpers::{
@@ -67,7 +67,7 @@ pub fn instantiate(
 
 #[entry_point]
 pub fn execute(
-    deps: DepsMut<InterchainQueries>,
+    deps: DepsMut<NeutronQuery>,
     env: Env,
     _: MessageInfo,
     msg: ExecuteMsg,
@@ -113,7 +113,7 @@ pub fn execute(
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> NeutronResult<Binary> {
+pub fn query(deps: Deps<NeutronQuery>, env: Env, msg: QueryMsg) -> NeutronResult<Binary> {
     match msg {
         QueryMsg::InterchainAccountAddress {
             interchain_account_id,
@@ -132,12 +132,12 @@ pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> NeutronR
 
 // returns ICA address from Neutron ICA SDK module
 pub fn query_interchain_address(
-    deps: Deps<InterchainQueries>,
+    deps: Deps<NeutronQuery>,
     env: Env,
     interchain_account_id: String,
     connection_id: String,
 ) -> NeutronResult<Binary> {
-    let query = InterchainQueries::InterchainAccountAddress {
+    let query = NeutronQuery::InterchainAccountAddress {
         owner_address: env.contract.address.to_string(),
         interchain_account_id,
         connection_id,
@@ -149,7 +149,7 @@ pub fn query_interchain_address(
 
 // returns ICA address from the contract storage. The address was saved in sudo_open_ack method
 pub fn query_interchain_address_contract(
-    deps: Deps<InterchainQueries>,
+    deps: Deps<NeutronQuery>,
     env: Env,
     interchain_account_id: String,
 ) -> NeutronResult<Binary> {
@@ -158,7 +158,7 @@ pub fn query_interchain_address_contract(
 
 // returns the result
 pub fn query_acknowledgement_result(
-    deps: Deps<InterchainQueries>,
+    deps: Deps<NeutronQuery>,
     env: Env,
     interchain_account_id: String,
     sequence_id: u64,
@@ -168,14 +168,14 @@ pub fn query_acknowledgement_result(
     Ok(to_binary(&res)?)
 }
 
-pub fn query_errors_queue(deps: Deps<InterchainQueries>) -> NeutronResult<Binary> {
+pub fn query_errors_queue(deps: Deps<NeutronQuery>) -> NeutronResult<Binary> {
     let res = read_errors_from_queue(deps.storage)?;
     Ok(to_binary(&res)?)
 }
 
 // saves payload to process later to the storage and returns a SubmitTX Cosmos SubMsg with necessary reply id
 fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
-    deps: DepsMut<InterchainQueries>,
+    deps: DepsMut<NeutronQuery>,
     msg: C,
     payload: SudoPayload,
 ) -> StdResult<SubMsg<T>> {
@@ -184,7 +184,7 @@ fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
 }
 
 fn execute_register_ica(
-    deps: DepsMut<InterchainQueries>,
+    deps: DepsMut<NeutronQuery>,
     env: Env,
     connection_id: String,
     interchain_account_id: String,
@@ -198,7 +198,7 @@ fn execute_register_ica(
 }
 
 fn execute_delegate(
-    mut deps: DepsMut<InterchainQueries>,
+    mut deps: DepsMut<NeutronQuery>,
     env: Env,
     interchain_account_id: String,
     validator: String,
@@ -257,7 +257,7 @@ fn execute_delegate(
 }
 
 fn execute_undelegate(
-    mut deps: DepsMut<InterchainQueries>,
+    mut deps: DepsMut<NeutronQuery>,
     env: Env,
     interchain_account_id: String,
     validator: String,

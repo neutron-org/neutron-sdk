@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "InterchainQueries",
+  "title": "NeutronQuery",
   "description": "The queries to interact with neutron specific blockchain modules.",
   "oneOf": [
     {
@@ -137,6 +137,52 @@
       "properties": {
         "min_ibc_fee": {
           "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "TokenFactory query. Given a subdenom minted by a contract via [`NeutronMsg::MintTokens`](crate::bindings::msg::NeutronMsg::MintTokens), returns the full denom as used by [`BankMsg::Send`](cosmwasm_std::BankMsg::Send).",
+      "type": "object",
+      "required": [
+        "full_denom"
+      ],
+      "properties": {
+        "full_denom": {
+          "type": "object",
+          "required": [
+            "creator_addr",
+            "subdenom"
+          ],
+          "properties": {
+            "creator_addr": {
+              "type": "string"
+            },
+            "subdenom": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "TokenFactory query. Returns the admin of a denom, if the denom is a TokenFactory denom.",
+      "type": "object",
+      "required": [
+        "denom_admin"
+      ],
+      "properties": {
+        "denom_admin": {
+          "type": "object",
+          "required": [
+            "subdenom"
+          ],
+          "properties": {
+            "subdenom": {
+              "type": "string"
+            }
+          }
         }
       },
       "additionalProperties": false

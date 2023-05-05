@@ -1,4 +1,4 @@
-use crate::bindings::query::InterchainQueries;
+use crate::bindings::query::NeutronQuery;
 use crate::interchain_queries::queries::{check_query_type, get_registered_query, query_kv_result};
 use crate::interchain_queries::types::QueryType;
 use crate::interchain_queries::v045::types::{
@@ -54,7 +54,7 @@ pub struct DelegatorDelegationsResponse {
 /// Returns balance of account on remote chain for particular denom
 /// * ***registered_query_id*** is an identifier of the corresponding registered interchain query
 pub fn query_balance(
-    deps: Deps<InterchainQueries>,
+    deps: Deps<NeutronQuery>,
     _env: Env,
     registered_query_id: u64,
 ) -> NeutronResult<BalanceResponse> {
@@ -75,7 +75,7 @@ pub fn query_balance(
 /// Returns bank total supply on remote chain for particular denom
 /// * ***registered_query_id*** is an identifier of the corresponding registered interchain query
 pub fn query_bank_total(
-    deps: Deps<InterchainQueries>,
+    deps: Deps<NeutronQuery>,
     _env: Env,
     registered_query_id: u64,
 ) -> NeutronResult<TotalSupplyResponse> {
@@ -96,7 +96,7 @@ pub fn query_bank_total(
 /// Returns distribution fee pool on remote chain
 /// * ***registered_query_id*** is an identifier of the corresponding registered interchain query
 pub fn query_distribution_fee_pool(
-    deps: Deps<InterchainQueries>,
+    deps: Deps<NeutronQuery>,
     _env: Env,
     registered_query_id: u64,
 ) -> NeutronResult<FeePoolResponse> {
@@ -117,7 +117,7 @@ pub fn query_distribution_fee_pool(
 /// Returns staking validator from remote chain
 /// * ***registered_query_id*** is an identifier of the corresponding registered interchain query
 pub fn query_staking_validators(
-    deps: Deps<InterchainQueries>,
+    deps: Deps<NeutronQuery>,
     _env: Env,
     registered_query_id: u64,
 ) -> NeutronResult<ValidatorResponse> {
@@ -138,7 +138,7 @@ pub fn query_staking_validators(
 /// Returns list of government proposals on the remote chain
 /// * ***registered_query_id*** is an identifier of the corresponding registered interchain query
 pub fn query_government_proposals(
-    deps: Deps<InterchainQueries>,
+    deps: Deps<NeutronQuery>,
     _env: Env,
     registered_query_id: u64,
 ) -> NeutronResult<ProposalResponse> {
@@ -159,7 +159,7 @@ pub fn query_government_proposals(
 /// Returns delegations of particular delegator on remote chain
 /// * ***registered_query_id*** is an identifier of the corresponding registered interchain query
 pub fn query_delegations(
-    deps: Deps<InterchainQueries>,
+    deps: Deps<NeutronQuery>,
     _env: Env,
     registered_query_id: u64,
 ) -> NeutronResult<DelegatorDelegationsResponse> {

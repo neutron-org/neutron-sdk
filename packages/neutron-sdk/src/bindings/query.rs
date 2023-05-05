@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 /// The queries to interact with neutron specific blockchain modules.
-pub enum InterchainQueries {
+pub enum NeutronQuery {
     /// Query a result of registered interchain query on remote chain
     InterchainQueryResult {
         /// **query_id** is an ID registered interchain query
@@ -45,6 +45,17 @@ pub enum InterchainQueries {
 
     /// Query minimum IBC fee
     MinIbcFee {},
+
+    /// TokenFactory query. Given a subdenom minted by a contract via
+    /// [`NeutronMsg::MintTokens`](crate::bindings::msg::NeutronMsg::MintTokens),
+    /// returns the full denom as used by [`BankMsg::Send`](cosmwasm_std::BankMsg::Send).
+    FullDenom {
+        creator_addr: String,
+        subdenom: String,
+    },
+
+    /// TokenFactory query. Returns the admin of a denom, if the denom is a TokenFactory denom.
+    DenomAdmin { subdenom: String },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -97,4 +108,4 @@ pub struct QueryInterchainAccountAddressResponse {
     pub interchain_account_address: String,
 }
 
-impl CustomQuery for InterchainQueries {}
+impl CustomQuery for NeutronQuery {}

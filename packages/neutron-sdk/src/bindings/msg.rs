@@ -5,7 +5,7 @@ use crate::{
     NeutronError, NeutronResult,
 };
 
-use cosmwasm_std::{Binary, Coin, CosmosMsg, CustomMsg, StdError};
+use cosmwasm_std::{Binary, Coin, CosmosMsg, CustomMsg, StdError, Uint128};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json_wasm::to_string;
@@ -14,8 +14,8 @@ use serde_json_wasm::to_string;
 /// IbcFee defines struct for fees that refund the relayer for `SudoMsg` messages submission.
 /// Unused fee kind will be returned back to message sender.
 /// Please refer to these links for more information:
-/// IBC transaction structure - https://docs.neutron.org/neutron/interchain-txs/messages/#msgsubmittx
-/// General mechanics of fee payments - https://docs.neutron.org/neutron/feerefunder/overview/#general-mechanics
+/// IBC transaction structure - <https://docs.neutron.org/neutron/interchain-txs/messages/#msgsubmittx>
+/// General mechanics of fee payments - <https://docs.neutron.org/neutron/feerefunder/overview/#general-mechanics>
 pub struct IbcFee {
     /// **recv_fee** currently is used for compatibility with ICS-29 interface only and must be set to zero (i.e. 0untrn),
     /// because Neutron's fee module can't refund relayer for submission of Recv IBC packets due to compatibility with target chains.
@@ -126,6 +126,36 @@ pub enum NeutronMsg {
     /// SubmitAdminProposal sends a proposal to neutron's Admin module.
     /// This type of messages can be only executed by Neutron DAO.
     SubmitAdminProposal { admin_proposal: AdminProposal },
+
+    /// TokenFactory message.
+    /// Contracts can create denoms, namespaced under the contract's address.
+    /// A contract may create any number of independent sub-denoms.
+    CreateDenom { subdenom: String },
+    /// TokenFactory message.
+    /// Contracts can change the admin of a denom that they are the admin of.
+    ChangeAdmin {
+        denom: String,
+        new_admin_address: String,
+    },
+    /// TokenFactory message.
+    /// Contracts can mint native tokens for an existing factory denom
+    /// that they are the admin of.
+    MintTokens {
+        denom: String,
+        amount: Uint128,
+        mint_to_address: String,
+    },
+    /// TokenFactory message.
+    /// Contracts can burn native tokens for an existing factory denom
+    /// that they are the admin of.
+    /// Currently, the burn from address must be the admin contract.
+    BurnTokens {
+        denom: String,
+        amount: Uint128,
+        /// Must be set to `""` for now
+        burn_from_address: String,
+    },
+
     /// AddSchedule adds new schedule with a given `name`.
     /// Until schedule is removed it will execute all `msgs` every `period` blocks.
     /// First execution is at least on `current_block + period` block.
@@ -332,6 +362,42 @@ impl NeutronMsg {
     pub fn submit_clear_admin_proposal(proposal: ClearAdminProposal) -> Self {
         NeutronMsg::SubmitAdminProposal {
             admin_proposal: AdminProposal::ClearAdminProposal(proposal),
+        }
+    }
+
+    pub fn submit_create_denom(subdenom: impl Into<String>) -> Self {
+        NeutronMsg::CreateDenom {
+            subdenom: subdenom.into(),
+        }
+    }
+
+    pub fn submit_change_admin(
+        denom: impl Into<String>,
+        new_admin_address: impl Into<String>,
+    ) -> Self {
+        NeutronMsg::ChangeAdmin {
+            denom: denom.into(),
+            new_admin_address: new_admin_address.into(),
+        }
+    }
+
+    pub fn submit_mint_tokens(
+        denom: impl Into<String>,
+        amount: Uint128,
+        mint_to_address: impl Into<String>,
+    ) -> Self {
+        NeutronMsg::MintTokens {
+            denom: denom.into(),
+            amount,
+            mint_to_address: mint_to_address.into(),
+        }
+    }
+
+    pub fn submit_burn_tokens(denom: impl Into<String>, amount: Uint128) -> Self {
+        NeutronMsg::BurnTokens {
+            denom: denom.into(),
+            amount,
+            burn_from_address: String::new(),
         }
     }
 

@@ -9,7 +9,7 @@ use prost::Message as ProstMessage;
 use crate::msg::{ExecuteMsg, GetRecipientTxsResponse, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::state::{Transfer, RECIPIENT_TXS, TRANSFERS};
 use neutron_sdk::bindings::msg::NeutronMsg;
-use neutron_sdk::bindings::query::{InterchainQueries, QueryRegisteredQueryResponse};
+use neutron_sdk::bindings::query::{NeutronQuery, QueryRegisteredQueryResponse};
 use neutron_sdk::bindings::types::{Height, KVKey};
 use neutron_sdk::interchain_queries::get_registered_query;
 use neutron_sdk::interchain_queries::v045::queries::{
@@ -52,7 +52,7 @@ pub fn instantiate(
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
-    _deps: DepsMut<InterchainQueries>,
+    _deps: DepsMut<NeutronQuery>,
     _env: Env,
     _: MessageInfo,
     msg: ExecuteMsg,
@@ -208,7 +208,7 @@ pub fn remove_interchain_query(query_id: u64) -> NeutronResult<Response<NeutronM
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> NeutronResult<Binary> {
+pub fn query(deps: Deps<NeutronQuery>, env: Env, msg: QueryMsg) -> NeutronResult<Binary> {
     match msg {
         //TODO: check if query.result.height is too old (for all interchain queries)
         QueryMsg::Balance { query_id } => Ok(to_binary(&query_balance(deps, env, query_id)?)?),
@@ -234,7 +234,7 @@ pub fn query(deps: Deps<InterchainQueries>, env: Env, msg: QueryMsg) -> NeutronR
     }
 }
 
-fn query_recipient_txs(deps: Deps<InterchainQueries>, recipient: String) -> NeutronResult<Binary> {
+fn query_recipient_txs(deps: Deps<NeutronQuery>, recipient: String) -> NeutronResult<Binary> {
     let txs = RECIPIENT_TXS
         .load(deps.storage, &recipient)
         .unwrap_or_default();
@@ -248,7 +248,7 @@ pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response
 }
 
 #[entry_point]
-pub fn sudo(deps: DepsMut<InterchainQueries>, env: Env, msg: SudoMsg) -> NeutronResult<Response> {
+pub fn sudo(deps: DepsMut<NeutronQuery>, env: Env, msg: SudoMsg) -> NeutronResult<Response> {
     match msg {
         // For handling tx query result
         SudoMsg::TxQueryResult {
@@ -266,7 +266,7 @@ pub fn sudo(deps: DepsMut<InterchainQueries>, env: Env, msg: SudoMsg) -> Neutron
 /// sudo_check_tx_query_result is an example callback for transaction query results that stores the
 /// deposits received as a result on the registered query in the contract's state.
 pub fn sudo_tx_query_result(
-    deps: DepsMut<InterchainQueries>,
+    deps: DepsMut<NeutronQuery>,
     _env: Env,
     query_id: u64,
     _height: Height,
@@ -384,7 +384,7 @@ fn check_deposits_size(deposits: &Vec<Transfer>) -> StdResult<()> {
 /// sudo_kv_query_result is the contract's callback for KV query results. Note that only the query
 /// id is provided, so you need to read the query result from the state.
 pub fn sudo_kv_query_result(
-    deps: DepsMut<InterchainQueries>,
+    deps: DepsMut<NeutronQuery>,
     _env: Env,
     query_id: u64,
 ) -> NeutronResult<Response> {

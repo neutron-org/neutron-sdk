@@ -1,5 +1,5 @@
 use crate::bindings::query::{
-    InterchainQueries, QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse,
+    NeutronQuery, QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse,
 };
 use crate::interchain_queries::types::{
     KVReconstruct, QueryPayload, QueryType, TransactionFilterItem,
@@ -24,7 +24,7 @@ pub fn check_query_type(actual: QueryType, expected: QueryType) -> NeutronResult
 #[allow(clippy::too_many_arguments)]
 /// Creates a message to register an Interchain Query with provided params
 pub fn new_register_interchain_query_msg(
-    _deps: DepsMut<InterchainQueries>,
+    _deps: DepsMut<NeutronQuery>,
     _env: Env,
     connection_id: String,
     query_type: QueryType,
@@ -48,10 +48,10 @@ pub fn new_register_interchain_query_msg(
 
 /// Queries registered query info
 pub fn get_registered_query(
-    deps: Deps<InterchainQueries>,
+    deps: Deps<NeutronQuery>,
     interchain_query_id: u64,
 ) -> NeutronResult<QueryRegisteredQueryResponse> {
-    let query = InterchainQueries::RegisteredInterchainQuery {
+    let query = NeutronQuery::RegisteredInterchainQuery {
         query_id: interchain_query_id,
     };
 
@@ -61,7 +61,7 @@ pub fn get_registered_query(
 
 /// Reads submitted raw KV values for Interchain Query with **query_id** from the storage and reconstructs the result
 pub fn query_kv_result<T: KVReconstruct>(
-    deps: Deps<InterchainQueries>,
+    deps: Deps<NeutronQuery>,
     query_id: u64,
 ) -> NeutronResult<T> {
     let registered_query_result = get_interchain_query_result(deps, query_id)?;
@@ -71,10 +71,10 @@ pub fn query_kv_result<T: KVReconstruct>(
 
 /// Queries interchain query result (raw KV storage values or transactions) from Interchain Queries Module
 fn get_interchain_query_result(
-    deps: Deps<InterchainQueries>,
+    deps: Deps<NeutronQuery>,
     interchain_query_id: u64,
 ) -> NeutronResult<QueryRegisteredQueryResultResponse> {
-    let interchain_query = InterchainQueries::InterchainQueryResult {
+    let interchain_query = NeutronQuery::InterchainQueryResult {
         query_id: interchain_query_id,
     };
     let res = deps.querier.query(&interchain_query.into())?;
