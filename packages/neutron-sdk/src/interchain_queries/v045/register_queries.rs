@@ -1,6 +1,5 @@
-use crate::bindings::query::NeutronQuery;
 use crate::interchain_queries::types::{
-    QueryPayload, QueryType, TransactionFilterItem, TransactionFilterOp, TransactionFilterValue,
+    QueryPayload, TransactionFilterItem, TransactionFilterOp, TransactionFilterValue,
 };
 use crate::interchain_queries::v045::types::{
     BANK_STORE_KEY, DISTRIBUTION_STORE_KEY, GOV_STORE_KEY, HEIGHT_FIELD, KEY_BOND_DENOM,
@@ -16,32 +15,7 @@ use crate::{
         create_validator_key,
     },
 };
-use cosmwasm_std::{Binary, DepsMut, Env};
-
-#[allow(clippy::too_many_arguments)]
-/// Creates a message to register an Interchain Query with provided params
-pub fn new_register_interchain_query_msg(
-    _deps: DepsMut<NeutronQuery>,
-    _env: Env,
-    connection_id: String,
-    query_type: QueryType,
-    kv_keys: Vec<KVKey>,
-    transactions_filter: Vec<TransactionFilterItem>,
-    update_period: u64,
-) -> NeutronResult<NeutronMsg> {
-    match query_type {
-        QueryType::KV => NeutronMsg::register_interchain_query(
-            QueryPayload::KV(kv_keys),
-            connection_id,
-            update_period,
-        ),
-        QueryType::TX => NeutronMsg::register_interchain_query(
-            QueryPayload::TX(transactions_filter),
-            connection_id,
-            update_period,
-        ),
-    }
-}
+use cosmwasm_std::Binary;
 
 /// Creates a message to register an Interchain Query to get balance of account on remote chain for particular denom
 ///
