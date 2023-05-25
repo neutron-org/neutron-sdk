@@ -9,7 +9,7 @@ Interacting with counterpart chain via ibc transfer is two phases process.
 
 to run the contract you need to init two chain network connected with hermes relayer. We use a neutron nodes as both ends.
 
-1) Install hermes `cargo install --version 1.0.0 ibc-relayer-cli --bin hermes --locked`
+1) Install hermes `cargo install --git https://github.com/neutron-org/hermes --rev 7defaf0 ibc-relayer-cli --bin hermes --locked`
 2) Clone the neutron repo next to the demo contracts - `git clone git@github.com:neutron-org/neutron.git`
 3) init nodes and hermes in the neutron dir, create a transfer channel then run hermes: `make init && make start-rly`
 

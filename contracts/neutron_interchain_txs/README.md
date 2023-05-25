@@ -4,7 +4,7 @@ The example contract shows how to use and interact with [Interchain Txs Module](
 
 ## How to test
 
-1. `cargo install --version 1.0.0 ibc-relayer-cli --bin hermes --locked`
+1. `cargo install --git https://github.com/neutron-org/hermes --rev 7defaf0 ibc-relayer-cli --bin hermes --locked`
 2. `git clone git@github.com:neutron-org/neutron.git`
 3. `cd neutron && make init && make start-rly`
 4. `bash test_interchain_txs.sh` (in the Neutron SDK `scripts` directory)
