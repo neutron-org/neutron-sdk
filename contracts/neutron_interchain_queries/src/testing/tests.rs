@@ -23,18 +23,21 @@ use neutron_sdk::bindings::query::{
 use neutron_sdk::bindings::types::{
     decode_hex, Height, InterchainQueryResult, KVKey, KVKeys, RegisteredQuery, StorageValue,
 };
-use neutron_sdk::interchain_queries::helpers::{
-    create_account_denom_balance_key, create_fee_pool_key, create_gov_proposal_key,
-    create_total_denom_key, create_validator_key, decode_and_convert,
-};
+use neutron_sdk::interchain_queries::helpers::decode_and_convert;
 use neutron_sdk::interchain_queries::types::{
-    Balances, FeePool, GovernmentProposal, Proposal, QueryType, StakingValidator, TallyResult,
-    TotalSupply, TransactionFilterItem, TransactionFilterOp, TransactionFilterValue, Validator,
-    RECIPIENT_FIELD,
+    QueryType, TransactionFilterItem, TransactionFilterOp, TransactionFilterValue,
+};
+use neutron_sdk::interchain_queries::v045::helpers::{
+    create_account_denom_balance_key, create_fee_pool_key, create_gov_proposal_key,
+    create_total_denom_key, create_validator_key,
+};
+use neutron_sdk::interchain_queries::v045::types::{
+    Balances, FeePool, GovernmentProposal, Proposal, StakingValidator, TallyResult, TotalSupply,
+    Validator, RECIPIENT_FIELD,
 };
 use prost::Message as ProstMessage;
 
-use neutron_sdk::interchain_queries::queries::{
+use neutron_sdk::interchain_queries::v045::queries::{
     BalanceResponse, DelegatorDelegationsResponse, FeePoolResponse, ProposalResponse,
     TotalSupplyResponse, ValidatorResponse,
 };
@@ -338,7 +341,7 @@ fn test_distribution_fee_pool_query() {
         1,
         build_interchain_query_distribution_fee_pool_response(
             "uosmo".to_string(),
-            "8278104".to_string(),
+            "8278104000000000000000000".to_string(), // 8278104 + 18 zeros
         ),
     );
     let fee_pool_balance = QueryMsg::DistributionFeePool { query_id: 1 };
