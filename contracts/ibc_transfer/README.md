@@ -10,9 +10,10 @@ Interacting with counterpart chain via ibc transfer is two phases process.
 
 ## How to test
 
-1. set up [Localnet](https://docs.neutron.org/neutron/build-and-run/localnet)
-2. cd `scripts/`
-3. `./test_ibc_transfer.sh` (or `NEUTRON_DIR=/path/to/somedir/ ./test_ibc_transfer.sh` if the neutron dir is not `../../neutron/`)
+1. run `make build` in the root folder of `neutron-sdk/`
+2. set up [Localnet](https://docs.neutron.org/neutron/build-and-run/localnet)
+3. cd `scripts/`
+4. `./test_ibc_transfer.sh` (or `NEUTRON_DIR=/path/to/somedir/ ./test_ibc_transfer.sh` if the neutron dir is not `../../neutron/`)
 
 Checkout logs from Neutron chain: `grep -E '(ibc-transfer|WASMDEBUG)' ../../neutron/data/test-1/test-1.log`.
 You will see there debug messages from contract and neutron's ibc-transfer module itself.
