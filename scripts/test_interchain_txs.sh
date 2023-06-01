@@ -24,8 +24,9 @@ code_id="$("$BIN" tx wasm store "$CONTRACT_PATH"                \
     --broadcast-mode=block --gas-prices 0.0025untrn -y          \
     --output json --keyring-backend=test --home "$HOME_1"       \
     --node "$NEUTRON_NODE"                                      \
-    | jq -r '.logs[0].events[] | select(.type == "store_code").attributes[] | select(.key == "code_id").value')"
-echo "Code ID: $code_id"
+    )"
+echo "$code_id" | jq
+exit
 
 contract_address=$("$BIN" tx wasm instantiate "$code_id" '{}'        \
     --from "$ADDRESS_1" --admin "$ADMIN" -y --chain-id "$CHAIN_ID_1" \

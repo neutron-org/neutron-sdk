@@ -20,6 +20,9 @@ pub enum QueryMsg {
     },
     // this query returns non-critical errors list
     ErrorsQueue {},
+    TotalSupply {
+        denom: String,
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]

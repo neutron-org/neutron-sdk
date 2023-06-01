@@ -5,8 +5,8 @@ use cosmos_sdk_proto::cosmos::staking::v1beta1::{
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Binary, CosmosMsg, CustomQuery, Deps, DepsMut, Env, MessageInfo, Reply, Response,
-    StdError, StdResult, SubMsg,
+    to_binary, BankQuery, Binary, CosmosMsg, CustomQuery, Deps, DepsMut, Env, MessageInfo,
+    QueryRequest, Reply, Response, StdError, StdResult, SubMsg, SupplyResponse,
 };
 use cw2::set_contract_version;
 use prost::Message;
@@ -127,6 +127,11 @@ pub fn query(deps: Deps<NeutronQuery>, env: Env, msg: QueryMsg) -> NeutronResult
             sequence_id,
         } => query_acknowledgement_result(deps, env, interchain_account_id, sequence_id),
         QueryMsg::ErrorsQueue {} => query_errors_queue(deps),
+        QueryMsg::TotalSupply { denom } => {
+            Ok(to_binary(&deps.querier.query::<SupplyResponse>(
+                &QueryRequest::Bank(BankQuery::Supply { denom }),
+            )?)?)
+        }
     }
 }
 

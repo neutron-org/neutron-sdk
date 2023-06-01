@@ -21,6 +21,6 @@ compile:
 
 check_contracts:
 	@cargo install cosmwasm-check
-	@cosmwasm-check --available-capabilities iterator,staking,stargate,neutron artifacts/*.wasm
+	@cosmwasm-check --available-capabilities iterator,staking,stargate,neutron,cosmwasm_1_1 artifacts/*.wasm
 
 build: build_proto schema clippy test fmt compile check_contracts
