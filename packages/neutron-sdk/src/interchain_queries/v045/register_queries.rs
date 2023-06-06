@@ -3,7 +3,7 @@ use crate::interchain_queries::types::{
 };
 use crate::interchain_queries::v045::types::{
     BANK_STORE_KEY, DISTRIBUTION_STORE_KEY, GOV_STORE_KEY, HEIGHT_FIELD, KEY_BOND_DENOM,
-    PARAMS_STORE_KEY, RECIPIENT_FIELD, STAKING_STORE_KEY,
+    PARAMS_STORE_KEY, RECIPIENT_FIELD, STAKING_STORE_KEY, WASM_STORE_KEY,
 };
 use crate::{
     bindings::{msg::NeutronMsg, types::KVKey},
@@ -12,7 +12,7 @@ use crate::{
     interchain_queries::v045::helpers::{
         create_account_denom_balance_key, create_delegation_key, create_fee_pool_key,
         create_gov_proposal_key, create_params_store_key, create_total_denom_key,
-        create_validator_key,
+        create_validator_key, create_wasm_contract_store_key,
     },
 };
 use cosmwasm_std::Binary;
@@ -183,6 +183,34 @@ pub fn new_register_delegator_delegations_query_msg(
     }
 
     NeutronMsg::register_interchain_query(QueryPayload::KV(keys), connection_id, update_period)
+}
+
+/// Creates a message to register an Interchain Query to get wasm contract store on remote chain
+/// from **wasm** module
+///
+/// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
+/// * **contract_address** is an address of a contract on a remote chain;
+/// * **key** is a wasm contract store key;
+/// * **update_period** is used to say how often the query must be updated.
+pub fn new_register_wasm_contract_store_query_msg(
+    connection_id: String,
+    contract_address: String,
+    key: impl AsRef<[u8]>,
+    update_period: u64,
+) -> NeutronResult<NeutronMsg> {
+    let converted_addr_bytes = decode_and_convert(contract_address.as_str())?;
+    let wasm_key = create_wasm_contract_store_key(converted_addr_bytes, key.as_ref())?;
+
+    let kv_key = KVKey {
+        path: WASM_STORE_KEY.to_string(),
+        key: Binary(wasm_key),
+    };
+
+    NeutronMsg::register_interchain_query(
+        QueryPayload::KV(vec![kv_key]),
+        connection_id,
+        update_period,
+    )
 }
 
 /// Creates a message to register an Interchain Query to get transfer events to a recipient on a remote chain.

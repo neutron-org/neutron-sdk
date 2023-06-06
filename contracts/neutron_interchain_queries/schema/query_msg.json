@@ -137,6 +137,28 @@
     {
       "type": "object",
       "required": [
+        "cw20_balance"
+      ],
+      "properties": {
+        "cw20_balance": {
+          "type": "object",
+          "required": [
+            "query_id"
+          ],
+          "properties": {
+            "query_id": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
         "get_registered_query"
       ],
       "properties": {

@@ -50,6 +50,10 @@ pub const FEE_POOL_KEY: u8 = 0x00;
 /// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/gov/types/keys.go#L41>
 pub const PROPOSALS_KEY_PREFIX: u8 = 0x00;
 
+/// Key for Wasm Contract Store in the **wasm** module's storage
+/// <https://github.com/CosmWasm/wasmd/blob/e6d451bf9dd96a555b10e72aa3c0f6b820d34684/x/wasm/types/keys.go#L28>
+pub const WASM_CONTRACT_STORE_PREFIX: u8 = 0x03;
+
 /// Name of the standard **bank** Cosmos-SDK module
 pub const BANK_STORE_KEY: &str = "bank";
 
@@ -71,6 +75,9 @@ pub const PARAMS_STORE_KEY: &str = "params";
 
 /// Default delimiter of **params** Cosmos-SDK module
 pub const PARAMS_STORE_DELIMITER: &str = "/";
+
+/// Name of the **wasm** Cosmos module
+pub const WASM_STORE_KEY: &str = "wasm";
 
 pub const RECIPIENT_FIELD: &str = "transfer.recipient";
 pub const HEIGHT_FIELD: &str = "tx.height";

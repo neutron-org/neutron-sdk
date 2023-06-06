@@ -40,7 +40,7 @@ pub fn query_kv_result<T: KVReconstruct>(
 }
 
 /// Queries interchain query result (raw KV storage values or transactions) from Interchain Queries Module
-fn get_interchain_query_result(
+pub fn get_interchain_query_result(
     deps: Deps<NeutronQuery>,
     interchain_query_id: u64,
 ) -> NeutronResult<QueryRegisteredQueryResultResponse> {
