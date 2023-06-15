@@ -93,8 +93,11 @@ pub fn create_validator_key<AddrBytes: AsRef<[u8]>>(
     Ok(key)
 }
 
-/// Creates Wasm key for contract state
-/// <https://github.com/CosmWasm/wasmd/blob/e6d451bf9dd96a555b10e72aa3c0f6b820d34684/x/wasm/types/keys.go#L28>
+/// Creates Wasm key for contract state.
+/// This function is similar to
+/// <https://github.com/CosmWasm/wasmd/blob/e6d451bf9dd96a555b10e72aa3c0f6b820d34684/x/wasm/types/keys.go#L59>,
+/// but it also concatenates resulting contract store prefix with contract's storage key,
+/// resulting in a complete storage key.
 pub fn create_wasm_contract_store_key<AddrBytes: AsRef<[u8]>, Key: AsRef<[u8]>>(
     contract_address: AddrBytes,
     key: Key,
