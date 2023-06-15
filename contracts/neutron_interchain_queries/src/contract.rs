@@ -1,8 +1,8 @@
 use cosmos_sdk_proto::cosmos::bank::v1beta1::MsgSend;
 use cosmos_sdk_proto::cosmos::tx::v1beta1::{TxBody, TxRaw};
 use cosmwasm_std::{
-    entry_point, from_binary, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response,
-    StdError, StdResult, Uint128,
+    entry_point, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult,
+    Uint128,
 };
 use cw2::set_contract_version;
 use prost::Message as ProstMessage;
@@ -19,8 +19,7 @@ use neutron_sdk::interchain_queries::v045::queries::{
     query_government_proposals, query_staking_validators,
 };
 use neutron_sdk::interchain_queries::{
-    check_query_type, get_registered_query,
-    queries::get_interchain_query_result,
+    check_query_type, get_registered_query, query_kv_result,
     v045::{
         new_register_balance_query_msg, new_register_bank_total_supply_query_msg,
         new_register_delegator_delegations_query_msg, new_register_distribution_fee_pool_query_msg,
@@ -293,16 +292,7 @@ pub fn query_cw20_balance(
 
     check_query_type(registered_query.registered_query.query_type, QueryType::KV)?;
 
-    let mut response = get_interchain_query_result(deps, registered_query_id)?;
-
-    // we expect exactly one storage value
-    let result = response
-        .result
-        .kv_results
-        .pop()
-        .ok_or_else(|| StdError::generic_err("empty query result"))?;
-
-    let balance: Uint128 = from_binary(&result.value)?;
+    let balance: Uint128 = query_kv_result(deps, registered_query_id)?;
     Ok(Cw20BalanceResponse { balance })
 }
 

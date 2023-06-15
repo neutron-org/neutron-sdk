@@ -9,7 +9,7 @@ use cosmos_sdk_proto::cosmos::{
     gov::v1beta1::Proposal as CosmosProposal,
     staking::v1beta1::{Delegation, Validator as CosmosValidator},
 };
-use cosmwasm_std::{from_binary, Addr, Coin, Decimal, Uint128};
+use cosmwasm_std::{from_binary, Addr, Coin, Decimal, StdError, Uint128};
 use prost::Message as ProstMessage;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -81,6 +81,16 @@ pub const WASM_STORE_KEY: &str = "wasm";
 
 pub const RECIPIENT_FIELD: &str = "transfer.recipient";
 pub const HEIGHT_FIELD: &str = "tx.height";
+
+impl KVReconstruct for Uint128 {
+    fn reconstruct(storage_values: &[StorageValue]) -> NeutronResult<Uint128> {
+        let value = storage_values
+            .first()
+            .ok_or_else(|| StdError::generic_err("empty query result"))?;
+        let balance: Uint128 = from_binary(&value.value)?;
+        Ok(balance)
+    }
+}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 /// A structure that can be reconstructed from **StorageValues**'s for the **Balance Interchain Query**.
