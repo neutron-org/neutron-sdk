@@ -34,13 +34,16 @@ pub fn query_kv_result<T: KVReconstruct>(
     deps: Deps<NeutronQuery>,
     query_id: u64,
 ) -> NeutronResult<T> {
-    let registered_query_result = get_interchain_query_result(deps, query_id)?;
+    let registered_query_result = get_raw_interchain_query_result(deps, query_id)?;
 
     KVReconstruct::reconstruct(&registered_query_result.result.kv_results)
 }
 
-/// Queries interchain query result (raw KV storage values or transactions) from Interchain Queries Module
-pub fn get_interchain_query_result(
+/// Queries raw interchain query result (raw KV storage values or transactions) from Interchain Queries Module.
+/// Usually it is better to implement [KVReconstruct] for your own type and then use [query_kv_result],
+/// but in cases when Rust forbids to implement foreign trait [KVReconstruct] for some foreign type,
+/// it is possible to use [get_raw_interchain_query_result] and reconstruct query result manually.
+pub fn get_raw_interchain_query_result(
     deps: Deps<NeutronQuery>,
     interchain_query_id: u64,
 ) -> NeutronResult<QueryRegisteredQueryResultResponse> {
