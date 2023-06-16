@@ -88,7 +88,7 @@ fn build_registered_query_response(
 }
 
 fn build_interchain_query_bank_total_denom_value(denom: String, amount: String) -> StorageValue {
-    let bank_total_key = create_total_denom_key(&denom).unwrap();
+    let bank_total_key = create_total_denom_key(denom).unwrap();
 
     let amount = amount.as_bytes().to_vec();
 
