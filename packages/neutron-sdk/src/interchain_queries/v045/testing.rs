@@ -759,7 +759,7 @@ fn test_delegations_reconstruct() {
 #[test]
 fn test_balance_reconstruct_from_hex() {
     let bytes = hex::decode(BALANCES_HEX_RESPONSE).unwrap(); // decode hex string to bytes
-    let base64_input = base64::encode(&bytes); // encode bytes to base64 string
+    let base64_input = base64::encode(bytes); // encode bytes to base64 string
 
     let s = StorageValue {
         storage_prefix: String::default(), // not used in reconstruct
@@ -781,7 +781,7 @@ fn test_balance_reconstruct_from_hex() {
 #[test]
 fn test_bank_total_supply_reconstruct_from_hex() {
     let bytes = hex::decode(TOTAL_SUPPLY_HEX_RESPONSE).unwrap(); // decode hex string to bytes
-    let base64_input = base64::encode(&bytes); // encode bytes to base64 string
+    let base64_input = base64::encode(bytes); // encode bytes to base64 string
 
     let s = StorageValue {
         storage_prefix: String::default(), // not used in reconstruct
@@ -803,7 +803,7 @@ fn test_bank_total_supply_reconstruct_from_hex() {
 #[test]
 fn test_staking_validators_reconstruct_from_hex() {
     let bytes = hex::decode(STAKING_VALIDATOR_HEX_RESPONSE).unwrap(); // decode hex string to bytes
-    let base64_input = base64::encode(&bytes); // encode bytes to base64 string
+    let base64_input = base64::encode(bytes); // encode bytes to base64 string
 
     let s = StorageValue {
         storage_prefix: String::default(), // not used in reconstruct
@@ -842,7 +842,7 @@ fn test_staking_validators_reconstruct_from_hex() {
 #[test]
 fn test_government_proposals_reconstruct_from_hex() {
     let bytes = hex::decode(GOV_PROPOSAL_HEX_RESPONSE).unwrap(); // decode hex string to bytes
-    let base64_input = base64::encode(&bytes); // encode bytes to base64 string
+    let base64_input = base64::encode(bytes); // encode bytes to base64 string
 
     let s = StorageValue {
         storage_prefix: String::default(), // not used in reconstruct
@@ -879,7 +879,7 @@ fn test_government_proposals_reconstruct_from_hex() {
 #[test]
 fn test_fee_pool_reconstruct_from_hex() {
     let bytes = hex::decode(FEE_POOL_HEX_RESPONSE).unwrap(); // decode hex string to bytes
-    let base64_input = base64::encode(&bytes); // encode bytes to base64 string
+    let base64_input = base64::encode(bytes); // encode bytes to base64 string
 
     let s = StorageValue {
         storage_prefix: String::default(), // not used in reconstruct
@@ -901,11 +901,11 @@ fn test_fee_pool_reconstruct_from_hex() {
 #[test]
 fn test_delegations_reconstruct_from_hex() {
     let staking_denom_bytes = hex::decode(STAKING_DENOM_HEX_RESPONSE).unwrap(); // decode hex string to bytes
-    let staking_denom_base64_input = base64::encode(&staking_denom_bytes); // encode bytes to base64 string
+    let staking_denom_base64_input = base64::encode(staking_denom_bytes); // encode bytes to base64 string
     let staking_validator_bytes = hex::decode(STAKING_VALIDATOR_HEX_RESPONSE).unwrap(); // decode hex string to bytes
-    let staking_validator_base64_input = base64::encode(&staking_validator_bytes); // encode bytes to base64 string
+    let staking_validator_base64_input = base64::encode(staking_validator_bytes); // encode bytes to base64 string
     let delegation_bytes = hex::decode(DELEGATOR_DELEGATIONS_HEX_RESPONSE).unwrap(); // decode hex string to bytes
-    let delegation_base64_input = base64::encode(&delegation_bytes); // encode bytes to base64 string
+    let delegation_base64_input = base64::encode(delegation_bytes); // encode bytes to base64 string
 
     let mut st_values: Vec<StorageValue> = vec![StorageValue {
         storage_prefix: String::default(), // not used in reconstruct
