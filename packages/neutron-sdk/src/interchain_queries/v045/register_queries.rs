@@ -192,6 +192,12 @@ pub fn new_register_delegator_delegations_query_msg(
 /// * **contract_address** is an address of a contract on a remote chain;
 /// * **key** is a wasm contract store key;
 /// * **update_period** is used to say how often the query must be updated.
+///
+/// Obtaining a **key** might not be a trivial task. One could list all contract's storage keys
+/// using `$CHAIN_BIN query wasm contract-state all $CONTRACT_ADDRESS --output json | jq`.
+/// The listed keys will be in format of plain hexadecimal string which is hard to understand
+/// just by looking it. One could pipe this string into `| xxd -r -p | hexdump -C` and examine
+/// its contents.
 pub fn new_register_wasm_contract_store_query_msg(
     connection_id: String,
     contract_address: String,
