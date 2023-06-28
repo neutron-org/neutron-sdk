@@ -34,12 +34,13 @@ proceeding to step 3.
 
 ## 3. Connect to Juno testnet
 
-Open `create_juno_connection.sh` in your text editor of choice.
+Open `neutron-sdk/scripts/test_icq_wasm_juno_testnet/create_juno_connection.sh` in your text editor of choice.
 Navigate to `JUNO_MNEMONIC=""` and insert there your own testnet mnemonic.
 Please make sure to have at least 0.01 JUNOX on uni-6 testnet, these funds
 are needed to create a connection.
 
-Run `./create_juno_connection.sh`. After it finishes, `connection-0` should
+Change current directory to `neutron-sdk/scripts/test_icq_wasm_juno_testnet/`
+and run `./create_juno_connection.sh`. After it finishes, `connection-0` should
 appear on Neutron localnet. You can use this snippet to query a list of
 connections on Neutron's localnet:
 
@@ -53,20 +54,25 @@ and so on, simply use the last one you have created.
 
 ## 4. Deploy ICQ relayer
 
-Open `icq.env` in your text editor of choice.
+Open `neutron-sdk/scripts/test_icq_wasm_juno_testnet/icq.env` in your text editor of choice.
 Navigate to `RELAYER_NEUTRON_CHAIN_CONNECTION_ID=` and insert there
 connection ID you have just created.
 
 ```bash
+cd neutron-sdk/scripts/test_icq_wasm_juno_testnet/
 rm -rf storage/; export $(xargs < icq.env) && neutron_query_relayer start
 ```
 
 ## 5. Prepare to run test
 
-Open `test_wasm_query.sh` in your text editor of choice.
-Navigate to `CONNECTION_ID=""` and insert there
+First, navigate to root directory of neutron-sdk repo and execute
+`rm -rf target/; cargo update && make build`.
+
+Next, open `neutron-sdk/scripts/test_icq_wasm_juno_testnet/test_wasm_query.sh`
+in your text editor of choice. Navigate to `CONNECTION_ID=""` and insert there
 connection ID you have just created.
 
 ## 6. Run test
 
-Execute `./test_wasm_query.sh`.
+Change directory to `neutron-sdk/scripts/test_icq_wasm_juno_testnet` and
+execute `./test_wasm_query.sh`.
