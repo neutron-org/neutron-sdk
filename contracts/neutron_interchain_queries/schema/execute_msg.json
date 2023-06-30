@@ -241,6 +241,40 @@
     {
       "type": "object",
       "required": [
+        "register_cw20_balance_query"
+      ],
+      "properties": {
+        "register_cw20_balance_query": {
+          "type": "object",
+          "required": [
+            "account_address",
+            "connection_id",
+            "cw20_contract_address",
+            "update_period"
+          ],
+          "properties": {
+            "account_address": {
+              "type": "string"
+            },
+            "connection_id": {
+              "type": "string"
+            },
+            "cw20_contract_address": {
+              "type": "string"
+            },
+            "update_period": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
         "update_interchain_query"
       ],
       "properties": {

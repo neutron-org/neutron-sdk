@@ -2,7 +2,7 @@ use crate::errors::error::NeutronResult;
 use crate::interchain_queries::helpers::length_prefix;
 use crate::interchain_queries::v045::types::{
     BALANCES_PREFIX, DELEGATION_KEY, FEE_POOL_KEY, PARAMS_STORE_DELIMITER, PROPOSALS_KEY_PREFIX,
-    SUPPLY_PREFIX, VALIDATORS_KEY,
+    SUPPLY_PREFIX, VALIDATORS_KEY, WASM_CONTRACT_STORE_PREFIX,
 };
 use cosmos_sdk_proto::cosmos::staking::v1beta1::Commission as ValidatorCommission;
 use cosmwasm_std::{Binary, Decimal, Uint128};
@@ -91,6 +91,22 @@ pub fn create_validator_key<AddrBytes: AsRef<[u8]>>(
     key.extend_from_slice(length_prefix(operator_address)?.as_slice());
 
     Ok(key)
+}
+
+/// Creates Wasm key for contract state.
+/// This function is similar to
+/// <https://github.com/CosmWasm/wasmd/blob/e6d451bf9dd96a555b10e72aa3c0f6b820d34684/x/wasm/types/keys.go#L59>,
+/// but it also concatenates resulting contract store prefix with contract's storage key,
+/// resulting in a complete storage key.
+pub fn create_wasm_contract_store_key<AddrBytes: AsRef<[u8]>, Key: AsRef<[u8]>>(
+    contract_address: AddrBytes,
+    key: Key,
+) -> NeutronResult<Vec<u8>> {
+    let mut prefix: Vec<u8> = vec![WASM_CONTRACT_STORE_PREFIX];
+    prefix.extend_from_slice(contract_address.as_ref());
+    prefix.extend_from_slice(key.as_ref());
+
+    Ok(prefix)
 }
 
 /// Creates Cosmos-SDK distribution key for fee pool

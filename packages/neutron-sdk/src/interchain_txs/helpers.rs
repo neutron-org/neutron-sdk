@@ -2,7 +2,7 @@ use cosmos_sdk_proto::cosmos::base::abci::v1beta1::{MsgData, TxMsgData};
 use cosmwasm_std::{Binary, StdError, StdResult};
 use prost::{DecodeError, Message};
 
-/// Decodes acknowledgement into Vec<MsgData> structure
+/// Decodes acknowledgement into `Vec<MsgData>` structure
 pub fn decode_acknowledgement_response(data: Binary) -> StdResult<Vec<MsgData>> {
     let msg_data: Result<TxMsgData, DecodeError> = TxMsgData::decode(data.as_slice());
     match msg_data {

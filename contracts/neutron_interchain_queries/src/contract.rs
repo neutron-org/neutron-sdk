@@ -2,33 +2,39 @@ use cosmos_sdk_proto::cosmos::bank::v1beta1::MsgSend;
 use cosmos_sdk_proto::cosmos::tx::v1beta1::{TxBody, TxRaw};
 use cosmwasm_std::{
     entry_point, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult,
+    Uint128,
 };
 use cw2::set_contract_version;
 use prost::Message as ProstMessage;
 
-use crate::msg::{ExecuteMsg, GetRecipientTxsResponse, InstantiateMsg, MigrateMsg, QueryMsg};
+use crate::msg::{
+    Cw20BalanceResponse, ExecuteMsg, GetRecipientTxsResponse, InstantiateMsg, MigrateMsg, QueryMsg,
+};
 use crate::state::{Transfer, RECIPIENT_TXS, TRANSFERS};
 use neutron_sdk::bindings::msg::NeutronMsg;
 use neutron_sdk::bindings::query::{NeutronQuery, QueryRegisteredQueryResponse};
 use neutron_sdk::bindings::types::{Height, KVKey};
-use neutron_sdk::interchain_queries::get_registered_query;
 use neutron_sdk::interchain_queries::v045::queries::{
     query_balance, query_bank_total, query_delegations, query_distribution_fee_pool,
     query_government_proposals, query_staking_validators,
 };
-use neutron_sdk::interchain_queries::v045::{
-    new_register_balance_query_msg, new_register_bank_total_supply_query_msg,
-    new_register_delegator_delegations_query_msg, new_register_distribution_fee_pool_query_msg,
-    new_register_gov_proposal_query_msg, new_register_staking_validators_query_msg,
-    new_register_transfers_query_msg,
+use neutron_sdk::interchain_queries::{
+    check_query_type, get_registered_query, query_kv_result,
+    v045::{
+        new_register_balance_query_msg, new_register_bank_total_supply_query_msg,
+        new_register_delegator_delegations_query_msg, new_register_distribution_fee_pool_query_msg,
+        new_register_gov_proposal_query_msg, new_register_staking_validators_query_msg,
+        new_register_transfers_query_msg,
+        register_queries::new_register_wasm_contract_store_query_msg,
+        types::{COSMOS_SDK_TRANSFER_MSG_URL, RECIPIENT_FIELD},
+    },
 };
 use neutron_sdk::sudo::msg::SudoMsg;
 use neutron_sdk::{NeutronError, NeutronResult};
 
 use neutron_sdk::interchain_queries::types::{
-    TransactionFilterItem, TransactionFilterOp, TransactionFilterValue,
+    QueryType, TransactionFilterItem, TransactionFilterOp, TransactionFilterValue,
 };
-use neutron_sdk::interchain_queries::v045::types::{COSMOS_SDK_TRANSFER_MSG_URL, RECIPIENT_FIELD};
 use serde_json_wasm;
 
 /// defines the incoming transfers limit to make a case of failed callback possible.
@@ -95,6 +101,17 @@ pub fn execute(
             update_period,
             min_height,
         } => register_transfers_query(connection_id, recipient, update_period, min_height),
+        ExecuteMsg::RegisterCw20BalanceQuery {
+            connection_id,
+            update_period,
+            cw20_contract_address,
+            account_address,
+        } => register_cw20_balance_query(
+            connection_id,
+            update_period,
+            cw20_contract_address,
+            account_address,
+        ),
         ExecuteMsg::UpdateInterchainQuery {
             query_id,
             new_keys,
@@ -183,6 +200,28 @@ pub fn register_transfers_query(
     Ok(Response::new().add_message(msg))
 }
 
+pub fn register_cw20_balance_query(
+    connection_id: String,
+    update_period: u64,
+    cw20_contract_address: String,
+    account_address: String,
+) -> NeutronResult<Response<NeutronMsg>> {
+    // cw_storage_plus uses this prefix for maps
+    let mut storage_key = vec![0u8, 7u8];
+
+    storage_key.extend_from_slice("balance".as_bytes());
+    storage_key.extend_from_slice(account_address.as_bytes());
+
+    let msg = new_register_wasm_contract_store_query_msg(
+        connection_id,
+        cw20_contract_address,
+        &storage_key,
+        update_period,
+    )?;
+
+    Ok(Response::new().add_message(msg))
+}
+
 pub fn update_interchain_query(
     query_id: u64,
     new_keys: Option<Vec<KVKey>>,
@@ -227,6 +266,9 @@ pub fn query(deps: Deps<NeutronQuery>, env: Env, msg: QueryMsg) -> NeutronResult
         QueryMsg::GetDelegations { query_id } => {
             Ok(to_binary(&query_delegations(deps, env, query_id)?)?)
         }
+        QueryMsg::Cw20Balance { query_id } => {
+            Ok(to_binary(&query_cw20_balance(deps, env, query_id)?)?)
+        }
         QueryMsg::GetRegisteredQuery { query_id } => {
             Ok(to_binary(&get_registered_query(deps, query_id)?)?)
         }
@@ -239,6 +281,19 @@ fn query_recipient_txs(deps: Deps<NeutronQuery>, recipient: String) -> NeutronRe
         .load(deps.storage, &recipient)
         .unwrap_or_default();
     Ok(to_binary(&GetRecipientTxsResponse { transfers: txs })?)
+}
+
+pub fn query_cw20_balance(
+    deps: Deps<NeutronQuery>,
+    _env: Env,
+    registered_query_id: u64,
+) -> NeutronResult<Cw20BalanceResponse> {
+    let registered_query = get_registered_query(deps, registered_query_id)?;
+
+    check_query_type(registered_query.registered_query.query_type, QueryType::KV)?;
+
+    let balance: Uint128 = query_kv_result(deps, registered_query_id)?;
+    Ok(Cw20BalanceResponse { balance })
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
