@@ -25,6 +25,17 @@ pub fn new_register_transfer_nft_query_msg(
     contract_address: String,
     token_id: String,
 ) -> NeutronResult<NeutronMsg> {
+    let query_data = nft_transfer_filter(min_height, recipient, sender, contract_address, token_id);
+
+    // [{"field": "{eventType}.{attributeKey}", "val": "{attributeValue}", "op": "gte"}, ...]
+    NeutronMsg::register_interchain_query(
+        QueryPayload::TX(query_data),
+        connection_id,
+        update_period,
+    )
+}
+
+pub fn nft_transfer_filter(min_height: u64, recipient: String, sender: String, contract_address: String, token_id: String) -> Vec<TransactionFilterItem> {
     let query_data = vec![
         TransactionFilterItem {
             field: HEIGHT_FIELD.to_string(),
@@ -57,13 +68,7 @@ pub fn new_register_transfer_nft_query_msg(
             value: TransactionFilterValue::String(token_id),
         },
     ];
-
-    // [{"field": "{eventType}.{attributeKey}", "val": "{attributeValue}", "op": "gte"}, ...]
-    NeutronMsg::register_interchain_query(
-        QueryPayload::TX(query_data),
-        connection_id,
-        update_period,
-    )
+    query_data
 }
 
 pub fn verify_query(_token_id: String) -> NeutronResult<String>{
