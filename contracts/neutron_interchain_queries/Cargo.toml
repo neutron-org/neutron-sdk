@@ -28,6 +28,7 @@ overflow-checks = true
 
 [features]
 # for more explicit tests, cargo test --features=backtraces
+interface = ["dep:cw-orch"]
 backtraces = ["cosmwasm-std/backtraces"]
 library = []
 
@@ -47,3 +48,4 @@ cosmwasm-schema = { version = "1.0.0", default-features = false }
 bech32 = "0.9.1"
 cw0 = "0.10.3"
 cw721 = "0.18.0"
+cw-orch = { version = "0.13.3", optional = true }

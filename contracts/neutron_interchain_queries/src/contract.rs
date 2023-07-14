@@ -85,6 +85,7 @@ pub fn instantiate(
     Ok(Response::default())
 }
 
+#[cfg_attr(feature="interface", cw_orch::interface_entry_point)]
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut<NeutronQuery>,
@@ -229,6 +230,7 @@ fn execute_unlock_nft(
     Ok(Response::default().add_submessages(vec![submsg]))
 }
 
+#[cfg_attr(feature="interface", cw_orch::interface_entry_point)]
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps<NeutronQuery>, env: Env, msg: QueryMsg) -> NeutronResult<Binary> {
     match msg {
@@ -245,13 +247,15 @@ fn query_transfer_nft(deps: Deps<NeutronQuery>, env: Env, query_id: u64) -> Neut
     todo!()
 }
 
+#[cfg_attr(feature="interface", cw_orch::interface_entry_point)]
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
     deps.api.debug("WASMDEBUG: migrate");
     Ok(Response::default())
 }
 
-#[entry_point]
+#[cfg_attr(feature="interface", cw_orch::interface_entry_point)]
+#[cfg_attr(not(feature = "library"), entry_point)]
 pub fn sudo(deps: DepsMut<NeutronQuery>, env: Env, msg: SudoMsg) -> NeutronResult<Response> {
     match msg {
         // For handling tx query result

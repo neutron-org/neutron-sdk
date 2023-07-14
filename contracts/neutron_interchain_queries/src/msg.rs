@@ -1,6 +1,6 @@
 use crate::state::NftTransfer;
-use cosmwasm_std::Uint128;
-use neutron_sdk::bindings::types::KVKey;
+
+
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -9,7 +9,6 @@ pub struct InstantiateMsg {
     pub connection_id: String,
     pub contract_addr: String // This is a stargaze address, so it should NOT be validated locally
 }
-
 
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
