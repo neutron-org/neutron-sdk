@@ -55,7 +55,7 @@ const MAX_ALLOWED_MESSAGES: usize = 20;
 const CONTRACT_NAME: &str = concat!("crates.io:neutron-sdk__", env!("CARGO_PKG_NAME"));
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
-const INTERCHAIN_ACCOUNT_ID: &str = "bad-kids-account-id";
+pub const INTERCHAIN_ACCOUNT_ID: &str = "bad-kids-account-id";
 
 #[cfg_attr(feature = "interface", cw_orch::interface_entry_point)]
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -301,6 +301,8 @@ pub fn sudo_tx_query_result(
         _ => {
             let msg = body.messages.get(0).unwrap();
 
+            // panic!("WASMDEBUG: msg: {:?}", msg);
+
             let contract_msg = MsgExecuteContract::decode(msg.value.as_slice()).unwrap();
 
             let transfer_msg: Cw721ExecuteMsg = from_binary(&contract_msg.msg.into())?;
@@ -312,10 +314,6 @@ pub fn sudo_tx_query_result(
                 } => {
                     let sender = deps.api.addr_validate(&contract_msg.sender)?;
                     let receiver_addr = deps.api.addr_validate(recipient.as_str())?;
-                    assert!(
-                        receiver_addr == _env.contract.address,
-                        "receiver is not this contract"
-                    );
 
                     let contract_addr = deps.api.addr_validate(&contract_msg.contract.as_str())?;
                     let transfer_nft = NftTransfer {
