@@ -12,18 +12,20 @@ use cw_storage_plus::{Item, Map};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-pub type Recipient = str;
+pub type Sender = str;
 
 /// contains all transfers mapped by a recipient address observed by the contract.
-pub const RECIPIENT_TXS: Map<&Recipient, Vec<NftTransfer>> = Map::new("recipient_txs");
+pub const SENDER_TXS: Map<&Sender, Vec<NftTransfer>> = Map::new("recipient_txs");
 /// contains number of transfers to addresses observed by the contract.
-pub const TRANSFERS: Item<u64> = Item::new("transfers");
+pub const TRANSFERS: Item<u64> = Item::new("nft-transfers");
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct NftTransfer {
-    pub recipient: String,
+    /// The address of the sender in the host chain
     pub sender: String,
+    /// he address of the specific NFT collection
     pub contract_address: String,
+    /// The ID of the NFT
     pub token_id: String,
 }
 

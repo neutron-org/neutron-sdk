@@ -1,58 +1,53 @@
-use crate::query_helpers::verify_query;
-use crate::ibc::msg_with_sudo_callback;
-use crate::state::SudoPayload;
-use cosmos_sdk_proto::traits::MessageExt;
-use crate::state::get_ica;
-use cw0::must_pay;
+use crate::ibc::execute_register_ica;
 use crate::ibc::min_ntrn_ibc_fee;
-use neutron_sdk::query::min_ibc_fee::query_min_ibc_fee;
+use crate::ibc::msg_with_sudo_callback;
+use crate::mint::any_addr_to_neutron;
+use crate::mint::format_token_denom;
+use crate::mint::mint_native_receipt;
+use crate::mint::THRESHOLD_BURN_AMOUNT;
+use crate::query_helpers::verify_query;
+use crate::state::SENDER_TXS;
+use crate::state::get_ica;
+use crate::state::Config;
+use crate::state::SudoPayload;
+use crate::state::CONFIG;
+use crate::state::MINTED_TOKENS;
+use cosmos_sdk_proto::traits::MessageExt;
+use cosmwasm_std::CosmosMsg;
+use cw0::must_pay;
 use neutron_sdk::bindings::types::ProtobufAny;
 use neutron_sdk::interchain_txs::helpers::get_port_id;
-use crate::state::MINTED_TOKENS;
-use crate::mint::format_token_denom;
-use crate::mint::THRESHOLD_BURN_AMOUNT;
+use neutron_sdk::query::min_ibc_fee::query_min_ibc_fee;
 use neutron_sdk::NeutronError;
-use crate::mint::any_addr_to_neutron;
-use crate::mint::mint_native_receipt;
-use crate::ibc::execute_register_ica;
-use crate::state::Config;
-use crate::state::CONFIG;
 
 use cosmos_sdk_proto::cosmos::tx::v1beta1::{TxBody, TxRaw};
+
 use cosmwasm_std::{
-    entry_point, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult, WasmMsg, from_binary,
+    entry_point, from_binary, to_binary, Binary, Deps, DepsMut, Empty, Env, MessageInfo, Response,
+    StdError, StdResult, Uint128, WasmMsg,
 };
 use cw2::set_contract_version;
 use prost::Message as ProstMessage;
 
-use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg, TransferNftResponse,
-};
+use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg, TransferNftResponse};
 use crate::query_helpers::{new_register_transfer_nft_query_msg, WASM_EXECUTE_MSG_TYPE};
-use crate::state::{NftTransfer};
-use neutron_sdk::bindings::msg::{NeutronMsg};
+use crate::state::{NftTransfer, TRANSFERS};
+use neutron_sdk::bindings::msg::{MsgExecuteContractResponse, NeutronMsg};
 use neutron_sdk::bindings::query::{NeutronQuery, QueryRegisteredQueryResponse};
-use neutron_sdk::bindings::types::{Height};
-use neutron_sdk::interchain_queries::{
-    get_registered_query,
-};
+use neutron_sdk::bindings::types::Height;
+use neutron_sdk::interchain_queries::get_registered_query;
 use neutron_sdk::sudo::msg::SudoMsg;
-use neutron_sdk::{NeutronResult};
+use neutron_sdk::NeutronResult;
 
-use neutron_sdk::interchain_queries::types::{
-    TransactionFilterItem,
-};
-use cosmos_sdk_proto::cosmwasm::wasm::v1::{
-    MsgExecuteContract
-};
+use cosmos_sdk_proto::cosmwasm::wasm::v1::MsgExecuteContract;
+use neutron_sdk::interchain_queries::types::TransactionFilterItem;
 
-use serde_json_wasm;
 use cw721::Cw721ExecuteMsg;
-
+use serde_json_wasm;
 
 // Default timeout for IbcTransfer is 10000000 blocks
 const DEFAULT_TIMEOUT_HEIGHT: u64 = 10000000;
 const DEFAULT_TIMEOUT_SECONDS: u64 = 60 * 60 * 24 * 7 * 2;
-
 
 /// defines the incoming transfers limit to make a case of failed callback possible.
 const MAX_ALLOWED_TRANSFER: u64 = 20000;
@@ -63,7 +58,7 @@ const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 const INTERCHAIN_ACCOUNT_ID: &str = "bad-kids-account-id";
 
-#[cfg_attr(feature="interface", cw_orch::interface_entry_point)]
+#[cfg_attr(feature = "interface", cw_orch::interface_entry_point)]
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
     deps: DepsMut<NeutronQuery>,
@@ -74,18 +69,22 @@ pub fn instantiate(
     deps.api.debug("WASMDEBUG: instantiate");
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
-    let config = Config{
-        nft_contract_address: msg.contract_addr
+    let config = Config {
+        nft_contract_address: msg.contract_addr,
     };
     CONFIG.save(deps.storage, &config)?;
 
-    execute_register_ica(deps, env, msg.connection_id, INTERCHAIN_ACCOUNT_ID.to_string())?;
-
+    execute_register_ica(
+        deps,
+        env,
+        msg.connection_id,
+        INTERCHAIN_ACCOUNT_ID.to_string(),
+    )?;
 
     Ok(Response::default())
 }
 
-#[cfg_attr(feature="interface", cw_orch::interface_entry_point)]
+#[cfg_attr(feature = "interface", cw_orch::interface_entry_point)]
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut<NeutronQuery>,
@@ -94,26 +93,30 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> NeutronResult<Response<NeutronMsg>> {
     match msg {
-        ExecuteMsg::RegisterTransferNftQuery { connection_id, update_period, min_height, recipient, sender, contract_address, token_id } => {
-            register_transfer_nft_query(connection_id, update_period, min_height, recipient, sender, contract_address, token_id)
-        }
+        ExecuteMsg::RegisterTransferNftQuery {
+            connection_id,
+            update_period,
+            min_height,
+            recipient,
+            sender,
+            contract_address,
+            token_id,
+        } => register_transfer_nft_query(
+            connection_id,
+            update_period,
+            min_height,
+            recipient,
+            sender,
+            contract_address,
+            token_id,
+        ),
         // todo: add NFT ownership query
         ExecuteMsg::RemoveInterchainQuery { query_id } => remove_interchain_query(query_id),
         ExecuteMsg::UnlockNft {
             token_id,
             destination,
-        } => execute_unlock_nft(
-            deps,
-            env,
-            info,
-            token_id,
-            destination,
-        ),
-        ExecuteMsg::MintNft {token_id} => execute_mint_nft(
-            deps,
-            env,
-            token_id
-        ),
+        } => execute_unlock_nft(deps, env, info, token_id, destination),
+        ExecuteMsg::MintNft { token_id } => execute_mint_nft(deps, env, token_id),
     }
 }
 
@@ -148,7 +151,6 @@ fn execute_mint_nft(
     env: Env,
     token_id: String,
 ) -> NeutronResult<Response<NeutronMsg>> {
-    
     // We need to verify the query
     let sender_addr = verify_query(token_id.clone())?;
 
@@ -162,18 +164,21 @@ fn execute_unlock_nft(
     env: Env,
     info: MessageInfo,
     token_id: String,
-    destination_addr: String
+    destination_addr: String,
 ) -> NeutronResult<Response<NeutronMsg>> {
-    
     let config = CONFIG.load(deps.storage)?;
 
     // We need to make sure, that the client pays enough tokens to unlock their tokens
     let denom_count = MINTED_TOKENS.load(deps.storage, token_id.clone())?;
     let denom = format_token_denom(env.clone(), token_id.clone(), denom_count);
 
-    let amount = must_pay(&info, &denom).map_err(|e| NeutronError::Std(StdError::generic_err(e.to_string())))?;
-    if amount < THRESHOLD_BURN_AMOUNT.into(){
-        return Err(NeutronError::Std(StdError::generic_err(format!("You need to pay at least{} to unlock your token {}", THRESHOLD_BURN_AMOUNT, token_id))))
+    let amount = must_pay(&info, &denom)
+        .map_err(|e| NeutronError::Std(StdError::generic_err(e.to_string())))?;
+    if amount < THRESHOLD_BURN_AMOUNT.into() {
+        return Err(NeutronError::Std(StdError::generic_err(format!(
+            "You need to pay at least{} to unlock your token {}",
+            THRESHOLD_BURN_AMOUNT, token_id
+        ))));
     }
 
     // contract must pay for relaying of acknowledgements
@@ -183,12 +188,13 @@ fn execute_unlock_nft(
 
     let unlock_message = MsgExecuteContract {
         contract: config.nft_contract_address,
-        msg: to_binary(&Cw721ExecuteMsg::TransferNft{
+        msg: to_binary(&Cw721ExecuteMsg::TransferNft {
             recipient: destination_addr,
-            token_id
-        })?.to_vec(),
+            token_id,
+        })?
+        .to_vec(),
         funds: vec![],
-        sender: account_addr
+        sender: account_addr,
     };
 
     let mut buf = Vec::new();
@@ -201,15 +207,16 @@ fn execute_unlock_nft(
         ))));
     }
 
-    let any_msg = unlock_message.to_any() // Using the to_any feature to not mess it up
+    let any_msg = unlock_message
+        .to_any() // Using the to_any feature to not mess it up
         .map_err(|e| NeutronError::Std(StdError::generic_err(e.to_string())))?;
 
     let cosmos_msg = NeutronMsg::submit_tx(
         connection_id,
         INTERCHAIN_ACCOUNT_ID.to_string(),
-        vec![ProtobufAny{
+        vec![ProtobufAny {
             value: Binary(any_msg.value),
-            type_url: any_msg.type_url
+            type_url: any_msg.type_url,
         }],
         "".to_string(),
         DEFAULT_TIMEOUT_SECONDS,
@@ -230,7 +237,7 @@ fn execute_unlock_nft(
     Ok(Response::default().add_submessages(vec![submsg]))
 }
 
-#[cfg_attr(feature="interface", cw_orch::interface_entry_point)]
+#[cfg_attr(feature = "interface", cw_orch::interface_entry_point)]
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps<NeutronQuery>, env: Env, msg: QueryMsg) -> NeutronResult<Binary> {
     match msg {
@@ -243,18 +250,22 @@ pub fn query(deps: Deps<NeutronQuery>, env: Env, msg: QueryMsg) -> NeutronResult
     }
 }
 
-fn query_transfer_nft(deps: Deps<NeutronQuery>, env: Env, query_id: u64) -> NeutronResult<TransferNftResponse> {
+fn query_transfer_nft(
+    deps: Deps<NeutronQuery>,
+    env: Env,
+    query_id: u64,
+) -> NeutronResult<TransferNftResponse> {
     todo!()
 }
 
-#[cfg_attr(feature="interface", cw_orch::interface_entry_point)]
+#[cfg_attr(feature = "interface", cw_orch::interface_entry_point)]
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
     deps.api.debug("WASMDEBUG: migrate");
     Ok(Response::default())
 }
 
-#[cfg_attr(feature="interface", cw_orch::interface_entry_point)]
+#[cfg_attr(feature = "interface", cw_orch::interface_entry_point)]
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn sudo(deps: DepsMut<NeutronQuery>, env: Env, msg: SudoMsg) -> NeutronResult<Response> {
     match msg {
@@ -266,7 +277,7 @@ pub fn sudo(deps: DepsMut<NeutronQuery>, env: Env, msg: SudoMsg) -> NeutronResul
         } => sudo_tx_query_result(deps, env, query_id, height, data),
 
         // For handling kv query result
-        SudoMsg::KVQueryResult { query_id } => sudo_kv_query_result(deps, env, query_id),
+        SudoMsg::KVQueryResult { query_id } => panic!(),
         _ => Ok(Response::default()),
     }
 }
@@ -287,138 +298,62 @@ pub fn sudo_tx_query_result(
     // Get the registered query by ID and retrieve the raw query string
     let registered_query: QueryRegisteredQueryResponse =
         get_registered_query(deps.as_ref(), query_id)?;
-    let transactions_filter = registered_query.registered_query.transactions_filter;
+    let _transactions_filter = registered_query.registered_query.transactions_filter;
 
     #[allow(clippy::match_single_binding)]
     // Depending of the query type, check the transaction data to see whether is satisfies
     // the original query. If you don't write specific checks for a transaction query type,
     // all submitted results will be treated as valid.
-    //
+    
     // TODO: come up with solution to determine transactions filter type
     match registered_query.registered_query.query_type {
         _ => {
-            // TODO: implements
-            let msg: WasmMsg = body.messages.get(0).unwrap();
-            if let WasmMsg::Execute { contract_addr, msg, funds } = msg {
-                if let cw721_base::ExecuteMsg::TransferNft { recipient, token_id } = from_binary(msg)? 
-                {
-                    
+            let msg = body.messages.get(0).unwrap();
+
+            let contract_msg = MsgExecuteContract::decode(msg.value.as_slice()).unwrap();
+
+            let transfer_msg: Cw721ExecuteMsg = from_binary(&contract_msg.msg.into())?;
+
+            match transfer_msg {
+                Cw721ExecuteMsg::TransferNft {
+                    token_id,
+                    recipient,
+                } => {
+                    let sender = deps.api.addr_validate(&contract_msg.sender)?;
+                    let receiver_addr = deps.api.addr_validate(recipient.as_str())?;
+                    assert!(
+                        receiver_addr == _env.contract.address,
+                        "receiver is not this contract"
+                    );
+
+                    let contract_addr = deps.api.addr_validate(&contract_msg.contract.as_str())?;
+                    let transfer_nft = NftTransfer {
+                        sender: sender.to_string(),
+                        contract_address: contract_addr.to_string(),
+                        token_id,
+                    };
+
+                    let mut stored_transfers: u64 =
+                        TRANSFERS.load(deps.storage).unwrap_or_default();
+                    stored_transfers += 1u64;
+                    TRANSFERS.save(deps.storage, &stored_transfers)?;
+
+
+                    let mut stored_deposits: Vec<NftTransfer> = SENDER_TXS
+                        .load(deps.storage, sender.as_str())
+                        .unwrap_or_default();
+                    stored_deposits.push(transfer_nft.clone());
+                    SENDER_TXS.save(deps.storage, sender.as_str(), &stored_deposits)?;
+
+                    return Ok(Response::new().add_attribute(
+                        "transfer_nft",
+                        serde_json_wasm::to_string(&transfer_nft)
+                            .map_err(|e| NeutronError::SerdeJSONWasm(e.to_string()))?,
+                    ));
                 }
-
-            }
-
-            
-
-            // For transfer queries, query data looks like `[{"field:"transfer.recipient", "op":"eq", "value":"some_address"}]`
-            let query_data: Vec<TransactionFilterItem> =
-                serde_json_wasm::from_str(transactions_filter.as_str())?;
-
-            // let recipient = query_data
-            //     .iter()
-            //     .find(|x| x.field == RECIPIENT_FIELD && x.op == TransactionFilterOp::Eq)
-            //     .map(|x| match &x.value {
-            //         TransactionFilterValue::String(v) => v.as_str(),
-            //         _ => "",
-            //     })
-            //     .unwrap_or("");
-
-            // let deposits = recipient_deposits_from_tx_body(body, recipient)?;
-            // // If we didn't find a Send message with the correct recipient, return an error, and
-            // // this query result will be rejected by Neutron: no data will be saved to state.
-            // if deposits.is_empty() {
-            //     return Err(NeutronError::Std(StdError::generic_err(
-            //         "failed to find a matching transaction message",
-            //     )));
-            // }
-
-            // let mut stored_transfers: u64 = TRANSFERS.load(deps.storage).unwrap_or_default();
-            // stored_transfers += deposits.len() as u64;
-            // TRANSFERS.save(deps.storage, &stored_transfers)?;
-
-            // check_deposits_size(&deposits)?;
-            // let mut stored_deposits: Vec<NftTransfer> = RECIPIENT_TXS
-            //     .load(deps.storage, recipient)
-            //     .unwrap_or_default();
-            // stored_deposits.extend(deposits);
-            // RECIPIENT_TXS.save(deps.storage, recipient, &stored_deposits)?;
-            Ok(Response::new())
-        }
-    }
-}
-
-/// parses tx body and retrieves transactions to the given recipient.
-fn nft_transfers_from_tx_body(
-    tx_body: TxBody,
-    recipient: &str,
-) -> NeutronResult<Vec<NftTransfer>> {
-    let mut transfers: Vec<NftTransfer> = vec![];
-    // Only handle up to MAX_ALLOWED_MESSAGES messages, everything else
-    // will be ignored to prevent 'out of gas' conditions.
-    // Note: in real contracts you will have to somehow save ignored
-    // data in order to handle it later.
-
-    for msg in tx_body.messages.iter().take(MAX_ALLOWED_MESSAGES) {
-        // Skip all messages in this transaction that are not Send messages.
-        if msg.type_url != *WASM_EXECUTE_MSG_TYPE.to_string() {
-            continue;
-        }
-
-        // Parse a Send message and check that it has the required recipient.
-        let transfer_msg: MsgExecuteContract = MsgExecuteContract::(msg.value.as_slice())?;
-        if transfer_msg.to_address == recipient {
-            for coin in transfer_msg.amount {
-                transfers.push(NftTransfer {
-                    sender: transfer_msg.from_address.clone(),
-                    amount: coin.amount.clone(),
-                    denom: coin.denom,
-                    recipient: recipient.to_string(),
-                });
+                _ => panic!("message is not SendNft"),
             }
         }
     }
-    Ok(transfers)
 }
 
-// checks whether there are deposits that are greater then MAX_ALLOWED_TRANSFER.
-fn check_deposits_size(deposits: &Vec<Transfer>) -> StdResult<()> {
-    for deposit in deposits {
-        match deposit.amount.parse::<u64>() {
-            Ok(amount) => {
-                if amount > MAX_ALLOWED_TRANSFER {
-                    return Err(StdError::generic_err(format!(
-                        "maximum allowed transfer is {}",
-                        MAX_ALLOWED_TRANSFER
-                    )));
-                };
-            }
-            Err(error) => {
-                return Err(StdError::generic_err(format!(
-                    "failed to cast transfer amount to u64: {}",
-                    error
-                )));
-            }
-        };
-    }
-    Ok(())
-}
-
-/// sudo_kv_query_result is the contract's callback for KV query results. Note that only the query
-/// id is provided, so you need to read the query result from the state.
-pub fn sudo_kv_query_result(
-    deps: DepsMut<NeutronQuery>,
-    _env: Env,
-    query_id: u64,
-) -> NeutronResult<Response> {
-    deps.api.debug(
-        format!(
-            "WASMDEBUG: sudo_kv_query_result received; query_id: {:?}",
-            query_id,
-        )
-        .as_str(),
-    );
-
-    // TODO: provide an actual example. Currently to many things are going to change
-    // after @pro0n00gler's PRs to implement this.
-
-    Ok(Response::default())
-}

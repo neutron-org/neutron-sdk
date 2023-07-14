@@ -5,3 +5,6 @@ members = ["contracts/*", "packages/*"]
 rpath = false
 lto = true
 overflow-checks = true
+
+
+[patch.crates-io]

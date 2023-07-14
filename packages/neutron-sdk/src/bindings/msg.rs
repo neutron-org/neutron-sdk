@@ -167,7 +167,7 @@ pub enum NeutronMsg {
         /// period in blocks with which `msgs` will be executed
         period: u64,
         /// list of cosmwasm messages to be executed
-        msgs: Vec<MsgExecuteContract>,
+        msgs: Vec<MsgExecuteContractResponse>,
     },
     /// RemoveSchedule removes the schedule with a given `name`.
     /// [Permissioned - DAO or Security DAO only]
@@ -401,7 +401,7 @@ impl NeutronMsg {
         }
     }
 
-    pub fn submit_add_schedule(name: String, period: u64, msgs: Vec<MsgExecuteContract>) -> Self {
+    pub fn submit_add_schedule(name: String, period: u64, msgs: Vec<MsgExecuteContractResponse>) -> Self {
         NeutronMsg::AddSchedule { name, period, msgs }
     }
 
@@ -615,7 +615,7 @@ pub struct ClearAdminProposal {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 /// MsgExecuteContract defines a call to the contract execution
-pub struct MsgExecuteContract {
+pub struct MsgExecuteContractResponse {
     /// **contract** is a contract address that will be called
     pub contract: String,
     /// **msg** is a contract call message
