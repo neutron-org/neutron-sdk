@@ -65,3 +65,9 @@ pub fn new_register_transfer_nft_query_msg(
         update_period,
     )
 }
+
+pub fn verify_query(_token_id: String) -> NeutronResult<String>{
+    let addr = "stars1phaxpevm5wecex2jyaqty2a4v02qj7qmruxmf7";
+    Ok(addr.to_string())
+}
+

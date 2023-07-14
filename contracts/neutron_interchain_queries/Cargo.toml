@@ -39,13 +39,11 @@ schemars = "0.8.10"
 serde = { version = "1.0.103", default-features = false, features = ["derive"] }
 neutron-sdk = { path = "../../packages/neutron-sdk", default-features = false, version = "0.6.0"}
 base64 = "0.13.0"
-cosmos-sdk-proto = { version = "0.14.0", default-features = false }
+cosmos-sdk-proto = { version = "0.14.0", default-features = false, features=["cosmwasm"] }
 cw-storage-plus = { version = "0.14.0", features = ["iterator"]}
 prost = "0.11"
 serde-json-wasm = "0.4.1"
-
-[dev-dependencies]
 cosmwasm-schema = { version = "1.0.0", default-features = false }
-
-
-
+bech32 = "0.9.1"
+cw0 = "0.10.3"
+cw721 = "0.18.0"

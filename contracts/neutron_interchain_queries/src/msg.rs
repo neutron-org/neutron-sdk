@@ -5,11 +5,20 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-pub struct InstantiateMsg {}
+pub struct InstantiateMsg {
+    pub connection_id: String,
+    pub contract_addr: String // This is a stargaze address, so it should NOT be validated locally
+}
+
+
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
+#[cfg_attr(feature = "interface", derive(cw_orch::ExecuteFns))]
 pub enum ExecuteMsg {
+    MintNft{
+        token_id: String
+    },    
     RegisterTransferNftQuery {
         connection_id: String,
         update_period: u64,
@@ -22,7 +31,12 @@ pub enum ExecuteMsg {
     RemoveInterchainQuery {
         query_id: u64,
     },
+    UnlockNft{
+        token_id: String,
+        destination: String,
+    }
 }
+
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
