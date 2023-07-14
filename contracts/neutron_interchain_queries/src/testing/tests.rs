@@ -67,11 +67,8 @@ fn test_sudo_tx_query_result_callback() {
     let query_id: u64 = 1u64;
     let height: u64 = 1u64;
     let msg = ExecuteMsg::RegisterTransferNftQuery {
-        connection_id: "connection".to_string(),
         update_period: 1u64,
-        recipient: watched_addr.clone(),
         sender: "sender".to_string(),
-        contract_address: "contract".to_string(),
         token_id: "42".to_string(),
         min_height: 1000,
     };

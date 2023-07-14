@@ -1,5 +1,8 @@
+use neutron_sdk::bindings::query::QueryRegisteredQueryResponse;
+
 use crate::state::NftTransfer;
 
+use cosmwasm_schema::QueryResponses;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -33,8 +36,11 @@ pub enum ExecuteMsg {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
+#[derive(QueryResponses)]
 pub enum QueryMsg {
+    #[returns(TransferNftResponse)]
     TransferNft { query_id: u64 },
+    #[returns(QueryRegisteredQueryResponse)]
     GetRegisteredQuery { query_id: u64 },
 }
 
