@@ -3,7 +3,7 @@ use std::str::FromStr;
 use super::mock_querier::mock_dependencies as dependencies;
 use crate::contract::{execute, query, sudo_tx_query_result};
 use crate::msg::{ExecuteMsg, QueryMsg};
-use crate::state::{Transfer, RECIPIENT_TXS};
+use crate::state::{NftTransfer, RECIPIENT_TXS};
 use crate::testing::mock_querier::WasmMockQuerier;
 use cosmos_sdk_proto::cosmos::base::v1beta1::{Coin as CosmosCoin, DecCoin as CosmosDecCoin};
 use cosmos_sdk_proto::cosmos::distribution::v1beta1::FeePool as CosmosFeePool;
@@ -728,7 +728,7 @@ fn test_sudo_tx_query_result_callback() {
     let txs = RECIPIENT_TXS.load(&deps.storage, &watched_addr).unwrap();
     assert_eq!(
         txs,
-        Vec::from([Transfer {
+        Vec::from([NftTransfer {
             recipient: watched_addr.clone(),
             sender: "neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf".to_string(),
             denom: "stake".to_string(),
@@ -760,7 +760,7 @@ fn test_sudo_tx_query_result_callback() {
     let txs = RECIPIENT_TXS.load(&deps.storage, &watched_addr).unwrap();
     assert_eq!(
         txs,
-        Vec::from([Transfer {
+        Vec::from([NftTransfer {
             recipient: watched_addr.clone(),
             sender: "neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf".to_string(),
             denom: "stake".to_string(),
@@ -788,13 +788,13 @@ fn test_sudo_tx_query_result_callback() {
     assert_eq!(
         txs,
         Vec::from([
-            Transfer {
+            NftTransfer {
                 recipient: watched_addr.clone(),
                 sender: "neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf".to_string(),
                 denom: "stake".to_string(),
                 amount: "10000".to_string(),
             },
-            Transfer {
+            NftTransfer {
                 recipient: watched_addr,
                 sender: "neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf".to_string(),
                 denom: "stake".to_string(),
@@ -852,7 +852,7 @@ fn test_sudo_tx_query_result_min_height_callback() {
     let txs = RECIPIENT_TXS.load(&deps.storage, &watched_addr).unwrap();
     assert_eq!(
         txs,
-        Vec::from([Transfer {
+        Vec::from([NftTransfer {
             recipient: watched_addr.clone(),
             sender: "neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf".to_string(),
             denom: "stake".to_string(),
@@ -884,7 +884,7 @@ fn test_sudo_tx_query_result_min_height_callback() {
     let txs = RECIPIENT_TXS.load(&deps.storage, &watched_addr).unwrap();
     assert_eq!(
         txs,
-        Vec::from([Transfer {
+        Vec::from([NftTransfer {
             recipient: watched_addr.clone(),
             sender: "neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf".to_string(),
             denom: "stake".to_string(),
@@ -912,13 +912,13 @@ fn test_sudo_tx_query_result_min_height_callback() {
     assert_eq!(
         txs,
         Vec::from([
-            Transfer {
+            NftTransfer {
                 recipient: watched_addr.clone(),
                 sender: "neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf".to_string(),
                 denom: "stake".to_string(),
                 amount: "10000".to_string(),
             },
-            Transfer {
+            NftTransfer {
                 recipient: watched_addr,
                 sender: "neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf".to_string(),
                 denom: "stake".to_string(),

@@ -1,0 +1,57 @@
+{
+  "msg_index": 0,
+  "log": "",
+  "events": [
+    {
+      "type": "execute",
+      "attributes": [
+        {
+          "key": "_contract_address",
+          "value": "stars1pfv0jkxtajr7ezk2yz84awdycekyccmp350lav3vrlr6ejmxmnmq6ddzlq"
+        }
+      ]
+    },
+    {
+      "type": "message",
+      "attributes": [
+        {
+          "key": "action",
+          "value": "/cosmwasm.wasm.v1.MsgExecuteContract"
+        },
+        {
+          "key": "module",
+          "value": "wasm"
+        },
+        {
+          "key": "sender",
+          "value": "stars1czdf2ds33f57thmu4v5negsqz4jmlu2u5na43e"
+        }
+      ]
+    },
+    {
+      "type": "wasm",
+      "attributes": [
+        {
+          "key": "_contract_address",
+          "value": "stars1pfv0jkxtajr7ezk2yz84awdycekyccmp350lav3vrlr6ejmxmnmq6ddzlq"
+        },
+        {
+          "key": "action",
+          "value": "transfer_nft"
+        },
+        {
+          "key": "sender",
+          "value": "stars1czdf2ds33f57thmu4v5negsqz4jmlu2u5na43e"
+        },
+        {
+          "key": "recipient",
+          "value": "stars1lldd07t7a8ghndrmadxvf0uz9elae0vl4y64wx"
+        },
+        {
+          "key": "token_id",
+          "value": "8975"
+        }
+      ]
+    }
+  ]
+}
