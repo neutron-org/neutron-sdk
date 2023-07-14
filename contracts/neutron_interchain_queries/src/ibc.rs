@@ -1,22 +1,21 @@
-use crate::state::SUDO_PAYLOAD_REPLY_ID;
-use crate::state::SudoPayload;
 use crate::state::save_reply_payload;
-use cosmwasm_std::SubMsg;
-use cosmwasm_std::CosmosMsg;
-use cosmwasm_std::StdResult;
-use neutron_sdk::bindings::msg::IbcFee;
+use crate::state::SudoPayload;
 use crate::state::INTERCHAIN_ACCOUNTS;
+use crate::state::SUDO_PAYLOAD_REPLY_ID;
+use cosmwasm_std::CosmosMsg;
+use cosmwasm_std::DepsMut;
 use cosmwasm_std::Response;
+use cosmwasm_std::StdResult;
+use cosmwasm_std::SubMsg;
+use neutron_sdk::bindings::msg::IbcFee;
 use neutron_sdk::bindings::msg::NeutronMsg;
 use neutron_sdk::interchain_txs::helpers::get_port_id;
-use cosmwasm_std::DepsMut;
 
 use neutron_sdk::bindings::query::NeutronQuery;
 
 use cosmwasm_std::Env;
 
 use neutron_sdk::NeutronResult;
-
 
 const FEE_DENOM: &str = "untrn";
 
@@ -49,9 +48,6 @@ pub fn min_ntrn_ibc_fee(fee: IbcFee) -> IbcFee {
             .collect(),
     }
 }
-
-
-
 
 // saves payload to process later to the storage and returns a SubmitTX Cosmos SubMsg with necessary reply id
 pub fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(

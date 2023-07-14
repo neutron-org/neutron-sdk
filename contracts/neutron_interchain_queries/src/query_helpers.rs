@@ -35,7 +35,13 @@ pub fn new_register_transfer_nft_query_msg(
     )
 }
 
-pub fn nft_transfer_filter(min_height: u64, recipient: String, sender: String, contract_address: String, token_id: String) -> Vec<TransactionFilterItem> {
+pub fn nft_transfer_filter(
+    min_height: u64,
+    recipient: String,
+    sender: String,
+    contract_address: String,
+    token_id: String,
+) -> Vec<TransactionFilterItem> {
     let query_data = vec![
         TransactionFilterItem {
             field: HEIGHT_FIELD.to_string(),
@@ -71,8 +77,7 @@ pub fn nft_transfer_filter(min_height: u64, recipient: String, sender: String, c
     query_data
 }
 
-pub fn verify_query(_token_id: String) -> NeutronResult<String>{
+pub fn verify_query(_token_id: String) -> NeutronResult<String> {
     let addr = "stars1phaxpevm5wecex2jyaqty2a4v02qj7qmruxmf7";
     Ok(addr.to_string())
 }
-

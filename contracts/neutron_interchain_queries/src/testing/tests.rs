@@ -4,11 +4,9 @@ use super::mock_querier::mock_dependencies as dependencies;
 use crate::contract::{execute, query, sudo_tx_query_result};
 use crate::msg::{ExecuteMsg, QueryMsg};
 use crate::query_helpers::nft_transfer_filter;
-use crate::state::{NftTransfer,  SENDER_TXS};
+use crate::state::{NftTransfer, SENDER_TXS};
 use cosmwasm_std::testing::{mock_env, mock_info, MockApi, MockStorage};
-use cosmwasm_std::{
-Binary, Coin,  Uint128,
-};
+use cosmwasm_std::{Binary, Coin, Uint128};
 use neutron_sdk::bindings::query::{
     NeutronQuery, QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse,
 };
@@ -61,8 +59,6 @@ fn build_registered_query_response(
     Binary::from(to_string(&resp).unwrap().as_bytes())
 }
 
-
-
 #[test]
 fn test_sudo_tx_query_result_callback() {
     let mut deps = dependencies(&[]);
@@ -70,7 +66,7 @@ fn test_sudo_tx_query_result_callback() {
     let watched_addr: String = "neutron1fj6yqrkpw6fmp7f7jhj57dujfpwal4m25dafzx".to_string();
     let query_id: u64 = 1u64;
     let height: u64 = 1u64;
-    let msg = ExecuteMsg::RegisterTransferNftQuery  {
+    let msg = ExecuteMsg::RegisterTransferNftQuery {
         connection_id: "connection".to_string(),
         update_period: 1u64,
         recipient: watched_addr.clone(),

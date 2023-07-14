@@ -1,14 +1,14 @@
-use cosmwasm_std::to_vec;
 use cosmwasm_std::from_binary;
+use cosmwasm_std::to_vec;
 use cosmwasm_std::Binary;
-use cosmwasm_std::Storage;
-use cosmwasm_std::StdResult;
-use neutron_sdk::interchain_txs::helpers::get_port_id;
-use cosmwasm_std::Deps;
 use cosmwasm_std::CustomQuery;
+use cosmwasm_std::Deps;
 use cosmwasm_std::Env;
 use cosmwasm_std::StdError;
+use cosmwasm_std::StdResult;
+use cosmwasm_std::Storage;
 use cw_storage_plus::{Item, Map};
+use neutron_sdk::interchain_txs::helpers::get_port_id;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -54,10 +54,8 @@ pub fn read_reply_payload(store: &mut dyn Storage) -> StdResult<SudoPayload> {
     from_binary(&Binary(data))
 }
 
-
 pub const INTERCHAIN_ACCOUNTS: Map<String, Option<(String, String)>> =
     Map::new("interchain_accounts");
-
 
 pub fn get_ica(
     deps: Deps<impl CustomQuery>,
@@ -78,8 +76,7 @@ pub const TOTAL_MINTED_TOKENS: Item<u64> = Item::new("total_minted_tokens");
 /// This stores the address of the minted tokenfactory token that is the right one for the token_id
 pub const CONFIG: Item<Config> = Item::new("config");
 
-
 #[cosmwasm_schema::cw_serde]
-pub struct Config{
+pub struct Config {
     pub nft_contract_address: String, // THis is a contract address on a distant chain, so please don't verify it
 }

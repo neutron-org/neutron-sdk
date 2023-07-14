@@ -401,7 +401,11 @@ impl NeutronMsg {
         }
     }
 
-    pub fn submit_add_schedule(name: String, period: u64, msgs: Vec<MsgExecuteContractResponse>) -> Self {
+    pub fn submit_add_schedule(
+        name: String,
+        period: u64,
+        msgs: Vec<MsgExecuteContractResponse>,
+    ) -> Self {
         NeutronMsg::AddSchedule { name, period, msgs }
     }
 

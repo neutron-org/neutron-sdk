@@ -6,14 +6,14 @@ use crate::mint::format_token_denom;
 use crate::mint::mint_native_receipt;
 use crate::mint::THRESHOLD_BURN_AMOUNT;
 use crate::query_helpers::verify_query;
-use crate::state::SENDER_TXS;
 use crate::state::get_ica;
 use crate::state::Config;
 use crate::state::SudoPayload;
 use crate::state::CONFIG;
 use crate::state::MINTED_TOKENS;
+use crate::state::SENDER_TXS;
 use cosmos_sdk_proto::traits::MessageExt;
-use cosmwasm_std::CosmosMsg;
+
 use cw0::must_pay;
 use neutron_sdk::bindings::types::ProtobufAny;
 use neutron_sdk::interchain_txs::helpers::get_port_id;
@@ -23,16 +23,16 @@ use neutron_sdk::NeutronError;
 use cosmos_sdk_proto::cosmos::tx::v1beta1::{TxBody, TxRaw};
 
 use cosmwasm_std::{
-    entry_point, from_binary, to_binary, Binary, Deps, DepsMut, Empty, Env, MessageInfo, Response,
-    StdError, StdResult, Uint128, WasmMsg,
+    entry_point, from_binary, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response,
+    StdError, StdResult,
 };
 use cw2::set_contract_version;
 use prost::Message as ProstMessage;
 
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg, TransferNftResponse};
-use crate::query_helpers::{new_register_transfer_nft_query_msg, WASM_EXECUTE_MSG_TYPE};
+use crate::query_helpers::new_register_transfer_nft_query_msg;
 use crate::state::{NftTransfer, TRANSFERS};
-use neutron_sdk::bindings::msg::{MsgExecuteContractResponse, NeutronMsg};
+use neutron_sdk::bindings::msg::NeutronMsg;
 use neutron_sdk::bindings::query::{NeutronQuery, QueryRegisteredQueryResponse};
 use neutron_sdk::bindings::types::Height;
 use neutron_sdk::interchain_queries::get_registered_query;
@@ -40,7 +40,6 @@ use neutron_sdk::sudo::msg::SudoMsg;
 use neutron_sdk::NeutronResult;
 
 use cosmos_sdk_proto::cosmwasm::wasm::v1::MsgExecuteContract;
-use neutron_sdk::interchain_queries::types::TransactionFilterItem;
 
 use cw721::Cw721ExecuteMsg;
 use serde_json_wasm;
@@ -94,22 +93,11 @@ pub fn execute(
 ) -> NeutronResult<Response<NeutronMsg>> {
     match msg {
         ExecuteMsg::RegisterTransferNftQuery {
-            connection_id,
             update_period,
             min_height,
-            recipient,
             sender,
-            contract_address,
             token_id,
-        } => register_transfer_nft_query(
-            connection_id,
-            update_period,
-            min_height,
-            recipient,
-            sender,
-            contract_address,
-            token_id,
-        ),
+        } => register_transfer_nft_query(deps, env, update_period, min_height, sender, token_id),
         // todo: add NFT ownership query
         ExecuteMsg::RemoveInterchainQuery { query_id } => remove_interchain_query(query_id),
         ExecuteMsg::UnlockNft {
@@ -121,21 +109,24 @@ pub fn execute(
 }
 
 pub fn register_transfer_nft_query(
-    connection_id: String,
+    deps: DepsMut<NeutronQuery>,
+    env: Env,
     update_period: u64,
     min_height: u64,
-    recipient: String,
     sender: String,
-    contract_address: String,
     token_id: String,
 ) -> NeutronResult<Response<NeutronMsg>> {
+    let config = CONFIG.load(deps.storage)?;
+
+    let (ica_account, connection_id) = get_ica(deps.as_ref(), &env, INTERCHAIN_ACCOUNT_ID)?;
+
     let query_msg = new_register_transfer_nft_query_msg(
         connection_id,
         update_period,
         min_height,
-        recipient,
+        ica_account,
         sender,
-        contract_address,
+        config.nft_contract_address,
         token_id,
     )?;
     Ok(Response::new().add_message(query_msg))
@@ -304,7 +295,7 @@ pub fn sudo_tx_query_result(
     // Depending of the query type, check the transaction data to see whether is satisfies
     // the original query. If you don't write specific checks for a transaction query type,
     // all submitted results will be treated as valid.
-    
+
     // TODO: come up with solution to determine transactions filter type
     match registered_query.registered_query.query_type {
         _ => {
@@ -338,7 +329,6 @@ pub fn sudo_tx_query_result(
                     stored_transfers += 1u64;
                     TRANSFERS.save(deps.storage, &stored_transfers)?;
 
-
                     let mut stored_deposits: Vec<NftTransfer> = SENDER_TXS
                         .load(deps.storage, sender.as_str())
                         .unwrap_or_default();
@@ -356,4 +346,3 @@ pub fn sudo_tx_query_result(
         }
     }
 }
-
