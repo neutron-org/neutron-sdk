@@ -190,10 +190,13 @@ fn execute_mint_nft(
 
     // Now that we have the address, we can mint our token to the recipient which validates their ownership of the bad kid
     let addr = any_addr_to_neutron(deps.as_ref(), sender_addr)?;
-    let resp = mint_native_receipt(deps, env, token_id, addr)?;
+    let resp = remove_interchain_query(query_id)?;
+
+
+
 
     // close the query
-    let resp = resp.add_submessages(remove_interchain_query(query_id)?.messages);
+    let resp = resp.add_submessages(mint_native_receipt(deps, env, token_id, addr)?.messages);
 
     Ok(resp) 
 }

@@ -1,16 +1,18 @@
-use cosmwasm_std::coins;
+
 use crate::config::INTERCHAIN_QUERY_ID;
+use crate::config::STARTGAZE_NFT_ADDRESS;
 use cw_orch::daemon::networks::PION_1;
 use cw_orch::daemon::DaemonBuilder;
 
+
+mod config;
+
 use neutron_interchain_queries::contract::NeutronInterchainQueries;
+
 use neutron_interchain_queries::msg::ExecuteMsgFns;
 
-use tokio::runtime::Runtime;
 
-pub const SENDER: &str = "stars18yj2mc7hjk2zqtwr9exfyj625kffwmjg3dr7tv";
-pub const TOKEN_ID: &str = "80";
-mod config;
+use tokio::runtime::Runtime;
 
 pub fn main() -> cw_orch::anyhow::Result<()> {
     env_logger::init();
@@ -24,8 +26,7 @@ pub fn main() -> cw_orch::anyhow::Result<()> {
 
     let bad_kids = NeutronInterchainQueries::new(INTERCHAIN_QUERY_ID, chain);
 
-    // Allow for the transfer of the nft from the distant to the local chain
-    bad_kids.register_transfer_nft_query(0, SENDER.to_string(), TOKEN_ID.to_string(), &coins(1_000_000,"untrn"))?;
+    bad_kids.update_config(Some(STARTGAZE_NFT_ADDRESS.to_string()),None)?;
 
     Ok(())
 }

@@ -2,7 +2,7 @@
   "neutron": {
     "pion-1": {
       "code_ids": {
-        "bad-kids:queries": 1137
+        "bad-kids:queries": 1139
       },
       "default": {
         "bad-kids:queries": "neutron1pekzylkajutxqw3ay6uhk5xznc0vxu0tltl38ftme6n57uxcus2qslp0pa"
