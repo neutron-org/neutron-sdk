@@ -1,12 +1,10 @@
 use crate::query_helpers::new_register_nft_owned_query_msg;
 use crate::reply::SUDO_PAYLOAD_REPLY_ID;
+use crate::state::TOKEN_ID_SENDER;
 use crate::state::TOKEN_INFOS;
 use crate::sudo::prepare_sudo_payload;
 use crate::reply::QUERY_REGISTER_REPLY_ID;
-use crate::sudo::sudo_response;
-use crate::sudo::sudo_error;
-use crate::sudo::sudo_timeout;
-use crate::sudo::sudo_open_ack;
+
 use crate::ibc::execute_register_ica;
 use crate::ibc::min_ntrn_ibc_fee;
 use crate::ibc::msg_with_sudo_callback;
@@ -15,8 +13,7 @@ use crate::mint::format_token_denom;
 use crate::mint::mint_native_receipt;
 use crate::mint::THRESHOLD_BURN_AMOUNT;
 use crate::query_helpers::verify_query;
-use crate::reply::QUERY_REGISTER_REPLY_ID;
-use crate::reply::SUDO_PAYLOAD_REPLY_ID;
+
 use crate::state::get_ica;
 use crate::state::Config;
 use crate::state::SudoPayload;
@@ -25,7 +22,6 @@ use crate::state::CONFIG;
 use crate::state::MINTED_TOKENS;
 use crate::state::SENDER_TXS;
 use crate::state::TOKEN_ID_QUERY_PAIRS;
-use crate::sudo::prepare_sudo_payload;
 use crate::sudo::sudo_error;
 use crate::sudo::sudo_open_ack;
 use crate::sudo::sudo_response;
@@ -220,7 +216,7 @@ fn execute_mint_nft(
     let addr = any_addr_to_neutron(deps.as_ref(), sender_addr)?; 
 
     // close the query (gets back some funds)
-    let resp = remove_interchain_query(query_id, sender_addr)?;
+    let resp = remove_interchain_query(query_id, info.sender)?;
 
     // Mint the new cw20 tokens (costs some funds - on testnet it's the same)
     let resp = resp.add_submessages(mint_native_receipt(deps, env, token_id, addr)?.messages);

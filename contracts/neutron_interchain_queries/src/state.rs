@@ -6,7 +6,6 @@ use cosmwasm_std::Binary;
 use cosmwasm_std::CustomQuery;
 use cosmwasm_std::Deps;
 use cosmwasm_std::Env;
-use cosmwasm_std::Order;
 use cosmwasm_std::StdError;
 use cosmwasm_std::StdResult;
 use cosmwasm_std::Storage;
