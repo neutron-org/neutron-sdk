@@ -211,8 +211,11 @@ fn execute_unlock_nft(
 
     let denom = get_token_denom(deps.as_ref(), env.clone(), token_id.clone())?;
 
-    let amount = must_pay(&info, &denom)
-        .map_err(|e| NeutronError::Std(StdError::generic_err(e.to_string())))?;
+    let amount = info.funds.iter().find(|c| c.denom == denom).ok_or(StdError::generic_err(format!(
+            "You need to pay at least{} to unlock your token {}",
+            THRESHOLD_BURN_AMOUNT, token_id
+        )))?.amount;
+
     if amount < THRESHOLD_BURN_AMOUNT.into() {
         return Err(NeutronError::Std(StdError::generic_err(format!(
             "You need to pay at least{} to unlock your token {}",

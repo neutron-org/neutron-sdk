@@ -1,3 +1,4 @@
+use cosmwasm_std::coin;
 use cosmwasm_std::coins;
 use crate::config::INTERCHAIN_QUERY_ID;
 
@@ -33,7 +34,8 @@ pub fn main() -> cw_orch::anyhow::Result<()> {
     let denom = bad_kids.token_denom(TOKEN_ID.to_string())?;
 
     // // Registering the ica account
-    bad_kids.unlock_nft(RECEIVER.to_string(),TOKEN_ID.to_string(), &coins(FUNDS_AMOUNT,denom))?;
+    // // They pay 2000untrn for submitting a message on stargaze remotely
+    bad_kids.unlock_nft(RECEIVER.to_string(),TOKEN_ID.to_string(), &[coin(FUNDS_AMOUNT,denom), coin(2000,"untrn")])?;
 
     Ok(())
 }
