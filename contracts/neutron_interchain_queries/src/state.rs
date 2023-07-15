@@ -18,6 +18,8 @@ pub type Sender = str;
 pub const SENDER_TXS: Map<&Sender, Vec<NftTransfer>> = Map::new("recipient_txs");
 /// contains number of transfers to addresses observed by the contract.
 pub const TRANSFERS: Item<u64> = Item::new("nft-transfers");
+pub const CACHED_TOKEN_ID: Item<String> = Item::new("cached_token_id");
+pub const TOKEN_ID_QUERY_PAIRS: Map<String, u64> = Map::new("token_id_query_pairs");
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct NftTransfer {
@@ -80,4 +82,5 @@ pub const CONFIG: Item<Config> = Item::new("config");
 pub struct Config {
     pub connection_id: String,
     pub nft_contract_address: String, // THis is a contract address on a distant chain, so please don't verify it
+    pub update_period: u64, // This is the update period in blocks
 }

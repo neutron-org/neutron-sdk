@@ -6,6 +6,8 @@ use crate::mint::format_token_denom;
 use crate::mint::mint_native_receipt;
 use crate::mint::THRESHOLD_BURN_AMOUNT;
 use crate::query_helpers::verify_query;
+use crate::state::CACHED_TOKEN_ID;
+use crate::state::TOKEN_ID_QUERY_PAIRS;
 use crate::state::get_ica;
 use crate::state::Config;
 use crate::state::SudoPayload;
@@ -15,7 +17,11 @@ use crate::state::SENDER_TXS;
 
 use cosmos_sdk_proto::traits::MessageExt;
 
+use cosmwasm_std::{Reply};
+
 use cw0::must_pay;
+use neutron_sdk::bindings::msg::MsgRegisterInterchainQueryResponse;
+use neutron_sdk::bindings::msg::MsgSubmitTxResponse;
 use neutron_sdk::bindings::types::ProtobufAny;
 use neutron_sdk::interchain_txs::helpers::get_port_id;
 use neutron_sdk::query::min_ibc_fee::query_min_ibc_fee;
@@ -72,6 +78,7 @@ pub fn instantiate(
     let config = Config {
         nft_contract_address: msg.contract_addr,
         connection_id: msg.connection_id,
+        update_period: 10,
     };
     CONFIG.save(deps.storage, &config)?;
 
@@ -92,21 +99,15 @@ pub fn execute(
             execute_register_ica(deps, env, connection_id, INTERCHAIN_ACCOUNT_ID.to_string())
         }
         ExecuteMsg::RegisterTransferNftQuery {
-            update_period,
             min_height,
             sender,
             token_id,
-            ica_account,
-            connection_id,
         } => register_transfer_nft_query(
             deps,
             env,
-            update_period,
             min_height,
             sender,
             token_id,
-            ica_account,
-            connection_id,
         ),
         // todo: add NFT ownership query
         ExecuteMsg::RemoveInterchainQuery { query_id } => remove_interchain_query(query_id),
@@ -115,26 +116,42 @@ pub fn execute(
             destination,
         } => execute_unlock_nft(deps, env, info, token_id, destination),
         ExecuteMsg::MintNft { token_id } => execute_mint_nft(deps, env, token_id),
+        ExecuteMsg::UpdateConfig { update_period, nft_contract_address } => {
+            execute_update_config(deps, env, info, update_period, nft_contract_address)
+        }
     }
+}
+
+fn execute_update_config(deps: DepsMut<'_, NeutronQuery>, env: Env, info: MessageInfo, update_period: Option<u64>, nft_contract_address: Option<String>) -> Result<Response<NeutronMsg>, NeutronError> {
+    let mut config = CONFIG.load(deps.storage)?;
+
+    if let Some(update_period) = update_period {
+        config.update_period = update_period;
+    }
+
+    if let Some(nft_contract_address) = nft_contract_address {
+        config.nft_contract_address = nft_contract_address;
+    }
+
+    CONFIG.save(deps.storage, &config)?;
+    Ok(Response::new().add_attribute("action", "update_config"))    
 }
 
 pub fn register_transfer_nft_query(
     deps: DepsMut<NeutronQuery>,
     env: Env,
-    update_period: u64,
     min_height: u64,
     sender: String,
     token_id: String,
-    ica_account: String,
-    connection_id: String,
 ) -> NeutronResult<Response<NeutronMsg>> {
     let config = CONFIG.load(deps.storage)?;
 
-    // let (ica_account, connection_id) = get_ica(deps.as_ref(), &env, INTERCHAIN_ACCOUNT_ID)?;
+    let (ica_account, connection_id) = get_ica(deps.as_ref(), &env, INTERCHAIN_ACCOUNT_ID)?;
+    CACHED_TOKEN_ID.save(deps.storage, &token_id)?;
 
     let query_msg = new_register_transfer_nft_query_msg(
         connection_id,
-        update_period,
+        config.update_period,
         min_height,
         ica_account,
         sender,
@@ -155,11 +172,15 @@ fn execute_mint_nft(
     token_id: String,
 ) -> NeutronResult<Response<NeutronMsg>> {
     // We need to verify the query
+    let query_id = TOKEN_ID_QUERY_PAIRS.load(deps.storage, token_id.clone())?;
     let sender_addr = verify_query(token_id.clone())?;
 
     // Now that we have the address, we can mint our token to the recipient which validates their ownership of the bad kid
     let addr = any_addr_to_neutron(deps.as_ref(), sender_addr)?;
-    mint_native_receipt(deps, env, token_id, addr)
+    mint_native_receipt(deps, env, token_id, addr)?;
+
+    // close the query
+    remove_interchain_query(query_id)
 }
 
 fn execute_unlock_nft(
@@ -329,6 +350,8 @@ pub fn sudo_tx_query_result(
 
                         let (ica_address, _) =
                             get_ica(deps.as_ref(), &_env, INTERCHAIN_ACCOUNT_ID)?;
+                        let (ica_address, _) =
+                            get_ica(deps.as_ref(), &_env, INTERCHAIN_ACCOUNT_ID)?;
                         if receiver_addr != ica_address {
                             return Err(NeutronError::Std(StdError::generic_err(format!(
                                 "Receiver is not the ica account: {}",
@@ -353,6 +376,7 @@ pub fn sudo_tx_query_result(
                             .load(deps.storage, sender.as_str())
                             .unwrap_or_default();
 
+
                         stored_deposits.push(transfer_nft.clone());
                         SENDER_TXS.save(deps.storage, sender.as_str(), &stored_deposits)?;
 
@@ -371,4 +395,26 @@ pub fn sudo_tx_query_result(
             }
         }
     }
+}
+
+#[cfg_attr(feature = "interface", cw_orch::interface_entry_point)]
+#[cfg_attr(not(feature = "library"), entry_point)]
+pub fn reply(deps: DepsMut<NeutronQuery>, env: Env, reply: Reply) -> NeutronResult<Response> {
+    assert!(reply.id == 0);
+
+    let resp: MsgRegisterInterchainQueryResponse = serde_json_wasm::from_slice(
+        reply.result
+            .into_result()
+            .map_err(StdError::generic_err)?
+            .data
+            .ok_or_else(|| StdError::generic_err("no result"))?
+            .as_slice(),)?;
+
+    let query_id = resp.id; 
+    
+    let token_id = CACHED_TOKEN_ID.load(deps.storage)?;
+    CACHED_TOKEN_ID.remove(deps.storage);
+    TOKEN_ID_QUERY_PAIRS.save(deps.storage, token_id, &query_id)?;
+
+    Ok(Response::new().add_attribute("query_id", query_id.to_string()))
 }

@@ -4,7 +4,7 @@ use super::mock_querier::mock_dependencies as dependencies;
 use crate::contract::{execute, instantiate, sudo_tx_query_result, INTERCHAIN_ACCOUNT_ID};
 use crate::msg::{ExecuteMsg, InstantiateMsg};
 use crate::query_helpers::nft_transfer_filter;
-use crate::state::{NftTransfer, INTERCHAIN_ACCOUNTS, SENDER_TXS};
+use crate::state::{NftTransfer, INTERCHAIN_ACCOUNTS, SENDER_TXS, CONFIG, get_ica};
 use cosmos_sdk_proto::cosmos::tx::v1beta1::{TxBody, TxRaw};
 use cosmos_sdk_proto::cosmwasm::wasm::v1::MsgExecuteContract;
 use cosmos_sdk_proto::traits::MessageExt;
@@ -121,7 +121,6 @@ fn test_sudo_tx_query_result_callback() {
     let query_id: u64 = 1u64;
     let height: u64 = 1u64;
     let msg = ExecuteMsg::RegisterTransferNftQuery {
-        update_period: 1u64,
         sender: SENDER.to_string(),
         token_id: TOKEN_ID.to_string(),
         min_height: 1000,
@@ -152,6 +151,8 @@ fn test_sudo_tx_query_result_callback() {
         .unwrap();
 
     execute(deps.as_mut(), env.clone(), mock_info("", &[]), msg).unwrap();
+    let config = CONFIG.load(&deps.storage).unwrap();
+    
     let registered_query = build_registered_query_response(
         1,
         QueryParam::TransactionsFilter(
