@@ -5,9 +5,9 @@ pub mod ibc;
 pub mod mint;
 pub mod msg;
 mod query_helpers;
+pub mod reply;
 pub mod state;
 pub mod sudo;
-pub mod reply;
 
 #[allow(clippy::unwrap_used)]
 #[cfg(test)]

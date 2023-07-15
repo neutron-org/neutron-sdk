@@ -1,10 +1,10 @@
-use cosmwasm_std::Order;
 use cosmwasm_std::from_binary;
 use cosmwasm_std::to_vec;
 use cosmwasm_std::Binary;
 use cosmwasm_std::CustomQuery;
 use cosmwasm_std::Deps;
 use cosmwasm_std::Env;
+use cosmwasm_std::Order;
 use cosmwasm_std::StdError;
 use cosmwasm_std::StdResult;
 use cosmwasm_std::Storage;
@@ -48,7 +48,6 @@ pub const SUDO_PAYLOAD_REPLY_ID: u64 = 1;
 pub const REPLY_ID_STORAGE: Item<Vec<u8>> = Item::new("reply_queue_id");
 pub const SUDO_PAYLOAD: Map<(String, u64), Vec<u8>> = Map::new("sudo_payload");
 
-
 // interchain transaction responses - ack/err/timeout state to query later
 pub const ACKNOWLEDGEMENT_RESULTS: Map<(String, u64), AcknowledgementResult> =
     Map::new("acknowledgement_results");
@@ -66,7 +65,6 @@ pub enum AcknowledgementResult {
     /// Timeout - Got timeout acknowledgement in sudo with payload message in it
     Timeout(String),
 }
-
 
 pub fn add_error_to_queue(store: &mut dyn Storage, error_msg: String) -> Option<()> {
     let result = ERRORS_QUEUE
@@ -112,7 +110,6 @@ pub fn save_sudo_payload(
     SUDO_PAYLOAD.save(store, (channel_id, seq_id), &to_vec(&payload)?)
 }
 
-
 pub const INTERCHAIN_ACCOUNTS: Map<String, Option<(String, String)>> =
     Map::new("interchain_accounts");
 
@@ -139,5 +136,5 @@ pub const CONFIG: Item<Config> = Item::new("config");
 pub struct Config {
     pub connection_id: String,
     pub nft_contract_address: String, // THis is a contract address on a distant chain, so please don't verify it
-    pub update_period: u64, // This is the update period in blocks
+    pub update_period: u64,           // This is the update period in blocks
 }

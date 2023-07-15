@@ -16,9 +16,7 @@ pub struct InstantiateMsg {
 #[serde(rename_all = "snake_case")]
 #[cfg_attr(feature = "interface", derive(cw_orch::ExecuteFns))]
 pub enum ExecuteMsg {
-    RegisterICA{
-
-    },
+    RegisterICA {},
     MintNft {
         token_id: String,
     },
@@ -42,11 +40,8 @@ pub enum ExecuteMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ReplyMsg {
-    RegisteredToken {
-        token_id: u64,
-    },
+    RegisteredToken { token_id: u64 },
 }
-
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -54,7 +49,7 @@ pub enum ReplyMsg {
 #[derive(QueryResponses)]
 pub enum QueryMsg {
     #[returns(String)]
-    IcaAccount{},
+    IcaAccount {},
     #[returns(NftTransfersResponse)]
     NftTransfers { sender: String },
     #[returns(QueryRegisteredQueryResponse)]

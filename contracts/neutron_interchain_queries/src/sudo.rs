@@ -1,34 +1,19 @@
+use cosmos_sdk_proto::cosmos::staking::v1beta1::{MsgDelegateResponse, MsgUndelegateResponse};
 
-use cosmos_sdk_proto::cosmos::staking::v1beta1::{
-    MsgDelegateResponse, MsgUndelegateResponse,
-};
-
-use cosmwasm_std::{
-    Binary, DepsMut, Env, Reply, Response,
-    StdError, StdResult,
-};
-
+use cosmwasm_std::{Binary, DepsMut, Env, Reply, Response, StdError, StdResult};
 
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-
-
 use neutron_sdk::{
-    bindings::{
-        msg::{MsgSubmitTxResponse},
-        query::{NeutronQuery},
-    },
-    interchain_txs::helpers::{
-        decode_acknowledgement_response, decode_message_response,
-    },
-    sudo::msg::{RequestPacket},
+    bindings::{msg::MsgSubmitTxResponse, query::NeutronQuery},
+    interchain_txs::helpers::{decode_acknowledgement_response, decode_message_response},
+    sudo::msg::RequestPacket,
 };
 
-
 use crate::state::{
-    add_error_to_queue, read_reply_payload, read_sudo_payload, save_sudo_payload, AcknowledgementResult,
-    ACKNOWLEDGEMENT_RESULTS, INTERCHAIN_ACCOUNTS,
+    add_error_to_queue, read_reply_payload, read_sudo_payload, save_sudo_payload,
+    AcknowledgementResult, ACKNOWLEDGEMENT_RESULTS, INTERCHAIN_ACCOUNTS,
 };
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -70,7 +55,11 @@ pub fn sudo_open_ack(
     Err(StdError::generic_err("Can't parse counterparty_version"))
 }
 
-pub fn sudo_response(deps: DepsMut<NeutronQuery>, request: RequestPacket, data: Binary) -> StdResult<Response> {
+pub fn sudo_response(
+    deps: DepsMut<NeutronQuery>,
+    request: RequestPacket,
+    data: Binary,
+) -> StdResult<Response> {
     deps.api.debug(
         format!(
             "WASMDEBUG: sudo_response: sudo received: {:?} {:?}",
@@ -185,7 +174,11 @@ pub fn sudo_response(deps: DepsMut<NeutronQuery>, request: RequestPacket, data: 
     Ok(Response::default())
 }
 
-pub fn sudo_timeout(deps: DepsMut<NeutronQuery>, _env: Env, request: RequestPacket) -> StdResult<Response> {
+pub fn sudo_timeout(
+    deps: DepsMut<NeutronQuery>,
+    _env: Env,
+    request: RequestPacket,
+) -> StdResult<Response> {
     deps.api
         .debug(format!("WASMDEBUG: sudo timeout request: {:?}", request).as_str());
 
@@ -238,7 +231,11 @@ pub fn sudo_timeout(deps: DepsMut<NeutronQuery>, _env: Env, request: RequestPack
     Ok(Response::default())
 }
 
-pub fn sudo_error(deps: DepsMut<NeutronQuery>, request: RequestPacket, details: String) -> StdResult<Response> {
+pub fn sudo_error(
+    deps: DepsMut<NeutronQuery>,
+    request: RequestPacket,
+    details: String,
+) -> StdResult<Response> {
     deps.api
         .debug(format!("WASMDEBUG: sudo error: {}", details).as_str());
     deps.api
@@ -288,7 +285,11 @@ pub fn sudo_error(deps: DepsMut<NeutronQuery>, request: RequestPacket, details: 
 // The method is used to extract sequence id and channel from SubmitTxResponse to process sudo payload defined in msg_with_sudo_callback later in Sudo handler.
 // Such flow msg_with_sudo_callback() -> reply() -> prepare_sudo_payload() -> sudo() allows you "attach" some payload to your SubmitTx message
 // and process this payload when an acknowledgement for the SubmitTx message is received in Sudo handler
-pub fn prepare_sudo_payload(mut deps: DepsMut<NeutronQuery>, _env: Env, msg: Reply) -> StdResult<Response> {
+pub fn prepare_sudo_payload(
+    mut deps: DepsMut<NeutronQuery>,
+    _env: Env,
+    msg: Reply,
+) -> StdResult<Response> {
     let payload = read_reply_payload(deps.storage)?;
     let resp: MsgSubmitTxResponse = serde_json_wasm::from_slice(
         msg.result

@@ -4,7 +4,7 @@ use super::mock_querier::mock_dependencies as dependencies;
 use crate::contract::{execute, instantiate, sudo_tx_query_result, INTERCHAIN_ACCOUNT_ID};
 use crate::msg::{ExecuteMsg, InstantiateMsg};
 use crate::query_helpers::nft_transfer_filter;
-use crate::state::{NftTransfer, INTERCHAIN_ACCOUNTS, SENDER_TXS, CONFIG, get_ica};
+use crate::state::{get_ica, NftTransfer, CONFIG, INTERCHAIN_ACCOUNTS, SENDER_TXS};
 use cosmos_sdk_proto::cosmos::tx::v1beta1::{TxBody, TxRaw};
 use cosmos_sdk_proto::cosmwasm::wasm::v1::MsgExecuteContract;
 use cosmos_sdk_proto::traits::MessageExt;
@@ -13,9 +13,7 @@ use cosmwasm_std::testing::{mock_env, mock_info};
 use cosmwasm_std::{to_binary, Addr, Binary, Coin, Uint128};
 
 use cw721::Cw721ExecuteMsg;
-use neutron_sdk::bindings::query::{
-    QueryRegisteredQueryResponse,
-};
+use neutron_sdk::bindings::query::QueryRegisteredQueryResponse;
 use neutron_sdk::bindings::types::{Height, KVKey, RegisteredQuery};
 use neutron_sdk::interchain_queries::types::QueryType;
 use neutron_sdk::interchain_txs::helpers::get_port_id;
@@ -142,15 +140,14 @@ fn test_sudo_tx_query_result_callback() {
             get_port_id(
                 env.clone().contract.address,
                 Addr::unchecked(INTERCHAIN_ACCOUNT_ID),
-            )
-            ,
+            ),
             &Some(("".to_string(), "".to_string())),
         )
         .unwrap();
 
     execute(deps.as_mut(), env.clone(), mock_info("", &[]), msg).unwrap();
     let config = CONFIG.load(&deps.storage).unwrap();
-    
+
     let registered_query = build_registered_query_response(
         1,
         QueryParam::TransactionsFilter(
@@ -204,7 +201,6 @@ fn test_sudo_tx_query_result_callback() {
 
 #[test]
 fn test_filter_output() {
-
     let min_height: u64 = 1000;
     let recipient: String = "stars1xv9tklw7d82sezh9haa573wufgy59vmwe6xxe5".to_string();
     let sender: String = "stars10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf".to_string();
