@@ -213,7 +213,7 @@ fn test_filter_output() {
 
     let filter = nft_transfer_filter(min_height, recipient, sender, contract_address, token_id);
 
-    filter.into_iter().for_each(|f| {
-        println!("{}", f.into());
-    });
+    // filter.into_iter().for_each(|f| {
+    //     println!("{}", f.into());
+    // });
 }
