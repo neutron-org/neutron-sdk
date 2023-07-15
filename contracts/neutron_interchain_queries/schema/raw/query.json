@@ -5,19 +5,17 @@
     {
       "type": "object",
       "required": [
-        "transfer_nft"
+        "nft_transfers"
       ],
       "properties": {
-        "transfer_nft": {
+        "nft_transfers": {
           "type": "object",
           "required": [
-            "query_id"
+            "sender"
           ],
           "properties": {
-            "query_id": {
-              "type": "integer",
-              "format": "uint64",
-              "minimum": 0.0
+            "sender": {
+              "type": "string"
             }
           }
         }

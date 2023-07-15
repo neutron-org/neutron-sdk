@@ -53,9 +53,8 @@
             "type": "object",
             "required": [
               "connection_id",
-              "contract_address",
+              "ica_account",
               "min_height",
-              "recipient",
               "sender",
               "token_id",
               "update_period"
@@ -64,16 +63,13 @@
               "connection_id": {
                 "type": "string"
               },
-              "contract_address": {
+              "ica_account": {
                 "type": "string"
               },
               "min_height": {
                 "type": "integer",
                 "format": "uint64",
                 "minimum": 0.0
-              },
-              "recipient": {
-                "type": "string"
               },
               "sender": {
                 "type": "string"
@@ -146,19 +142,17 @@
       {
         "type": "object",
         "required": [
-          "transfer_nft"
+          "nft_transfers"
         ],
         "properties": {
-          "transfer_nft": {
+          "nft_transfers": {
             "type": "object",
             "required": [
-              "query_id"
+              "sender"
             ],
             "properties": {
-              "query_id": {
-                "type": "integer",
-                "format": "uint64",
-                "minimum": 0.0
+              "sender": {
+                "type": "string"
               }
             }
           }
@@ -389,24 +383,43 @@
         }
       }
     },
-    "transfer_nft": {
+    "nft_transfers": {
       "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "TransferNftResponse",
+      "title": "NftTransfersResponse",
       "type": "object",
       "required": [
-        "contract_address",
-        "sender",
-        "token_id"
+        "transfers"
       ],
       "properties": {
-        "contract_address": {
-          "type": "string"
-        },
-        "sender": {
-          "type": "string"
-        },
-        "token_id": {
-          "type": "string"
+        "transfers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/NftTransfer"
+          }
+        }
+      },
+      "definitions": {
+        "NftTransfer": {
+          "type": "object",
+          "required": [
+            "contract_address",
+            "sender",
+            "token_id"
+          ],
+          "properties": {
+            "contract_address": {
+              "description": "he address of the specific NFT collection",
+              "type": "string"
+            },
+            "sender": {
+              "description": "The address of the sender in the host chain",
+              "type": "string"
+            },
+            "token_id": {
+              "description": "The ID of the NFT",
+              "type": "string"
+            }
+          }
         }
       }
     }

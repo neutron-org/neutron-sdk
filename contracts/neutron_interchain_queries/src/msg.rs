@@ -41,8 +41,8 @@ pub enum ExecuteMsg {
 #[serde(rename_all = "snake_case")]
 #[derive(QueryResponses)]
 pub enum QueryMsg {
-    #[returns(TransferNftResponse)]
-    TransferNft { query_id: u64 },
+    #[returns(NftTransfersResponse)]
+    NftTransfers { sender: String },
     #[returns(QueryRegisteredQueryResponse)]
     GetRegisteredQuery { query_id: u64 },
 }
@@ -57,8 +57,6 @@ pub struct GetRecipientTxsResponse {
 pub struct MigrateMsg {}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct TransferNftResponse {
-    pub sender: String,
-    pub token_id: String,
-    pub contract_address: String,
+pub struct NftTransfersResponse {
+    pub transfers: Vec<NftTransfer>, 
 }

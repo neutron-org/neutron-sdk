@@ -32,9 +32,8 @@
           "type": "object",
           "required": [
             "connection_id",
-            "contract_address",
+            "ica_account",
             "min_height",
-            "recipient",
             "sender",
             "token_id",
             "update_period"
@@ -43,16 +42,13 @@
             "connection_id": {
               "type": "string"
             },
-            "contract_address": {
+            "ica_account": {
               "type": "string"
             },
             "min_height": {
               "type": "integer",
               "format": "uint64",
               "minimum": 0.0
-            },
-            "recipient": {
-              "type": "string"
             },
             "sender": {
               "type": "string"
