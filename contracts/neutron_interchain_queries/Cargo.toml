@@ -12,10 +12,6 @@ exclude = [
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
-[[example]]
-name="deploy-cw721"
-required_features=["interface"]
-
 [lib]
 crate-type = ["cdylib", "rlib"]
 

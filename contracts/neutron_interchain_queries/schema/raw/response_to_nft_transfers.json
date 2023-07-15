@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "NftTransfersResponse",
+  "type": "object",
+  "required": [
+    "transfers"
+  ],
+  "properties": {
+    "transfers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/NftTransfer"
+      }
+    }
+  },
+  "definitions": {
+    "NftTransfer": {
+      "type": "object",
+      "required": [
+        "contract_address",
+        "sender",
+        "token_id"
+      ],
+      "properties": {
+        "contract_address": {
+          "description": "he address of the specific NFT collection",
+          "type": "string"
+        },
+        "sender": {
+          "description": "The address of the sender in the host chain",
+          "type": "string"
+        },
+        "token_id": {
+          "description": "The ID of the NFT",
+          "type": "string"
+        }
+      }
+    }
+  }
+}

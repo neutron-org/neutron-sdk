@@ -130,6 +130,8 @@ fn test_sudo_tx_query_result_callback() {
         sender: SENDER.to_string(),
         token_id: TOKEN_ID.to_string(),
         min_height: 1000,
+        ica_account: ICA_ADDRESS.to_string(),
+        connection_id: CONNECTION_ID.to_string(),
     };
     instantiate(deps.as_mut(), env.clone(), mock_info("", &vec![]), InstantiateMsg { connection_id: CONNECTION_ID.to_string(), contract_addr: CONTRACT_ADDRESS.to_string() }).unwrap();
     
