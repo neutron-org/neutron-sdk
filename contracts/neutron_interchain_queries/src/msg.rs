@@ -29,6 +29,7 @@ pub enum ExecuteMsg {
     RemoveInterchainQuery {
         query_id: u64,
     },
+    #[cfg_attr(feature = "interface", payable)]
     UnlockNft {
         token_id: String,
         destination: String,
@@ -51,6 +52,10 @@ pub enum ReplyMsg {
 pub enum QueryMsg {
     #[returns(String)]
     IcaAccount {},
+    #[returns(String)]
+    TokenDenom{
+        token_id: String
+    },
     #[returns(NftTransfersResponse)]
     NftTransfers { sender: String },
     #[returns(QueryRegisteredQueryResponse)]

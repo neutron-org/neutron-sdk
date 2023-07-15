@@ -189,13 +189,12 @@ fn execute_mint_nft(
     let sender_addr = verify_query(deps.as_ref(),token_id.clone())?;
 
     // Now that we have the address, we can mint our token to the recipient which validates their ownership of the bad kid
-    let addr = any_addr_to_neutron(deps.as_ref(), sender_addr)?;
+    let addr = any_addr_to_neutron(deps.as_ref(), sender_addr)?; 
+
+    // close the query (gets back some funds)
     let resp = remove_interchain_query(query_id)?;
 
-
-
-
-    // close the query
+    // Mint the new cw20 tokens (costs some funds - on testnet it's the same)
     let resp = resp.add_submessages(mint_native_receipt(deps, env, token_id, addr)?.messages);
 
     Ok(resp) 
@@ -210,9 +209,7 @@ fn execute_unlock_nft(
 ) -> NeutronResult<Response<NeutronMsg>> {
     let config = CONFIG.load(deps.storage)?;
 
-    // We need to make sure, that the client pays enough tokens to unlock their tokens
-    let denom_count = MINTED_TOKENS.load(deps.storage, token_id.clone())?;
-    let denom = format_token_denom(env.clone(), token_id.clone(), denom_count);
+    let denom = get_token_denom(deps.as_ref(), env.clone(), token_id.clone())?;
 
     let amount = must_pay(&info, &denom)
         .map_err(|e| NeutronError::Std(StdError::generic_err(e.to_string())))?;
@@ -284,6 +281,7 @@ fn execute_unlock_nft(
 pub fn query(deps: Deps<NeutronQuery>, env: Env, msg: QueryMsg) -> NeutronResult<Binary> {
     match msg {
         QueryMsg::IcaAccount {} => query_ica_account(deps, env),
+        QueryMsg::TokenDenom { token_id } => query_token_denom(deps, env, token_id),
         QueryMsg::NftTransfers { sender } => {
             Ok(to_binary(&query_nft_transfers(deps, env, sender)?)?)
         }
@@ -298,6 +296,22 @@ fn query_ica_account(deps: Deps<NeutronQuery>, env: Env) -> NeutronResult<Binary
 
     Ok(to_binary(&account)?)
 }
+
+fn query_token_denom(deps: Deps<NeutronQuery>, env: Env, token_id: String) -> NeutronResult<Binary> {
+    let (account, connection_id) = get_ica(deps, &env, INTERCHAIN_ACCOUNT_ID)?;
+
+    Ok(to_binary(&get_token_denom(deps, env, token_id)?)?)
+}
+
+fn get_token_denom(deps: Deps<NeutronQuery>, env: Env, token_id: String) -> NeutronResult<String>{
+
+    // We need to make sure, that the client pays enough tokens to unlock their tokens
+    let denom_count = MINTED_TOKENS.load(deps.storage, token_id.clone())?;
+    let denom = format_token_denom(env.clone(), token_id.clone(), denom_count);
+
+    Ok(denom)
+}
+
 
 fn query_nft_transfers(
     deps: Deps<NeutronQuery>,
