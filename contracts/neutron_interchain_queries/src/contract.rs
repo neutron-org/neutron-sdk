@@ -29,7 +29,7 @@ use cosmwasm_std::{
 use cw2::set_contract_version;
 use prost::Message as ProstMessage;
 
-use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg, TransferNftResponse};
+use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, NftTransfersResponse, QueryMsg};
 use crate::query_helpers::new_register_transfer_nft_query_msg;
 use crate::state::{NftTransfer, TRANSFERS};
 use neutron_sdk::bindings::msg::NeutronMsg;
@@ -236,8 +236,8 @@ fn execute_unlock_nft(
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps<NeutronQuery>, env: Env, msg: QueryMsg) -> NeutronResult<Binary> {
     match msg {
-        QueryMsg::TransferNft { query_id } => {
-            Ok(to_binary(&query_transfer_nft(deps, env, query_id)?)?)
+        QueryMsg::NftTransfers { sender } => {
+            Ok(to_binary(&query_nft_transfers(deps, env, sender)?)?)
         }
         QueryMsg::GetRegisteredQuery { query_id } => {
             Ok(to_binary(&get_registered_query(deps, query_id)?)?)
@@ -245,12 +245,15 @@ pub fn query(deps: Deps<NeutronQuery>, env: Env, msg: QueryMsg) -> NeutronResult
     }
 }
 
-fn query_transfer_nft(
+fn query_nft_transfers(
     deps: Deps<NeutronQuery>,
-    env: Env,
-    query_id: u64,
-) -> NeutronResult<TransferNftResponse> {
-    todo!()
+    _env: Env,
+    sender: String,
+) -> NeutronResult<NftTransfersResponse> {
+    let nft_transfers = SENDER_TXS.load(deps.storage, sender.as_str())?;
+    return Ok(NftTransfersResponse {
+        transfers: nft_transfers,
+    });
 }
 
 #[cfg_attr(feature = "interface", cw_orch::interface_entry_point)]
@@ -272,7 +275,7 @@ pub fn sudo(deps: DepsMut<NeutronQuery>, env: Env, msg: SudoMsg) -> NeutronResul
         } => sudo_tx_query_result(deps, env, query_id, height, data),
 
         // For handling kv query result
-        SudoMsg::KVQueryResult { query_id } => panic!(),
+        SudoMsg::KVQueryResult { query_id: _ } => panic!(),
         _ => Ok(Response::default()),
     }
 }
@@ -303,47 +306,60 @@ pub fn sudo_tx_query_result(
     // TODO: come up with solution to determine transactions filter type
     match registered_query.registered_query.query_type {
         _ => {
-            let msg = body.messages.get(0).unwrap();
+            if let Some(msg) = body.messages.get(0) {
 
-            // panic!("WASMDEBUG: msg: {:?}", msg);
+                let contract_msg = MsgExecuteContract::decode(msg.value.as_slice()).unwrap();
 
-            let contract_msg = MsgExecuteContract::decode(msg.value.as_slice()).unwrap();
+                let transfer_msg: Cw721ExecuteMsg = from_binary(&contract_msg.msg.into())?;
 
-            let transfer_msg: Cw721ExecuteMsg = from_binary(&contract_msg.msg.into())?;
-
-            match transfer_msg {
-                Cw721ExecuteMsg::TransferNft {
-                    token_id,
-                    recipient,
-                } => {
-                    let sender = deps.api.addr_validate(&contract_msg.sender)?;
-                    let receiver_addr = deps.api.addr_validate(recipient.as_str())?;
-
-                    let contract_addr = deps.api.addr_validate(&contract_msg.contract.as_str())?;
-                    let transfer_nft = NftTransfer {
-                        sender: sender.to_string(),
-                        contract_address: contract_addr.to_string(),
+                match transfer_msg {
+                    Cw721ExecuteMsg::TransferNft {
                         token_id,
-                    };
+                        recipient,
+                    } => {
+                        let sender = contract_msg.sender;
+                        let receiver_addr = recipient;
 
-                    let mut stored_transfers: u64 =
-                        TRANSFERS.load(deps.storage).unwrap_or_default();
-                    stored_transfers += 1u64;
-                    TRANSFERS.save(deps.storage, &stored_transfers)?;
+                        let (ica_address, _) = get_ica(deps.as_ref(), &_env, INTERCHAIN_ACCOUNT_ID)?;
+                        if receiver_addr != ica_address {
+                            return Err(NeutronError::Std(StdError::generic_err(format!(
+                                "Receiver is not the ica account: {}",
+                                receiver_addr
+                            ))));
+                        }
 
-                    let mut stored_deposits: Vec<NftTransfer> = SENDER_TXS
-                        .load(deps.storage, sender.as_str())
-                        .unwrap_or_default();
-                    stored_deposits.push(transfer_nft.clone());
-                    SENDER_TXS.save(deps.storage, sender.as_str(), &stored_deposits)?;
+                        let contract_address = contract_msg.contract;
 
-                    return Ok(Response::new().add_attribute(
-                        "transfer_nft",
-                        serde_json_wasm::to_string(&transfer_nft)
-                            .map_err(|e| NeutronError::SerdeJSONWasm(e.to_string()))?,
-                    ));
+                        let transfer_nft = NftTransfer {
+                            sender: sender.clone(),
+                            contract_address,
+                            token_id,
+                        };
+
+                        let mut stored_transfers: u64 =
+                            TRANSFERS.load(deps.storage).unwrap_or_default();
+                        stored_transfers += 1u64;
+                        TRANSFERS.save(deps.storage, &stored_transfers)?;
+
+                        let mut stored_deposits: Vec<NftTransfer> = SENDER_TXS
+                            .load(deps.storage, sender.as_str())
+                            .unwrap_or_default();
+                        
+                        stored_deposits.push(transfer_nft.clone());
+                        SENDER_TXS.save(deps.storage, sender.as_str(), &stored_deposits)?;
+
+                        return Ok(Response::new().add_attribute(
+                            "transfer_nft",
+                            serde_json_wasm::to_string(&transfer_nft)
+                                .map_err(|e| NeutronError::SerdeJSONWasm(e.to_string()))?,
+                        ));
+                    }
+                    // message type is different from SendNft -> Contract broken
+                    _ => panic!("message is not SendNft"),
                 }
-                _ => panic!("message is not SendNft"),
+            } else {
+                // messages are empty, no updates to state
+                return Ok(Response::default());
             }
         }
     }

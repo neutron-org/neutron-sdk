@@ -155,8 +155,10 @@ fn test_sudo_tx_query_result_callback() {
     deps.querier.add_registred_queries(1, registered_query);
 
     // simulate neutron's SudoTxQueryResult call with the following payload:
-    // a sending from neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf to watched_addr of 10000 stake
+    // Build the payload that would be received from stargaze
     let data = build_msg_payload(ICA_ADDRESS.to_string(), SENDER.to_string(), CONTRACT_ADDRESS.to_string(), TOKEN_ID.to_string());
+
+    // Recieve and process the payload on neutron side
     sudo_tx_query_result(
         deps.as_mut(),
         env.clone(),
@@ -165,7 +167,7 @@ fn test_sudo_tx_query_result_callback() {
             revision_number: 0,
             revision_height: height,
         },
-        data,
+        data.clone(),
     )
     .unwrap();
 
