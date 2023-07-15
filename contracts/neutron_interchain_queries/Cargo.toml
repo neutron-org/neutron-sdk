@@ -55,15 +55,15 @@ bech32 = "0.9.1"
 cw0 = "0.10.3"
 cw721 = "0.18.0"
 #cw-orch = { version = "0.13.3", optional = true, features=["daemon"] }
-#cw-orch = { git="https://github.com/abstractsdk/cw-orchestrator", branch="update/minimum_block_wait_time", optional = true, features=["daemon"] }
-cw-orch = {path="../../../../BOOT/cw-orchestrator/cw-orch", optional = true, features=["daemon"]}
+cw-orch = { git="https://github.com/abstractsdk/cw-orchestrator", branch="update/minimum_block_wait_time", optional = true, features=["daemon"] }
+# cw-orch = {path="../../../../BOOT/cw-orchestrator/cw-orch", optional = true, features=["daemon"]}
 prost-types = "0.11.9"
 
 [dev-dependencies]
 tokio = "1.29.1"
 # cw-orch = { version = "0.13.3", features=["daemon"] }
-# cw-orch = { git="https://github.com/abstractsdk/cw-orchestrator", branch="update/minimum_block_wait_time", features=["daemon"] }
-cw-orch = {path="../../../../BOOT/cw-orchestrator/cw-orch", features=["daemon"]}
+cw-orch = { git="https://github.com/abstractsdk/cw-orchestrator", branch="update/minimum_block_wait_time", features=["daemon"] }
+# cw-orch = {path="../../../../BOOT/cw-orchestrator/cw-orch", features=["daemon"]}
 
 neutron_interchain_queries = {path=".", features=["interface"]}
 env_logger = "0.10.0"

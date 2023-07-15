@@ -5,6 +5,18 @@
     {
       "type": "object",
       "required": [
+        "register_i_c_a"
+      ],
+      "properties": {
+        "register_i_c_a": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
         "mint_nft"
       ],
       "properties": {
@@ -31,20 +43,11 @@
         "register_transfer_nft_query": {
           "type": "object",
           "required": [
-            "connection_id",
-            "ica_account",
             "min_height",
             "sender",
-            "token_id",
-            "update_period"
+            "token_id"
           ],
           "properties": {
-            "connection_id": {
-              "type": "string"
-            },
-            "ica_account": {
-              "type": "string"
-            },
             "min_height": {
               "type": "integer",
               "format": "uint64",
@@ -55,11 +58,6 @@
             },
             "token_id": {
               "type": "string"
-            },
-            "update_period": {
-              "type": "integer",
-              "format": "uint64",
-              "minimum": 0.0
             }
           }
         }
@@ -106,6 +104,34 @@
             },
             "token_id": {
               "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "update_config"
+      ],
+      "properties": {
+        "update_config": {
+          "type": "object",
+          "properties": {
+            "nft_contract_address": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "update_period": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint64",
+              "minimum": 0.0
             }
           }
         }

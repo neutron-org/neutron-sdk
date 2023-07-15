@@ -64,7 +64,7 @@ pub fn nft_transfer_filter(
             value: TransactionFilterValue::String(sender),
         },
         TransactionFilterItem {
-            field: "wasm.contract_address".to_string(),
+            field: "wasm._contract_address".to_string(),
             op: TransactionFilterOp::Eq,
             value: TransactionFilterValue::String(contract_address),
         },
