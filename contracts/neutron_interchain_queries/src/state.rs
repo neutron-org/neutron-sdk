@@ -78,5 +78,6 @@ pub const CONFIG: Item<Config> = Item::new("config");
 
 #[cosmwasm_schema::cw_serde]
 pub struct Config {
+    pub connection_id: String,
     pub nft_contract_address: String, // THis is a contract address on a distant chain, so please don't verify it
 }

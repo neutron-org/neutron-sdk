@@ -12,6 +12,7 @@ use crate::state::SudoPayload;
 use crate::state::CONFIG;
 use crate::state::MINTED_TOKENS;
 use crate::state::SENDER_TXS;
+
 use cosmos_sdk_proto::traits::MessageExt;
 
 use cw0::must_pay;
@@ -61,7 +62,7 @@ pub const INTERCHAIN_ACCOUNT_ID: &str = "hub";
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
     deps: DepsMut<NeutronQuery>,
-    env: Env,
+    _env: Env,
     _info: MessageInfo,
     msg: InstantiateMsg,
 ) -> NeutronResult<Response<NeutronMsg>> {
@@ -70,15 +71,9 @@ pub fn instantiate(
 
     let config = Config {
         nft_contract_address: msg.contract_addr,
+        connection_id: msg.connection_id
     };
     CONFIG.save(deps.storage, &config)?;
-
-    execute_register_ica(
-        deps,
-        env,
-        msg.connection_id,
-        INTERCHAIN_ACCOUNT_ID.to_string(),
-    )?;
 
     Ok(Response::default())
 }
@@ -92,6 +87,10 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> NeutronResult<Response<NeutronMsg>> {
     match msg {
+        ExecuteMsg::RegisterICA => {
+            let connection_id = CONFIG.load(deps.storage)?.connection_id;
+            execute_register_ica(deps, env, connection_id, INTERCHAIN_ACCOUNT_ID.to_string())
+        }
         ExecuteMsg::RegisterTransferNftQuery {
             update_period,
             min_height,
