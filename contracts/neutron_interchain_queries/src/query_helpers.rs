@@ -85,7 +85,7 @@ pub fn nft_transfer_filter(
 pub fn verify_query(deps: Deps<NeutronQuery>, env: &Env, token_id: String, requester:Addr) -> NeutronResult<String> {
     // verify whether the token has been sent to the ica by the owner
     // verify whether the token is still owned by the ica
-    check_host_state(deps, token_id.clone(), env)?;
+    // check_host_state(deps, token_id.clone(), env)?;
     let host_address = check_host_transactions(deps, requester, &token_id)?;
 
     Ok(host_address)

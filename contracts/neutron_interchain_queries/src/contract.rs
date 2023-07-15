@@ -184,10 +184,10 @@ pub fn register_transfer_nft_query(
         token_id.clone(),
     )?;
 
-    let kv_query_msg = new_register_nft_owned_query_msg(connection_id, config.update_period, config.nft_contract_address, token_id)?;
+    // let kv_query_msg = new_register_nft_owned_query_msg(connection_id, config.update_period, config.nft_contract_address, token_id)?;
 
     Ok(Response::new()
-        .add_message(kv_query_msg)
+       // .add_message(kv_query_msg)
     .add_submessage(SubMsg::reply_on_success(tx_query_msg, QUERY_REGISTER_REPLY_ID)))
 }
 
