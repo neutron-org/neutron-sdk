@@ -26,7 +26,7 @@ pub enum ExecuteMsg {
         sender: String,
         token_id: String,
         ica_account: String,
-        connection_id: String 
+        connection_id: String,
     },
     RemoveInterchainQuery {
         query_id: u64,
@@ -58,5 +58,5 @@ pub struct MigrateMsg {}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct NftTransfersResponse {
-    pub transfers: Vec<NftTransfer>, 
+    pub transfers: Vec<NftTransfer>,
 }

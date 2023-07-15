@@ -71,7 +71,7 @@ pub fn instantiate(
 
     let config = Config {
         nft_contract_address: msg.contract_addr,
-        connection_id: msg.connection_id
+        connection_id: msg.connection_id,
     };
     CONFIG.save(deps.storage, &config)?;
 
@@ -97,8 +97,17 @@ pub fn execute(
             sender,
             token_id,
             ica_account,
-            connection_id
-        } => register_transfer_nft_query(deps, env, update_period, min_height, sender, token_id, ica_account, connection_id),
+            connection_id,
+        } => register_transfer_nft_query(
+            deps,
+            env,
+            update_period,
+            min_height,
+            sender,
+            token_id,
+            ica_account,
+            connection_id,
+        ),
         // todo: add NFT ownership query
         ExecuteMsg::RemoveInterchainQuery { query_id } => remove_interchain_query(query_id),
         ExecuteMsg::UnlockNft {
@@ -306,7 +315,6 @@ pub fn sudo_tx_query_result(
     match registered_query.registered_query.query_type {
         _ => {
             if let Some(msg) = body.messages.get(0) {
-
                 let contract_msg = MsgExecuteContract::decode(msg.value.as_slice()).unwrap();
 
                 let transfer_msg: Cw721ExecuteMsg = from_binary(&contract_msg.msg.into())?;
@@ -319,7 +327,8 @@ pub fn sudo_tx_query_result(
                         let sender = contract_msg.sender;
                         let receiver_addr = recipient;
 
-                        let (ica_address, _) = get_ica(deps.as_ref(), &_env, INTERCHAIN_ACCOUNT_ID)?;
+                        let (ica_address, _) =
+                            get_ica(deps.as_ref(), &_env, INTERCHAIN_ACCOUNT_ID)?;
                         if receiver_addr != ica_address {
                             return Err(NeutronError::Std(StdError::generic_err(format!(
                                 "Receiver is not the ica account: {}",
@@ -343,7 +352,7 @@ pub fn sudo_tx_query_result(
                         let mut stored_deposits: Vec<NftTransfer> = SENDER_TXS
                             .load(deps.storage, sender.as_str())
                             .unwrap_or_default();
-                        
+
                         stored_deposits.push(transfer_nft.clone());
                         SENDER_TXS.save(deps.storage, sender.as_str(), &stored_deposits)?;
 

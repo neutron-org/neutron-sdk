@@ -1,26 +1,22 @@
 use std::str::FromStr;
 
 use super::mock_querier::mock_dependencies as dependencies;
-use crate::contract::{execute, query, sudo_tx_query_result, instantiate, INTERCHAIN_ACCOUNT_ID};
-use crate::msg::{ExecuteMsg, QueryMsg, self, InstantiateMsg};
+use crate::contract::{execute, instantiate, query, sudo_tx_query_result, INTERCHAIN_ACCOUNT_ID};
+use crate::msg::{self, ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::query_helpers::nft_transfer_filter;
-use crate::state::{NftTransfer,  SENDER_TXS, INTERCHAIN_ACCOUNTS};
-use cosmos_sdk_proto::Any;
+use crate::state::{NftTransfer, INTERCHAIN_ACCOUNTS, SENDER_TXS};
 use cosmos_sdk_proto::cosmos::tx::v1beta1::{TxBody, TxRaw};
 use cosmos_sdk_proto::cosmwasm::wasm::v1::MsgExecuteContract;
 use cosmos_sdk_proto::traits::MessageExt;
+use cosmos_sdk_proto::Any;
 use cosmwasm_std::testing::{mock_env, mock_info, MockApi, MockStorage};
-use cosmwasm_std::{
-Binary, Coin,  Uint128, to_binary, Addr,
-};
+use cosmwasm_std::{to_binary, Addr, Binary, Coin, Uint128};
 use cw2::CONTRACT;
 use cw721::Cw721ExecuteMsg;
 use neutron_sdk::bindings::query::{
     NeutronQuery, QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse,
 };
-use neutron_sdk::bindings::types::{
-    decode_hex, Height, KVKey,  RegisteredQuery, 
-};
+use neutron_sdk::bindings::types::{decode_hex, Height, KVKey, RegisteredQuery};
 use neutron_sdk::interchain_queries::types::QueryType;
 use neutron_sdk::interchain_txs::helpers::get_port_id;
 use prost::Message;
@@ -112,7 +108,6 @@ fn build_registered_query_response(
     Binary::from(to_string(&resp).unwrap().as_bytes())
 }
 
-
 const SENDER: &str = "stars10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf";
 const TOKEN_ID: &str = "42";
 const ICA_ADDRESS: &str = "stars10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf";
@@ -131,11 +126,30 @@ fn test_sudo_tx_query_result_callback() {
         token_id: TOKEN_ID.to_string(),
         min_height: 1000,
         connection_id: "".to_string(),
-        ica_account: "".to_string()
+        ica_account: "".to_string(),
     };
-    instantiate(deps.as_mut(), env.clone(), mock_info("", &vec![]), InstantiateMsg { connection_id: CONNECTION_ID.to_string(), contract_addr: CONTRACT_ADDRESS.to_string() }).unwrap();
-    
-    INTERCHAIN_ACCOUNTS.save(&mut deps.storage, get_port_id(env.clone().contract.address, Addr::unchecked(INTERCHAIN_ACCOUNT_ID)).to_string(), &Some(("".to_string(),"".to_string()))).unwrap();
+    instantiate(
+        deps.as_mut(),
+        env.clone(),
+        mock_info("", &vec![]),
+        InstantiateMsg {
+            connection_id: CONNECTION_ID.to_string(),
+            contract_addr: CONTRACT_ADDRESS.to_string(),
+        },
+    )
+    .unwrap();
+
+    INTERCHAIN_ACCOUNTS
+        .save(
+            &mut deps.storage,
+            get_port_id(
+                env.clone().contract.address,
+                Addr::unchecked(INTERCHAIN_ACCOUNT_ID),
+            )
+            .to_string(),
+            &Some(("".to_string(), "".to_string())),
+        )
+        .unwrap();
 
     execute(deps.as_mut(), env.clone(), mock_info("", &[]), msg).unwrap();
     let registered_query = build_registered_query_response(
@@ -147,7 +161,6 @@ fn test_sudo_tx_query_result_callback() {
                 CONTRACT_ADDRESS.to_string(),
                 SENDER.to_string(),
                 TOKEN_ID.to_string(),
-
             ))
             .unwrap(),
         ),
@@ -158,7 +171,12 @@ fn test_sudo_tx_query_result_callback() {
 
     // simulate neutron's SudoTxQueryResult call with the following payload:
     // Build the payload that would be received from stargaze
-    let data = build_msg_payload(ICA_ADDRESS.to_string(), SENDER.to_string(), CONTRACT_ADDRESS.to_string(), TOKEN_ID.to_string());
+    let data = build_msg_payload(
+        ICA_ADDRESS.to_string(),
+        SENDER.to_string(),
+        CONTRACT_ADDRESS.to_string(),
+        TOKEN_ID.to_string(),
+    );
 
     // Recieve and process the payload on neutron side
     sudo_tx_query_result(
