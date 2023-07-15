@@ -201,3 +201,19 @@ fn test_sudo_tx_query_result_callback() {
         }])
     );
 }
+
+#[test]
+fn test_filter_output() {
+
+    let min_height: u64 = 1000;
+    let recipient: String = "stars1xv9tklw7d82sezh9haa573wufgy59vmwe6xxe5".to_string();
+    let sender: String = "stars10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf".to_string();
+    let contract_address: String = "stars1xv9tklw7d82sezh9haa573wufgy59vmwe6xxe5".to_string();
+    let token_id: String = "42".to_string();
+
+    let filter = nft_transfer_filter(min_height, recipient, sender, contract_address, token_id);
+
+    // filter.into_iter().for_each(|f| {
+    //     println!("{}", f.into());
+    // });
+}

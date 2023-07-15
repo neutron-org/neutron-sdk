@@ -5,6 +5,18 @@
     {
       "type": "object",
       "required": [
+        "ica_account"
+      ],
+      "properties": {
+        "ica_account": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
         "nft_transfers"
       ],
       "properties": {
