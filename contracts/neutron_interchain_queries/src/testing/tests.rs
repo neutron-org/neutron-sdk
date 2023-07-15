@@ -3,8 +3,8 @@ use std::str::FromStr;
 use super::mock_querier::mock_dependencies as dependencies;
 use crate::contract::{execute, instantiate, sudo_tx_query_result, INTERCHAIN_ACCOUNT_ID};
 use crate::msg::{ExecuteMsg, InstantiateMsg};
-use crate::query_helpers::nft_transfer_filter;
-use crate::state::{get_ica, NftTransfer, CONFIG, INTERCHAIN_ACCOUNTS, SENDER_TXS};
+use crate::query_helpers::{nft_transfer_filter, nft_owned_filter};
+use crate::state::{NftTransfer, INTERCHAIN_ACCOUNTS, SENDER_TXS, CONFIG, get_ica};
 use cosmos_sdk_proto::cosmos::tx::v1beta1::{TxBody, TxRaw};
 use cosmos_sdk_proto::cosmwasm::wasm::v1::MsgExecuteContract;
 use cosmos_sdk_proto::traits::MessageExt;
@@ -140,8 +140,9 @@ fn test_sudo_tx_query_result_callback() {
             get_port_id(
                 env.clone().contract.address,
                 Addr::unchecked(INTERCHAIN_ACCOUNT_ID),
-            ),
-            &Some(("".to_string(), "".to_string())),
+            )
+            ,
+            &Some((ICA_ADDRESS.to_string(), "".to_string())),
         )
         .unwrap();
 
@@ -212,4 +213,23 @@ fn test_filter_output() {
     // filter.into_iter().for_each(|f| {
     //     println!("{}", f.into());
     // });
+}
+
+#[test]
+fn test_contract_key_generation() {
+    let contract_address: String = "stars1mrtt39mc5d6zhawje9a24uh2wjf9jv0g0vtgqj5etyljmt29q07s6te037".to_string();
+    let token_id: String = "0002".to_string();
+    let (key, full_key) = nft_owned_filter(token_id, contract_address);
+    
+    // let key = "tokens".as_bytes();
+    // // convert bytes to hex string
+    // let hex = hex::encode(key);
+    // let basekey = base64::encode(key);
+    // println!("{:?}", hex);
+
+
+    println!("hex store key: \t{:?}", hex::encode(key.clone()));
+    println!("hex full key: \t{:?}", hex::encode(full_key.clone()));
+    println!("base64 store key: \t{:?}", base64::encode(key));
+    println!("base64 full key: \t{:?}", base64::encode(full_key));
 }

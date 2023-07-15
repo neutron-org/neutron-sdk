@@ -1,2 +1,2 @@
-mod mock_querier;
+pub mod mock_querier;
 mod tests;

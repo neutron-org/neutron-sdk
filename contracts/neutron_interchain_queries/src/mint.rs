@@ -14,6 +14,7 @@ use crate::state::MINTED_TOKENS;
 const MINT_AMOUNT: u128 = 100;
 pub const THRESHOLD_BURN_AMOUNT: u128 = 50;
 const NEUTRON_BECH32_PREFIX: &str = "neutron";
+const STARS_BECH32_PREFIX: &str = "stars";
 
 /// This function transfer the addr to a local neutron addr
 pub fn any_addr_to_neutron(deps: Deps<NeutronQuery>, addr: String) -> NeutronResult<Addr> {
@@ -23,10 +24,17 @@ pub fn any_addr_to_neutron(deps: Deps<NeutronQuery>, addr: String) -> NeutronRes
     Ok(deps.api.addr_validate(&neutron_addr)?)
 }
 
+pub fn any_addr_to_stars(deps: Deps<NeutronQuery>, addr: Addr) -> NeutronResult<String> {
+    // TODO, test this snippet
+    let (_hrp, data, _variant) = bech32::decode(&addr.as_str())?;
+    let stars_addr = bech32::encode(STARS_BECH32_PREFIX, data, bech32::Variant::Bech32)?;
+    Ok(stars_addr)
+}
+
 // In order to create a token denom that is reasonable and doesn't make assumptions on token name length
 // We give each new token transfer an increasing id (see https://docs.neutron.org/neutron/modules/3rdparty/osmosis/tokenfactory/overview)
 pub fn format_token_sub_denom(_token_id: String, token_count: u64) -> String {
-    format!("{}", token_count)
+    format!("{}", _token_id)
 }
 
 // In order to create a token denom that is reasonable and doesn't make assumptions on token name length

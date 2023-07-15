@@ -1,3 +1,5 @@
+use cosmwasm_std::Empty;
+use cosmwasm_std::Order;
 use cosmwasm_std::from_binary;
 use cosmwasm_std::to_vec;
 use cosmwasm_std::Binary;
@@ -8,6 +10,7 @@ use cosmwasm_std::Order;
 use cosmwasm_std::StdError;
 use cosmwasm_std::StdResult;
 use cosmwasm_std::Storage;
+use cw721_base::state::TokenInfo;
 use cw_storage_plus::{Item, Map};
 use neutron_sdk::interchain_txs::helpers::get_port_id;
 use schemars::JsonSchema;
@@ -21,6 +24,7 @@ pub const SENDER_TXS: Map<&Sender, Vec<NftTransfer>> = Map::new("recipient_txs")
 pub const TRANSFERS: Item<u64> = Item::new("nft-transfers");
 pub const CACHED_TOKEN_ID: Item<String> = Item::new("cached_token_id");
 pub const TOKEN_ID_QUERY_PAIRS: Map<String, u64> = Map::new("token_id_query_pairs");
+pub const TOKEN_INFOS: Map<String, TokenInfo<Empty>> = Map::new("token_infos");
 
 // For each token_id, we need to be able to get the sender of that NFT in the contract
 // Don't forget to clear that storage after the nft is indeed transfered to neutron
@@ -37,6 +41,8 @@ pub struct NftTransfer {
     /// The ID of the NFT
     pub token_id: String,
 }
+
+
 
 // ICA Related part
 

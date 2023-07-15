@@ -60,6 +60,8 @@ pub enum QueryMsg {
     NftTransfers { sender: String },
     #[returns(QueryRegisteredQueryResponse)]
     GetRegisteredQuery { query_id: u64 },
+    #[returns(u64)]
+    GetQueryId { token_id: String },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
