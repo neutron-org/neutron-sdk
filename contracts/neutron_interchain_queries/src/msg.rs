@@ -17,9 +17,11 @@ pub struct InstantiateMsg {
 #[cfg_attr(feature = "interface", derive(cw_orch::ExecuteFns))]
 pub enum ExecuteMsg {
     RegisterICA {},
+    #[cfg_attr(feature = "interface", payable)]
     MintNft {
         token_id: String,
     },
+    #[cfg_attr(feature = "interface", payable)]
     RegisterTransferNftQuery {
         min_height: u64,
         sender: String,

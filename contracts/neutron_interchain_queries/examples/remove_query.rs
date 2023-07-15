@@ -1,4 +1,3 @@
-use cosmwasm_std::coins;
 use cw_orch::daemon::networks::PION_1;
 use cw_orch::daemon::DaemonBuilder;
 use cw_orch::prelude::CwOrchInstantiate;
@@ -24,9 +23,10 @@ pub fn main() -> cw_orch::anyhow::Result<()> {
 
     let bad_kids = NeutronInterchainQueries::new(INTERCHAIN_QUERY_ID, chain);
 
+    const QUERY: u64 = 6;
+
     // Registering the ica account
-    // bad_kids.register_transfer_nft_query(0, "stars18yj2mc7hjk2zqtwr9exfyj625kffwmjg3dr7tv".to_string(), "0005".to_string(), &coins(1_000_000,"untrn"))?;
-    bad_kids.register_transfer_nft_query(0, "stars18yj2mc7hjk2zqtwr9exfyj625kffwmjg3dr7tv".to_string(), "0008".to_string(), &[])?;
+    bad_kids.remove_interchain_query(QUERY)?;
 
     Ok(())
 }

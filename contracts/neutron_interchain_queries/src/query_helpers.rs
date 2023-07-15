@@ -1,3 +1,5 @@
+use cosmwasm_std::{Deps, CustomQuery};
+use crate::state::TOKEN_ID_SENDER;
 use neutron_sdk::{
     bindings::msg::NeutronMsg,
     interchain_queries::types::{
@@ -77,7 +79,10 @@ pub fn nft_transfer_filter(
     query_data
 }
 
-pub fn verify_query(_token_id: String) -> NeutronResult<String> {
-    let addr = "stars1phaxpevm5wecex2jyaqty2a4v02qj7qmruxmf7";
-    Ok(addr.to_string())
+pub fn verify_query<T: CustomQuery>(deps: Deps<T>, token_id: String) -> NeutronResult<String> {
+    // We load the nft transfer associated with the token_id
+    let sender = TOKEN_ID_SENDER.load(deps.storage, token_id)?;
+    // We verify the nft is currently owned by the ica_account (TODO)
+
+    Ok(sender.to_string())
 }

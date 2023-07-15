@@ -56,7 +56,7 @@ pub fn mint_native_receipt(
         ))),
     })?;
 
-    let subdenom = format_token_denom(env.clone(), token_id.clone(), token_count);
+    let subdenom = format_token_sub_denom(token_id.clone(), token_count);
 
     Ok(Response::new()
         .add_message(NeutronMsg::CreateDenom { subdenom })

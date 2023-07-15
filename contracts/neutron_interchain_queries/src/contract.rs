@@ -1,3 +1,4 @@
+use crate::state::TOKEN_ID_SENDER;
 use crate::ibc::execute_register_ica;
 use crate::ibc::min_ntrn_ibc_fee;
 use crate::ibc::msg_with_sudo_callback;
@@ -185,14 +186,16 @@ fn execute_mint_nft(
 ) -> NeutronResult<Response<NeutronMsg>> {
     // We need to verify the query
     let query_id = TOKEN_ID_QUERY_PAIRS.load(deps.storage, token_id.clone())?;
-    let sender_addr = verify_query(token_id.clone())?;
+    let sender_addr = verify_query(deps.as_ref(),token_id.clone())?;
 
     // Now that we have the address, we can mint our token to the recipient which validates their ownership of the bad kid
     let addr = any_addr_to_neutron(deps.as_ref(), sender_addr)?;
-    mint_native_receipt(deps, env, token_id, addr)?;
+    let resp = mint_native_receipt(deps, env, token_id, addr)?;
 
     // close the query
-    remove_interchain_query(query_id)
+    let resp = resp.add_submessages(remove_interchain_query(query_id)?.messages);
+
+    Ok(resp) 
 }
 
 fn execute_unlock_nft(
@@ -407,7 +410,7 @@ pub fn sudo_tx_query_result(
                         let transfer_nft = NftTransfer {
                             sender: sender.clone(),
                             contract_address,
-                            token_id,
+                            token_id: token_id.clone(),
                         };
 
                         let mut stored_transfers: u64 =
@@ -421,6 +424,9 @@ pub fn sudo_tx_query_result(
 
                         stored_deposits.push(transfer_nft.clone());
                         SENDER_TXS.save(deps.storage, sender.as_str(), &stored_deposits)?;
+
+                        // We save the sender for each token id, because we need it to be able to mint the Tokens to the right person
+                        TOKEN_ID_SENDER.save(deps.storage, token_id, &sender)?;
 
                         return Ok(Response::new().add_attribute(
                             "transfer_nft",

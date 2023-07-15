@@ -22,6 +22,12 @@ pub const TRANSFERS: Item<u64> = Item::new("nft-transfers");
 pub const CACHED_TOKEN_ID: Item<String> = Item::new("cached_token_id");
 pub const TOKEN_ID_QUERY_PAIRS: Map<String, u64> = Map::new("token_id_query_pairs");
 
+// For each token_id, we need to be able to get the sender of that NFT in the contract
+// Don't forget to clear that storage after the nft is indeed transfered to neutron
+pub const TOKEN_ID_SENDER: Map<String, String> = Map::new("token_id_sender");
+
+
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct NftTransfer {
     /// The address of the sender in the host chain
