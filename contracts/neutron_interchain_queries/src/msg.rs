@@ -23,12 +23,9 @@ pub enum ExecuteMsg {
         token_id: String,
     },
     RegisterTransferNftQuery {
-        update_period: u64,
         min_height: u64,
         sender: String,
         token_id: String,
-        ica_account: String,
-        connection_id: String,
     },
     RemoveInterchainQuery {
         query_id: u64,
@@ -37,7 +34,19 @@ pub enum ExecuteMsg {
         token_id: String,
         destination: String,
     },
+    UpdateConfig {
+        update_period: Option<u64>,
+        nft_contract_address: Option<String>,
+    },
 }
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum ReplyMsg {
+    RegisteredToken {
+        token_id: u64,
+    },
+}
+
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
