@@ -24,6 +24,8 @@ pub enum ExecuteMsg {
         min_height: u64,
         sender: String,
         token_id: String,
+            ica_account: String,
+            connection_id: String 
     },
     RemoveInterchainQuery {
         query_id: u64,

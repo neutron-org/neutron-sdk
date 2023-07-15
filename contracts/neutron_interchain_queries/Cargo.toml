@@ -12,6 +12,10 @@ exclude = [
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[[example]]
+name="deploy-cw721"
+required_features=["interface"]
+
 [lib]
 crate-type = ["cdylib", "rlib"]
 
@@ -48,4 +52,11 @@ cosmwasm-schema = { version = "1.2.0", default-features = false }
 bech32 = "0.9.1"
 cw0 = "0.10.3"
 cw721 = "0.18.0"
-cw-orch = { version = "0.13.3", optional = true }
+cw-orch = { version = "0.13.3", optional = true, features=["daemon"] }
+
+
+[dev.dependencies]
+cw-orch = { version = "0.13.3", features=["daemon"] }
+
+[dev-dependencies]
+tokio = "1.29.1"

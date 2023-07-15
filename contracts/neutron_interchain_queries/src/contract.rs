@@ -55,7 +55,7 @@ const MAX_ALLOWED_MESSAGES: usize = 20;
 const CONTRACT_NAME: &str = concat!("crates.io:neutron-sdk__", env!("CARGO_PKG_NAME"));
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
-const INTERCHAIN_ACCOUNT_ID: &str = "bad-kids-account-id";
+const INTERCHAIN_ACCOUNT_ID: &str = "hub";
 
 #[cfg_attr(feature = "interface", cw_orch::interface_entry_point)]
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -97,7 +97,9 @@ pub fn execute(
             min_height,
             sender,
             token_id,
-        } => register_transfer_nft_query(deps, env, update_period, min_height, sender, token_id),
+            ica_account,
+            connection_id
+        } => register_transfer_nft_query(deps, env, update_period, min_height, sender, token_id, ica_account, connection_id),
         // todo: add NFT ownership query
         ExecuteMsg::RemoveInterchainQuery { query_id } => remove_interchain_query(query_id),
         ExecuteMsg::UnlockNft {
@@ -115,10 +117,12 @@ pub fn register_transfer_nft_query(
     min_height: u64,
     sender: String,
     token_id: String,
+    ica_account: String,
+    connection_id: String,
 ) -> NeutronResult<Response<NeutronMsg>> {
     let config = CONFIG.load(deps.storage)?;
 
-    let (ica_account, connection_id) = get_ica(deps.as_ref(), &env, INTERCHAIN_ACCOUNT_ID)?;
+    // let (ica_account, connection_id) = get_ica(deps.as_ref(), &env, INTERCHAIN_ACCOUNT_ID)?;
 
     let query_msg = new_register_transfer_nft_query_msg(
         connection_id,
