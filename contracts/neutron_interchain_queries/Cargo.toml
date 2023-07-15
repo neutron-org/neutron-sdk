@@ -17,6 +17,13 @@ exclude = [
 name = "deploy"
 required-features = ["interface"]
 
+[[example]]
+name = "migrate"
+required-features = ["interface"]
+
+# [[example]]
+
+
 
 [lib]
 crate-type = ["cdylib", "rlib"]
