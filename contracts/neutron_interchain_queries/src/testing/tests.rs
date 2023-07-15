@@ -124,8 +124,6 @@ fn test_sudo_tx_query_result_callback() {
         sender: SENDER.to_string(),
         token_id: TOKEN_ID.to_string(),
         min_height: 1000,
-        connection_id: "".to_string(),
-        ica_account: "".to_string(),
     };
     instantiate(
         deps.as_mut(),

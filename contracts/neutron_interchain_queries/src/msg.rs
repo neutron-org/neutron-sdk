@@ -50,8 +50,11 @@ pub enum ReplyMsg {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
+#[cfg_attr(feature = "interface", derive(cw_orch::QueryFns))]
 #[derive(QueryResponses)]
 pub enum QueryMsg {
+    #[returns(String)]
+    IcaAccount{},
     #[returns(NftTransfersResponse)]
     NftTransfers { sender: String },
     #[returns(QueryRegisteredQueryResponse)]

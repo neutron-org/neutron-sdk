@@ -1,0 +1,3 @@
+pub const QUERY_REGISTER_REPLY_ID: u64 = 1;
+
+pub const SUDO_PAYLOAD_REPLY_ID: u64 = 2;
