@@ -1,7 +1,7 @@
 use crate::state::save_reply_payload;
 use crate::state::SudoPayload;
 use crate::state::INTERCHAIN_ACCOUNTS;
-use crate::state::SUDO_PAYLOAD_REPLY_ID;
+use crate::reply::SUDO_PAYLOAD_REPLY_ID;
 use cosmwasm_std::CosmosMsg;
 use cosmwasm_std::DepsMut;
 use cosmwasm_std::Response;

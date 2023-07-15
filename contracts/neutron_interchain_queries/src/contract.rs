@@ -1,3 +1,4 @@
+use crate::reply::SUDO_PAYLOAD_REPLY_ID;
 use crate::sudo::prepare_sudo_payload;
 use crate::reply::QUERY_REGISTER_REPLY_ID;
 use crate::sudo::sudo_response;
@@ -273,7 +274,7 @@ fn execute_unlock_nft(
 pub fn query(deps: Deps<NeutronQuery>, env: Env, msg: QueryMsg) -> NeutronResult<Binary> {
     match msg {
         QueryMsg::IcaAccount { } => {
-            Ok(to_binary(&query_ica_account(deps, env)?)?)
+            query_ica_account(deps, env)
         }
         QueryMsg::NftTransfers { sender } => {
             Ok(to_binary(&query_nft_transfers(deps, env, sender)?)?)
@@ -464,9 +465,5 @@ pub fn reply(deps: DepsMut<NeutronQuery>, env: Env, reply: Reply) -> NeutronResu
         },
         SUDO_PAYLOAD_REPLY_ID => Ok(prepare_sudo_payload(deps, env, reply)?),
         _ => Err(NeutronError::Std(StdError::generic_err("Wrong reply id")))
-
-
     }
-
-   
 }

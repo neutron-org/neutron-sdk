@@ -35,13 +35,13 @@ pub fn main()-> cw_orch::anyhow::Result<()>{
 	// // Uploading
 	// bad_kids.upload()?;
 
-	// Instantiating the contract
-	bad_kids.instantiate(&InstantiateMsg{
-		connection_id: "connection-82".to_string(),
-		contract_addr: "stars1mrtt39mc5d6zhawje9a24uh2wjf9jv0g0vtgqj5etyljmt29q07s6te037".to_string()
-	}, Some(&chain.sender()), None)?;
+	// // Instantiating the contract
+	// bad_kids.instantiate(&InstantiateMsg{
+	// 	connection_id: "connection-82".to_string(),
+	// 	contract_addr: "stars1mrtt39mc5d6zhawje9a24uh2wjf9jv0g0vtgqj5etyljmt29q07s6te037".to_string()
+	// }, Some(&chain.sender()), None)?;
 
-	// Registering the ica account
+	// // Registering the ica account
 	bad_kids.register_ica()?;
 
 	println!("{:?}", format!("hermes create channel --a-chain pion-1 --a-connection connection-92 --a-port icacontroller-{}.{} --b-port icahost --order ordered",bad_kids.address()?, INTERCHAIN_ACCOUNT_ID ));
