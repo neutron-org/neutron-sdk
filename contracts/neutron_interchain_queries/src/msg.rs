@@ -16,7 +16,9 @@ pub struct InstantiateMsg {
 #[serde(rename_all = "snake_case")]
 #[cfg_attr(feature = "interface", derive(cw_orch::ExecuteFns))]
 pub enum ExecuteMsg {
-    RegisterICA,
+    RegisterICA{
+
+    },
     MintNft {
         token_id: String,
     },

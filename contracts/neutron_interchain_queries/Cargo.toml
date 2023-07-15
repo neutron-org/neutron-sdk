@@ -12,6 +12,12 @@ exclude = [
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+
+[[example]]
+name = "deploy"
+required-features = ["interface"]
+
+
 [lib]
 crate-type = ["cdylib", "rlib"]
 
@@ -28,7 +34,7 @@ overflow-checks = true
 
 [features]
 # for more explicit tests, cargo test --features=backtraces
-interface = ["dep:cw-orch"]
+interface = [] #["dep:cw-orch"]
 backtraces = ["cosmwasm-std/backtraces"]
 library = []
 
@@ -49,10 +55,13 @@ bech32 = "0.9.1"
 cw0 = "0.10.3"
 cw721 = "0.18.0"
 cw-orch = { version = "0.13.3", optional = true, features=["daemon"] }
+#cw-orch = { path = "../../../../BOOT/cw-orchestrator/cw-orch", optional = true, features=["daemon"] }
 
-
-[dev.dependencies]
-cw-orch = { version = "0.13.3", features=["daemon"] }
 
 [dev-dependencies]
 tokio = "1.29.1"
+cw-orch = { version = "0.13.3", features=["daemon"] }
+#cw-orch = { path = "../../../../BOOT/cw-orchestrator/cw-orch", features=["daemon"] }
+# neutron_interchain_queries = {path=".", features=["interface"]}
+env_logger = "0.10.0"
+dotenv = "0.15.0"

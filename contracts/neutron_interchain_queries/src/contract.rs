@@ -87,7 +87,7 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> NeutronResult<Response<NeutronMsg>> {
     match msg {
-        ExecuteMsg::RegisterICA => {
+        ExecuteMsg::RegisterICA{} => {
             let connection_id = CONFIG.load(deps.storage)?.connection_id;
             execute_register_ica(deps, env, connection_id, INTERCHAIN_ACCOUNT_ID.to_string())
         }

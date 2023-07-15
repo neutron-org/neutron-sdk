@@ -1,22 +1,22 @@
 use std::str::FromStr;
 
 use super::mock_querier::mock_dependencies as dependencies;
-use crate::contract::{execute, instantiate, query, sudo_tx_query_result, INTERCHAIN_ACCOUNT_ID};
-use crate::msg::{self, ExecuteMsg, InstantiateMsg, QueryMsg};
+use crate::contract::{execute, instantiate, sudo_tx_query_result, INTERCHAIN_ACCOUNT_ID};
+use crate::msg::{ExecuteMsg, InstantiateMsg};
 use crate::query_helpers::nft_transfer_filter;
 use crate::state::{NftTransfer, INTERCHAIN_ACCOUNTS, SENDER_TXS};
 use cosmos_sdk_proto::cosmos::tx::v1beta1::{TxBody, TxRaw};
 use cosmos_sdk_proto::cosmwasm::wasm::v1::MsgExecuteContract;
 use cosmos_sdk_proto::traits::MessageExt;
 use cosmos_sdk_proto::Any;
-use cosmwasm_std::testing::{mock_env, mock_info, MockApi, MockStorage};
+use cosmwasm_std::testing::{mock_env, mock_info};
 use cosmwasm_std::{to_binary, Addr, Binary, Coin, Uint128};
-use cw2::CONTRACT;
+
 use cw721::Cw721ExecuteMsg;
 use neutron_sdk::bindings::query::{
-    NeutronQuery, QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse,
+    QueryRegisteredQueryResponse,
 };
-use neutron_sdk::bindings::types::{decode_hex, Height, KVKey, RegisteredQuery};
+use neutron_sdk::bindings::types::{Height, KVKey, RegisteredQuery};
 use neutron_sdk::interchain_queries::types::QueryType;
 use neutron_sdk::interchain_txs::helpers::get_port_id;
 use prost::Message;
@@ -39,7 +39,7 @@ fn build_msg_payload(
     };
 
     let contract_exec_msg = MsgExecuteContract {
-        sender: sender.clone(),
+        sender,
         contract: contract_address,
         msg: to_binary(&msg).unwrap().into(),
         funds: vec![],
@@ -131,7 +131,7 @@ fn test_sudo_tx_query_result_callback() {
     instantiate(
         deps.as_mut(),
         env.clone(),
-        mock_info("", &vec![]),
+        mock_info("", &[]),
         InstantiateMsg {
             connection_id: CONNECTION_ID.to_string(),
             contract_addr: CONTRACT_ADDRESS.to_string(),
@@ -146,7 +146,7 @@ fn test_sudo_tx_query_result_callback() {
                 env.clone().contract.address,
                 Addr::unchecked(INTERCHAIN_ACCOUNT_ID),
             )
-            .to_string(),
+            ,
             &Some(("".to_string(), "".to_string())),
         )
         .unwrap();
@@ -181,18 +181,18 @@ fn test_sudo_tx_query_result_callback() {
     // Recieve and process the payload on neutron side
     sudo_tx_query_result(
         deps.as_mut(),
-        env.clone(),
+        env,
         query_id,
         Height {
             revision_number: 0,
             revision_height: height,
         },
-        data.clone(),
+        data,
     )
     .unwrap();
 
     // ensure the callback has worked and contract's state has changed
-    let txs = SENDER_TXS.load(&deps.storage, &SENDER).unwrap();
+    let txs = SENDER_TXS.load(&deps.storage, SENDER).unwrap();
     assert_eq!(
         txs,
         Vec::from([NftTransfer {
