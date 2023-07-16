@@ -74,6 +74,6 @@ tokio = "1.29.1"
 cw-orch = { git="https://github.com/abstractsdk/cw-orchestrator", branch="update/minimum_block_wait_time", features=["daemon"] }
 # cw-orch = {path="../../../../BOOT/cw-orchestrator/cw-orch", features=["daemon"]}
 
-# neutron_interchain_queries = {path=".", features=["interface"]}
+neutron_interchain_queries = {path=".", features=["interface"]}
 env_logger = "0.10.0"
 dotenv = "0.15.0"
