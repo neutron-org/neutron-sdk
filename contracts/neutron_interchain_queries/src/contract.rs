@@ -32,6 +32,7 @@ use cosmos_sdk_proto::traits::MessageExt;
 use cosmwasm_std::Addr;
 use cosmwasm_std::BankMsg;
 use cosmwasm_std::Empty;
+use cosmwasm_std::Storage;
 use cosmwasm_std::SubMsg;
 use cosmwasm_std::coin;
 use cosmwasm_std::from_slice;
@@ -192,6 +193,7 @@ pub fn register_transfer_nft_query(
 }
 
 pub fn remove_interchain_query(query_id: u64, sender: Addr) -> NeutronResult<Response<NeutronMsg>> {
+
     let remove_msg = NeutronMsg::remove_interchain_query(query_id);
     let transfer_msg = BankMsg::Send {
         to_address: sender.into(),
@@ -213,7 +215,10 @@ fn execute_mint_nft(
     let sender_addr = verify_query(deps.as_ref(),&env, token_id.clone(), info.sender.clone())?;
 
     // Now that we have the address, we can mint our token to the recipient which validates their ownership of the bad kid
-    let addr = any_addr_to_neutron(deps.as_ref(), sender_addr)?; 
+    let addr = any_addr_to_neutron(deps.as_ref(), sender_addr.clone())?; 
+
+    // clear the memory entries related to the token_id and the sender 
+    remove_token_from_storage(deps.storage, token_id.clone(), sender_addr);
 
     // close the query (gets back some funds)
     let resp = remove_interchain_query(query_id, info.sender)?;
@@ -222,6 +227,12 @@ fn execute_mint_nft(
     let resp = resp.add_submessages(mint_native_receipt(deps, env, token_id, addr)?.messages);
 
     Ok(resp) 
+}
+
+fn remove_token_from_storage(storage: &mut dyn Storage, token_id: String, sender_addr: String) {
+    TOKEN_ID_QUERY_PAIRS.remove(storage, token_id.clone());
+    TOKEN_ID_SENDER.remove(storage, token_id.clone());
+    SENDER_TXS.remove(storage, &sender_addr);
 }
 
 fn execute_unlock_nft(

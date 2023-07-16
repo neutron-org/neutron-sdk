@@ -26,8 +26,8 @@ pub fn main() -> cw_orch::anyhow::Result<()> {
 
     let bad_kids = NeutronInterchainQueries::new(INTERCHAIN_QUERY_ID, chain);
 
-    bad_kids.upload()?;
+    // bad_kids.upload()?;
 
-    bad_kids.migrate(&MigrateMsg {}, bad_kids.code_id()?)?;
+    bad_kids.migrate(&MigrateMsg {}, 1144)?;
     Ok(())
 }

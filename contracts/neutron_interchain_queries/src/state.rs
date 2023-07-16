@@ -23,12 +23,27 @@ pub const SENDER_TXS: Map<&Sender, Vec<NftTransfer>> = Map::new("recipient_txs")
 pub const TRANSFERS: Item<u64> = Item::new("nft-transfers");
 pub const CACHED_TOKEN_ID: Item<String> = Item::new("cached_token_id");
 pub const TOKEN_ID_QUERY_PAIRS: Map<String, u64> = Map::new("token_id_query_pairs");
+
+/// not working yet 
 pub const TOKEN_INFOS: Map<String, TokenInfo<Empty>> = Map::new("token_infos");
 
 // For each token_id, we need to be able to get the sender of that NFT in the contract
 // Don't forget to clear that storage after the nft is indeed transfered to neutron
 pub const TOKEN_ID_SENDER: Map<String, String> = Map::new("token_id_sender");
 
+/// This stores the latest id of the token created against the token_id
+pub const MINTED_TOKENS: Map<String, u64> = Map::new("minted_tokens");
+pub const TOTAL_MINTED_TOKENS: Item<u64> = Item::new("total_minted_tokens");
+
+/// This stores the address of the minted tokenfactory token that is the right one for the token_id
+pub const CONFIG: Item<Config> = Item::new("config");
+
+#[cosmwasm_schema::cw_serde]
+pub struct Config {
+    pub connection_id: String,
+    pub nft_contract_address: String, // THis is a contract address on a distant chain, so please don't verify it
+    pub update_period: u64,           // This is the update period in blocks
+}
 
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -136,16 +151,4 @@ pub fn get_ica(
         .ok_or_else(|| StdError::generic_err("Interchain account is not created yet"))
 }
 
-/// This stores the latest id of the token created against the token_id
-pub const MINTED_TOKENS: Map<String, u64> = Map::new("minted_tokens");
-pub const TOTAL_MINTED_TOKENS: Item<u64> = Item::new("total_minted_tokens");
 
-/// This stores the address of the minted tokenfactory token that is the right one for the token_id
-pub const CONFIG: Item<Config> = Item::new("config");
-
-#[cosmwasm_schema::cw_serde]
-pub struct Config {
-    pub connection_id: String,
-    pub nft_contract_address: String, // THis is a contract address on a distant chain, so please don't verify it
-    pub update_period: u64,           // This is the update period in blocks
-}
