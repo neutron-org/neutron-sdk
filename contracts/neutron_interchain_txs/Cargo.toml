@@ -40,7 +40,7 @@ serde-json-wasm = { version = "0.5.1" }
 cw-storage-plus = { version = "1.1.0", features = ["iterator"]}
 cosmos-sdk-proto = { version = "0.19.0", default-features = false }
 neutron-sdk = { path = "../../packages/neutron-sdk", default-features = false, version = "0.6.0"}
-base64 = "0.13.1"
+base64 = "0.21.2"
 protobuf = { version = "3.2.0", features = ["with-bytes"] }
 prost = "0.11"
 prost-types = "0.11"
