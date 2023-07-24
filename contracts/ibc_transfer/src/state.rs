@@ -32,7 +32,7 @@ pub fn save_reply_payload(store: &mut dyn Storage, payload: SudoPayload) -> StdR
     Ok(id)
 }
 
-pub fn read_reply_payload(store: &mut dyn Storage, id: u64) -> StdResult<SudoPayload> {
+pub fn read_reply_payload(store: &dyn Storage, id: u64) -> StdResult<SudoPayload> {
     let data = REPLY_QUEUE_ID.load(store, id)?;
     from_binary(&Binary(data))
 }
@@ -54,7 +54,7 @@ pub fn save_sudo_payload(
 }
 
 pub fn read_sudo_payload(
-    store: &mut dyn Storage,
+    store: &dyn Storage,
     channel_id: String,
     seq_id: u64,
 ) -> StdResult<SudoPayload> {
