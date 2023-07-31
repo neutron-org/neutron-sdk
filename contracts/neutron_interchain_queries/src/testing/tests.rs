@@ -246,7 +246,7 @@ fn test_query_balance() {
     let registered_query =
         build_registered_query_response(1, QueryParam::Keys(keys.0), QueryType::KV, 987);
 
-    deps.querier.add_registred_queries(1, registered_query);
+    deps.querier.add_registered_queries(1, registered_query);
     deps.querier.add_query_response(
         1,
         build_interchain_query_balance_response(
@@ -302,7 +302,7 @@ fn test_bank_total_supply_query() {
         },
     };
 
-    deps.querier.add_registred_queries(1, registered_query);
+    deps.querier.add_registered_queries(1, registered_query);
     deps.querier
         .add_query_response(1, to_binary(&total_supply_response).unwrap());
     let bank_total_balance = QueryMsg::BankTotalSupply { query_id: 1 };
@@ -337,7 +337,7 @@ fn test_distribution_fee_pool_query() {
     let registered_query =
         build_registered_query_response(1, QueryParam::Keys(keys.0), QueryType::KV, 987);
 
-    deps.querier.add_registred_queries(1, registered_query);
+    deps.querier.add_registered_queries(1, registered_query);
     deps.querier.add_query_response(
         1,
         build_interchain_query_distribution_fee_pool_response(
@@ -391,7 +391,7 @@ fn test_gov_proposals_query() {
         },
     };
 
-    deps.querier.add_registred_queries(1, registered_query);
+    deps.querier.add_registered_queries(1, registered_query);
     deps.querier
         .add_query_response(1, to_binary(&proposals_response).unwrap());
 
@@ -501,7 +501,7 @@ fn test_staking_validators_query() {
         },
     };
 
-    deps.querier.add_registred_queries(1, registered_query);
+    deps.querier.add_registered_queries(1, registered_query);
     deps.querier
         .add_query_response(1, to_binary(&validators_response).unwrap());
     let staking_validators = QueryMsg::StakingValidators { query_id: 1 };
@@ -650,7 +650,7 @@ fn test_query_delegator_delegations() {
 
     deps.querier
         .add_query_response(1, to_binary(&delegations_response).unwrap());
-    deps.querier.add_registred_queries(1, registered_query);
+    deps.querier.add_registered_queries(1, registered_query);
 
     let query_delegations = QueryMsg::GetDelegations { query_id: 1 };
     let resp: DelegatorDelegationsResponse =
@@ -708,7 +708,7 @@ fn test_sudo_tx_query_result_callback() {
         QueryType::TX,
         0,
     );
-    deps.querier.add_registred_queries(1, registered_query);
+    deps.querier.add_registered_queries(1, registered_query);
 
     // simulate neutron's SudoTxQueryResult call with the following payload:
     // a sending from neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf to watched_addr of 10000 stake
@@ -832,7 +832,7 @@ fn test_sudo_tx_query_result_min_height_callback() {
         QueryType::TX,
         0,
     );
-    deps.querier.add_registred_queries(1, registered_query);
+    deps.querier.add_registered_queries(1, registered_query);
 
     // simulate neutron's SudoTxQueryResult call with the following payload:
     // a sending from neutron10h9stc5v6ntgeygf5xf945njqq5h32r54rf7kf to watched_addr of 10000 stake
