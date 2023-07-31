@@ -10,7 +10,7 @@ use crate::interchain_queries::v045::types::{
     TotalSupply, Validator as ContractValidator, DECIMAL_PLACES, KEY_BOND_DENOM, STAKING_STORE_KEY,
 };
 use crate::{NeutronError, NeutronResult};
-use base64::prelude::BASE64_STANDARD;
+use base64::prelude::*;
 use base64::Engine;
 use cosmos_sdk_proto::cosmos::base::v1beta1::{Coin, DecCoin};
 use cosmos_sdk_proto::cosmos::distribution::v1beta1::FeePool as CosmosFeePool;

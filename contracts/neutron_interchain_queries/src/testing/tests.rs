@@ -1,4 +1,4 @@
-use base64::{prelude::BASE64_STANDARD, Engine};
+use base64::{prelude::*, Engine};
 use std::str::FromStr;
 
 use super::mock_querier::mock_dependencies as dependencies;
