@@ -37,8 +37,8 @@ pub fn mock_dependencies(
 
 pub struct WasmMockQuerier {
     base: MockQuerier<NeutronQuery>,
-    query_reponses: HashMap<u64, Binary>,
-    registred_queries: HashMap<u64, Binary>,
+    query_responses: HashMap<u64, Binary>,
+    registered_queries: HashMap<u64, Binary>,
 }
 
 impl Querier for WasmMockQuerier {
@@ -61,12 +61,12 @@ impl WasmMockQuerier {
         match &request {
             QueryRequest::Custom(NeutronQuery::InterchainQueryResult { query_id }) => {
                 SystemResult::Ok(ContractResult::Ok(
-                    (*self.query_reponses.get(query_id).unwrap()).clone(),
+                    (*self.query_responses.get(query_id).unwrap()).clone(),
                 ))
             }
             QueryRequest::Custom(NeutronQuery::RegisteredInterchainQuery { query_id }) => {
                 SystemResult::Ok(ContractResult::Ok(
-                    (*self.registred_queries.get(query_id).unwrap()).clone(),
+                    (*self.registered_queries.get(query_id).unwrap()).clone(),
                 ))
             }
             QueryRequest::Custom(NeutronQuery::RegisteredInterchainQueries {
@@ -93,10 +93,10 @@ impl WasmMockQuerier {
     }
 
     pub fn add_query_response(&mut self, query_id: u64, response: Binary) {
-        self.query_reponses.insert(query_id, response);
+        self.query_responses.insert(query_id, response);
     }
-    pub fn add_registred_queries(&mut self, query_id: u64, response: Binary) {
-        self.registred_queries.insert(query_id, response);
+    pub fn add_registered_queries(&mut self, query_id: u64, response: Binary) {
+        self.registered_queries.insert(query_id, response);
     }
 }
 
@@ -114,8 +114,8 @@ impl WasmMockQuerier {
     pub fn new(base: MockQuerier<NeutronQuery>) -> Self {
         WasmMockQuerier {
             base,
-            query_reponses: HashMap::new(),
-            registred_queries: HashMap::new(),
+            query_responses: HashMap::new(),
+            registered_queries: HashMap::new(),
         }
     }
 }
