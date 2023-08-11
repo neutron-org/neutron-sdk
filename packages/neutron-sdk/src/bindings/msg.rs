@@ -131,12 +131,14 @@ pub enum NeutronMsg {
     /// Contracts can create denoms, namespaced under the contract's address.
     /// A contract may create any number of independent sub-denoms.
     CreateDenom { subdenom: String },
+
     /// TokenFactory message.
     /// Contracts can change the admin of a denom that they are the admin of.
     ChangeAdmin {
         denom: String,
         new_admin_address: String,
     },
+
     /// TokenFactory message.
     /// Contracts can mint native tokens for an existing factory denom
     /// that they are the admin of.
@@ -145,6 +147,7 @@ pub enum NeutronMsg {
         amount: Uint128,
         mint_to_address: String,
     },
+
     /// TokenFactory message.
     /// Contracts can burn native tokens for an existing factory denom
     /// that they are the admin of.
@@ -169,9 +172,16 @@ pub enum NeutronMsg {
         /// list of cosmwasm messages to be executed
         msgs: Vec<MsgExecuteContract>,
     },
+
     /// RemoveSchedule removes the schedule with a given `name`.
     /// [Permissioned - DAO or Security DAO only]
     RemoveSchedule { name: String },
+
+    /// Contractmanager message
+    /// Resubmits failed acknowledgement.
+    /// Acknowledgement failure is created when contract returns error or acknowledgement is out of gas.
+    /// [Permissioned - only from contract that is initial caller of IBC transaction]
+    ResubmitFailure { failure_id: u64 },
 }
 
 impl NeutronMsg {
@@ -365,12 +375,17 @@ impl NeutronMsg {
         }
     }
 
+    // Basic helper to build create denom message passed to TokenFactory module:
+    // * **subdenom** is a subdenom name for denom to be created.
     pub fn submit_create_denom(subdenom: impl Into<String>) -> Self {
         NeutronMsg::CreateDenom {
             subdenom: subdenom.into(),
         }
     }
 
+    // Basic helper to define change of admin for a token passed to TokenFactory module:
+    // * **denom** is a name of the denom to change an admin for;
+    // * **new_admin_address** is a new admin address for a denom.
     pub fn submit_change_admin(
         denom: impl Into<String>,
         new_admin_address: impl Into<String>,
@@ -381,6 +396,10 @@ impl NeutronMsg {
         }
     }
 
+    // Basic helper to define mint tokens passed to TokenFactory module:
+    // * **denom** is a name of the denom;
+    // * **amount** is an amount of tokens to mint;
+    // * **mint_to_address** is an address that will receive minted tokens.
     pub fn submit_mint_tokens(
         denom: impl Into<String>,
         amount: Uint128,
@@ -393,6 +412,9 @@ impl NeutronMsg {
         }
     }
 
+    // Basic helper to define burn tokens passed to TokenFactory module:
+    // * **denom** is a name of the denom;
+    // * **amount** is an amount of tokens to burn.
     pub fn submit_burn_tokens(denom: impl Into<String>, amount: Uint128) -> Self {
         NeutronMsg::BurnTokens {
             denom: denom.into(),
@@ -401,12 +423,24 @@ impl NeutronMsg {
         }
     }
 
+    // Basic helper to define add schedule passed to Cron module:
+    // * **name** is a name of the schedule;
+    // * **period** is a period of schedule execution in blocks;
+    // * **msgs** is the messages that will be executed.
     pub fn submit_add_schedule(name: String, period: u64, msgs: Vec<MsgExecuteContract>) -> Self {
         NeutronMsg::AddSchedule { name, period, msgs }
     }
 
+    // Basic helper to define remove schedule passed to Cron module:
+    // * **name** is a name of the schedule to be removed.
     pub fn submit_remove_schedule(name: String) -> Self {
         NeutronMsg::RemoveSchedule { name }
+    }
+
+    // Basic helper to define resubmit failure passed to Contractmanager module:
+    // * **failure_id** is an id of the failure to be resubmitted.
+    pub fn submit_resubmit_failure(failure_id: u64) -> Self {
+        NeutronMsg::ResubmitFailure { failure_id }
     }
 }
 
