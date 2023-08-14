@@ -96,6 +96,48 @@ pub struct StorageValue {
     pub value: Binary,
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct Failure {
+    /// **channel_id** is an id for channel failure
+    pub channel_id: String,
+    // **address** of the failed contract
+    pub address: String,
+    // **id** of the failure under specific address
+    pub id: u64,
+    /// **sequence_id** is channel sequence id
+    pub sequence_id: u64, // TODO: is renaming ok?; TODO: remove this since we have sequence_id in packet?
+    /// **ack_type** is an acknowledgement type ('ack' or 'timeout')
+    pub ack_type: String,
+    /// **packet** is an IBC Packet that was sent
+    pub packet: Packet,
+    /// **ack** is an acknowledgement data
+    pub ack: Acknowledgement,
+}
+
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, JsonSchema, Debug)]
+#[serde(rename_all = "snake_case")]
+/// IBC packet
+pub struct Packet {
+    pub sequence: u64,
+    pub source_port: String,
+    pub source_channel: String,
+    pub destination_port: String,
+    pub destination_channel: String,
+    pub data: Binary,
+    pub timeout_height: Height,
+    pub timeout_timestamp: u64,
+}
+
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, JsonSchema, Debug)]
+#[serde(rename_all = "snake_case")]
+/// IBC packet
+/// TODO: do we need our own structure in order for it to pass through neutron
+pub enum Acknowledgement {
+    Error(String),
+    Result(Binary),
+}
+
 #[derive(Serialize, Deserialize, Clone, PartialEq, Eq, JsonSchema, Debug)]
 #[serde(rename_all = "snake_case")]
 /// Type for wrapping any protobuf message

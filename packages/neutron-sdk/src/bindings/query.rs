@@ -1,4 +1,4 @@
-use crate::bindings::types::{InterchainQueryResult, RegisteredQuery};
+use crate::bindings::types::{Failure, InterchainQueryResult, RegisteredQuery};
 use cosmwasm_std::{Binary, CustomQuery};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -56,6 +56,12 @@ pub enum NeutronQuery {
 
     /// TokenFactory query. Returns the admin of a denom, if the denom is a TokenFactory denom.
     DenomAdmin { subdenom: String },
+
+    /// Contractmanager query. Returns the failures for a particular contract address.
+    Failures {
+        address: String,
+        pagination: PageRequest,
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -106,6 +112,13 @@ pub struct QueryRegisteredQueryResultResponse {
 pub struct QueryInterchainAccountAddressResponse {
     /// **interchain_account_address** is a interchain account address on the remote chain
     pub interchain_account_address: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct QueryFailuresResponse {
+    /// **failures** is a list of failures of sudo handler calls
+    pub failures: Vec<Failure>,
 }
 
 impl CustomQuery for NeutronQuery {}

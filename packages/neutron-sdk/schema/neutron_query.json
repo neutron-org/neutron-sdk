@@ -186,6 +186,31 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "description": "Contractmanager query. Returns the failures for a particular contract address.",
+      "type": "object",
+      "required": [
+        "failures"
+      ],
+      "properties": {
+        "failures": {
+          "type": "object",
+          "required": [
+            "address",
+            "pagination"
+          ],
+          "properties": {
+            "address": {
+              "type": "string"
+            },
+            "pagination": {
+              "$ref": "#/definitions/PageRequest"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
     }
   ],
   "definitions": {
