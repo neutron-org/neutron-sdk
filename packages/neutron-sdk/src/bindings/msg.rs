@@ -365,6 +365,14 @@ impl NeutronMsg {
         }
     }
 
+    /// Basic helper to define sdk47 compatible parameter change proposal passed to AdminModule:
+    /// * **proposal** is struct which contains proposal that updates params of module directly.
+    pub fn submit_clear_param_change_new_proposal(proposal: ParamChangeNewProposal) -> Self {
+        NeutronMsg::SubmitAdminProposal {
+            admin_proposal: AdminProposal::ParamChangeNewProposal(proposal),
+        }
+    }
+
     pub fn submit_create_denom(subdenom: impl Into<String>) -> Self {
         NeutronMsg::CreateDenom {
             subdenom: subdenom.into(),
@@ -460,6 +468,7 @@ pub enum AdminProposal {
     SudoContractProposal(SudoContractProposal),
     UpdateAdminProposal(UpdateAdminProposal),
     ClearAdminProposal(ClearAdminProposal),
+    ParamChangeNewProposal(ParamChangeNewProposal),
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -610,6 +619,16 @@ pub struct ClearAdminProposal {
     pub description: String,
     /// **contract** is an address of contract admin will be removed.
     pub contract: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+/// ParamChangeNewProposal defines the struct for sdk47 compatible update params admin proposal.
+pub struct ParamChangeNewProposal {
+    /// **module** is a name of targe module.
+    pub module: String,
+    /// **new_params** is a json representing a struct w new params.
+    pub new_params: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
