@@ -300,44 +300,10 @@ impl NeutronMsg {
     }
 
     /// Basic helper to define a parameter change proposal passed to AdminModule:
-    /// * **proposal** is struct which contains proposal that sets upgrade block.
-    pub fn submit_software_upgrade_proposal(proposal: SoftwareUpgradeProposal) -> Self {
-        NeutronMsg::SubmitAdminProposal {
-            admin_proposal: AdminProposal::SoftwareUpgradeProposal(proposal),
-        }
-    }
-
-    /// Basic helper to define a parameter change proposal passed to AdminModule:
-    /// * **proposal** is struct which contains proposal that cancels software upgrade.
-    pub fn submit_cancel_software_upgrade_proposal(
-        proposal: CancelSoftwareUpgradeProposal,
-    ) -> Self {
-        NeutronMsg::SubmitAdminProposal {
-            admin_proposal: AdminProposal::CancelSoftwareUpgradeProposal(proposal),
-        }
-    }
-
-    /// Basic helper to define a parameter change proposal passed to AdminModule:
     /// * **proposal** is struct which contains proposal that upgrades network.
     pub fn submit_upgrade_proposal(proposal: UpgradeProposal) -> Self {
         NeutronMsg::SubmitAdminProposal {
             admin_proposal: AdminProposal::UpgradeProposal(proposal),
-        }
-    }
-
-    /// Basic helper to define a parameter change proposal passed to AdminModule:
-    /// * **proposal** is struct which contains proposal that pins code ids.
-    pub fn submit_pin_codes_proposal(proposal: PinCodesProposal) -> Self {
-        NeutronMsg::SubmitAdminProposal {
-            admin_proposal: AdminProposal::PinCodesProposal(proposal),
-        }
-    }
-
-    /// Basic helper to define a parameter change proposal passed to AdminModule:
-    /// * **proposal** is struct which contains proposal that unpins codes ids.
-    pub fn submit_unpin_codes_proposal(proposal: UnpinCodesProposal) -> Self {
-        NeutronMsg::SubmitAdminProposal {
-            admin_proposal: AdminProposal::UnpinCodesProposal(proposal),
         }
     }
 
@@ -349,27 +315,11 @@ impl NeutronMsg {
         }
     }
 
-    /// Basic helper to define a parameter change proposal passed to AdminModule:
-    /// * **proposal** is struct which contains proposal updates admin of contract.
-    pub fn submit_update_admin_proposal(proposal: UpdateAdminProposal) -> Self {
+    /// Basic helper to define sdk47 compatible proposal passed to AdminModule:
+    /// * **proposal** is struct which contains JSON encoded sdk message.
+    pub fn submit_proposal_execute_message(proposal: ProposalExecuteMessage) -> Self {
         NeutronMsg::SubmitAdminProposal {
-            admin_proposal: AdminProposal::UpdateAdminProposal(proposal),
-        }
-    }
-
-    /// Basic helper to define a parameter change proposal passed to AdminModule:
-    /// * **proposal** is struct which contains proposal that clears admin of contract.
-    pub fn submit_clear_admin_proposal(proposal: ClearAdminProposal) -> Self {
-        NeutronMsg::SubmitAdminProposal {
-            admin_proposal: AdminProposal::ClearAdminProposal(proposal),
-        }
-    }
-
-    /// Basic helper to define sdk47 compatible parameter change proposal passed to AdminModule:
-    /// * **proposal** is struct which contains proposal that updates params of module directly.
-    pub fn submit_clear_param_change_new_proposal(proposal: ParamChangeNewProposal) -> Self {
-        NeutronMsg::SubmitAdminProposal {
-            admin_proposal: AdminProposal::ParamChangeNewProposal(proposal),
+            admin_proposal: AdminProposal::ProposalExecuteMessage(proposal),
         }
     }
 
@@ -459,16 +409,9 @@ pub struct MsgIbcTransferResponse {
 /// AdminProposal defines the struct for various proposals which Neutron's Admin Module may accept.
 pub enum AdminProposal {
     ParamChangeProposal(ParamChangeProposal),
-    SoftwareUpgradeProposal(SoftwareUpgradeProposal),
-    CancelSoftwareUpgradeProposal(CancelSoftwareUpgradeProposal),
     UpgradeProposal(UpgradeProposal),
     ClientUpdateProposal(ClientUpdateProposal),
-    PinCodesProposal(PinCodesProposal),
-    UnpinCodesProposal(UnpinCodesProposal),
-    SudoContractProposal(SudoContractProposal),
-    UpdateAdminProposal(UpdateAdminProposal),
-    ClearAdminProposal(ClearAdminProposal),
-    ParamChangeNewProposal(ParamChangeNewProposal),
+    ProposalExecuteMessage(ProposalExecuteMessage),
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -623,12 +566,10 @@ pub struct ClearAdminProposal {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-/// ParamChangeNewProposal defines the struct for sdk47 compatible update params admin proposal.
-pub struct ParamChangeNewProposal {
-    /// **module** is a name of targe module.
-    pub module: String,
-    /// **new_params** is a json representing a struct w new params.
-    pub new_params: String,
+/// ProposalExecuteMessage defines the struct for sdk47 compatible update params admin proposal.
+pub struct ProposalExecuteMessage {
+    /// **message** is a json representing a struct w new params.
+    pub message: Binary,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
