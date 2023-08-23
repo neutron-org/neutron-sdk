@@ -568,7 +568,7 @@ pub struct ClearAdminProposal {
 #[serde(rename_all = "snake_case")]
 /// ProposalExecuteMessage defines the struct for sdk47 compatible update params admin proposal.
 pub struct ProposalExecuteMessage {
-    /// **message** is a json representing a struct w new params.
+    /// **message** is a json representing a sdk message passed to admin module to execute.
     pub message: Binary,
 }
 
