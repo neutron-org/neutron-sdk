@@ -569,7 +569,7 @@ pub struct ClearAdminProposal {
 /// ProposalExecuteMessage defines the struct for sdk47 compatible update params admin proposal.
 pub struct ProposalExecuteMessage {
     /// **message** is a json representing a sdk message passed to admin module to execute.
-    pub message: Binary,
+    pub message: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
