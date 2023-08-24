@@ -8,6 +8,7 @@ use crate::{
 use cosmwasm_std::{Binary, Coin, CosmosMsg, CustomMsg, StdError, Uint128};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use serde_json_wasm::to_string;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -506,13 +507,12 @@ pub struct UpdateAdminProposal {
     pub contract: String,
 }
 
-
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 /// ProposalExecuteMessage defines the struct for sdk47 compatible update params admin proposal.
 pub struct ProposalExecuteMessage {
     /// **message** is a json representing a sdk message passed to admin module to execute.
-    pub message: String,
+    pub message: Value,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
