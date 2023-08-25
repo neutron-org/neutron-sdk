@@ -8,7 +8,6 @@ use crate::{
 use cosmwasm_std::{Binary, Coin, CosmosMsg, CustomMsg, StdError, Uint128};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use serde_json_wasm::to_string;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -491,20 +490,6 @@ pub struct SudoContractProposal {
     pub contract: String,
     /// ***msg*** is a sudo message.
     pub msg: Binary,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-/// UpdateAdminProposal defines the struct for  update admin proposal.
-pub struct UpdateAdminProposal {
-    /// **title** is a text title of proposal.
-    pub title: String,
-    /// **description** is a text description of proposal.
-    pub description: String,
-    /// ***new_admin*** is an address of new admin
-    pub new_admin: String,
-    /// **contract** is an address of contract to update admin.
-    pub contract: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
