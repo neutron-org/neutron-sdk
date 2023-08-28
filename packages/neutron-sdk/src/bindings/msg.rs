@@ -220,7 +220,7 @@ impl NeutronMsg {
     ///   - when the query enum is 'tx' then payload is the filters for transaction search ICQ,
     ///     maximum allowed number of filters is 32.
     /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
-    /// * **update_period** is used to say how often the query must be updated.
+    /// * **update_period** is used to say how often (in neutron blocks) the query must be updated.
     pub fn register_interchain_query(
         query: QueryPayload,
         connection_id: String,
@@ -256,7 +256,7 @@ impl NeutronMsg {
     /// Basic helper to define a update interchain query message:
     /// * **query_id** is ID of the query we want to update;
     /// * **new_keys** is encoded keys to query;
-    /// * **new_update_period** is used to say how often the query must be updated.
+    /// * **new_update_period** is used to say how often (in neutron blocks) the query must be updated.
     pub fn update_interchain_query(
         query_id: u64,
         new_keys: Option<Vec<KVKey>>,
