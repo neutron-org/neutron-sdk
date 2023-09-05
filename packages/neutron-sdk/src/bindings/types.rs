@@ -96,6 +96,69 @@ pub struct StorageValue {
     pub value: Binary,
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+/// Acknowledgement Failure of sudo handler; can be resubmitted.
+pub struct Failure {
+    /// **address** of the failed contract
+    pub address: String,
+    /// **id** of the failure under specific address
+    pub id: u64,
+    /// **ack_type** is an acknowledgement type ('ack' or 'timeout')
+    pub ack_type: String,
+    /// **packet** is an IBC Packet that was sent
+    pub packet: Option<Packet>,
+    /// **ack** is an acknowledgement data
+    pub ack: Option<Acknowledgement>,
+}
+
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, JsonSchema, Debug)]
+#[serde(rename_all = "snake_case")]
+/// IBC packet
+pub struct Packet {
+    /// **sequence** number of packet in ordered channel
+    pub sequence: u64,
+
+    /// **source_port** of packet packet
+    pub source_port: String,
+
+    /// **source_channel** of a packet
+    pub source_channel: String,
+
+    /// **destination_port** of a packet
+    pub destination_port: String,
+
+    /// **destination_channel** of a packet
+    pub destination_channel: String,
+
+    /// **data** of a packet
+    pub data: Binary,
+
+    /// **timeout_height** of a packet
+    pub timeout_height: Option<Height>,
+
+    /// **timeout_timestamp** of a packet
+    pub timeout_timestamp: Option<u64>,
+}
+
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, JsonSchema, Debug)]
+#[serde(rename_all = "snake_case")]
+/// IBC message Acknowledgement
+pub struct Acknowledgement {
+    #[serde(rename(serialize = "response", deserialize = "Response"))]
+    pub response: AcknowledgementResponse,
+}
+
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, JsonSchema, Debug)]
+#[serde(rename_all = "snake_case")]
+/// IBC message acknowledgement response
+pub enum AcknowledgementResponse {
+    /// Error response
+    Error(String),
+    /// Successful response with result as encoded binary
+    Result(Binary),
+}
+
 #[derive(Serialize, Deserialize, Clone, PartialEq, Eq, JsonSchema, Debug)]
 #[serde(rename_all = "snake_case")]
 /// Type for wrapping any protobuf message

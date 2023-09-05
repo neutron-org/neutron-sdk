@@ -1,4 +1,4 @@
-use crate::bindings::types::{InterchainQueryResult, RegisteredQuery};
+use crate::bindings::types::{Failure, InterchainQueryResult, RegisteredQuery};
 use cosmwasm_std::{Binary, CustomQuery};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -56,6 +56,12 @@ pub enum NeutronQuery {
 
     /// TokenFactory query. Returns the admin of a denom, if the denom is a TokenFactory denom.
     DenomAdmin { subdenom: String },
+
+    /// Contractmanager query. Returns the failures for a particular contract address.
+    Failures {
+        address: String,
+        pagination: PageRequest,
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -64,21 +70,21 @@ pub struct PageRequest {
     /// **key** is a value returned in PageResponse.next_key to begin
     /// querying the next page most efficiently. Only one of offset or key
     /// should be set.
-    key: Binary,
+    pub key: Binary,
     /// **offset** is a numeric offset that can be used when key is unavailable.
     /// It is less efficient than using key. Only one of offset or key should
     /// be set.
-    offset: u64,
+    pub offset: u64,
     /// **limit** is the total number of results to be returned in the result page.
     /// If left empty it will default to a value to be set by each app.
-    limit: u64,
+    pub limit: u64,
     /// **count_total** is set to true  to indicate that the result set should include
     /// a count of the total number of items available for pagination in UIs.
     /// count_total is only respected when offset is used. It is ignored when key
     /// is set.
-    count_total: bool,
+    pub count_total: bool,
     /// reverse is set to true if results are to be returned in the descending order.
-    reverse: bool,
+    pub reverse: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -106,6 +112,13 @@ pub struct QueryRegisteredQueryResultResponse {
 pub struct QueryInterchainAccountAddressResponse {
     /// **interchain_account_address** is a interchain account address on the remote chain
     pub interchain_account_address: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct QueryFailuresResponse {
+    /// **failures** is a list of failures of sudo handler calls
+    pub failures: Vec<Failure>,
 }
 
 impl CustomQuery for NeutronQuery {}

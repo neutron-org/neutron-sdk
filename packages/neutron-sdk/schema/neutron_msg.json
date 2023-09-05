@@ -445,6 +445,29 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "description": "Contractmanager message Resubmits failed acknowledgement. Acknowledgement failure is created when contract returns error or acknowledgement is out of gas. [Permissioned - only from contract that is initial caller of IBC transaction]",
+      "type": "object",
+      "required": [
+        "resubmit_failure"
+      ],
+      "properties": {
+        "resubmit_failure": {
+          "type": "object",
+          "required": [
+            "failure_id"
+          ],
+          "properties": {
+            "failure_id": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
     }
   ],
   "definitions": {
