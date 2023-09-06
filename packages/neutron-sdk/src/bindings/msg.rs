@@ -299,7 +299,7 @@ impl NeutronMsg {
         }
     }
 
-    /// Basic helper to define a parameter change proposal passed to AdminModule:
+    /// Basic helper to define an  ibc upgrade proposal passed to AdminModule:
     /// * **proposal** is struct which contains proposal that upgrades network.
     pub fn submit_upgrade_proposal(proposal: UpgradeProposal) -> Self {
         NeutronMsg::SubmitAdminProposal {
@@ -307,7 +307,7 @@ impl NeutronMsg {
         }
     }
 
-    /// Basic helper to define a parameter change proposal passed to AdminModule:
+    /// Basic helper to define an ibc update client change proposal passed to AdminModule:
     /// * **proposal** is struct which contains proposal updates cliient.
     pub fn submit_client_update_proposal(proposal: ClientUpdateProposal) -> Self {
         NeutronMsg::SubmitAdminProposal {
@@ -494,9 +494,9 @@ pub struct SudoContractProposal {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-/// ProposalExecuteMessage defines the struct for sdk47 compatible update params admin proposal.
+/// ProposalExecuteMessage defines the struct for sdk47 compatible admin proposal.
 pub struct ProposalExecuteMessage {
-    /// **message** is a json representing a sdk message passed to admin module to execute.
+    /// **message** is a json representing an sdk message passed to admin module to execute.
     pub message: String,
 }
 
