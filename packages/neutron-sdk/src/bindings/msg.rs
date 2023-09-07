@@ -309,25 +309,7 @@ impl NeutronMsg {
         }
     }
 
-    /// Basic helper to define a parameter change proposal passed to AdminModule:
-    /// * **proposal** is struct which contains proposal that sets upgrade block.
-    pub fn submit_software_upgrade_proposal(proposal: SoftwareUpgradeProposal) -> Self {
-        NeutronMsg::SubmitAdminProposal {
-            admin_proposal: AdminProposal::SoftwareUpgradeProposal(proposal),
-        }
-    }
-
-    /// Basic helper to define a parameter change proposal passed to AdminModule:
-    /// * **proposal** is struct which contains proposal that cancels software upgrade.
-    pub fn submit_cancel_software_upgrade_proposal(
-        proposal: CancelSoftwareUpgradeProposal,
-    ) -> Self {
-        NeutronMsg::SubmitAdminProposal {
-            admin_proposal: AdminProposal::CancelSoftwareUpgradeProposal(proposal),
-        }
-    }
-
-    /// Basic helper to define a parameter change proposal passed to AdminModule:
+    /// Basic helper to define an  ibc upgrade proposal passed to AdminModule:
     /// * **proposal** is struct which contains proposal that upgrades network.
     pub fn submit_upgrade_proposal(proposal: UpgradeProposal) -> Self {
         NeutronMsg::SubmitAdminProposal {
@@ -335,23 +317,7 @@ impl NeutronMsg {
         }
     }
 
-    /// Basic helper to define a parameter change proposal passed to AdminModule:
-    /// * **proposal** is struct which contains proposal that pins code ids.
-    pub fn submit_pin_codes_proposal(proposal: PinCodesProposal) -> Self {
-        NeutronMsg::SubmitAdminProposal {
-            admin_proposal: AdminProposal::PinCodesProposal(proposal),
-        }
-    }
-
-    /// Basic helper to define a parameter change proposal passed to AdminModule:
-    /// * **proposal** is struct which contains proposal that unpins codes ids.
-    pub fn submit_unpin_codes_proposal(proposal: UnpinCodesProposal) -> Self {
-        NeutronMsg::SubmitAdminProposal {
-            admin_proposal: AdminProposal::UnpinCodesProposal(proposal),
-        }
-    }
-
-    /// Basic helper to define a parameter change proposal passed to AdminModule:
+    /// Basic helper to define an ibc update client change proposal passed to AdminModule:
     /// * **proposal** is struct which contains proposal updates cliient.
     pub fn submit_client_update_proposal(proposal: ClientUpdateProposal) -> Self {
         NeutronMsg::SubmitAdminProposal {
@@ -359,19 +325,11 @@ impl NeutronMsg {
         }
     }
 
-    /// Basic helper to define a parameter change proposal passed to AdminModule:
-    /// * **proposal** is struct which contains proposal updates admin of contract.
-    pub fn submit_update_admin_proposal(proposal: UpdateAdminProposal) -> Self {
+    /// Basic helper to define sdk47 compatible proposal passed to AdminModule:
+    /// * **proposal** is struct which contains JSON encoded sdk message.
+    pub fn submit_proposal_execute_message(proposal: ProposalExecuteMessage) -> Self {
         NeutronMsg::SubmitAdminProposal {
-            admin_proposal: AdminProposal::UpdateAdminProposal(proposal),
-        }
-    }
-
-    /// Basic helper to define a parameter change proposal passed to AdminModule:
-    /// * **proposal** is struct which contains proposal that clears admin of contract.
-    pub fn submit_clear_admin_proposal(proposal: ClearAdminProposal) -> Self {
-        NeutronMsg::SubmitAdminProposal {
-            admin_proposal: AdminProposal::ClearAdminProposal(proposal),
+            admin_proposal: AdminProposal::ProposalExecuteMessage(proposal),
         }
     }
 
@@ -485,15 +443,9 @@ pub struct MsgIbcTransferResponse {
 /// AdminProposal defines the struct for various proposals which Neutron's Admin Module may accept.
 pub enum AdminProposal {
     ParamChangeProposal(ParamChangeProposal),
-    SoftwareUpgradeProposal(SoftwareUpgradeProposal),
-    CancelSoftwareUpgradeProposal(CancelSoftwareUpgradeProposal),
     UpgradeProposal(UpgradeProposal),
     ClientUpdateProposal(ClientUpdateProposal),
-    PinCodesProposal(PinCodesProposal),
-    UnpinCodesProposal(UnpinCodesProposal),
-    SudoContractProposal(SudoContractProposal),
-    UpdateAdminProposal(UpdateAdminProposal),
-    ClearAdminProposal(ClearAdminProposal),
+    ProposalExecuteMessage(ProposalExecuteMessage),
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -518,28 +470,6 @@ pub struct ParamChange {
     pub key: String,
     /// **value** is a new value for given parameter. Non unique.
     pub value: String,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-/// SoftwareUpgradeProposal defines the struct for software upgrade proposal.
-pub struct SoftwareUpgradeProposal {
-    /// **title** is a text title of proposal. Non unique.
-    pub title: String,
-    /// **description** is a text description of proposal. Non unique.
-    pub description: String,
-    /// **plan** is a plan of upgrade.
-    pub plan: Plan,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-/// CancelSoftwareUpgradeProposal defines the struct for cancel software upgrade proposal.
-pub struct CancelSoftwareUpgradeProposal {
-    /// **title** is a text title of proposal. Non unique.
-    pub title: String,
-    /// **description** is a text description of proposal. Non unique.
-    pub description: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -584,30 +514,6 @@ pub struct ClientUpdateProposal {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-/// PinCodesProposal defines the struct for pin contract codes proposal.
-pub struct PinCodesProposal {
-    /// **title** is a text title of proposal.
-    pub title: String,
-    /// **description** is a text description of proposal.
-    pub description: String,
-    /// **code_ids** is an array of codes to be pined.
-    pub code_ids: Vec<u64>,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-/// UnpinCodesProposal defines the struct for unpin contract codes proposal.
-pub struct UnpinCodesProposal {
-    /// **title** is a text title of proposal.
-    pub title: String,
-    /// **description** is a text description of proposal.
-    pub description: String,
-    /// **code_ids** is an array of codes to be unpined.
-    pub code_ids: Vec<u64>,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
 /// SudoContractProposal defines the struct for sudo execution proposal.
 pub struct SudoContractProposal {
     /// **title** is a text title of proposal.
@@ -622,28 +528,10 @@ pub struct SudoContractProposal {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-/// UpdateAdminProposal defines the struct for  update admin proposal.
-pub struct UpdateAdminProposal {
-    /// **title** is a text title of proposal.
-    pub title: String,
-    /// **description** is a text description of proposal.
-    pub description: String,
-    /// ***new_admin*** is an address of new admin
-    pub new_admin: String,
-    /// **contract** is an address of contract to update admin.
-    pub contract: String,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-/// SudoContractProposal defines the struct for clear admin proposal.
-pub struct ClearAdminProposal {
-    /// **title** is a text title of proposal.
-    pub title: String,
-    /// **description** is a text description of proposal.
-    pub description: String,
-    /// **contract** is an address of contract admin will be removed.
-    pub contract: String,
+/// ProposalExecuteMessage defines the struct for sdk47 compatible admin proposal.
+pub struct ProposalExecuteMessage {
+    /// **message** is a json representing an sdk message passed to admin module to execute.
+    pub message: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
