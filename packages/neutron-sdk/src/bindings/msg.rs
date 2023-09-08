@@ -159,6 +159,11 @@ pub enum NeutronMsg {
         burn_from_address: String,
     },
 
+    /// TokenFactory message.
+    /// Contracts can create denoms, namespaced under the contract's address.
+    /// A contract may create any number of independent sub-denoms.
+    SetBeforeSendHook { denom: String, cosm_wasm_addr: String },
+
     /// AddSchedule adds new schedule with a given `name`.
     /// Until schedule is removed it will execute all `msgs` every `period` blocks.
     /// First execution is at least on `current_block + period` block.
@@ -378,6 +383,15 @@ impl NeutronMsg {
             denom: denom.into(),
             amount,
             burn_from_address: String::new(),
+        }
+    }
+
+    // Basic helper to build create denom message passed to TokenFactory module:
+    // * **denom** is a name for denom for hook to be created.
+    pub fn submit_set_before_send_hoook(denom: impl Into<String>, cosm_wasm_addr: impl Into<String> ) -> Self {
+        NeutronMsg::SetBeforeSendHook {
+            denom: denom.into(),
+            cosm_wasm_addr: cosm_wasm_addr.into()
         }
     }
 
