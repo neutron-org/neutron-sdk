@@ -57,6 +57,9 @@ pub enum NeutronQuery {
     /// TokenFactory query. Returns the admin of a denom, if the denom is a TokenFactory denom.
     DenomAdmin { subdenom: String },
 
+    /// TokenFactory query. Returns the before send hook of a denom, if the denom is a TokenFactory denom.
+    BeforeSendHook { denom: String },
+
     /// Contractmanager query. Returns the failures for a particular contract address.
     Failures {
         address: String,

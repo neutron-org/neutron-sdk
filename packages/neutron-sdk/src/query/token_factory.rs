@@ -15,6 +15,12 @@ pub struct DenomAdminResponse {
     pub admin: String,
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct BeforeSendHookResponse {
+    pub cosm_wasm_address: String,
+}
+
 pub fn query_full_denom(
     deps: Deps<NeutronQuery>,
     creator_addr: impl Into<String>,
@@ -33,6 +39,16 @@ pub fn query_denom_admin(
 ) -> NeutronResult<DenomAdminResponse> {
     let query = NeutronQuery::DenomAdmin {
         subdenom: subdenom.into(),
+    };
+    Ok(deps.querier.query(&query.into())?)
+}
+
+pub fn query_before_send_hook(
+    deps: Deps<NeutronQuery>,
+    denom: impl Into<String>,
+) -> NeutronResult<BeforeSendHookResponse> {
+    let query = NeutronQuery::BeforeSendHook {
+        denom: denom.into(),
     };
     Ok(deps.querier.query(&query.into())?)
 }
