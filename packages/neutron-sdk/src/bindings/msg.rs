@@ -160,8 +160,7 @@ pub enum NeutronMsg {
     },
 
     /// TokenFactory message.
-    /// Contracts can create denoms, namespaced under the contract's address.
-    /// A contract may create any number of independent sub-denoms.
+    /// Contracts can set before send hooks for denoms, namespaced under the contract's address.
     SetBeforeSendHook {
         denom: String,
         cosm_wasm_addr: String,
