@@ -388,7 +388,7 @@ impl NeutronMsg {
         }
     }
 
-    // Basic helper to build create denom message passed to TokenFactory module:
+    // Basic helper to create set before send hook message passed to TokenFactory module:
     // * **denom** is a name for denom for hook to be created.
     pub fn submit_set_before_send_hoook(
         denom: impl Into<String>,
