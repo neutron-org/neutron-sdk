@@ -5,8 +5,8 @@ use cosmos_sdk_proto::cosmos::staking::v1beta1::{
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Binary, CosmosMsg, CustomQuery, Deps, DepsMut, Env, MessageInfo, Reply, Response,
-    StdError, StdResult, SubMsg,
+    to_binary, Binary, Coin as CoinSDK, CosmosMsg, CustomQuery, Deps, DepsMut, Env, MessageInfo,
+    Reply, Response, StdError, StdResult, SubMsg,
 };
 use cw2::set_contract_version;
 use prost::Message;
@@ -78,7 +78,14 @@ pub fn execute(
         ExecuteMsg::Register {
             connection_id,
             interchain_account_id,
-        } => execute_register_ica(deps, env, connection_id, interchain_account_id),
+            register_fee,
+        } => execute_register_ica(
+            deps,
+            env,
+            connection_id,
+            interchain_account_id,
+            register_fee,
+        ),
         ExecuteMsg::Delegate {
             validator,
             interchain_account_id,
@@ -188,9 +195,13 @@ fn execute_register_ica(
     env: Env,
     connection_id: String,
     interchain_account_id: String,
+    register_fee: Vec<CoinSDK>,
 ) -> NeutronResult<Response<NeutronMsg>> {
-    let register =
-        NeutronMsg::register_interchain_account(connection_id, interchain_account_id.clone());
+    let register = NeutronMsg::register_interchain_account(
+        connection_id,
+        interchain_account_id.clone(),
+        register_fee,
+    );
     let key = get_port_id(env.contract.address.as_str(), &interchain_account_id);
     // we are saving empty data here because we handle response of registering ICA in sudo_open_ack method
     INTERCHAIN_ACCOUNTS.save(deps.storage, key, &None)?;
