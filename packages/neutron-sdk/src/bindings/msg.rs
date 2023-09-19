@@ -163,7 +163,7 @@ pub enum NeutronMsg {
     /// Contracts can set before send hooks for denoms, namespaced under the contract's address.
     SetBeforeSendHook {
         denom: String,
-        cosm_wasm_addr: String,
+        contract_addr: String,
     },
 
     /// AddSchedule adds new schedule with a given `name`.
@@ -390,13 +390,13 @@ impl NeutronMsg {
 
     // Basic helper to create set before send hook message passed to TokenFactory module:
     // * **denom** is a name for denom for hook to be created.
-    pub fn submit_set_before_send_hoook(
+    pub fn submit_set_before_send_hook(
         denom: impl Into<String>,
-        cosm_wasm_addr: impl Into<String>,
+        contract_addr: impl Into<String>,
     ) -> Self {
         NeutronMsg::SetBeforeSendHook {
             denom: denom.into(),
-            cosm_wasm_addr: cosm_wasm_addr.into(),
+            contract_addr: contract_addr.into(),
         }
     }
 
