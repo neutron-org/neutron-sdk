@@ -1,3 +1,4 @@
+use cosmwasm_std::Coin;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -34,6 +35,7 @@ pub enum ExecuteMsg {
     Register {
         connection_id: String,
         interchain_account_id: String,
+        register_fee: Vec<Coin>,
     },
     Delegate {
         interchain_account_id: String,
