@@ -397,6 +397,31 @@
       "additionalProperties": false
     },
     {
+      "description": "TokenFactory message. Contracts can set before send hooks for denoms, namespaced under the contract's address.",
+      "type": "object",
+      "required": [
+        "set_before_send_hook"
+      ],
+      "properties": {
+        "set_before_send_hook": {
+          "type": "object",
+          "required": [
+            "contract_addr",
+            "denom"
+          ],
+          "properties": {
+            "contract_addr": {
+              "type": "string"
+            },
+            "denom": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
       "description": "AddSchedule adds new schedule with a given `name`. Until schedule is removed it will execute all `msgs` every `period` blocks. First execution is at least on `current_block + period` block. [Permissioned - DAO Only]",
       "type": "object",
       "required": [

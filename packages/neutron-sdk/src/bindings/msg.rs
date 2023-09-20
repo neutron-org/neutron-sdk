@@ -162,6 +162,13 @@ pub enum NeutronMsg {
         burn_from_address: String,
     },
 
+    /// TokenFactory message.
+    /// Contracts can set before send hooks for denoms, namespaced under the contract's address.
+    SetBeforeSendHook {
+        denom: String,
+        contract_addr: String,
+    },
+
     /// AddSchedule adds new schedule with a given `name`.
     /// Until schedule is removed it will execute all `msgs` every `period` blocks.
     /// First execution is at least on `current_block + period` block.
@@ -383,6 +390,18 @@ impl NeutronMsg {
             denom: denom.into(),
             amount,
             burn_from_address: String::new(),
+        }
+    }
+
+    // Basic helper to create set before send hook message passed to TokenFactory module:
+    // * **denom** is a name for denom for hook to be created.
+    pub fn submit_set_before_send_hook(
+        denom: impl Into<String>,
+        contract_addr: impl Into<String>,
+    ) -> Self {
+        NeutronMsg::SetBeforeSendHook {
+            denom: denom.into(),
+            contract_addr: contract_addr.into(),
         }
     }
 

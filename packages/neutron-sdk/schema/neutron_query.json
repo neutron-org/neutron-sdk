@@ -188,6 +188,27 @@
       "additionalProperties": false
     },
     {
+      "description": "TokenFactory query. Returns the before send hook address of a denom, if the denom is a TokenFactory denom.",
+      "type": "object",
+      "required": [
+        "before_send_hook"
+      ],
+      "properties": {
+        "before_send_hook": {
+          "type": "object",
+          "required": [
+            "denom"
+          ],
+          "properties": {
+            "denom": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
       "description": "Contractmanager query. Returns the failures for a particular contract address.",
       "type": "object",
       "required": [
