@@ -1,6 +1,6 @@
 use cosmwasm_std::{
-    coin, entry_point, Binary, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Reply, Response,
-    StdError, StdResult, SubMsg,
+    coin, entry_point, from_binary, Binary, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Reply,
+    Response, StdError, StdResult, SubMsg,
 };
 use cw2::set_contract_version;
 use neutron_sdk::{
@@ -112,13 +112,12 @@ fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
 // and process this payload when an acknowledgement for the SubmitTx message is received in Sudo handler
 fn prepare_sudo_payload(mut deps: DepsMut, _env: Env, msg: Reply) -> StdResult<Response> {
     let payload = read_reply_payload(deps.storage, msg.id)?;
-    let resp: MsgIbcTransferResponse = serde_json_wasm::from_slice(
-        msg.result
+    let resp: MsgIbcTransferResponse = from_binary(
+        &msg.result
             .into_result()
             .map_err(StdError::generic_err)?
             .data
-            .ok_or_else(|| StdError::generic_err("no result"))?
-            .as_slice(),
+            .ok_or_else(|| StdError::generic_err("no result"))?,
     )
     .map_err(|e| StdError::generic_err(format!("failed to parse response: {:?}", e)))?;
     let seq_id = resp.sequence_id;
