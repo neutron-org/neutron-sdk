@@ -466,10 +466,67 @@ pub struct MsgIbcTransferResponse {
 #[serde(rename_all = "snake_case")]
 /// AdminProposal defines the struct for various proposals which Neutron's Admin Module may accept.
 pub enum AdminProposal {
+    /// Proposal to change params. Note that this works for old params.
+    /// New params has their own `MsgUpdateParams` msgs that can be supplied to `ProposalExecuteMessage`
     ParamChangeProposal(ParamChangeProposal),
+
+    /// Proposal to upgrade network using given `Plan`
     UpgradeProposal(UpgradeProposal),
+
+    /// Proposal to update IBC client
     ClientUpdateProposal(ClientUpdateProposal),
+
+    /// Proposal to execute CosmosMsg.
     ProposalExecuteMessage(ProposalExecuteMessage),
+
+    /// Deprecated. Will fail to execute if you use it.
+    #[deprecated(
+        since = "0.7.0",
+        note = "Will fail if used. Use MsgExecuteProposal instead"
+    )]
+    SoftwareUpgradeProposal(SoftwareUpgradeProposal),
+
+    /// Deprecated. Will fail to execute if you use it.
+    #[deprecated(
+        since = "0.7.0",
+        note = "Will fail if used. Use MsgExecuteProposal instead"
+    )]
+    CancelSoftwareUpgradeProposal(CancelSoftwareUpgradeProposal),
+
+    /// Deprecated. Will fail to execute if you use it.
+    #[deprecated(
+        since = "0.7.0",
+        note = "Will fail if used. Use MsgExecuteProposal instead"
+    )]
+    PinCodesProposal(PinCodesProposal),
+
+    /// Deprecated. Will fail to execute if you use it.
+    #[deprecated(
+        since = "0.7.0",
+        note = "Will fail if used. Use MsgExecuteProposal instead"
+    )]
+    UnpinCodesProposal(UnpinCodesProposal),
+
+    /// Deprecated. Will fail to execute if you use it.
+    #[deprecated(
+        since = "0.7.0",
+        note = "Will fail if used. Use MsgExecuteProposal instead"
+    )]
+    SudoContractProposal(SudoContractProposal),
+
+    /// Deprecated. Will fail to execute if you use it.
+    #[deprecated(
+        since = "0.7.0",
+        note = "Will fail if used. Use MsgExecuteProposal instead"
+    )]
+    UpdateAdminProposal(UpdateAdminProposal),
+
+    /// Deprecated. Will fail to execute if you use it.
+    #[deprecated(
+        since = "0.7.0",
+        note = "Will fail if used. Use MsgExecuteProposal instead"
+    )]
+    ClearAdminProposal(ClearAdminProposal),
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -538,20 +595,6 @@ pub struct ClientUpdateProposal {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-/// SudoContractProposal defines the struct for sudo execution proposal.
-pub struct SudoContractProposal {
-    /// **title** is a text title of proposal.
-    pub title: String,
-    /// **description** is a text description of proposal.
-    pub description: String,
-    /// **contract** is an address of contract to be executed.
-    pub contract: String,
-    /// ***msg*** is a sudo message.
-    pub msg: Binary,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
 /// ProposalExecuteMessage defines the struct for sdk47 compatible admin proposal.
 pub struct ProposalExecuteMessage {
     /// **message** is a json representing an sdk message passed to admin module to execute.
@@ -566,4 +609,118 @@ pub struct MsgExecuteContract {
     pub contract: String,
     /// **msg** is a contract call message
     pub msg: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+#[deprecated(
+    since = "0.7.0",
+    note = "Will fail if used. Use MsgExecuteProposal instead"
+)]
+/// Deprecated. SoftwareUpgradeProposal defines the struct for software upgrade proposal.
+pub struct SoftwareUpgradeProposal {
+    /// **title** is a text title of proposal. Non unique.
+    pub title: String,
+    /// **description** is a text description of proposal. Non unique.
+    pub description: String,
+    /// **plan** is a plan of upgrade.
+    pub plan: Plan,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+#[deprecated(
+    since = "0.7.0",
+    note = "Will fail if used. Use MsgExecuteProposal instead"
+)]
+/// Deprecated. CancelSoftwareUpgradeProposal defines the struct for cancel software upgrade proposal.
+pub struct CancelSoftwareUpgradeProposal {
+    /// **title** is a text title of proposal. Non unique.
+    pub title: String,
+    /// **description** is a text description of proposal. Non unique.
+    pub description: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+#[deprecated(
+    since = "0.7.0",
+    note = "Will fail if used. Use MsgExecuteProposal instead"
+)]
+/// Deprecated. SudoContractProposal defines the struct for sudo execution proposal.
+pub struct SudoContractProposal {
+    /// **title** is a text title of proposal.
+    pub title: String,
+    /// **description** is a text description of proposal.
+    pub description: String,
+    /// **contract** is an address of contract to be executed.
+    pub contract: String,
+    /// ***msg*** is a sudo message.
+    pub msg: Binary,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+#[deprecated(
+    since = "0.7.0",
+    note = "Will fail if used. Use MsgExecuteProposal instead"
+)]
+/// Deprecated. PinCodesProposal defines the struct for pin contract codes proposal.
+pub struct PinCodesProposal {
+    /// **title** is a text title of proposal.
+    pub title: String,
+    /// **description** is a text description of proposal.
+    pub description: String,
+    /// **code_ids** is an array of codes to be pined.
+    pub code_ids: Vec<u64>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+#[deprecated(
+    since = "0.7.0",
+    note = "Will fail if used. Use MsgExecuteProposal instead"
+)]
+/// Deprecated. UnpinCodesProposal defines the struct for unpin contract codes proposal.
+pub struct UnpinCodesProposal {
+    /// **title** is a text title of proposal.
+    pub title: String,
+    /// **description** is a text description of proposal.
+    pub description: String,
+    /// **code_ids** is an array of codes to be unpined.
+    pub code_ids: Vec<u64>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+#[deprecated(
+    since = "0.7.0",
+    note = "Will fail if used. Use MsgExecuteProposal instead"
+)]
+/// Deprecated. UpdateAdminProposal defines the struct for update admin proposal.
+pub struct UpdateAdminProposal {
+    /// **title** is a text title of proposal.
+    pub title: String,
+    /// **description** is a text description of proposal.
+    pub description: String,
+    /// ***new_admin*** is an address of new admin
+    pub new_admin: String,
+    /// **contract** is an address of contract to update admin.
+    pub contract: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+#[deprecated(
+    since = "0.7.0",
+    note = "Will fail if used. Use MsgExecuteProposal instead"
+)]
+/// Deprecated. SudoContractProposal defines the struct for clear admin proposal.
+pub struct ClearAdminProposal {
+    /// **title** is a text title of proposal.
+    pub title: String,
+    /// **description** is a text description of proposal.
+    pub description: String,
+    /// **contract** is an address of contract admin will be removed.
+    pub contract: String,
 }
