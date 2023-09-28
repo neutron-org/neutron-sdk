@@ -470,7 +470,7 @@ pub enum AdminProposal {
     /// New params has their own `MsgUpdateParams` msgs that can be supplied to `ProposalExecuteMessage`
     ParamChangeProposal(ParamChangeProposal),
 
-    /// Proposal to upgrade network using given `Plan`
+    /// Proposal to upgrade IBC client
     UpgradeProposal(UpgradeProposal),
 
     /// Proposal to update IBC client
@@ -479,53 +479,54 @@ pub enum AdminProposal {
     /// Proposal to execute CosmosMsg.
     ProposalExecuteMessage(ProposalExecuteMessage),
 
-    /// Deprecated. Will fail to execute if you use it.
     #[deprecated(
         since = "0.7.0",
-        note = "Will fail if used. Use MsgExecuteProposal instead"
+        note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
     )]
+    /// Deprecated. Proposal to upgrade network
     SoftwareUpgradeProposal(SoftwareUpgradeProposal),
 
-    /// Deprecated. Will fail to execute if you use it.
     #[deprecated(
         since = "0.7.0",
-        note = "Will fail if used. Use MsgExecuteProposal instead"
+        note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
     )]
+    /// Deprecated. Proposal to cancel existing software upgrade
     CancelSoftwareUpgradeProposal(CancelSoftwareUpgradeProposal),
 
     /// Deprecated. Will fail to execute if you use it.
     #[deprecated(
         since = "0.7.0",
-        note = "Will fail if used. Use MsgExecuteProposal instead"
+        note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
     )]
+    /// Deprecated. Proposal to pin wasm contract codes
     PinCodesProposal(PinCodesProposal),
 
-    /// Deprecated. Will fail to execute if you use it.
     #[deprecated(
         since = "0.7.0",
-        note = "Will fail if used. Use MsgExecuteProposal instead"
+        note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
     )]
+    /// Deprecated. Deprecated. Proposal to unpin wasm contract codes.
     UnpinCodesProposal(UnpinCodesProposal),
 
-    /// Deprecated. Will fail to execute if you use it.
     #[deprecated(
         since = "0.7.0",
-        note = "Will fail if used. Use MsgExecuteProposal instead"
+        note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
     )]
+    /// Deprecated. Proposal to call sudo on contract.
     SudoContractProposal(SudoContractProposal),
 
-    /// Deprecated. Will fail to execute if you use it.
     #[deprecated(
         since = "0.7.0",
-        note = "Will fail if used. Use MsgExecuteProposal instead"
+        note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
     )]
+    /// Deprecated. Proposal to update contract admin.
     UpdateAdminProposal(UpdateAdminProposal),
 
-    /// Deprecated. Will fail to execute if you use it.
     #[deprecated(
         since = "0.7.0",
-        note = "Will fail if used. Use MsgExecuteProposal instead"
+        note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
     )]
+    /// Deprecated. Proposal to clear contract admin.
     ClearAdminProposal(ClearAdminProposal),
 }
 
@@ -567,7 +568,7 @@ pub struct Plan {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-/// UpgradeProposal defines the struct for  upgrade proposal.
+/// UpgradeProposal defines the struct for IBC upgrade proposal.
 pub struct UpgradeProposal {
     /// **title** is a text title of proposal.
     pub title: String,
@@ -615,7 +616,7 @@ pub struct MsgExecuteContract {
 #[serde(rename_all = "snake_case")]
 #[deprecated(
     since = "0.7.0",
-    note = "Will fail if used. Use MsgExecuteProposal instead"
+    note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
 )]
 /// Deprecated. SoftwareUpgradeProposal defines the struct for software upgrade proposal.
 pub struct SoftwareUpgradeProposal {
@@ -631,7 +632,7 @@ pub struct SoftwareUpgradeProposal {
 #[serde(rename_all = "snake_case")]
 #[deprecated(
     since = "0.7.0",
-    note = "Will fail if used. Use MsgExecuteProposal instead"
+    note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
 )]
 /// Deprecated. CancelSoftwareUpgradeProposal defines the struct for cancel software upgrade proposal.
 pub struct CancelSoftwareUpgradeProposal {
@@ -645,7 +646,7 @@ pub struct CancelSoftwareUpgradeProposal {
 #[serde(rename_all = "snake_case")]
 #[deprecated(
     since = "0.7.0",
-    note = "Will fail if used. Use MsgExecuteProposal instead"
+    note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
 )]
 /// Deprecated. SudoContractProposal defines the struct for sudo execution proposal.
 pub struct SudoContractProposal {
@@ -663,7 +664,7 @@ pub struct SudoContractProposal {
 #[serde(rename_all = "snake_case")]
 #[deprecated(
     since = "0.7.0",
-    note = "Will fail if used. Use MsgExecuteProposal instead"
+    note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
 )]
 /// Deprecated. PinCodesProposal defines the struct for pin contract codes proposal.
 pub struct PinCodesProposal {
@@ -679,7 +680,7 @@ pub struct PinCodesProposal {
 #[serde(rename_all = "snake_case")]
 #[deprecated(
     since = "0.7.0",
-    note = "Will fail if used. Use MsgExecuteProposal instead"
+    note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
 )]
 /// Deprecated. UnpinCodesProposal defines the struct for unpin contract codes proposal.
 pub struct UnpinCodesProposal {
@@ -695,7 +696,7 @@ pub struct UnpinCodesProposal {
 #[serde(rename_all = "snake_case")]
 #[deprecated(
     since = "0.7.0",
-    note = "Will fail if used. Use MsgExecuteProposal instead"
+    note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
 )]
 /// Deprecated. UpdateAdminProposal defines the struct for update admin proposal.
 pub struct UpdateAdminProposal {
@@ -713,7 +714,7 @@ pub struct UpdateAdminProposal {
 #[serde(rename_all = "snake_case")]
 #[deprecated(
     since = "0.7.0",
-    note = "Will fail if used. Use MsgExecuteProposal instead"
+    note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
 )]
 /// Deprecated. SudoContractProposal defines the struct for clear admin proposal.
 pub struct ClearAdminProposal {
