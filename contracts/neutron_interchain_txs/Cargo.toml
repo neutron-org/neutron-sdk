@@ -41,7 +41,7 @@ cw-storage-plus = { version = "1.1.0", features = ["iterator"]}
 cosmos-sdk-proto = { version = "0.16.0", default-features = false }
 neutron-sdk = { path = "../../packages/neutron-sdk", default-features = false, version = "0.6.1"}
 base64 = "0.21.2"
-protobuf = { version = "3.2.0", features = ["with-bytes"] }
+protobuf = { version = "3.3.0", features = ["with-bytes"] }
 prost = "0.11"
 prost-types = "0.11"
 bech32 = "0.9.0"
