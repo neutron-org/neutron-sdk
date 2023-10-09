@@ -12,6 +12,7 @@ use cosmos_sdk_proto::cosmos::gov::v1beta1::{
     Proposal as CosmosProposal, TallyResult as CosmosTallyResult,
 };
 use cosmos_sdk_proto::cosmos::staking::v1beta1::Validator as CosmosValidator;
+use cosmos_sdk_proto::traits::Message;
 use cosmos_sdk_proto::Any;
 use cosmwasm_std::testing::{mock_env, mock_info, MockApi, MockStorage};
 use cosmwasm_std::{
@@ -36,7 +37,6 @@ use neutron_sdk::interchain_queries::v045::types::{
     Balances, FeePool, GovernmentProposal, Proposal, StakingValidator, TallyResult, TotalSupply,
     Validator, RECIPIENT_FIELD,
 };
-use prost::Message as ProstMessage;
 
 use neutron_sdk::interchain_queries::v045::queries::{
     BalanceResponse, DelegatorDelegationsResponse, FeePoolResponse, ProposalResponse,

@@ -16,7 +16,7 @@ pub enum NeutronError {
     Bech32(#[from] bech32::Error),
 
     #[error("Prost protobuf error")]
-    ProstProtobuf(#[from] prost::DecodeError),
+    ProstProtobuf(#[from] cosmos_sdk_proto::prost::DecodeError),
 
     #[error("Serde JSON (Wasm) error")]
     SerdeJSONWasm(String),
