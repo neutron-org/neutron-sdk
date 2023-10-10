@@ -13,7 +13,7 @@ result into its state.
 
 This test uses
 [neutron_interchain_queries](https://github.com/neutron-org/neutron-sdk/tree/main/contracts/neutron_interchain_queries)
-contract, sending `ExecuteMsg::RegisterCw20BalanceQuery` and quering
+contract, sending `ExecuteMsg::RegisterCw20BalanceQuery` and querying
 `QueryMsg::Cw20Balance`. You can study this contract's code to learn
 more on how to craft storage keys.
 
