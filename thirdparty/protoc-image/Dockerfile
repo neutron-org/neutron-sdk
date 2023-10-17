@@ -1,4 +1,4 @@
-FROM rust:1.68.2
+FROM rust:1.71.0
 
 ENV PROTOC_VERSION 3.20.0
 
