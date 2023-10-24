@@ -40,7 +40,7 @@ pub enum NeutronMsg {
         interchain_account_id: String,
 
         /// **register_fee** is a fees required to be payed to register interchain account
-        register_fee: Vec<Coin>,
+        register_fee: Option<Vec<Coin>>,
     },
 
     /// SubmitTx starts the process of executing any Cosmos-SDK *msgs* on remote chain.
@@ -201,7 +201,7 @@ impl NeutronMsg {
     pub fn register_interchain_account(
         connection_id: String,
         interchain_account_id: String,
-        register_fee: Vec<Coin>,
+        register_fee: Option<Vec<Coin>>,
     ) -> Self {
         NeutronMsg::RegisterInterchainAccount {
             connection_id,
