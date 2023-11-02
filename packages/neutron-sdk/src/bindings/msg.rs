@@ -6,6 +6,7 @@ use crate::{
 };
 
 use cosmwasm_std::{Binary, Coin, CosmosMsg, CustomMsg, StdError, Uint128};
+use prost_types::Timestamp;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json_wasm::to_string;
@@ -192,6 +193,9 @@ pub enum NeutronMsg {
     /// Acknowledgement failure is created when contract returns error or acknowledgement is out of gas.
     /// [Permissioned - only from contract that is initial caller of IBC transaction]
     ResubmitFailure { failure_id: u64 },
+
+    /// Incentives messages
+    Incentives { msg: IncentivesMessage }
 }
 
 impl NeutronMsg {
@@ -423,6 +427,23 @@ impl NeutronMsg {
     // * **failure_id** is an id of the failure to be resubmitted.
     pub fn submit_resubmit_failure(failure_id: u64) -> Self {
         NeutronMsg::ResubmitFailure { failure_id }
+    }
+
+    // TODO
+    pub fn create_gauge() -> Self {
+        todo!()
+    }
+
+    pub fn add_to_gauge() -> Self {
+        todo!()
+    }
+
+    pub fn stake() -> Self {
+        todo!()
+    }
+
+    pub fn unstake() -> Self {
+        todo!()
     }
 }
 
@@ -724,4 +745,136 @@ pub struct ClearAdminProposal {
     pub description: String,
     /// **contract** is an address of contract admin will be removed.
     pub contract: String,
+}
+
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum IncentivesMessage {
+    /// Create an incentive program
+    CreateGauge(CreateGauge),
+    /// Add rewards to an existing incentives program
+    AddToGauge(AddToGauge),
+    /// Deposit LP tokens to the module, qualifying for rewards from gauges
+    Stake(Stake),
+    /// Withdraw LP tokens from the module, forfeiting future rewards from gauges
+    Unstake(Unstake)
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+/// CreateGauge defined struct for creating new incentives program
+pub struct CreateGauge {
+    /// **is_perpetual**  shows if it's a perpetual or non-perpetual gauge
+    ///  Non-perpetual gauges distribute their tokens equally per epoch while the
+    ///  gauge is in the active period. Perpetual gauges distribute all their tokens
+    ///  at a single time and only distribute their tokens again once the gauge is
+    ///  refilled
+    pub is_perpetual: bool,
+    /// **distribute_to** shows which lock the gauge should distribute to by time
+    /// duration or by timestamp
+    pub distribute_to: QueryCondition,
+    /// **coins** are coins to be distributed by the gauge
+    pub coins: Vec<Coin>,
+    /// **start_time** is the distribution start time
+    pub start_time: Timestamp,
+    /// **num_epochs_paid_over** is the number of epochs distribution
+    /// will be completed over
+    pub num_epochs_paid_over: u64,
+    /// **pricing_tick** is the price that liquidity within the gauge range will be priced at
+    pub pricing_tick: i64,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+/// CreateGaugeResponse defines the struct for response on CreateGauge message
+pub struct CreateGaugeResponse {}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+/// AddToGauge defines struct for adding rewards to existing incentives program
+pub struct AddToGauge {
+    // TODO: needed?
+    /// **owner** is the address of gauge creator, should be the module authority
+    pub owner: String,
+    /// **gauge_id** is the ID of gauge that rewards will be added to
+    pub gauge_id: u64,
+    /// **rewards** specifies list of rewards to add to gauge
+    pub rewards: Vec<Coin>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+/// AddToGaugeResponse defines the struct for response on AddToGauge message
+pub struct AddToGaugeResponse {}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+/// Stake defines struct for depositing LP tokens to the incentives module
+pub struct Stake {
+    // TODO: check
+    /// **owner** is the address of gauge creator, should be the module authority
+    pub owner: String,
+    /// **coins** defines list of coins to stake
+    pub coins: Vec<Coin>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+/// StakeResponse defines the struct for response on Stake message
+pub struct StakeResponse {
+    /// **id** is the identifier of the created stake
+    pub id: u64,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+/// Unstake defines struct for withdrawing LP tokens from the incentives module
+pub struct Unstake {
+    // TODO: check
+    /// **owner** is the address of gauge creator, should be the module authority
+    pub owner: u64,
+    /// **unstakes** defines array's of descriptors to unstake.
+    /// If unstake is left empty, this is interpreted as "unstake all"
+    pub unstakes: Vec<UnstakeDescriptor>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+/// UnstakeResponse defines the struct for response on Unstake message
+pub struct UnstakeResponse {}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+/// **QueryCondition** which lock the gauge should distribute to
+/// by time duration or by timestamp
+pub struct QueryCondition {
+    /// **pair_id** is the token pair which should be distributed to.
+    pub pair_id: PairID,
+    /// **start_tick** is the inclusive lower bound on the location of LP tokens that
+    /// qualify for a gauge's distribution.
+    pub start_tick: i64,
+    /// **end_tick** is the inclusive upper bound on the location of LP tokens that
+    /// qualify for a gauge's distribution.
+    pub end_tick: i64,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+/// PairID specifies the dex PairID of two tokens
+pub struct PairID {
+    /// **token0** is first token in pair.
+    pub token0: String,
+    /// **token1** is the second token in pair.
+    pub token1: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+/// Specifies descriptor for concrete unstake operation
+pub struct UnstakeDescriptor {
+    /// **id** is the id of stake
+    pub id: u64,
+    /// **coins** is coins to unstake in the given stake
+    pub coins: Vec<Coin>,
 }
