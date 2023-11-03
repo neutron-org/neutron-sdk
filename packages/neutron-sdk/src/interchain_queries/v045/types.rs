@@ -9,8 +9,8 @@ use cosmos_sdk_proto::cosmos::{
     gov::v1beta1::Proposal as CosmosProposal,
     staking::v1beta1::{Delegation, Validator as CosmosValidator},
 };
+use cosmos_sdk_proto::traits::Message;
 use cosmwasm_std::{from_binary, Addr, Coin, Decimal, StdError, Uint128};
-use prost::Message as ProstMessage;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::{ops::Div, str::FromStr};

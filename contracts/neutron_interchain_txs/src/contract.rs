@@ -2,6 +2,7 @@ use cosmos_sdk_proto::cosmos::base::v1beta1::Coin;
 use cosmos_sdk_proto::cosmos::staking::v1beta1::{
     MsgDelegate, MsgDelegateResponse, MsgUndelegate, MsgUndelegateResponse,
 };
+use cosmos_sdk_proto::traits::Message;
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
@@ -9,7 +10,6 @@ use cosmwasm_std::{
     Reply, Response, StdError, StdResult, SubMsg,
 };
 use cw2::set_contract_version;
-use prost::Message;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -200,7 +200,7 @@ fn execute_register_ica(
     let register = NeutronMsg::register_interchain_account(
         connection_id,
         interchain_account_id.clone(),
-        register_fee,
+        Some(register_fee),
     );
     let key = get_port_id(env.contract.address.as_str(), &interchain_account_id);
     // we are saving empty data here because we handle response of registering ICA in sudo_open_ack method
