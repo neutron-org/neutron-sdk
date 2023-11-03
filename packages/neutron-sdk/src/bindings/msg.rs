@@ -903,6 +903,11 @@ pub struct UnstakeDescriptor {
 /// Timestamp represents a point in time independent of any time zone or local calendar,
 /// encoded as a count of seconds and fractions of seconds at nanosecond resolution.
 pub struct Timestamp {
+    /// **seconds** represents seconds of UTC time since Unix epoch
     pub seconds: i64,
+    /// **nanos** are non-negative fractions of a second at nanosecond resolution. Negative
+    /// second values with fractions must still have non-negative nanos values
+    /// that count forward in time. Must be from 0 to 999,999,999
+    /// inclusive.
     pub nanos: i32,
 }
