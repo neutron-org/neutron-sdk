@@ -6,7 +6,6 @@ use crate::{
 };
 
 use cosmwasm_std::{Binary, Coin, CosmosMsg, CustomMsg, StdError, Uint128};
-use prost_types::Timestamp;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json_wasm::to_string;
@@ -195,7 +194,7 @@ pub enum NeutronMsg {
     ResubmitFailure { failure_id: u64 },
 
     /// Incentives messages
-    Incentives { msg: IncentivesMessage }
+    Incentives { msg: IncentivesMessage },
 }
 
 impl NeutronMsg {
@@ -429,21 +428,61 @@ impl NeutronMsg {
         NeutronMsg::ResubmitFailure { failure_id }
     }
 
-    // TODO
-    pub fn create_gauge() -> Self {
-        todo!()
+    // Basic helper to define create gauge passed to Incentives module
+    // **is_perpetual**  shows if it's a perpetual or non-perpetual gauge
+    //  Non-perpetual gauges distribute their tokens equally per epoch while the
+    //  gauge is in the active period. Perpetual gauges distribute all their tokens
+    //  at a single time and only distribute their tokens again once the gauge is
+    //  refilled
+    // **distribute_to** shows which lock the gauge should distribute to by time duration or by timestamp
+    // **coins** are coins to be distributed by the gauge
+    // **start_time** is the distribution start time
+    // **num_epochs_paid_over** is the number of epochs distribution will be completed over
+    // **pricing_tick** is the price that liquidity within the gauge range will be priced at
+    pub fn create_gauge(
+        is_perpetual: bool,
+        distribute_to: QueryCondition,
+        coins: Vec<Coin>,
+        start_time: Timestamp,
+        num_epochs_paid_over: u64,
+        pricing_tick: i64,
+    ) -> Self {
+        NeutronMsg::Incentives {
+            msg: IncentivesMessage::CreateGauge(CreateGauge {
+                is_perpetual,
+                distribute_to,
+                coins,
+                start_time,
+                num_epochs_paid_over,
+                pricing_tick,
+            }),
+        }
     }
 
-    pub fn add_to_gauge() -> Self {
-        todo!()
+    // Basic helper to define add rewards to gauge passed to Incentives module
+    // **gauge_id** is the ID of gauge that rewards will be added to
+    // **rewards** specifies list of rewards to add to gauge
+    pub fn add_to_gauge(gauge_id: u64, rewards: Vec<Coin>) -> Self {
+        NeutronMsg::Incentives {
+            msg: IncentivesMessage::AddToGauge(AddToGauge { gauge_id, rewards }),
+        }
     }
 
-    pub fn stake() -> Self {
-        todo!()
+    // Basic helper to define stake passed to Incentives module
+    // **coins** defines list of coins to stake
+    pub fn stake(coins: Vec<Coin>) -> Self {
+        NeutronMsg::Incentives {
+            msg: IncentivesMessage::Stake(Stake { coins }),
+        }
     }
 
-    pub fn unstake() -> Self {
-        todo!()
+    // Basic helper to define unstake passed to Incentives module
+    // **unstakes** defines array's of descriptors to unstake.
+    // If unstake is left empty, this is interpreted as "unstake all"
+    pub fn unstake(unstakes: Vec<UnstakeDescriptor>) -> Self {
+        NeutronMsg::Incentives {
+            msg: IncentivesMessage::Unstake(Unstake { unstakes }),
+        }
     }
 }
 
@@ -747,7 +786,6 @@ pub struct ClearAdminProposal {
     pub contract: String,
 }
 
-
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum IncentivesMessage {
@@ -758,7 +796,7 @@ pub enum IncentivesMessage {
     /// Deposit LP tokens to the module, qualifying for rewards from gauges
     Stake(Stake),
     /// Withdraw LP tokens from the module, forfeiting future rewards from gauges
-    Unstake(Unstake)
+    Unstake(Unstake),
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -794,9 +832,6 @@ pub struct CreateGaugeResponse {}
 #[serde(rename_all = "snake_case")]
 /// AddToGauge defines struct for adding rewards to existing incentives program
 pub struct AddToGauge {
-    // TODO: needed?
-    /// **owner** is the address of gauge creator, should be the module authority
-    pub owner: String,
     /// **gauge_id** is the ID of gauge that rewards will be added to
     pub gauge_id: u64,
     /// **rewards** specifies list of rewards to add to gauge
@@ -812,9 +847,6 @@ pub struct AddToGaugeResponse {}
 #[serde(rename_all = "snake_case")]
 /// Stake defines struct for depositing LP tokens to the incentives module
 pub struct Stake {
-    // TODO: check
-    /// **owner** is the address of gauge creator, should be the module authority
-    pub owner: String,
     /// **coins** defines list of coins to stake
     pub coins: Vec<Coin>,
 }
@@ -831,9 +863,6 @@ pub struct StakeResponse {
 #[serde(rename_all = "snake_case")]
 /// Unstake defines struct for withdrawing LP tokens from the incentives module
 pub struct Unstake {
-    // TODO: check
-    /// **owner** is the address of gauge creator, should be the module authority
-    pub owner: u64,
     /// **unstakes** defines array's of descriptors to unstake.
     /// If unstake is left empty, this is interpreted as "unstake all"
     pub unstakes: Vec<UnstakeDescriptor>,
@@ -877,4 +906,13 @@ pub struct UnstakeDescriptor {
     pub id: u64,
     /// **coins** is coins to unstake in the given stake
     pub coins: Vec<Coin>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+/// Timestamp represents a point in time independent of any time zone or local calendar,
+/// encoded as a count of seconds and fractions of seconds at nanosecond resolution.
+pub struct Timestamp {
+    pub seconds: i64,
+    pub nanos: i32,
 }
