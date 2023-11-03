@@ -16,8 +16,8 @@ use cosmos_sdk_proto::traits::Message;
 use cosmos_sdk_proto::Any;
 use cosmwasm_std::testing::{mock_env, mock_info, MockApi, MockStorage};
 use cosmwasm_std::{
-    from_binary, to_binary, Addr, Binary, Coin, Decimal, Delegation, Env, MessageInfo, OwnedDeps,
-    StdError, Uint128,
+    from_json, to_json_binary, Addr, Binary, Coin, Decimal, Delegation, Env, MessageInfo,
+    OwnedDeps, StdError, Uint128,
 };
 use neutron_sdk::bindings::query::{
     NeutronQuery, QueryRegisteredQueryResponse, QueryRegisteredQueryResultResponse,
@@ -257,7 +257,7 @@ fn test_query_balance() {
     );
     let query_balance = QueryMsg::Balance { query_id: 1 };
     let resp: BalanceResponse =
-        from_binary(&query(deps.as_ref(), mock_env(), query_balance).unwrap()).unwrap();
+        from_json(query(deps.as_ref(), mock_env(), query_balance).unwrap()).unwrap();
     assert_eq!(
         resp,
         BalanceResponse {
@@ -304,11 +304,11 @@ fn test_bank_total_supply_query() {
 
     deps.querier.add_registered_queries(1, registered_query);
     deps.querier
-        .add_query_response(1, to_binary(&total_supply_response).unwrap());
+        .add_query_response(1, to_json_binary(&total_supply_response).unwrap());
     let bank_total_balance = QueryMsg::BankTotalSupply { query_id: 1 };
 
     let resp: TotalSupplyResponse =
-        from_binary(&query(deps.as_ref(), mock_env(), bank_total_balance).unwrap()).unwrap();
+        from_json(query(deps.as_ref(), mock_env(), bank_total_balance).unwrap()).unwrap();
     assert_eq!(
         resp,
         TotalSupplyResponse {
@@ -347,7 +347,7 @@ fn test_distribution_fee_pool_query() {
     );
     let fee_pool_balance = QueryMsg::DistributionFeePool { query_id: 1 };
     let resp: FeePoolResponse =
-        from_binary(&query(deps.as_ref(), mock_env(), fee_pool_balance).unwrap()).unwrap();
+        from_json(query(deps.as_ref(), mock_env(), fee_pool_balance).unwrap()).unwrap();
     assert_eq!(
         resp,
         FeePoolResponse {
@@ -393,11 +393,11 @@ fn test_gov_proposals_query() {
 
     deps.querier.add_registered_queries(1, registered_query);
     deps.querier
-        .add_query_response(1, to_binary(&proposals_response).unwrap());
+        .add_query_response(1, to_json_binary(&proposals_response).unwrap());
 
     let government_proposal = QueryMsg::GovernmentProposals { query_id: 1 };
     let resp: ProposalResponse =
-        from_binary(&query(deps.as_ref(), mock_env(), government_proposal).unwrap()).unwrap();
+        from_json(query(deps.as_ref(), mock_env(), government_proposal).unwrap()).unwrap();
     assert_eq!(
         resp,
         ProposalResponse {
@@ -503,10 +503,10 @@ fn test_staking_validators_query() {
 
     deps.querier.add_registered_queries(1, registered_query);
     deps.querier
-        .add_query_response(1, to_binary(&validators_response).unwrap());
+        .add_query_response(1, to_json_binary(&validators_response).unwrap());
     let staking_validators = QueryMsg::StakingValidators { query_id: 1 };
     let resp: ValidatorResponse =
-        from_binary(&query(deps.as_ref(), mock_env(), staking_validators).unwrap()).unwrap();
+        from_json(query(deps.as_ref(), mock_env(), staking_validators).unwrap()).unwrap();
     assert_eq!(
         resp,
         ValidatorResponse {
@@ -649,12 +649,12 @@ fn test_query_delegator_delegations() {
         build_registered_query_response(1, QueryParam::Keys(keys.0), QueryType::KV, 987);
 
     deps.querier
-        .add_query_response(1, to_binary(&delegations_response).unwrap());
+        .add_query_response(1, to_json_binary(&delegations_response).unwrap());
     deps.querier.add_registered_queries(1, registered_query);
 
     let query_delegations = QueryMsg::GetDelegations { query_id: 1 };
     let resp: DelegatorDelegationsResponse =
-        from_binary(&query(deps.as_ref(), mock_env(), query_delegations).unwrap()).unwrap();
+        from_json(query(deps.as_ref(), mock_env(), query_delegations).unwrap()).unwrap();
 
     assert_eq!(
         resp,

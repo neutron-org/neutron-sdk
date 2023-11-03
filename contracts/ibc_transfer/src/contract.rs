@@ -1,5 +1,5 @@
 use cosmwasm_std::{
-    coin, entry_point, from_binary, Binary, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Reply,
+    coin, entry_point, from_json, Binary, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Reply,
     Response, StdError, StdResult, SubMsg,
 };
 use cw2::set_contract_version;
@@ -112,8 +112,8 @@ fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
 // and process this payload when an acknowledgement for the SubmitTx message is received in Sudo handler
 fn prepare_sudo_payload(mut deps: DepsMut, _env: Env, msg: Reply) -> StdResult<Response> {
     let payload = read_reply_payload(deps.storage, msg.id)?;
-    let resp: MsgIbcTransferResponse = from_binary(
-        &msg.result
+    let resp: MsgIbcTransferResponse = from_json(
+        msg.result
             .into_result()
             .map_err(StdError::generic_err)?
             .data

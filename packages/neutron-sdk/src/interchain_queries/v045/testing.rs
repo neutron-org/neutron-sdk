@@ -22,7 +22,7 @@ use cosmos_sdk_proto::cosmos::staking::v1beta1::{
 };
 use cosmos_sdk_proto::traits::Message;
 use cosmwasm_std::{
-    to_binary, Addr, Binary, Coin as StdCoin, Decimal, Delegation as StdDelegation, Uint128,
+    to_json_binary, Addr, Binary, Coin as StdCoin, Decimal, Delegation as StdDelegation, Uint128,
 };
 use hex;
 use std::ops::Mul;
@@ -728,7 +728,7 @@ fn test_delegations_reconstruct() {
                 if ts.stake_denom.is_empty() {
                     return Default::default();
                 }
-                to_binary(&ts.stake_denom).unwrap()
+                to_json_binary(&ts.stake_denom).unwrap()
             },
         }];
 
