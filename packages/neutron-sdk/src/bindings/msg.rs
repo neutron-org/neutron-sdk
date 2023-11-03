@@ -194,7 +194,7 @@ pub enum NeutronMsg {
     ResubmitFailure { failure_id: u64 },
 
     /// Incentives messages
-    Incentives { msg: IncentivesMessage },
+    Incentives(IncentivesMessage),
 }
 
 impl NeutronMsg {
@@ -447,42 +447,34 @@ impl NeutronMsg {
         num_epochs_paid_over: u64,
         pricing_tick: i64,
     ) -> Self {
-        NeutronMsg::Incentives {
-            msg: IncentivesMessage::CreateGauge(CreateGauge {
-                is_perpetual,
-                distribute_to,
-                coins,
-                start_time,
-                num_epochs_paid_over,
-                pricing_tick,
-            }),
-        }
+        NeutronMsg::Incentives(IncentivesMessage::CreateGauge {
+            is_perpetual,
+            distribute_to,
+            coins,
+            start_time,
+            num_epochs_paid_over,
+            pricing_tick,
+        })
     }
 
     // Basic helper to define add rewards to gauge passed to Incentives module
     // **gauge_id** is the ID of gauge that rewards will be added to
     // **rewards** specifies list of rewards to add to gauge
     pub fn add_to_gauge(gauge_id: u64, rewards: Vec<Coin>) -> Self {
-        NeutronMsg::Incentives {
-            msg: IncentivesMessage::AddToGauge(AddToGauge { gauge_id, rewards }),
-        }
+        NeutronMsg::Incentives(IncentivesMessage::AddToGauge { gauge_id, rewards })
     }
 
     // Basic helper to define stake passed to Incentives module
     // **coins** defines list of coins to stake
     pub fn stake(coins: Vec<Coin>) -> Self {
-        NeutronMsg::Incentives {
-            msg: IncentivesMessage::Stake(Stake { coins }),
-        }
+        NeutronMsg::Incentives(IncentivesMessage::Stake { coins })
     }
 
     // Basic helper to define unstake passed to Incentives module
     // **unstakes** defines array's of descriptors to unstake.
     // If unstake is left empty, this is interpreted as "unstake all"
     pub fn unstake(unstakes: Vec<UnstakeDescriptor>) -> Self {
-        NeutronMsg::Incentives {
-            msg: IncentivesMessage::Unstake(Unstake { unstakes }),
-        }
+        NeutronMsg::Incentives(IncentivesMessage::Unstake { unstakes })
     }
 }
 
@@ -790,53 +782,50 @@ pub struct ClearAdminProposal {
 #[serde(rename_all = "snake_case")]
 pub enum IncentivesMessage {
     /// Create an incentive program
-    CreateGauge(CreateGauge),
+    CreateGauge {
+        /// **is_perpetual**  shows if it's a perpetual or non-perpetual gauge
+        ///  Non-perpetual gauges distribute their tokens equally per epoch while the
+        ///  gauge is in the active period. Perpetual gauges distribute all their tokens
+        ///  at a single time and only distribute their tokens again once the gauge is
+        ///  refilled
+        is_perpetual: bool,
+        /// **distribute_to** shows which lock the gauge should distribute to by time
+        /// duration or by timestamp
+        distribute_to: QueryCondition,
+        /// **coins** are coins to be distributed by the gauge
+        coins: Vec<Coin>,
+        /// **start_time** is the distribution start time
+        start_time: Timestamp,
+        /// **num_epochs_paid_over** is the number of epochs distribution
+        /// will be completed over
+        num_epochs_paid_over: u64,
+        /// **pricing_tick** is the price that liquidity within the gauge range will be priced at
+        pricing_tick: i64,
+    },
     /// Add rewards to an existing incentives program
-    AddToGauge(AddToGauge),
+    AddToGauge {
+        /// **gauge_id** is the ID of gauge that rewards will be added to
+        gauge_id: u64,
+        /// **rewards** specifies list of rewards to add to gauge
+        rewards: Vec<Coin>,
+    },
     /// Deposit LP tokens to the module, qualifying for rewards from gauges
-    Stake(Stake),
+    Stake {
+        /// **coins** defines list of coins to stake
+        coins: Vec<Coin>,
+    },
     /// Withdraw LP tokens from the module, forfeiting future rewards from gauges
-    Unstake(Unstake),
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-/// CreateGauge defined struct for creating new incentives program
-pub struct CreateGauge {
-    /// **is_perpetual**  shows if it's a perpetual or non-perpetual gauge
-    ///  Non-perpetual gauges distribute their tokens equally per epoch while the
-    ///  gauge is in the active period. Perpetual gauges distribute all their tokens
-    ///  at a single time and only distribute their tokens again once the gauge is
-    ///  refilled
-    pub is_perpetual: bool,
-    /// **distribute_to** shows which lock the gauge should distribute to by time
-    /// duration or by timestamp
-    pub distribute_to: QueryCondition,
-    /// **coins** are coins to be distributed by the gauge
-    pub coins: Vec<Coin>,
-    /// **start_time** is the distribution start time
-    pub start_time: Timestamp,
-    /// **num_epochs_paid_over** is the number of epochs distribution
-    /// will be completed over
-    pub num_epochs_paid_over: u64,
-    /// **pricing_tick** is the price that liquidity within the gauge range will be priced at
-    pub pricing_tick: i64,
+    Unstake {
+        /// **unstakes** defines array's of descriptors to unstake.
+        /// If unstake is left empty, this is interpreted as "unstake all"
+        unstakes: Vec<UnstakeDescriptor>,
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 /// CreateGaugeResponse defines the struct for response on CreateGauge message
 pub struct CreateGaugeResponse {}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-/// AddToGauge defines struct for adding rewards to existing incentives program
-pub struct AddToGauge {
-    /// **gauge_id** is the ID of gauge that rewards will be added to
-    pub gauge_id: u64,
-    /// **rewards** specifies list of rewards to add to gauge
-    pub rewards: Vec<Coin>,
-}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -873,6 +862,7 @@ pub struct Unstake {
 /// UnstakeResponse defines the struct for response on Unstake message
 pub struct UnstakeResponse {}
 
+// TODO: put this into types.rs?
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 /// **QueryCondition** which lock the gauge should distribute to

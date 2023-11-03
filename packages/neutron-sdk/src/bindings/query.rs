@@ -1,5 +1,6 @@
+use crate::bindings::msg::{QueryCondition, Timestamp};
 use crate::bindings::types::{Failure, InterchainQueryResult, RegisteredQuery};
-use cosmwasm_std::{Binary, CustomQuery};
+use cosmwasm_std::{Binary, Coin, CustomQuery};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -65,6 +66,9 @@ pub enum NeutronQuery {
         address: String,
         pagination: PageRequest,
     },
+
+    /// Incentives module queries
+    Incentives(IncentivesQuery),
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -125,3 +129,133 @@ pub struct QueryFailuresResponse {
 }
 
 impl CustomQuery for NeutronQuery {}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum IncentivesQuery {
+    ModuleStatus {},
+    GaugeByID {
+        id: u64,
+    },
+    Gauges {
+        status: String,
+        denom: String,
+    },
+    StakeByID {
+        stake_id: u64,
+    },
+    Stakes {
+        owner: String,
+    },
+    FutureRewardEstimate {
+        owner: String,
+        stake_ids: Vec<u64>,
+        num_epochs: i64,
+    },
+    AccountHistory {
+        account: String,
+    },
+    GaugeQualifyingValue {
+        id: u64,
+    },
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct GaugeByIDResponse {
+    /// **gauge** is the found gauge
+    pub gauge: Gauge,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct GaugesResponse {
+    /// **gauges** is the list of gauges
+    pub gauges: Vec<Gauge>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct StakeByIDResponse {
+    /// **stake** is the found stake
+    pub stake: Stake,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct StakesResponse {
+    /// **stakes** is the list of stakes
+    pub stakes: Vec<Stake>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct FutureRewardEstimateResponse {
+    /// **coins** is the future estimate of rewards
+    pub coins: Vec<Coin>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct AccountHistoryResponse {
+    /// **coins** is the account history // TODO: normal comment
+    pub coins: Vec<Coin>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct GaugeQualifyingValueResponse {
+    /// **qualifying_value** // TODO: comment
+    pub qualifying_value: u64,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct Gauge {
+    /// **id** is the gauge id
+    pub id: u64,
+    /// **is_perpetual**  shows if it's a perpetual or non-perpetual gauge
+    ///  Non-perpetual gauges distribute their tokens equally per epoch while the
+    ///  gauge is in the active period. Perpetual gauges distribute all their tokens
+    ///  at a single time and only distribute their tokens again once the gauge is
+    ///  refilled
+    pub is_perpetual: bool,
+    /// **distribute_to** shows which lock the gauge should distribute to by time
+    /// duration or by timestamp
+    pub distribute_to: QueryCondition,
+    /// **coins** are coins to be distributed by the gauge
+    pub coins: Vec<Coin>,
+    /// **start_time** is the distribution start time
+    pub start_time: Timestamp,
+    /// **num_epochs_paid_over** is the number of epochs distribution
+    /// will be completed over
+    pub num_epochs_paid_over: u64,
+    /// **filled_epochs** describes the number of epochs distribution
+    /// have been completed already
+    pub filled_epochs: u64,
+    /// **distributed_coins** describes coins that have been distributed already from
+    /// this gauge.
+    pub distributed_coins: Vec<Coin>,
+    /// **pricing_tick** is the price that liquidity within the gauge range will be priced at
+    pub pricing_tick: i64,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct Stake {
+    /// **id** is the stake id
+    pub id: u64,
+    /// **owner** is the account originating the stake. Only the owner can withdraw
+    /// coins from the stake.
+    pub owner: String,
+    /// **start_time** is the time at which the coins in the lock were staked
+    pub start_time: Timestamp,
+    /// **coins** are the tokens staked, and managed by the module account
+    pub coins: Vec<Coin>,
+    /// **start_dist_epoch** is the dist epoch (defaulting to the day) at which the
+    /// coins in the lock were staked. This is used by distribution logic to filter
+    /// on stakes that have existed for longer than the distribution period (you
+    /// can only qualify for today's rewards if you staked your LP tokens
+    /// yesterday). We use int64 instead of uint64 to make testing easier.
+    pub start_dist_epoch: i64,
+}
