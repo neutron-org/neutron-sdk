@@ -893,6 +893,7 @@ pub struct PairID {
 /// Specifies descriptor for concrete unstake operation
 pub struct UnstakeDescriptor {
     /// **id** is the id of stake
+    /// TODO: json should be 'ID'
     pub id: u64,
     /// **coins** is coins to unstake in the given stake
     pub coins: Vec<Coin>,

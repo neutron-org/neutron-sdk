@@ -162,6 +162,26 @@ pub enum IncentivesQuery {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
+pub struct ModuleStatusResponse {
+    // TODO: descriptions
+    pub reward_coins: Vec<Coin>,
+    // TODO: description
+    pub staked_coins: Vec<Coin>,
+    // TODO: description
+    pub params: IncentivesParams,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct IncentivesParams {
+    // TODO: description
+    pub distr_epoch_identifier: String,
+    // TODO: description
+    pub max_gauges: u64,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 pub struct GaugeByIDResponse {
     /// **gauge** is the found gauge
     pub gauge: Gauge,
