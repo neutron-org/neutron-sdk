@@ -10,6 +10,8 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json_wasm::to_string;
 
+use super::types::LimitOrderType;
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 /// IbcFee defines struct for fees that refund the relayer for `SudoMsg` messages submission.
 /// Unused fee kind will be returned back to message sender.
@@ -192,6 +194,75 @@ pub enum NeutronMsg {
     /// Acknowledgement failure is created when contract returns error or acknowledgement is out of gas.
     /// [Permissioned - only from contract that is initial caller of IBC transaction]
     ResubmitFailure { failure_id: u64 },
+
+    /// Dex messages
+    Dex(DexMsg),
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub enum DexMsg {
+    Deposit {
+        receiver: String,
+        token_a: String,
+        token_b: String,
+        amounts_a: Vec<Uint128>,
+        amounts_b: Vec<Uint128>,
+        tick_indexes_a_to_b: Vec<i64>,
+        fees: Vec<u64>,
+        options: Vec<Option<DepositOption>>,
+    },
+    Withdrawal {
+        receiver: String,
+        token_a: String,
+        token_b: String,
+        shares_to_remove: Vec<Uint128>,
+        tick_indexes_a_to_b: Vec<i64>,
+        fees: Vec<u64>,
+    },
+    PlaceLimitOrder {
+        receiver: String,
+        token_in: String,
+        token_out: String,
+        tick_index_in_to_out: i64,
+        amount_in: Uint128,
+        order_type: LimitOrderType,
+        // TODO: fix time representation
+        // expirationTime is only valid iff orderType == GOOD_TIL_TIME.
+        expiration_time: Option<u64>,
+        max_amount_out: Option<Uint128>,
+    },
+    WithdrawFilledLimitOrder {
+        tranche_key: String,
+    },
+    CancelLimitOrder {
+        tranche_key: String,
+    },
+    MultiHopSwap {
+        receiver: String,
+        routes: Vec<Option<MultiHopRoute>>,
+        amount_in: Uint128,
+        exit_limit_price: PrecDec,
+        pick_best_route: bool,
+    },
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct PrecDec {
+    i: Uint128,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct DepositOption {
+    disable_swap: bool,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct MultiHopRoute {
+    hops: Vec<String>,
 }
 
 impl NeutronMsg {

@@ -1,9 +1,12 @@
-use cosmwasm_std::{Binary, Coin};
+use cosmwasm_std::{Binary, Coin, Int128, StdError};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::fmt::Write as _;
 
 use crate::interchain_queries::types::QueryType;
+
+use super::msg::PrecDec;
 
 /// Encodes bytes slice into hex string
 pub fn encode_hex(bytes: &[u8]) -> String {
@@ -250,4 +253,56 @@ impl Into<String> for KVKeys {
             .collect::<Vec<String>>()
             .join(KV_KEYS_DELIMITER)
     }
+}
+
+#[derive(Serialize_repr, Deserialize_repr, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[repr(u8)]
+pub enum LimitOrderType {
+    GoodTilCancelled = 0,
+    FillOrKill = 1,
+    ImmediateOrCancel = 2,
+    JustInTime = 3,
+    GoodTilTime = 4,
+}
+
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct LimitOrderTrancheUser {
+    trade_pair_id: TradePairID,
+    tick_index_taker_to_maker: i64,
+    tranche_key: String,
+    address: String,
+    shares_owned: Int128,
+    shares_withdrawn: Int128,
+    shares_cancelled: Int128,
+    order_type: LimitOrderType,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct LimitOrderTrancheKey {
+    pub traid_pair_id: TradePairID,
+    pub tick_index_taker_to_maker: u64,
+    pub tranche_key: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct LimitOrderTranche {
+    pub key: LimitOrderTrancheKey,
+    reserves_maker_denom: Int128,
+    reserves_taker_denom: Int128,
+    total_maker_denom: Int128,
+    total_taker_denom: Int128,
+    // TODO: impl binding unixtime -> timestamp in go wasm bindings
+    expiration_time: u64,
+    price_taker_to_maker: PrecDec,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct TradePairID {
+    maker_denom: String,
+    taker_denom: String,
 }
