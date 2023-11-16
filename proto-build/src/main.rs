@@ -69,7 +69,7 @@ fn main() {
     output_neutron_version(&temp_neutron_dir);
     compile_neutron_proto_and_services(&temp_neutron_dir);
 
-    copy_generated_files(&temp_neutron_dir, &proto_dir.join("dex"));
+    copy_generated_files(&temp_neutron_dir, &proto_dir.join("neutron"));
 
     // apply_patches(&proto_dir);
 
@@ -179,7 +179,7 @@ fn compile_neutron_proto_and_services(out_dir: &Path) {
     let proto_path = sdk_dir.join("proto");
     let proto_paths = [
         // format!("{}/third_party/proto/ibc", sdk_dir.display()),
-        format!("{}/proto/neutron/dex", sdk_dir.display()),
+        // format!("{}/proto/neutron/dex", sdk_dir.display()),
     ];
 
     // List available proto files
