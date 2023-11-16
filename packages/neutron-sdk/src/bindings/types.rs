@@ -48,7 +48,7 @@ pub struct RegisteredQuery {
     /// Amount of coins deposited for the query.
     #[serde(default)]
     pub deposit: Vec<Coin>,
-    /// The remote chain last block height when the query result was updated.
+    /// Timeout before query becomes available for everybody to remove.
     #[serde(default)]
     pub submit_timeout: u64,
     /// The local chain height when the query was registered.

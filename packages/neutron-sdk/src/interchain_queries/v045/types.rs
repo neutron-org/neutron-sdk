@@ -9,8 +9,8 @@ use cosmos_sdk_proto::cosmos::{
     gov::v1beta1::Proposal as CosmosProposal,
     staking::v1beta1::{Delegation, Validator as CosmosValidator},
 };
-use cosmwasm_std::{from_binary, Addr, Coin, Decimal, StdError, Uint128};
-use prost::Message as ProstMessage;
+use cosmos_sdk_proto::traits::Message;
+use cosmwasm_std::{from_json, Addr, Coin, Decimal, StdError, Uint128};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::{ops::Div, str::FromStr};
@@ -87,7 +87,7 @@ impl KVReconstruct for Uint128 {
         let value = storage_values
             .first()
             .ok_or_else(|| StdError::generic_err("empty query result"))?;
-        let balance: Uint128 = from_binary(&value.value)?;
+        let balance: Uint128 = from_json(&value.value)?;
         Ok(balance)
     }
 }
@@ -348,7 +348,7 @@ impl KVReconstruct for Delegations {
                 "denom is empty".into(),
             ));
         }
-        let denom: String = from_binary(&storage_values[0].value)?;
+        let denom: String = from_json(&storage_values[0].value)?;
 
         // the rest are delegations and validators alternately
         for chunk in storage_values[1..].chunks(2) {

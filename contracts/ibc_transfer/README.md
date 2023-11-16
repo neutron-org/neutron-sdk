@@ -21,7 +21,7 @@ You will see there debug messages from contract and neutron's ibc-transfer modul
 ### Tracing ibc transfer ack(sudo)
 long story short, we catch packet_sequence id in the reply handler and passthrough any payload to sudo handler using the seq_id
 
-1) ExecuteHandler. We save the payload we want to pass to sudo handler with a "unique-enought" id in the storage
+1) ExecuteHandler. We save the payload we want to pass to sudo handler with a "unique-enough" id in the storage
 2) ExecuteHandler. Force submsg to replyOn::success with the msd.id we picked above
 3) ReplyHandler. In the reply handler we parse ibc packet_sequence id and map the payload to the seq_id in the storage
 4) SudoHandler. In the sudo handler we read the payload from the storage with a provided seq_id(in sudo ack packet)

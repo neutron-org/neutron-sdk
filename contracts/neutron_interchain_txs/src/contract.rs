@@ -2,14 +2,14 @@ use cosmos_sdk_proto::cosmos::base::v1beta1::Coin;
 use cosmos_sdk_proto::cosmos::staking::v1beta1::{
     MsgDelegate, MsgDelegateResponse, MsgUndelegate, MsgUndelegateResponse,
 };
+use cosmos_sdk_proto::traits::Message;
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Binary, Coin as CoinSDK, CosmosMsg, CustomQuery, Deps, DepsMut, Env, MessageInfo,
-    Reply, Response, StdError, StdResult, SubMsg,
+    to_json_binary, Binary, Coin as CoinSDK, CosmosMsg, CustomQuery, Deps, DepsMut, Env,
+    MessageInfo, Reply, Response, StdError, StdResult, SubMsg,
 };
 use cw2::set_contract_version;
-use prost::Message;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -151,7 +151,7 @@ pub fn query_interchain_address(
     };
 
     let res: QueryInterchainAccountAddressResponse = deps.querier.query(&query.into())?;
-    Ok(to_binary(&res)?)
+    Ok(to_json_binary(&res)?)
 }
 
 // returns ICA address from the contract storage. The address was saved in sudo_open_ack method
@@ -160,7 +160,11 @@ pub fn query_interchain_address_contract(
     env: Env,
     interchain_account_id: String,
 ) -> NeutronResult<Binary> {
-    Ok(to_binary(&get_ica(deps, &env, &interchain_account_id)?)?)
+    Ok(to_json_binary(&get_ica(
+        deps,
+        &env,
+        &interchain_account_id,
+    )?)?)
 }
 
 // returns the result
@@ -172,12 +176,12 @@ pub fn query_acknowledgement_result(
 ) -> NeutronResult<Binary> {
     let port_id = get_port_id(env.contract.address.as_str(), &interchain_account_id);
     let res = ACKNOWLEDGEMENT_RESULTS.may_load(deps.storage, (port_id, sequence_id))?;
-    Ok(to_binary(&res)?)
+    Ok(to_json_binary(&res)?)
 }
 
 pub fn query_errors_queue(deps: Deps<NeutronQuery>) -> NeutronResult<Binary> {
     let res = read_errors_from_queue(deps.storage)?;
-    Ok(to_binary(&res)?)
+    Ok(to_json_binary(&res)?)
 }
 
 // saves payload to process later to the storage and returns a SubmitTX Cosmos SubMsg with necessary reply id
@@ -200,7 +204,7 @@ fn execute_register_ica(
     let register = NeutronMsg::register_interchain_account(
         connection_id,
         interchain_account_id.clone(),
-        register_fee,
+        Some(register_fee),
     );
     let key = get_port_id(env.contract.address.as_str(), &interchain_account_id);
     // we are saving empty data here because we handle response of registering ICA in sudo_open_ack method
