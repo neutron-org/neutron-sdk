@@ -1,4 +1,5 @@
 use cosmwasm_std::{Binary, Coin, Int128, StdError};
+use protobuf::well_known_types::timestamp::Timestamp;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -282,8 +283,8 @@ pub struct LimitOrderTrancheUser {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct LimitOrderTrancheKey {
-    pub traid_pair_id: TradePairID,
-    pub tick_index_taker_to_maker: u64,
+    pub trade_pair_id: TradePairID,
+    pub tick_index_taker_to_maker: i64,
     pub tranche_key: String,
 }
 
@@ -295,8 +296,7 @@ pub struct LimitOrderTranche {
     reserves_taker_denom: Int128,
     total_maker_denom: Int128,
     total_taker_denom: Int128,
-    // TODO: impl binding unixtime -> timestamp in go wasm bindings
-    expiration_time: u64,
+    expiration_time: Option<u64>,
     price_taker_to_maker: PrecDec,
 }
 

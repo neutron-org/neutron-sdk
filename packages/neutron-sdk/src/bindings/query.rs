@@ -139,7 +139,7 @@ pub enum DexQuery {
         pagination: Option<PageRequest>,
     },
     // Queries a PoolReserve by index
-    PoolReverses {
+    PoolReserves {
         pair_id: String,
         token_in: String,
         tick_index: i64,
@@ -173,6 +173,7 @@ pub enum DexQuery {
         fee: u64,
     },
     // Queries a pool by ID
+    #[serde(rename = "pool_by_id")]
     PoolByID {
         pool_id: u64,
     },
@@ -207,13 +208,15 @@ pub struct LimitOrderTrancheUserResponse {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct AllLimitOrderTrancheUserResponse {
-    limit_order_tranche_user: Vec<Option<LimitOrderTrancheUser>>,
+    #[serde(default)]
+    limit_order_tranche_user: Vec<LimitOrderTrancheUser>,
     pagination: Option<PageResponse>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema, Default)]
 #[serde(rename_all = "snake_case")]
 pub struct AllUserLimitOrdersResponse {
+    #[serde(default)]
     limit_orders: Vec<LimitOrderTrancheUser>,
     pagination: Option<PageResponse>,
 }
@@ -224,16 +227,18 @@ pub struct LimitOrderTrancheResponse {
     limit_order_tranche: Option<LimitOrderTranche>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema, Default)]
 #[serde(rename_all = "snake_case")]
 pub struct AllLimitOrderTrancheResponse {
+    #[serde(default)]
     limit_order_tranche: Vec<LimitOrderTranche>,
     pagination: Option<PageResponse>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema, Default)]
 #[serde(rename_all = "snake_case")]
 pub struct AllUserDepositsResponse {
+    #[serde(default)]
     deposits: Vec<DepositRecord>,
     pagination: Option<PageResponse>,
 }
@@ -244,14 +249,14 @@ pub struct DepositRecord {
     shares_owned: Int128,
     center_tick_index: i64,
     lower_tick_index: i64,
-    ipper_tick_index: i64,
-    fee: u64,
+    upper_tick_index: i64,
+    fee: Option<u64>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct PairID {
-    tokeno: String,
+    token0: String,
     token1: String,
 }
 
@@ -265,6 +270,7 @@ pub struct AllTickLiquidityResponse {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct TickLiquidity {
+    #[serde(rename = "Liquidity")]
     liquidity: Liquidity,
 }
 
@@ -280,7 +286,7 @@ pub enum Liquidity {
 pub struct PoolReserves {
     key: PoolReservesKey,
     reserves_maker_denom: Int128,
-    price_taker_to_maker: Int128,
+    price_taker_to_maker: PrecDec,
     price_opposite_taker_to_maker: PrecDec,
 }
 
@@ -289,7 +295,7 @@ pub struct PoolReserves {
 pub struct PoolReservesKey {
     trade_pair_id: TradePairID,
     tick_index_taker_to_maker: i64,
-    fee: u64,
+    fee: Option<u64>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -405,7 +411,7 @@ pub struct PageResponse {
     pub next_key: Option<Binary>,
     /// **total** is total number of results available if PageRequest.count_total
     /// was set, its value is undefined otherwise
-    pub total: u64,
+    pub total: Option<u64>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]

@@ -247,10 +247,25 @@ pub enum DexMsg {
     },
 }
 
+// TODO implement math for PrecDec
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
+#[serde(from = "String")]
+#[serde(into = "String")]
 pub struct PrecDec {
-    i: Uint128,
+    i: String,
+}
+
+impl Into<String> for PrecDec {
+    fn into(self) -> String {
+        self.i
+    }
+}
+
+impl From<String> for PrecDec {
+    fn from(value: String) -> Self {
+        PrecDec { i: value }
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
