@@ -1,21 +1,28 @@
-use cosmos_sdk_proto::cosmos::base::abci::v1beta1::{MsgData, TxMsgData};
+use cosmos_sdk_proto::{
+    cosmos::base::abci::v1beta1::{MsgData, TxMsgData},
+    traits::Message,
+};
 use cosmwasm_std::{Binary, StdError, StdResult};
-use prost::{DecodeError, Message};
 
 /// Decodes acknowledgement into `Vec<MsgData>` structure
 pub fn decode_acknowledgement_response(data: Binary) -> StdResult<Vec<MsgData>> {
-    let msg_data: Result<TxMsgData, DecodeError> = TxMsgData::decode(data.as_slice());
+    let msg_data: Result<TxMsgData, _> = TxMsgData::decode(data.as_slice());
     match msg_data {
         Err(e) => Err(StdError::generic_err(format!(
             "Can't decode response: {}",
             e
         ))),
+        // TODO: field `.data` is deprecated. We should stop using it when we finally upgrade
+        //       to Cosmos SDK v0.47+.
+        // We still use it here since current Neutron uses Cosmos SDK v0.45 which relies
+        // on this deprecated field.
+        #[allow(deprecated)]
         Ok(msg) => Ok(msg.data),
     }
 }
 
 /// Decodes protobuf any item into T structure
-pub fn decode_message_response<T: prost::Message + Default>(item: &Vec<u8>) -> StdResult<T> {
+pub fn decode_message_response<T: Message + Default>(item: &Vec<u8>) -> StdResult<T> {
     let res = T::decode(item.as_slice());
     match res {
         Err(e) => Err(StdError::generic_err(format!("Can't decode item: {}", e))),

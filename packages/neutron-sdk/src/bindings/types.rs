@@ -1,5 +1,4 @@
-use cosmwasm_std::{Binary, Coin, Int128, StdError};
-use protobuf::well_known_types::timestamp::Timestamp;
+use cosmwasm_std::{Binary, Coin, Int128};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -52,7 +51,7 @@ pub struct RegisteredQuery {
     /// Amount of coins deposited for the query.
     #[serde(default)]
     pub deposit: Vec<Coin>,
-    /// The remote chain last block height when the query result was updated.
+    /// Timeout before query becomes available for everybody to remove.
     #[serde(default)]
     pub submit_timeout: u64,
     /// The local chain height when the query was registered.
@@ -265,7 +264,6 @@ pub enum LimitOrderType {
     JustInTime = 3,
     GoodTilTime = 4,
 }
-
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
