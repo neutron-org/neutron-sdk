@@ -160,7 +160,8 @@ pub enum DexQuery {
         receiver: String,
         token_in: String,
         token_out: String,
-        tick_index_in_to_out: Uint128,
+        tick_index_in_to_out: i64,
+        amount_in: Int128,
         order_type: LimitOrderType,
         // expirationTime is only valid iff orderType == GOOD_TIL_TIME.
         expiration_time: Option<u64>,
@@ -253,7 +254,7 @@ pub struct DepositRecord {
     fee: Option<u64>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema, Default)]
 #[serde(rename_all = "snake_case")]
 pub struct PairID {
     token0: String,
@@ -353,6 +354,7 @@ pub struct PoolResponse {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct Pool {
+    #[serde(default)]
     id: u64,
     lower_tick0: Option<PoolReserves>,
     lower_tick1: Option<PoolReserves>,
@@ -364,8 +366,9 @@ pub struct PoolMetadataResponse {
     pool_metadata: PoolMetadata,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema, Default)]
 #[serde(rename_all = "snake_case")]
+#[serde(default)]
 pub struct PoolMetadata {
     id: u64,
     tick: i64,
