@@ -17,6 +17,9 @@ use crate::{
 };
 use cosmwasm_std::Binary;
 
+use super::helpers::create_validator_signing_info_key;
+use super::types::SLASHING_STORE_KEY;
+
 /// Creates a message to register an Interchain Query to get balance of account on remote chain for particular denom
 ///
 /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
@@ -133,6 +136,32 @@ pub fn new_register_staking_validators_query_msg(
         let kv_key = KVKey {
             path: STAKING_STORE_KEY.to_string(),
             key: Binary(create_validator_key(&val_addr)?),
+        };
+
+        kv_keys.push(kv_key)
+    }
+
+    NeutronMsg::register_interchain_query(QueryPayload::KV(kv_keys), connection_id, update_period)
+}
+
+/// Creates a message to register an Interchain Query to get validators signing infos on remote chain
+///
+/// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
+/// * **validators** is an list of validators valcons addresses of an account on remote chain for which you want to get rewards ;
+/// * **update_period** is used to say how often the query must be updated.
+pub fn new_register_validators_signig_infos_query_msg(
+    connection_id: String,
+    validators: Vec<String>,
+    update_period: u64,
+) -> NeutronResult<NeutronMsg> {
+    let mut kv_keys: Vec<KVKey> = Vec::with_capacity(validators.len());
+
+    for validator in validators {
+        let valcons_addr = decode_and_convert(&validator)?;
+
+        let kv_key = KVKey {
+            path: SLASHING_STORE_KEY.to_string(),
+            key: Binary(create_validator_signing_info_key(&valcons_addr)?),
         };
 
         kv_keys.push(kv_key)

@@ -2,7 +2,7 @@ use crate::bindings::query::NeutronQuery;
 use crate::interchain_queries::queries::{check_query_type, get_registered_query, query_kv_result};
 use crate::interchain_queries::types::QueryType;
 use crate::interchain_queries::v045::types::{
-    Balances, Delegations, FeePool, GovernmentProposal, StakingValidator, TotalSupply,
+    Balances, Delegations, FeePool, GovernmentProposal, SigningInfo, StakingValidator, TotalSupply,
 };
 use crate::NeutronResult;
 use cosmwasm_std::{Deps, Env};
@@ -34,6 +34,13 @@ pub struct FeePoolResponse {
 #[serde(rename_all = "snake_case")]
 pub struct ValidatorResponse {
     pub validator: StakingValidator,
+    pub last_submitted_local_height: u64,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct ValidatorSigningInfoResponse {
+    pub signing_infos: SigningInfo,
     pub last_submitted_local_height: u64,
 }
 
@@ -132,6 +139,27 @@ pub fn query_staking_validators(
             .registered_query
             .last_submitted_result_local_height,
         validator,
+    })
+}
+
+/// Returns validators signing infos from remote chain
+/// * ***registered_query_id*** is an identifier of the corresponding registered interchain query
+pub fn query_validators_signing_infos(
+    deps: Deps<NeutronQuery>,
+    _env: Env,
+    registered_query_id: u64,
+) -> NeutronResult<ValidatorSigningInfoResponse> {
+    let registered_query = get_registered_query(deps, registered_query_id)?;
+
+    check_query_type(registered_query.registered_query.query_type, QueryType::KV)?;
+
+    let signing_infos: SigningInfo = query_kv_result(deps, registered_query_id)?;
+
+    Ok(ValidatorSigningInfoResponse {
+        last_submitted_local_height: registered_query
+            .registered_query
+            .last_submitted_result_local_height,
+        signing_infos,
     })
 }
 

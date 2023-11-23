@@ -4,10 +4,12 @@ use crate::interchain_queries::types::KVReconstruct;
 use crate::interchain_queries::v045::helpers::{
     create_account_denom_balance_key, create_delegation_key, create_fee_pool_key,
     create_gov_proposal_key, create_params_store_key, create_total_denom_key, create_validator_key,
+    create_validator_signing_info_key,
 };
 use crate::interchain_queries::v045::types::{
-    Balances, Delegations, FeePool, GovernmentProposal, Proposal, StakingValidator, TallyResult,
-    TotalSupply, Validator as ContractValidator, DECIMAL_PLACES, KEY_BOND_DENOM, STAKING_STORE_KEY,
+    Balances, Delegations, FeePool, GovernmentProposal, Proposal, SigningInfo, StakingValidator,
+    TallyResult, TotalSupply, Validator as ContractValidator, ValidatorSigningInfo, DECIMAL_PLACES,
+    KEY_BOND_DENOM, STAKING_STORE_KEY,
 };
 use crate::{NeutronError, NeutronResult};
 use base64::prelude::*;
@@ -17,6 +19,7 @@ use cosmos_sdk_proto::cosmos::distribution::v1beta1::FeePool as CosmosFeePool;
 use cosmos_sdk_proto::cosmos::gov::v1beta1::{
     Proposal as CosmosProposal, TallyResult as CosmosTallyResult,
 };
+use cosmos_sdk_proto::cosmos::slashing::v1beta1::ValidatorSigningInfo as CosmosValidatorSigningInfo;
 use cosmos_sdk_proto::cosmos::staking::v1beta1::{
     Commission, CommissionRates, Delegation, Description, Validator,
 };
@@ -350,6 +353,129 @@ fn test_staking_validators_reconstruct() {
         let stakin_validator = StakingValidator::reconstruct(&st_values);
 
         assert_eq!(stakin_validator, ts.expected_result)
+    }
+}
+
+#[test]
+fn test_validators_signing_infos_reconstruct() {
+    struct TestCase {
+        signing_infos: Vec<CosmosValidatorSigningInfo>,
+        expected_result: NeutronResult<SigningInfo>,
+    }
+
+    let test_cases: Vec<TestCase> = vec![
+        TestCase {
+            signing_infos: vec![CosmosValidatorSigningInfo {
+                address: "cosmosvalcons1yjf46k064988jdjje068zmrqg8xh4fqqe2wwnl".to_string(),
+                start_height: 1,
+                index_offset: 1,
+                jailed_until: None,
+                tombstoned: false,
+                missed_blocks_counter: 987675,
+            }],
+            expected_result: Ok(SigningInfo {
+                signing_infos: vec![ValidatorSigningInfo {
+                    address: "cosmosvalcons1yjf46k064988jdjje068zmrqg8xh4fqqe2wwnl".to_string(),
+                    start_height: 1,
+                    index_offset: 1,
+                    jailed_until: None,
+                    tombstoned: false,
+                    missed_blocks_counter: 987675,
+                }],
+            }),
+        },
+        TestCase {
+            signing_infos: vec![CosmosValidatorSigningInfo {
+                address: "cosmosvalcons1yjf46k064988jdjje068zmrqg8xh4fqqe2wwnl".to_string(),
+                start_height: 1,
+                index_offset: 1,
+                jailed_until: Some(prost_types::Timestamp {
+                    seconds: 321654,
+                    nanos: 123123,
+                }),
+                tombstoned: false,
+                missed_blocks_counter: 987675,
+            }],
+            expected_result: Ok(SigningInfo {
+                signing_infos: vec![ValidatorSigningInfo {
+                    address: "cosmosvalcons1yjf46k064988jdjje068zmrqg8xh4fqqe2wwnl".to_string(),
+                    start_height: 1,
+                    index_offset: 1,
+                    jailed_until: Some(321654),
+                    tombstoned: false,
+                    missed_blocks_counter: 987675,
+                }],
+            }),
+        },
+        TestCase {
+            signing_infos: vec![
+                CosmosValidatorSigningInfo {
+                    address: "cosmosvalcons1yjf46k064988jdjje068zmrqg8xh4fqqe2wwnl".to_string(),
+                    start_height: 1,
+                    index_offset: 1,
+                    jailed_until: None,
+                    tombstoned: true,
+                    missed_blocks_counter: 987675,
+                },
+                CosmosValidatorSigningInfo {
+                    address: "cosmosvalcons16tnak7apushwznnd3wtku8gm0rt3xytz6ut006".to_string(),
+                    start_height: 1,
+                    index_offset: 1,
+                    jailed_until: Some(prost_types::Timestamp {
+                        seconds: 321654,
+                        nanos: 123123,
+                    }),
+                    tombstoned: false,
+                    missed_blocks_counter: 345012,
+                },
+            ],
+            expected_result: Ok(SigningInfo {
+                signing_infos: vec![
+                    ValidatorSigningInfo {
+                        address: "cosmosvalcons1yjf46k064988jdjje068zmrqg8xh4fqqe2wwnl".to_string(),
+                        start_height: 1,
+                        index_offset: 1,
+                        jailed_until: None,
+                        tombstoned: true,
+                        missed_blocks_counter: 987675,
+                    },
+                    ValidatorSigningInfo {
+                        address: "cosmosvalcons16tnak7apushwznnd3wtku8gm0rt3xytz6ut006".to_string(),
+                        start_height: 1,
+                        index_offset: 1,
+                        jailed_until: Some(321654),
+                        tombstoned: false,
+                        missed_blocks_counter: 345012,
+                    },
+                ],
+            }),
+        },
+        TestCase {
+            signing_infos: vec![],
+            expected_result: Ok(SigningInfo {
+                signing_infos: vec![],
+            }),
+        },
+    ];
+
+    for ts in test_cases {
+        let mut st_values: Vec<StorageValue> = vec![];
+
+        for info in &ts.signing_infos {
+            let val_addr = decode_and_convert(info.address.as_str()).unwrap();
+
+            let signing_info_key = create_validator_signing_info_key(&val_addr).unwrap();
+            let s = StorageValue {
+                storage_prefix: "".to_string(),
+                key: Binary(signing_info_key),
+                value: Binary(info.encode_to_vec()),
+            };
+            st_values.push(s);
+        }
+
+        let signing_infos = SigningInfo::reconstruct(&st_values);
+
+        assert_eq!(signing_infos, ts.expected_result)
     }
 }
 

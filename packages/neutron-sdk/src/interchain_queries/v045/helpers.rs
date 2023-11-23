@@ -2,7 +2,7 @@ use crate::errors::error::NeutronResult;
 use crate::interchain_queries::helpers::length_prefix;
 use crate::interchain_queries::v045::types::{
     BALANCES_PREFIX, DELEGATION_KEY, FEE_POOL_KEY, PARAMS_STORE_DELIMITER, PROPOSALS_KEY_PREFIX,
-    SUPPLY_PREFIX, VALIDATORS_KEY, WASM_CONTRACT_STORE_PREFIX,
+    SUPPLY_PREFIX, VALIDATORS_KEY, VALIDATOR_SIGNING_INFO_KEY, WASM_CONTRACT_STORE_PREFIX,
 };
 use cosmos_sdk_proto::cosmos::staking::v1beta1::Commission as ValidatorCommission;
 use cosmwasm_std::{Binary, Decimal, Uint128};
@@ -89,6 +89,17 @@ pub fn create_validator_key<AddrBytes: AsRef<[u8]>>(
 ) -> NeutronResult<Vec<u8>> {
     let mut key: Vec<u8> = vec![VALIDATORS_KEY];
     key.extend_from_slice(length_prefix(operator_address)?.as_slice());
+
+    Ok(key)
+}
+
+/// Creates Cosmos-SDK storage key for validator with **valcons_addr**
+/// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/slashing/types/keys.go#L34>
+pub fn create_validator_signing_info_key<AddrBytes: AsRef<[u8]>>(
+    valcons_addr: AddrBytes,
+) -> NeutronResult<Vec<u8>> {
+    let mut key: Vec<u8> = vec![VALIDATOR_SIGNING_INFO_KEY];
+    key.extend_from_slice(length_prefix(valcons_addr)?.as_slice());
 
     Ok(key)
 }
