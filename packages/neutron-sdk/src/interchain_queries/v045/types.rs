@@ -7,6 +7,7 @@ use cosmos_sdk_proto::cosmos::{
     base::v1beta1::Coin as CosmosCoin,
     distribution::v1beta1::FeePool as CosmosFeePool,
     gov::v1beta1::Proposal as CosmosProposal,
+    slashing::v1beta1::ValidatorSigningInfo as CosmosValidatorSigningInfo,
     staking::v1beta1::{Delegation, Validator as CosmosValidator},
 };
 use cosmos_sdk_proto::traits::Message;
@@ -42,6 +43,10 @@ pub const DELEGATION_KEY: u8 = 0x31;
 /// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/staking/types/keys.go#L35>
 pub const VALIDATORS_KEY: u8 = 0x21;
 
+/// Key for validators in the **staking** module's storage
+/// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/slashing/types/keys.go#L34>
+pub const VALIDATOR_SIGNING_INFO_KEY: u8 = 0x01;
+
 /// Key for Fee Pool in the **distribution** module's storage
 /// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/distribution/types/keys.go#L46>
 pub const FEE_POOL_KEY: u8 = 0x00;
@@ -59,6 +64,9 @@ pub const BANK_STORE_KEY: &str = "bank";
 
 /// Name of the standard **staking** Cosmos-SDK module
 pub const STAKING_STORE_KEY: &str = "staking";
+
+/// Name of the standard **staking** Cosmos-SDK module
+pub const SLASHING_STORE_KEY: &str = "slashing";
 
 /// Name of the standard **distribution** Cosmos-SDK module
 pub const DISTRIBUTION_STORE_KEY: &str = "distribution";
@@ -248,6 +256,57 @@ impl KVReconstruct for StakingValidator {
         }
 
         Ok(StakingValidator { validators })
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+/// Validator structure for the querier. Contains validator signing info from slashing`` module
+pub struct ValidatorSigningInfo {
+    pub address: String,
+    /// Height at which validator was first a candidate OR was unjailed
+    pub start_height: u64,
+    /// Index which is incremented each time the validator was a bonded
+    /// in a block and may have signed a precommit or not. This in conjunction with the
+    /// `SignedBlocksWindow` param determines the index in the `MissedBlocksBitArray`.
+    pub index_offset: u32,
+    /// Timestamp until which the validator is jailed due to liveness downtime.
+    pub jailed_until: Option<u64>,
+    /// Whether or not a validator has been tombstoned (killed out of validator set). It is set
+    /// once the validator commits an equivocation or for any other configured misbehiavor.
+    pub tombstoned: bool,
+    /// A counter kept to avoid unnecessary array reads.
+    /// Note that `Sum(MissedBlocksBitArray)` always equals `MissedBlocksCounter`.
+    pub missed_blocks_counter: u32,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+/// A structure that can be reconstructed from **StorageValues**'s for the **Staking Validator Interchain Query**.
+/// Contains validator info from remote chain.
+pub struct SigningInfo {
+    pub signing_infos: Vec<ValidatorSigningInfo>,
+}
+
+impl KVReconstruct for SigningInfo {
+    fn reconstruct(storage_values: &[StorageValue]) -> NeutronResult<SigningInfo> {
+        let mut signing_infos = Vec::with_capacity(storage_values.len());
+
+        for kv in storage_values {
+            let signing_info: CosmosValidatorSigningInfo =
+                CosmosValidatorSigningInfo::decode(kv.value.as_slice())?;
+
+            let validator = ValidatorSigningInfo {
+                address: signing_info.address,
+                start_height: signing_info.start_height as u64,
+                index_offset: signing_info.index_offset as u32,
+                jailed_until: signing_info.jailed_until.map(|v| v.seconds as u64),
+                tombstoned: signing_info.tombstoned,
+                missed_blocks_counter: signing_info.missed_blocks_counter as u32,
+            };
+
+            signing_infos.push(validator)
+        }
+
+        Ok(SigningInfo { signing_infos })
     }
 }
 

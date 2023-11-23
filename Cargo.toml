@@ -13,7 +13,7 @@ incremental = false
 overflow-checks = true
 
 [workspace.dependencies]
-cosmwasm-std = "1.4.0"
+cosmwasm-std = "~1.4.0"
 cw2 = "1.1.1"
 schemars = "0.8.15"
 serde = { version = "1.0.188", default-features = false }

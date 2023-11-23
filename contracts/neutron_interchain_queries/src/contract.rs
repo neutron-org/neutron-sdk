@@ -6,6 +6,7 @@ use cosmwasm_std::{
     StdResult, Uint128,
 };
 use cw2::set_contract_version;
+use neutron_sdk::interchain_queries::v045::register_queries::new_register_validators_signig_infos_query_msg;
 
 use crate::msg::{
     Cw20BalanceResponse, ExecuteMsg, GetRecipientTxsResponse, InstantiateMsg, MigrateMsg, QueryMsg,
@@ -16,7 +17,7 @@ use neutron_sdk::bindings::query::{NeutronQuery, QueryRegisteredQueryResponse};
 use neutron_sdk::bindings::types::{Height, KVKey};
 use neutron_sdk::interchain_queries::v045::queries::{
     query_balance, query_bank_total, query_delegations, query_distribution_fee_pool,
-    query_government_proposals, query_staking_validators,
+    query_government_proposals, query_staking_validators, query_validators_signing_infos,
 };
 use neutron_sdk::interchain_queries::{
     check_query_type, get_registered_query, query_kv_result,
@@ -89,6 +90,11 @@ pub fn execute(
             validators,
             update_period,
         } => register_staking_validators_query(connection_id, validators, update_period),
+        ExecuteMsg::RegisterValidatorsSigningInfosQuery {
+            connection_id,
+            validators,
+            update_period,
+        } => register_validators_signing_infos_query(connection_id, validators, update_period),
         ExecuteMsg::RegisterDelegatorDelegationsQuery {
             connection_id,
             delegator,
@@ -168,6 +174,17 @@ pub fn register_staking_validators_query(
     update_period: u64,
 ) -> NeutronResult<Response<NeutronMsg>> {
     let msg = new_register_staking_validators_query_msg(connection_id, validators, update_period)?;
+
+    Ok(Response::new().add_message(msg))
+}
+
+pub fn register_validators_signing_infos_query(
+    connection_id: String,
+    validators: Vec<String>,
+    update_period: u64,
+) -> NeutronResult<Response<NeutronMsg>> {
+    let msg =
+        new_register_validators_signig_infos_query_msg(connection_id, validators, update_period)?;
 
     Ok(Response::new().add_message(msg))
 }
@@ -254,15 +271,18 @@ pub fn query(deps: Deps<NeutronQuery>, env: Env, msg: QueryMsg) -> NeutronResult
         QueryMsg::BankTotalSupply { query_id } => {
             Ok(to_json_binary(&query_bank_total(deps, env, query_id)?)?)
         }
-        QueryMsg::DistributionFeePool { query_id } => Ok(to_json_binary(
-            &query_distribution_fee_pool(deps, env, query_id)?,
-        )?),
-        QueryMsg::StakingValidators { query_id } => Ok(to_json_binary(&query_staking_validators(
+        QueryMsg::DistributionFeePool { query_id } => Ok(to_binary(&query_distribution_fee_pool(
             deps, env, query_id,
         )?)?),
-        QueryMsg::GovernmentProposals { query_id } => Ok(to_json_binary(
-            &query_government_proposals(deps, env, query_id)?,
+        QueryMsg::StakingValidators { query_id } => {
+            Ok(to_binary(&query_staking_validators(deps, env, query_id)?)?)
+        }
+        QueryMsg::ValidatorsSigningInfos { query_id } => Ok(to_binary(
+            &query_validators_signing_infos(deps, env, query_id)?,
         )?),
+        QueryMsg::GovernmentProposals { query_id } => Ok(to_binary(&query_government_proposals(
+            deps, env, query_id,
+        )?)?),
         QueryMsg::GetDelegations { query_id } => {
             Ok(to_json_binary(&query_delegations(deps, env, query_id)?)?)
         }
