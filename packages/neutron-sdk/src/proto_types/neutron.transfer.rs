@@ -19,7 +19,7 @@ pub struct MsgTransfer {
     /// Timeout height relative to the current block height.
     /// The timeout is disabled when set to 0.
     #[prost(message, optional, tag = "6")]
-    pub timeout_height: ::core::option::Option<super::super::ibc::core::client::v1::Height>,
+    pub timeout_height: ::core::option::Option<cosmos_sdk_proto::ibc::core::client::v1::Height>,
     /// Timeout timestamp in absolute nanoseconds since unix epoch.
     /// The timeout is disabled when set to 0.
     #[prost(uint64, tag = "7")]

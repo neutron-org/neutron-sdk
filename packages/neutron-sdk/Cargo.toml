@@ -20,6 +20,7 @@ protobuf = { workspace = true }
 cosmwasm-schema = { workspace = true }
 prost = { workspace = true }
 prost-types = { workspace = true }
+tendermint-proto = { workspace = true }
 
 [dev-dependencies]
 base64 = { workspace = true }

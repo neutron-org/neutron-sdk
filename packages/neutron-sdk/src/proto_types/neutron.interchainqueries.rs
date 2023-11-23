@@ -44,7 +44,7 @@ pub struct RegisteredQuery {
     /// The remote chain last block height when the query result was updated.
     #[prost(message, optional, tag = "9")]
     pub last_submitted_result_remote_height:
-        ::core::option::Option<super::super::ibc::core::client::v1::Height>,
+        ::core::option::Option<cosmos_sdk_proto::ibc::core::client::v1::Height>,
     /// Amount of coins deposited for the query.
     #[prost(message, repeated, tag = "10")]
     pub deposit: ::prost::alloc::vec::Vec<cosmos_sdk_proto::cosmos::base::v1beta1::Coin>,
@@ -140,7 +140,7 @@ pub struct StorageValue {
     /// is the Merkle Proof which proves existence of key-value pair in IAVL
     /// storage
     #[prost(message, optional, tag = "4")]
-    pub proof: ::core::option::Option<tendermint_proto::crypto::ProofOps>,
+    pub proof: ::core::option::Option<tendermint_proto::v0_37::crypto::ProofOps>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Block {
@@ -158,15 +158,15 @@ pub struct Block {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct TxValue {
     #[prost(message, optional, tag = "1")]
-    pub response: ::core::option::Option<tendermint_proto::abci::ResponseDeliverTx>,
+    pub response: ::core::option::Option<tendermint_proto::v0_37::abci::ResponseDeliverTx>,
     /// is the Merkle Proof which proves existence of response in block with height
     /// next_block_header.Height
     #[prost(message, optional, tag = "2")]
-    pub delivery_proof: ::core::option::Option<tendermint_proto::crypto::Proof>,
+    pub delivery_proof: ::core::option::Option<tendermint_proto::v0_37::crypto::Proof>,
     /// is the Merkle Proof which proves existence of data in block with height
     /// header.Height
     #[prost(message, optional, tag = "3")]
-    pub inclusion_proof: ::core::option::Option<tendermint_proto::crypto::Proof>,
+    pub inclusion_proof: ::core::option::Option<tendermint_proto::v0_37::crypto::Proof>,
     /// is body of the transaction
     #[prost(bytes = "vec", tag = "4")]
     pub data: ::prost::alloc::vec::Vec<u8>,
