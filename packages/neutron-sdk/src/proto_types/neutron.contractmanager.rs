@@ -54,7 +54,8 @@ pub struct QueryFailuresRequest {
     #[prost(uint64, tag = "2")]
     pub failure_id: u64,
     #[prost(message, optional, tag = "3")]
-    pub pagination: ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageRequest>,
+    pub pagination:
+        ::core::option::Option<cosmos_sdk_proto::cosmos::base::query::v1beta1::PageRequest>,
 }
 /// QueryFailuresResponse is response type for the Query/Failures RPC method.
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -63,7 +64,7 @@ pub struct QueryFailuresResponse {
     pub failures: ::prost::alloc::vec::Vec<Failure>,
     #[prost(message, optional, tag = "2")]
     pub pagination:
-        ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageResponse>,
+        ::core::option::Option<cosmos_sdk_proto::cosmos::base::query::v1beta1::PageResponse>,
 }
 /// MsgUpdateParams is the MsgUpdateParams request type.
 ///
@@ -85,5 +86,4 @@ pub struct MsgUpdateParams {
 /// Since: 0.47
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MsgUpdateParamsResponse {}
-include!("neutron.contractmanager.tonic.rs");
 // @@protoc_insertion_point(module)

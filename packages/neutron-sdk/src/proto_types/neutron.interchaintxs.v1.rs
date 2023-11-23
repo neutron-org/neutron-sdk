@@ -9,7 +9,7 @@ pub struct MsgRegisterInterchainAccount {
     #[prost(string, tag = "3")]
     pub interchain_account_id: ::prost::alloc::string::String,
     #[prost(message, repeated, tag = "4")]
-    pub register_fee: ::prost::alloc::vec::Vec<super::super::super::cosmos::base::v1beta1::Coin>,
+    pub register_fee: ::prost::alloc::vec::Vec<cosmos_sdk_proto::cosmos::base::v1beta1::Coin>,
 }
 /// MsgRegisterInterchainAccountResponse is the response type for
 /// MsgRegisterInterchainAccount.
@@ -68,5 +68,4 @@ pub struct MsgUpdateParams {
 /// Since: 0.47
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MsgUpdateParamsResponse {}
-include!("neutron.interchaintxs.v1.tonic.rs");
 // @@protoc_insertion_point(module)

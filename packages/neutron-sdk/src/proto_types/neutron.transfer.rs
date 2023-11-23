@@ -9,7 +9,7 @@ pub struct MsgTransfer {
     pub source_channel: ::prost::alloc::string::String,
     /// the tokens to be transferred
     #[prost(message, optional, tag = "3")]
-    pub token: ::core::option::Option<super::super::cosmos::base::v1beta1::Coin>,
+    pub token: ::core::option::Option<cosmos_sdk_proto::cosmos::base::v1beta1::Coin>,
     /// the sender address
     #[prost(string, tag = "4")]
     pub sender: ::prost::alloc::string::String,
@@ -40,5 +40,4 @@ pub struct MsgTransferResponse {
     #[prost(string, tag = "2")]
     pub channel: ::prost::alloc::string::String,
 }
-include!("neutron.transfer.tonic.rs");
 // @@protoc_insertion_point(module)

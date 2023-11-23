@@ -26,6 +26,8 @@ pub struct DepositRecord {
 pub struct Params {
     #[prost(uint64, repeated, tag = "1")]
     pub fee_tiers: ::prost::alloc::vec::Vec<u64>,
+    #[prost(string, tag = "2")]
+    pub max_true_taker_spread: ::prost::alloc::string::String,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct TradePairId {
@@ -114,12 +116,12 @@ pub struct MsgPlaceLimitOrderResponse {
     pub tranche_key: ::prost::alloc::string::String,
     /// Total amount of coin used for the limit order
     #[prost(message, optional, tag = "2")]
-    pub coin_in: ::core::option::Option<super::super::cosmos::base::v1beta1::Coin>,
+    pub coin_in: ::core::option::Option<cosmos_sdk_proto::cosmos::base::v1beta1::Coin>,
     /// Total amount of coin received from the taker portion of the limit order
     /// This is the amount of coin immediately available in the users account after executing the
     /// limit order. It does not include any future proceeds from the maker portion which will have withdrawn in the future
     #[prost(message, optional, tag = "3")]
-    pub taker_coin_out: ::core::option::Option<super::super::cosmos::base::v1beta1::Coin>,
+    pub taker_coin_out: ::core::option::Option<cosmos_sdk_proto::cosmos::base::v1beta1::Coin>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MsgWithdrawFilledLimitOrder {
@@ -157,14 +159,14 @@ pub struct MsgMultiHopSwap {
     #[prost(string, tag = "5")]
     pub exit_limit_price: ::prost::alloc::string::String,
     /// If pickBestRoute == true then all routes are run and the route with the best price is chosen
-    /// otherwise, the first successful route is used.
+    /// otherwise, the first succesful route is used.
     #[prost(bool, tag = "6")]
     pub pick_best_route: bool,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MsgMultiHopSwapResponse {
     #[prost(message, optional, tag = "1")]
-    pub coin_out: ::core::option::Option<super::super::cosmos::base::v1beta1::Coin>,
+    pub coin_out: ::core::option::Option<cosmos_sdk_proto::cosmos::base::v1beta1::Coin>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MsgUpdateParams {
@@ -362,7 +364,8 @@ pub struct QueryGetLimitOrderTrancheUserResponse {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryAllLimitOrderTrancheUserRequest {
     #[prost(message, optional, tag = "1")]
-    pub pagination: ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageRequest>,
+    pub pagination:
+        ::core::option::Option<cosmos_sdk_proto::cosmos::base::query::v1beta1::PageRequest>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryAllLimitOrderTrancheUserResponse {
@@ -370,7 +373,7 @@ pub struct QueryAllLimitOrderTrancheUserResponse {
     pub limit_order_tranche_user: ::prost::alloc::vec::Vec<LimitOrderTrancheUser>,
     #[prost(message, optional, tag = "2")]
     pub pagination:
-        ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageResponse>,
+        ::core::option::Option<cosmos_sdk_proto::cosmos::base::query::v1beta1::PageResponse>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryGetLimitOrderTrancheRequest {
@@ -395,7 +398,8 @@ pub struct QueryAllLimitOrderTrancheRequest {
     #[prost(string, tag = "2")]
     pub token_in: ::prost::alloc::string::String,
     #[prost(message, optional, tag = "3")]
-    pub pagination: ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageRequest>,
+    pub pagination:
+        ::core::option::Option<cosmos_sdk_proto::cosmos::base::query::v1beta1::PageRequest>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryAllLimitOrderTrancheResponse {
@@ -403,14 +407,15 @@ pub struct QueryAllLimitOrderTrancheResponse {
     pub limit_order_tranche: ::prost::alloc::vec::Vec<LimitOrderTranche>,
     #[prost(message, optional, tag = "2")]
     pub pagination:
-        ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageResponse>,
+        ::core::option::Option<cosmos_sdk_proto::cosmos::base::query::v1beta1::PageResponse>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryAllUserDepositsRequest {
     #[prost(string, tag = "1")]
     pub address: ::prost::alloc::string::String,
     #[prost(message, optional, tag = "2")]
-    pub pagination: ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageRequest>,
+    pub pagination:
+        ::core::option::Option<cosmos_sdk_proto::cosmos::base::query::v1beta1::PageRequest>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryAllUserDepositsResponse {
@@ -418,14 +423,15 @@ pub struct QueryAllUserDepositsResponse {
     pub deposits: ::prost::alloc::vec::Vec<DepositRecord>,
     #[prost(message, optional, tag = "2")]
     pub pagination:
-        ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageResponse>,
+        ::core::option::Option<cosmos_sdk_proto::cosmos::base::query::v1beta1::PageResponse>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryAllUserLimitOrdersRequest {
     #[prost(string, tag = "1")]
     pub address: ::prost::alloc::string::String,
     #[prost(message, optional, tag = "2")]
-    pub pagination: ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageRequest>,
+    pub pagination:
+        ::core::option::Option<cosmos_sdk_proto::cosmos::base::query::v1beta1::PageRequest>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryAllUserLimitOrdersResponse {
@@ -433,7 +439,7 @@ pub struct QueryAllUserLimitOrdersResponse {
     pub limit_orders: ::prost::alloc::vec::Vec<LimitOrderTrancheUser>,
     #[prost(message, optional, tag = "2")]
     pub pagination:
-        ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageResponse>,
+        ::core::option::Option<cosmos_sdk_proto::cosmos::base::query::v1beta1::PageResponse>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryAllTickLiquidityRequest {
@@ -442,7 +448,8 @@ pub struct QueryAllTickLiquidityRequest {
     #[prost(string, tag = "2")]
     pub token_in: ::prost::alloc::string::String,
     #[prost(message, optional, tag = "3")]
-    pub pagination: ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageRequest>,
+    pub pagination:
+        ::core::option::Option<cosmos_sdk_proto::cosmos::base::query::v1beta1::PageRequest>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryAllTickLiquidityResponse {
@@ -450,7 +457,7 @@ pub struct QueryAllTickLiquidityResponse {
     pub tick_liquidity: ::prost::alloc::vec::Vec<TickLiquidity>,
     #[prost(message, optional, tag = "2")]
     pub pagination:
-        ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageResponse>,
+        ::core::option::Option<cosmos_sdk_proto::cosmos::base::query::v1beta1::PageResponse>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryGetInactiveLimitOrderTrancheRequest {
@@ -471,7 +478,8 @@ pub struct QueryGetInactiveLimitOrderTrancheResponse {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryAllInactiveLimitOrderTrancheRequest {
     #[prost(message, optional, tag = "1")]
-    pub pagination: ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageRequest>,
+    pub pagination:
+        ::core::option::Option<cosmos_sdk_proto::cosmos::base::query::v1beta1::PageRequest>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryAllInactiveLimitOrderTrancheResponse {
@@ -479,7 +487,7 @@ pub struct QueryAllInactiveLimitOrderTrancheResponse {
     pub inactive_limit_order_tranche: ::prost::alloc::vec::Vec<LimitOrderTranche>,
     #[prost(message, optional, tag = "2")]
     pub pagination:
-        ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageResponse>,
+        ::core::option::Option<cosmos_sdk_proto::cosmos::base::query::v1beta1::PageResponse>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryAllPoolReservesRequest {
@@ -488,7 +496,8 @@ pub struct QueryAllPoolReservesRequest {
     #[prost(string, tag = "2")]
     pub token_in: ::prost::alloc::string::String,
     #[prost(message, optional, tag = "3")]
-    pub pagination: ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageRequest>,
+    pub pagination:
+        ::core::option::Option<cosmos_sdk_proto::cosmos::base::query::v1beta1::PageRequest>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryAllPoolReservesResponse {
@@ -496,7 +505,7 @@ pub struct QueryAllPoolReservesResponse {
     pub pool_reserves: ::prost::alloc::vec::Vec<PoolReserves>,
     #[prost(message, optional, tag = "2")]
     pub pagination:
-        ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageResponse>,
+        ::core::option::Option<cosmos_sdk_proto::cosmos::base::query::v1beta1::PageResponse>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryGetPoolReservesRequest {
@@ -527,14 +536,14 @@ pub struct QueryEstimateMultiHopSwapRequest {
     #[prost(string, tag = "5")]
     pub exit_limit_price: ::prost::alloc::string::String,
     /// If pickBestRoute == true then all routes are run and the route with the best price is chosen
-    /// otherwise, the first successful route is used.
+    /// otherwise, the first succesful route is used.
     #[prost(bool, tag = "6")]
     pub pick_best_route: bool,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryEstimateMultiHopSwapResponse {
     #[prost(message, optional, tag = "1")]
-    pub coin_out: ::core::option::Option<super::super::cosmos::base::v1beta1::Coin>,
+    pub coin_out: ::core::option::Option<cosmos_sdk_proto::cosmos::base::v1beta1::Coin>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryEstimatePlaceLimitOrderRequest {
@@ -563,15 +572,15 @@ pub struct QueryEstimatePlaceLimitOrderResponse {
     /// Total amount of coin used for the limit order
     /// You can derive makerLimitInCoin using the equation: totalInCoin = swapInCoin + makerLimitInCoin
     #[prost(message, optional, tag = "1")]
-    pub total_in_coin: ::core::option::Option<super::super::cosmos::base::v1beta1::Coin>,
+    pub total_in_coin: ::core::option::Option<cosmos_sdk_proto::cosmos::base::v1beta1::Coin>,
     /// Total amount of the token in that was immediately swapped for swapOutCoin
     #[prost(message, optional, tag = "2")]
-    pub swap_in_coin: ::core::option::Option<super::super::cosmos::base::v1beta1::Coin>,
+    pub swap_in_coin: ::core::option::Option<cosmos_sdk_proto::cosmos::base::v1beta1::Coin>,
     /// Total amount of coin received from the taker portion of the limit order
     /// This is the amount of coin immediately available in the users account after executing the
     /// limit order. It does not include any future proceeds from the maker portion which will have withdrawn in the future
     #[prost(message, optional, tag = "3")]
-    pub swap_out_coin: ::core::option::Option<super::super::cosmos::base::v1beta1::Coin>,
+    pub swap_out_coin: ::core::option::Option<cosmos_sdk_proto::cosmos::base::v1beta1::Coin>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryPoolRequest {
@@ -605,7 +614,8 @@ pub struct QueryGetPoolMetadataResponse {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryAllPoolMetadataRequest {
     #[prost(message, optional, tag = "1")]
-    pub pagination: ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageRequest>,
+    pub pagination:
+        ::core::option::Option<cosmos_sdk_proto::cosmos::base::query::v1beta1::PageRequest>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryAllPoolMetadataResponse {
@@ -613,7 +623,6 @@ pub struct QueryAllPoolMetadataResponse {
     pub pool_metadata: ::prost::alloc::vec::Vec<PoolMetadata>,
     #[prost(message, optional, tag = "2")]
     pub pagination:
-        ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageResponse>,
+        ::core::option::Option<cosmos_sdk_proto::cosmos::base::query::v1beta1::PageResponse>,
 }
-include!("neutron.dex.tonic.rs");
 // @@protoc_insertion_point(module)

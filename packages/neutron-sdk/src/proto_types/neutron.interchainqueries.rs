@@ -8,7 +8,7 @@ pub struct Params {
     pub query_submit_timeout: u64,
     /// Amount of coins deposited for the query.
     #[prost(message, repeated, tag = "2")]
-    pub query_deposit: ::prost::alloc::vec::Vec<super::super::cosmos::base::v1beta1::Coin>,
+    pub query_deposit: ::prost::alloc::vec::Vec<cosmos_sdk_proto::cosmos::base::v1beta1::Coin>,
     /// Amount of tx hashes to be removed during a single EndBlock. Can vary to
     /// balance between network cleaning speed and EndBlock duration. A zero value
     /// means no limit.
@@ -47,7 +47,7 @@ pub struct RegisteredQuery {
         ::core::option::Option<super::super::ibc::core::client::v1::Height>,
     /// Amount of coins deposited for the query.
     #[prost(message, repeated, tag = "10")]
-    pub deposit: ::prost::alloc::vec::Vec<super::super::cosmos::base::v1beta1::Coin>,
+    pub deposit: ::prost::alloc::vec::Vec<cosmos_sdk_proto::cosmos::base::v1beta1::Coin>,
     /// Timeout before query becomes available for everybody to remove.
     #[prost(uint64, tag = "11")]
     pub submit_timeout: u64,
@@ -236,7 +236,8 @@ pub struct QueryRegisteredQueriesRequest {
     #[prost(string, tag = "2")]
     pub connection_id: ::prost::alloc::string::String,
     #[prost(message, optional, tag = "3")]
-    pub pagination: ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageRequest>,
+    pub pagination:
+        ::core::option::Option<cosmos_sdk_proto::cosmos::base::query::v1beta1::PageRequest>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryRegisteredQueriesResponse {
@@ -245,7 +246,7 @@ pub struct QueryRegisteredQueriesResponse {
     /// pagination defines the pagination in the response.
     #[prost(message, optional, tag = "2")]
     pub pagination:
-        ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageResponse>,
+        ::core::option::Option<cosmos_sdk_proto::cosmos::base::query::v1beta1::PageResponse>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryRegisteredQueryRequest {
@@ -286,5 +287,4 @@ pub struct QueryLastRemoteHeightResponse {
     #[prost(uint64, tag = "1")]
     pub height: u64,
 }
-include!("neutron.interchainqueries.tonic.rs");
 // @@protoc_insertion_point(module)

@@ -69,7 +69,8 @@ pub struct QueryGetScheduleResponse {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QuerySchedulesRequest {
     #[prost(message, optional, tag = "1")]
-    pub pagination: ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageRequest>,
+    pub pagination:
+        ::core::option::Option<cosmos_sdk_proto::cosmos::base::query::v1beta1::PageRequest>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QuerySchedulesResponse {
@@ -77,7 +78,7 @@ pub struct QuerySchedulesResponse {
     pub schedules: ::prost::alloc::vec::Vec<Schedule>,
     #[prost(message, optional, tag = "2")]
     pub pagination:
-        ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageResponse>,
+        ::core::option::Option<cosmos_sdk_proto::cosmos::base::query::v1beta1::PageResponse>,
 }
 // this line is used by starport scaffolding # proto/tx/message
 
@@ -101,5 +102,4 @@ pub struct MsgUpdateParams {
 /// Since: 0.47
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MsgUpdateParamsResponse {}
-include!("neutron.cron.tonic.rs");
 // @@protoc_insertion_point(module)

@@ -7,7 +7,7 @@ pub struct Params {
     pub msg_submit_tx_max_messages: u64,
     /// Defines a minimum fee required to register interchain account
     #[prost(message, repeated, tag = "2")]
-    pub register_fee: ::prost::alloc::vec::Vec<super::super::cosmos::base::v1beta1::Coin>,
+    pub register_fee: ::prost::alloc::vec::Vec<cosmos_sdk_proto::cosmos::base::v1beta1::Coin>,
 }
 /// GenesisState defines the interchaintxs module's genesis state.
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -47,5 +47,4 @@ pub struct QueryInterchainAccountAddressResponse {
     #[prost(string, tag = "1")]
     pub interchain_account_address: ::prost::alloc::string::String,
 }
-include!("neutron.interchaintxs.tonic.rs");
 // @@protoc_insertion_point(module)
