@@ -115,6 +115,28 @@
     {
       "type": "object",
       "required": [
+        "validators_signing_infos"
+      ],
+      "properties": {
+        "validators_signing_infos": {
+          "type": "object",
+          "required": [
+            "query_id"
+          ],
+          "properties": {
+            "query_id": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
         "government_proposals"
       ],
       "properties": {
