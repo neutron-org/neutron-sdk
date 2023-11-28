@@ -1,6 +1,6 @@
 use crate::proto_types::neutron::dex::{
-    DepositOptions as DepositOptionsGen, MsgCancelLimitOrder, MsgDeposit, MsgMultiHopSwap,
-    MsgPlaceLimitOrder, MsgWithdrawFilledLimitOrder, MsgWithdrawal, MultiHopRoute,
+    DepositOptions as DepositOptionsGen, LimitOrderType, MsgCancelLimitOrder, MsgDeposit,
+    MsgMultiHopSwap, MsgPlaceLimitOrder, MsgWithdrawFilledLimitOrder, MsgWithdrawal, MultiHopRoute,
 };
 use crate::stargate::aux::create_stargate_msg;
 use cosmwasm_std::{CosmosMsg, Timestamp};
@@ -24,7 +24,7 @@ pub fn msg_deposit(
     amounts_b: Vec<String>,
     tick_indexes_a_to_b: Vec<i64>,
     fees: Vec<u64>,
-    deposit_options: Vec<DepositOptions>,
+    options: Vec<DepositOptions>,
 ) -> CosmosMsg {
     let msg = MsgDeposit {
         creator: sender,
@@ -35,7 +35,7 @@ pub fn msg_deposit(
         amounts_b,
         tick_indexes_a_to_b,
         fees,
-        options: deposit_options.into_iter().map(|o| o.into()).collect(),
+        options: options.into_iter().map(|o| o.into()).collect(),
     };
     create_stargate_msg(msg, DEPOSIT_MSG_PATH)
 }
@@ -68,7 +68,7 @@ pub fn msg_place_limit_order(
     token_out: String,
     tick_index_in_to_out: i64,
     amount_in: String,
-    order_type: i32,
+    order_type: LimitOrderType,
     expiration_time: Option<Timestamp>,
     max_amount_out: Option<String>,
 ) -> CosmosMsg {
@@ -79,7 +79,7 @@ pub fn msg_place_limit_order(
         token_out,
         tick_index_in_to_out,
         amount_in,
-        order_type,
+        order_type: i32::from(order_type),
         expiration_time: expiration_time.map(|e| convert_timestamp(e)),
         max_amount_out: max_amount_out.unwrap_or_default(),
     };
