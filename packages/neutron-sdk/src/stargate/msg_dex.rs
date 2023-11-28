@@ -3,7 +3,7 @@ use crate::proto_types::neutron::dex::{
     MsgPlaceLimitOrder, MsgWithdrawFilledLimitOrder, MsgWithdrawal, MultiHopRoute,
 };
 use crate::stargate::aux::create_stargate_msg;
-use cosmwasm_std::{CosmosMsg, MessageInfo, Timestamp};
+use cosmwasm_std::{CosmosMsg, Timestamp};
 use prost_types::Timestamp as TimestampGen;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -16,7 +16,7 @@ const CANCEL_LIMIT_ORDER_MSG_PATH: &str = "/neutron.dex.MsgCancelLimitOrder";
 const MULTI_HOP_SWAP_MSG_PATH: &str = "/neutron.dex.MsgMultiHopSwap";
 
 pub fn msg_deposit(
-    info: MessageInfo,
+    sender: String,
     receiver: String,
     token_a: String,
     token_b: String,
@@ -27,7 +27,7 @@ pub fn msg_deposit(
     deposit_options: Vec<DepositOptions>,
 ) -> CosmosMsg {
     let msg = MsgDeposit {
-        creator: info.sender.to_string(),
+        creator: sender,
         receiver,
         token_a,
         token_b,
@@ -41,7 +41,7 @@ pub fn msg_deposit(
 }
 
 pub fn msg_withdrawal(
-    info: MessageInfo,
+    sender: String,
     receiver: String,
     token_a: String,
     token_b: String,
@@ -50,7 +50,7 @@ pub fn msg_withdrawal(
     fees: Vec<u64>,
 ) -> CosmosMsg {
     let msg = MsgWithdrawal {
-        creator: info.sender.to_string(),
+        creator: sender,
         receiver,
         token_a,
         token_b,
@@ -62,7 +62,7 @@ pub fn msg_withdrawal(
 }
 
 pub fn msg_place_limit_order(
-    info: MessageInfo,
+    sender: String,
     receiver: String,
     token_in: String,
     token_out: String,
@@ -73,7 +73,7 @@ pub fn msg_place_limit_order(
     max_amount_out: Option<String>,
 ) -> CosmosMsg {
     let msg = MsgPlaceLimitOrder {
-        creator: info.sender.to_string(),
+        creator: sender,
         receiver,
         token_in,
         token_out,
@@ -86,24 +86,24 @@ pub fn msg_place_limit_order(
     create_stargate_msg(msg, PLACE_LIMIT_ORDER_MSG_PATH)
 }
 
-pub fn msg_withdraw_filled_limit_order(info: MessageInfo, tranche_key: String) -> CosmosMsg {
+pub fn msg_withdraw_filled_limit_order(sender: String, tranche_key: String) -> CosmosMsg {
     let msg = MsgWithdrawFilledLimitOrder {
-        creator: info.sender.to_string(),
+        creator: sender,
         tranche_key,
     };
     create_stargate_msg(msg, WITHDRAW_FILLED_LIMIT_ORDER_MSG_PATH)
 }
 
-pub fn msg_cancel_limit_order(info: MessageInfo, tranche_key: String) -> CosmosMsg {
+pub fn msg_cancel_limit_order(sender: String, tranche_key: String) -> CosmosMsg {
     let msg = MsgCancelLimitOrder {
-        creator: info.sender.to_string(),
+        creator: sender,
         tranche_key,
     };
     create_stargate_msg(msg, CANCEL_LIMIT_ORDER_MSG_PATH)
 }
 
 pub fn msg_multi_hop_swap(
-    info: MessageInfo,
+    sender: String,
     receiver: String,
     routes: Vec<Vec<String>>,
     amount_in: String,
@@ -111,7 +111,7 @@ pub fn msg_multi_hop_swap(
     pick_best_route: bool,
 ) -> CosmosMsg {
     let msg = MsgMultiHopSwap {
-        creator: info.sender.to_string(),
+        creator: sender,
         receiver,
         routes: routes
             .into_iter()
