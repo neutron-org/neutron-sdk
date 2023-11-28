@@ -1,9 +1,12 @@
 use crate::proto_types::neutron::dex::{
-    MsgCancelLimitOrder, MsgDeposit, MsgMultiHopSwap, MsgPlaceLimitOrder,
-    MsgWithdrawFilledLimitOrder, MsgWithdrawal,
+    DepositOptions as DepositOptionsGen, MsgCancelLimitOrder, MsgDeposit, MsgMultiHopSwap,
+    MsgPlaceLimitOrder, MsgWithdrawFilledLimitOrder, MsgWithdrawal, MultiHopRoute,
 };
 use crate::stargate::aux::create_stargate_msg;
-use cosmwasm_std::CosmosMsg;
+use cosmwasm_std::{CosmosMsg, MessageInfo, Timestamp};
+use prost_types::Timestamp as TimestampGen;
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 const DEPOSIT_MSG_PATH: &str = "/neutron.dex.Msg/Deposit";
 const WITHDRAWAL_MSG_PATH: &str = "/neutron.dex.Msg/Withdrawal";
@@ -12,26 +15,131 @@ const WITHDRAW_FILLED_LIMIT_ORDER_MSG_PATH: &str = "/neutron.dex.Msg/WithdrawFil
 const CANCEL_LIMIT_ORDER_MSG_PATH: &str = "/neutron.dex.Msg/CancelLimitOrder";
 const MULTI_HOP_SWAP_MSG_PATH: &str = "/neutron.dex.Msg/MultiHopSwap";
 
-pub fn msg_deposit(req: MsgDeposit) -> CosmosMsg {
-    create_stargate_msg(req, DEPOSIT_MSG_PATH)
+pub fn msg_deposit(
+    info: MessageInfo,
+    receiver: String,
+    token_a: String,
+    token_b: String,
+    amounts_a: Vec<String>,
+    amounts_b: Vec<String>,
+    tick_indexes_a_to_b: Vec<i64>,
+    fees: Vec<u64>,
+    deposit_options: Vec<DepositOptions>,
+) -> CosmosMsg {
+    let msg = MsgDeposit {
+        creator: info.sender.to_string(),
+        receiver,
+        token_a,
+        token_b,
+        amounts_a,
+        amounts_b,
+        tick_indexes_a_to_b,
+        fees,
+        options: deposit_options.into_iter().map(|o| o.into()).collect(),
+    };
+    create_stargate_msg(msg, DEPOSIT_MSG_PATH)
 }
 
-pub fn msg_withdrawal(req: MsgWithdrawal) -> CosmosMsg {
-    create_stargate_msg(req, WITHDRAWAL_MSG_PATH)
+pub fn msg_withdrawal(
+    info: MessageInfo,
+    receiver: String,
+    token_a: String,
+    token_b: String,
+    shares_to_remove: Vec<String>,
+    tick_indexes_a_to_b: Vec<i64>,
+    fees: Vec<u64>,
+) -> CosmosMsg {
+    let msg = MsgWithdrawal {
+        creator: info.sender.to_string(),
+        receiver,
+        token_a,
+        token_b,
+        shares_to_remove,
+        tick_indexes_a_to_b,
+        fees,
+    };
+    create_stargate_msg(msg, WITHDRAWAL_MSG_PATH)
 }
 
-pub fn msg_place_limit_order(req: MsgPlaceLimitOrder) -> CosmosMsg {
-    create_stargate_msg(req, PLACE_LIMIT_ORDER_MSG_PATH)
+pub fn msg_place_limit_order(
+    info: MessageInfo,
+    receiver: String,
+    token_in: String,
+    token_out: String,
+    tick_index_in_to_out: i64,
+    amount_in: String,
+    order_type: i32,
+    expiration_time: Option<Timestamp>,
+    max_amount_out: Option<String>,
+) -> CosmosMsg {
+    let msg = MsgPlaceLimitOrder {
+        creator: info.sender.to_string(),
+        receiver,
+        token_in,
+        token_out,
+        tick_index_in_to_out,
+        amount_in,
+        order_type,
+        expiration_time: expiration_time.map(|e| convert_timestamp(e)),
+        max_amount_out: max_amount_out.unwrap_or_default(),
+    };
+    create_stargate_msg(msg, PLACE_LIMIT_ORDER_MSG_PATH)
 }
 
-pub fn msg_withdraw_filled_limit_order(req: MsgWithdrawFilledLimitOrder) -> CosmosMsg {
-    create_stargate_msg(req, WITHDRAW_FILLED_LIMIT_ORDER_MSG_PATH)
+pub fn msg_withdraw_filled_limit_order(info: MessageInfo, tranche_key: String) -> CosmosMsg {
+    let msg = MsgWithdrawFilledLimitOrder {
+        creator: info.sender.to_string(),
+        tranche_key,
+    };
+    create_stargate_msg(msg, WITHDRAW_FILLED_LIMIT_ORDER_MSG_PATH)
 }
 
-pub fn msg_cancel_limit_order(req: MsgCancelLimitOrder) -> CosmosMsg {
-    create_stargate_msg(req, CANCEL_LIMIT_ORDER_MSG_PATH)
+pub fn msg_cancel_limit_order(info: MessageInfo, tranche_key: String) -> CosmosMsg {
+    let msg = MsgCancelLimitOrder {
+        creator: info.sender.to_string(),
+        tranche_key,
+    };
+    create_stargate_msg(msg, CANCEL_LIMIT_ORDER_MSG_PATH)
 }
 
-pub fn msg_multi_hop_swap(req: MsgMultiHopSwap) -> CosmosMsg {
-    create_stargate_msg(req, MULTI_HOP_SWAP_MSG_PATH)
+pub fn msg_multi_hop_swap(
+    info: MessageInfo,
+    receiver: String,
+    routes: Vec<Vec<String>>,
+    amount_in: String,
+    exit_limit_price: String,
+    pick_best_route: bool,
+) -> CosmosMsg {
+    let msg = MsgMultiHopSwap {
+        creator: info.sender.to_string(),
+        receiver,
+        routes: routes
+            .into_iter()
+            .map(|r| MultiHopRoute { hops: r })
+            .collect(),
+        amount_in,
+        exit_limit_price,
+        pick_best_route,
+    };
+    create_stargate_msg(msg, MULTI_HOP_SWAP_MSG_PATH)
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+pub struct DepositOptions {
+    pub disable_autoswap: bool,
+}
+
+impl Into<DepositOptionsGen> for DepositOptions {
+    fn into(self) -> DepositOptionsGen {
+        DepositOptionsGen {
+            disable_autoswap: self.disable_autoswap,
+        }
+    }
+}
+
+fn convert_timestamp(timestamp: Timestamp) -> TimestampGen {
+    TimestampGen {
+        seconds: i64::try_from(timestamp.seconds()).unwrap(),
+        nanos: i32::try_from(timestamp.subsec_nanos()).unwrap(),
+    }
 }
