@@ -1,5 +1,5 @@
 use cosmwasm_std::{
-    ContractResult, CosmosMsg, Empty, QuerierWrapper, QueryRequest, StdError, StdResult,
+    Binary, ContractResult, CosmosMsg, Empty, QuerierWrapper, QueryRequest, StdError, StdResult,
     SystemResult,
 };
 use prost::bytes::Bytes;
@@ -42,6 +42,6 @@ where
 {
     cosmwasm_std::CosmosMsg::Stargate {
         type_url: path.to_string(),
-        value: req.encode_to_vec().into(),
+        value: Binary::from(req.encode_to_vec()),
     }
 }
