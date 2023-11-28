@@ -8,12 +8,12 @@ use prost_types::Timestamp as TimestampGen;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-const DEPOSIT_MSG_PATH: &str = "/neutron.dex.Msg/Deposit";
-const WITHDRAWAL_MSG_PATH: &str = "/neutron.dex.Msg/Withdrawal";
-const PLACE_LIMIT_ORDER_MSG_PATH: &str = "/neutron.dex.Msg/PlaceLimitOrder";
-const WITHDRAW_FILLED_LIMIT_ORDER_MSG_PATH: &str = "/neutron.dex.Msg/WithdrawFilledLimitOrder";
-const CANCEL_LIMIT_ORDER_MSG_PATH: &str = "/neutron.dex.Msg/CancelLimitOrder";
-const MULTI_HOP_SWAP_MSG_PATH: &str = "/neutron.dex.Msg/MultiHopSwap";
+const DEPOSIT_MSG_PATH: &str = "/neutron.dex.MsgDeposit";
+const WITHDRAWAL_MSG_PATH: &str = "/neutron.dex.MsgWithdrawal";
+const PLACE_LIMIT_ORDER_MSG_PATH: &str = "/neutron.dex.MsgPlaceLimitOrder";
+const WITHDRAW_FILLED_LIMIT_ORDER_MSG_PATH: &str = "/neutron.dex.MsgWithdrawFilledLimitOrder";
+const CANCEL_LIMIT_ORDER_MSG_PATH: &str = "/neutron.dex.MsgCancelLimitOrder";
+const MULTI_HOP_SWAP_MSG_PATH: &str = "/neutron.dex.MsgMultiHopSwap";
 
 pub fn msg_deposit(
     info: MessageInfo,
