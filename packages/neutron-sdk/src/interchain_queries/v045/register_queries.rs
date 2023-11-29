@@ -149,7 +149,7 @@ pub fn new_register_staking_validators_query_msg(
 /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
 /// * **validators** is an list of validators valcons addresses of an account on remote chain for which you want to get rewards ;
 /// * **update_period** is used to say how often the query must be updated.
-pub fn new_register_validators_signig_infos_query_msg(
+pub fn new_register_validators_signing_infos_query_msg(
     connection_id: String,
     validators: Vec<String>,
     update_period: u64,
