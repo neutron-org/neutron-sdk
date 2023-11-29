@@ -6,7 +6,7 @@ use cosmwasm_std::{
     StdResult, Uint128,
 };
 use cw2::set_contract_version;
-use neutron_sdk::interchain_queries::v045::register_queries::new_register_validators_signig_infos_query_msg;
+use neutron_sdk::interchain_queries::v045::register_queries::new_register_validators_signing_infos_query_msg;
 
 use crate::msg::{
     Cw20BalanceResponse, ExecuteMsg, GetRecipientTxsResponse, InstantiateMsg, MigrateMsg, QueryMsg,
@@ -184,7 +184,7 @@ pub fn register_validators_signing_infos_query(
     update_period: u64,
 ) -> NeutronResult<Response<NeutronMsg>> {
     let msg =
-        new_register_validators_signig_infos_query_msg(connection_id, validators, update_period)?;
+        new_register_validators_signing_infos_query_msg(connection_id, validators, update_period)?;
 
     Ok(Response::new().add_message(msg))
 }
