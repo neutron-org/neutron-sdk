@@ -2,9 +2,8 @@ use crate::proto_types::neutron::dex::{
     DepositOptions as DepositOptionsGen, LimitOrderType, MsgCancelLimitOrder, MsgDeposit,
     MsgMultiHopSwap, MsgPlaceLimitOrder, MsgWithdrawFilledLimitOrder, MsgWithdrawal, MultiHopRoute,
 };
-use crate::stargate::aux::create_stargate_msg;
+use crate::stargate::aux::{convert_timestamp, create_stargate_msg};
 use cosmwasm_std::{CosmosMsg, Timestamp};
-use prost_types::Timestamp as TimestampGen;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -134,12 +133,5 @@ impl Into<DepositOptionsGen> for DepositOptions {
         DepositOptionsGen {
             disable_autoswap: self.disable_autoswap,
         }
-    }
-}
-
-fn convert_timestamp(timestamp: Timestamp) -> TimestampGen {
-    TimestampGen {
-        seconds: i64::try_from(timestamp.seconds()).unwrap(),
-        nanos: i32::try_from(timestamp.subsec_nanos()).unwrap(),
     }
 }

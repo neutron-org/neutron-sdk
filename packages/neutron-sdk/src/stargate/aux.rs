@@ -1,8 +1,9 @@
 use cosmwasm_std::{
     Binary, ContractResult, CosmosMsg, Empty, QuerierWrapper, QueryRequest, StdError, StdResult,
-    SystemResult,
+    SystemResult, Timestamp,
 };
 use prost::bytes::Bytes;
+use prost_types::Timestamp as TimestampGen;
 use serde_json_wasm::to_vec;
 
 pub(crate) fn make_stargate_query<Req, Res>(
@@ -43,5 +44,12 @@ where
     cosmwasm_std::CosmosMsg::Stargate {
         type_url: path.to_string(),
         value: Binary::from(req.encode_to_vec()),
+    }
+}
+
+pub(crate) fn convert_timestamp(timestamp: Timestamp) -> TimestampGen {
+    TimestampGen {
+        seconds: i64::try_from(timestamp.seconds()).unwrap(),
+        nanos: i32::try_from(timestamp.subsec_nanos()).unwrap(),
     }
 }
