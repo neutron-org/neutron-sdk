@@ -179,6 +179,7 @@ fn test_staking_validators_reconstruct() {
                     operator_address: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3"
                         .to_string(),
                     status: 0,
+                    consensus_pubkey: None,
                     tokens: "1000000000000000000".to_string(),
                     delegator_shares: "1000000000000000000".to_string(),
                     moniker: None,
@@ -200,7 +201,10 @@ fn test_staking_validators_reconstruct() {
         TestCase {
             validators: vec![Validator {
                 operator_address: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3".to_string(),
-                consensus_pubkey: None,
+                consensus_pubkey: Some(prost_types::Any {
+                    type_url: "consensus_pubkey".to_string(),
+                    value: vec![],
+                }),
                 jailed: false,
                 status: 0,
                 tokens: "1000000000000000000".to_string(),
@@ -235,6 +239,7 @@ fn test_staking_validators_reconstruct() {
                     operator_address: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3"
                         .to_string(),
                     status: 0,
+                    consensus_pubkey: Some(vec![]),
                     tokens: "1000000000000000000".to_string(),
                     delegator_shares: "1000000000000000000".to_string(),
                     moniker: Some("Test validator".to_string()),
@@ -258,7 +263,10 @@ fn test_staking_validators_reconstruct() {
                 Validator {
                     operator_address: "cosmosvaloper132juzk0gdmwuxvx4phug7m3ymyatxlh9734g4w"
                         .to_string(),
-                    consensus_pubkey: None,
+                    consensus_pubkey: Some(prost_types::Any {
+                        type_url: "consensus_pubkey".to_string(),
+                        value: vec![1u8, 2u8, 3u8, 4u8],
+                    }),
                     jailed: false,
                     status: 0,
                     tokens: "1000000000000000000".to_string(),
@@ -290,6 +298,7 @@ fn test_staking_validators_reconstruct() {
                         operator_address: "cosmosvaloper132juzk0gdmwuxvx4phug7m3ymyatxlh9734g4w"
                             .to_string(),
                         status: 0,
+                        consensus_pubkey: Some(vec![1u8, 2u8, 3u8, 4u8]),
                         tokens: "1000000000000000000".to_string(),
                         delegator_shares: "1000000000000000000".to_string(),
                         moniker: None,
@@ -310,6 +319,7 @@ fn test_staking_validators_reconstruct() {
                         operator_address: "cosmosvaloper1sjllsnramtg3ewxqwwrwjxfgc4n4ef9u2lcnj0"
                             .to_string(),
                         status: 0,
+                        consensus_pubkey: None,
                         tokens: "2000000000000000000".to_string(),
                         delegator_shares: "3000000000000000000".to_string(),
                         moniker: None,
@@ -946,6 +956,10 @@ fn test_staking_validators_reconstruct_from_hex() {
                 operator_address: String::from(
                     "cosmosvaloper15fqjpj90ruhj57q3l6a5hda0rt77g6mcek2mtq" // mutating
                 ),
+                consensus_pubkey: Some(vec![
+                    10, 32, 178, 12, 7, 179, 235, 144, 13, 247, 43, 72, 194, 78, 154, 46, 6, 255,
+                    79, 231, 59, 189, 37, 94, 67, 58, 248, 234, 227, 177, 152, 142, 105, 136
+                ]),
                 jailed: false,
                 status: 3,
                 tokens: String::from("100000000"),
