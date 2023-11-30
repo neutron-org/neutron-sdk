@@ -32,8 +32,10 @@ where
             "Querier contract error: {}",
             contract_err
         ))),
-        SystemResult::Ok(ContractResult::Ok(value)) => Res::decode(Bytes::copy_from_slice(&value))
-            .map_err(|e| StdError::generic_err(e.to_string())),
+        SystemResult::Ok(ContractResult::Ok(value)) => Res::decode(Bytes::copy_from_slice(
+            Binary::from_base64(&value.to_base64())?.as_slice(),
+        ))
+        .map_err(|e| StdError::generic_err(e.to_string())),
     }
 }
 
