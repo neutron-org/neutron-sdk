@@ -14,6 +14,7 @@ const WITHDRAW_FILLED_LIMIT_ORDER_MSG_PATH: &str = "/neutron.dex.MsgWithdrawFill
 const CANCEL_LIMIT_ORDER_MSG_PATH: &str = "/neutron.dex.MsgCancelLimitOrder";
 const MULTI_HOP_SWAP_MSG_PATH: &str = "/neutron.dex.MsgMultiHopSwap";
 
+#[allow(clippy::too_many_arguments)]
 pub fn msg_deposit(
     sender: String,
     receiver: String,
@@ -60,6 +61,7 @@ pub fn msg_withdrawal(
     create_stargate_msg(msg, WITHDRAWAL_MSG_PATH)
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn msg_place_limit_order(
     sender: String,
     receiver: String,
@@ -79,7 +81,7 @@ pub fn msg_place_limit_order(
         tick_index_in_to_out,
         amount_in,
         order_type: i32::from(order_type),
-        expiration_time: expiration_time.map(|e| convert_timestamp(e)),
+        expiration_time: expiration_time.map(convert_timestamp),
         max_amount_out: max_amount_out.unwrap_or_default(),
     };
     create_stargate_msg(msg, PLACE_LIMIT_ORDER_MSG_PATH)
@@ -128,10 +130,10 @@ pub struct DepositOptions {
     pub disable_autoswap: bool,
 }
 
-impl Into<DepositOptionsGen> for DepositOptions {
-    fn into(self) -> DepositOptionsGen {
+impl From<DepositOptions> for DepositOptionsGen {
+    fn from(o: DepositOptions) -> DepositOptionsGen {
         DepositOptionsGen {
-            disable_autoswap: self.disable_autoswap,
+            disable_autoswap: o.disable_autoswap,
         }
     }
 }

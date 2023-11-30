@@ -246,6 +246,7 @@ pub fn get_estimate_multi_hop_swap(
     )
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn get_estimate_place_limit_order(
     querier: QuerierWrapper,
     creator: String,
@@ -268,7 +269,7 @@ pub fn get_estimate_place_limit_order(
             tick_index_in_to_out,
             amount_in,
             order_type: i32::from(order_type),
-            expiration_time: expiration_time.map(|e| convert_timestamp(e)),
+            expiration_time: expiration_time.map(convert_timestamp),
             max_amount_out: max_amount_out.unwrap_or_default(),
         },
         ESTIMATE_PLACE_LIMIT_ORDER_QUERY_PATH,
