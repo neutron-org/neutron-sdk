@@ -189,6 +189,8 @@ pub struct Validator {
     pub tokens: String,
     /// delegator_shares defines total shares issued to a validator's delegators.
     pub delegator_shares: String,
+    /// consensus_pubkey is the consensus public key of the validator, as a Protobuf Any.
+    pub consensus_pubkey: Option<Vec<u8>>,
     /// moniker defines a human-readable name for the validator.
     pub moniker: Option<String>,
     /// identity defines an optional identity signature (ex. UPort or Keybase).
@@ -230,6 +232,7 @@ impl KVReconstruct for StakingValidator {
             let validator: CosmosValidator = CosmosValidator::decode(kv.value.as_slice())?;
             let description = &validator.description;
             let commission = &validator.commission;
+            let consensus_pubkey = &validator.consensus_pubkey;
 
             let validator = Validator {
                 operator_address: validator.operator_address,
@@ -239,6 +242,7 @@ impl KVReconstruct for StakingValidator {
                 tokens: validator.tokens,
                 unbonding_height: validator.unbonding_height as u64,
                 unbonding_time: validator.unbonding_time.map(|v| v.seconds as u64),
+                consensus_pubkey: consensus_pubkey.as_ref().map(|v| v.value.clone()),
                 moniker: description.as_ref().map(|v| v.moniker.to_string()),
                 identity: description.as_ref().map(|v| v.identity.to_string()),
                 website: description.as_ref().map(|v| v.website.to_string()),
