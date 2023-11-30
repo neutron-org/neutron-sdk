@@ -2,12 +2,14 @@ pub mod neutron {
     pub mod dex {
         include!("neutron.dex.rs");
     }
+
     pub mod interchaintxs {
         include!("neutron.interchaintxs.rs");
         pub mod v1 {
             include!("neutron.interchaintxs.v1.rs");
         }
     }
+
     pub mod feeburner {
         include!("neutron.feeburner.rs");
     }
@@ -29,12 +31,9 @@ pub mod neutron {
 
     pub mod contractmanager {
         include!("neutron.contractmanager.rs");
-    }
-}
-
-pub mod contractmanager {
-    pub mod v1 {
-        include!("neutron.contractmanager.v1.rs");
+        pub mod v1 {
+            include!("neutron.contractmanager.v1.rs");
+        }
     }
 }
 
