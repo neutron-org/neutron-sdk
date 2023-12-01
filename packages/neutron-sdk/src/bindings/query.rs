@@ -1,5 +1,5 @@
 use crate::bindings::types::{Failure, InterchainQueryResult, RegisteredQuery};
-use cosmwasm_std::{Binary, CustomQuery};
+use cosmwasm_std::{Binary, CustomQuery, Uint64};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -99,7 +99,7 @@ pub struct PageResponse {
     pub next_key: Option<Binary>,
     /// **total** is total number of results available if PageRequest.count_total
     /// was set, its value is undefined otherwise
-    pub total: Option<u64>,
+    pub total: Option<Uint64>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]

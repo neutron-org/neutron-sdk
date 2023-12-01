@@ -11,7 +11,7 @@ use crate::stargate::proto_types::neutron::dex::{
     QueryPoolByIdRequest, QueryPoolRequest,
 };
 use cosmos_sdk_proto::cosmos::base::query::v1beta1::PageRequest as PageRequestGen;
-use cosmwasm_std::{Coin, Int128};
+use cosmwasm_std::{Coin, Int128, Int64, Timestamp, Uint64};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_repr::{Deserialize_repr, Serialize_repr};
@@ -466,7 +466,7 @@ impl From<DepositOptions> for DepositOptionsGen {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct Params {
-    pub fee_tiers: Vec<u64>,
+    pub fee_tiers: Vec<Uint64>,
     pub max_true_taker_spread: String,
 }
 
@@ -502,7 +502,7 @@ impl TryFrom<i32> for LimitOrderType {
 #[serde(rename_all = "snake_case")]
 pub struct LimitOrderTrancheUser {
     pub trade_pair_id: TradePairID,
-    pub tick_index_taker_to_maker: i64,
+    pub tick_index_taker_to_maker: Int64,
     pub tranche_key: String,
     pub address: String,
     pub shares_owned: Int128,
@@ -515,7 +515,7 @@ pub struct LimitOrderTrancheUser {
 #[serde(rename_all = "snake_case")]
 pub struct LimitOrderTrancheKey {
     pub trade_pair_id: TradePairID,
-    pub tick_index_taker_to_maker: i64,
+    pub tick_index_taker_to_maker: Int64,
     pub tranche_key: String,
 }
 
@@ -527,7 +527,7 @@ pub struct LimitOrderTranche {
     pub reserves_taker_denom: Int128,
     pub total_maker_denom: Int128,
     pub total_taker_denom: Int128,
-    pub expiration_time: Option<u64>,
+    pub expiration_time: Option<Timestamp>,
     pub price_taker_to_maker: String, // TODO: refactor to PrecDec
 }
 
@@ -536,10 +536,10 @@ pub struct LimitOrderTranche {
 pub struct DepositRecord {
     pub pair_id: PairID,
     pub shares_owned: Int128,
-    pub center_tick_index: i64,
-    pub lower_tick_index: i64,
-    pub upper_tick_index: i64,
-    pub fee: Option<u64>,
+    pub center_tick_index: Int64,
+    pub lower_tick_index: Int64,
+    pub upper_tick_index: Int64,
+    pub fee: Option<Int64>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema, Default)]
@@ -576,8 +576,8 @@ pub struct PoolReserves {
 #[serde(rename_all = "snake_case")]
 pub struct PoolReservesKey {
     pub trade_pair_id: TradePairID,
-    pub tick_index_taker_to_maker: i64,
-    pub fee: Option<u64>,
+    pub tick_index_taker_to_maker: Int64,
+    pub fee: Option<Uint64>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -591,7 +591,7 @@ pub struct TradePairID {
 #[serde(rename_all = "snake_case")]
 pub struct Pool {
     #[serde(default)]
-    pub id: u64,
+    pub id: Uint64,
     pub lower_tick0: Option<PoolReserves>,
     pub lower_tick1: Option<PoolReserves>,
 }
@@ -600,9 +600,9 @@ pub struct Pool {
 #[serde(rename_all = "snake_case")]
 #[serde(default)]
 pub struct PoolMetadata {
-    pub id: u64,
-    pub tick: i64,
-    pub fee: u64,
+    pub id: Uint64,
+    pub tick: Int64,
+    pub fee: Uint64,
     pub pair_id: PairID,
 }
 
