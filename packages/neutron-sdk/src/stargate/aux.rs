@@ -1,4 +1,7 @@
-use cosmwasm_std::{Binary, CosmosMsg, Deps, QueryRequest, StdResult};
+use cosmwasm_std::{
+    from_json, to_json_vec, to_vec, Binary, ContractResult, CosmosMsg, Deps, Empty, QueryRequest,
+    StdError, StdResult, SystemResult,
+};
 use prost_types::Timestamp as TimestampGen;
 use serde::de::DeserializeOwned;
 
@@ -7,10 +10,37 @@ where
     Req: prost::Message,
     Res: DeserializeOwned,
 {
-    deps.querier.query(&QueryRequest::Stargate {
+    let raw = to_vec::<QueryRequest<Empty>>(&QueryRequest::Stargate {
         path: path.to_string(),
         data: req.encode_to_vec().into(),
     })
+    .map_err(|serialize_err| {
+        StdError::generic_err(format!("Serializing QueryRequest: {}", serialize_err))
+    })?;
+    match deps.querier.raw_query(&raw) {
+        SystemResult::Err(system_err) => Err(StdError::generic_err(format!(
+            "Querier system error: {}",
+            system_err
+        ))),
+        SystemResult::Ok(ContractResult::Err(contract_err)) => Err(StdError::generic_err(format!(
+            "Querier contract error: {}",
+            contract_err
+        ))),
+        // response(value) is base64 encoded bytes
+        SystemResult::Ok(ContractResult::Ok(value)) => {
+            let str = value.to_base64();
+            deps.api.debug(
+                format!(
+                    "WASMDEBUG: raw make_stargate_query resp: {:?}",
+                    value.to_string()
+                )
+                .as_str(),
+            );
+            deps.api
+                .debug(format!("WASMDEBUG: make_stargate_query resp: {:?}", str).as_str());
+            return from_json(value);
+        }
+    }
 }
 
 pub(crate) fn create_stargate_msg<Req: prost::Message>(req: Req, path: &str) -> CosmosMsg {
