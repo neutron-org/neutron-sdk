@@ -467,6 +467,7 @@ impl From<DepositOptions> for DepositOptionsGen {
 #[serde(rename_all = "snake_case")]
 pub struct Params {
     pub fee_tiers: Vec<u64>,
+    pub max_true_taker_spread: String,
 }
 
 #[derive(Serialize_repr, Deserialize_repr, Clone, Debug, PartialEq, Eq, JsonSchema)]
