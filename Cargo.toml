@@ -31,3 +31,4 @@ thiserror = "1.0.49"
 protobuf = { version = "3.3.0" }
 hex = "0.4.3"
 tendermint-proto = "0.34"
+speedate = "0.13.0"

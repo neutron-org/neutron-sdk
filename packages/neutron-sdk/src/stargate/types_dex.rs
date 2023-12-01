@@ -11,10 +11,10 @@ use crate::stargate::proto_types::neutron::dex::{
     QueryPoolByIdRequest, QueryPoolRequest,
 };
 use cosmos_sdk_proto::cosmos::base::query::v1beta1::PageRequest as PageRequestGen;
-use cosmwasm_std::{Coin, Int128, Int64, Timestamp, Uint64};
+use cosmwasm_std::{Coin, Int128, Int64, Uint64};
 use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
-use serde_repr::{Deserialize_repr, Serialize_repr};
+use serde::{Deserialize, Deserializer, Serialize};
+use speedate::DateTime;
 
 // Params query
 
@@ -64,7 +64,7 @@ pub struct LimitOrderTrancheUserAllRequest {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct LimitOrderTrancheUserAllRespose {
     pub limit_order_tranche_user: Vec<LimitOrderTrancheUser>,
-    pub pagination: Option<PageRequest>,
+    pub pagination: Option<PageResponse>,
 }
 
 impl From<LimitOrderTrancheUserAllRequest> for QueryAllLimitOrderTrancheUserRequest {
@@ -183,7 +183,7 @@ pub struct AllTickLiquidityRequest {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct AllTickLiquidityResponse {
-    pub tick_liquidity: Vec<TickLiquidity>,
+    pub tick_liquidity: Vec<Liquidity>,
     pub pagination: Option<PageResponse>,
 }
 
@@ -340,7 +340,7 @@ pub struct EstimatePlaceLimitOrderRequest {
     pub tick_index_in_to_out: i64,
     pub amount_in: String,
     pub order_type: LimitOrderType,
-    pub expiration_time: Option<u64>,
+    pub expiration_time: Option<i64>,
     pub max_amount_out: Option<String>,
 }
 
@@ -418,6 +418,7 @@ pub struct GetPoolMetadataRequest {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct GetPoolMetadataResponse {
+    #[serde(rename(deserialize = "Pool_metadata"))]
     pub pool_metadata: PoolMetadata,
 }
 
@@ -464,14 +465,14 @@ impl From<DepositOptions> for DepositOptionsGen {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
 pub struct Params {
     pub fee_tiers: Vec<Uint64>,
     pub max_true_taker_spread: String,
 }
 
-#[derive(Serialize_repr, Deserialize_repr, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[repr(i32)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[schemars(with = "String")]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum LimitOrderType {
     GoodTilCancelled = 0,
     FillOrKill = 1,
@@ -499,7 +500,6 @@ impl TryFrom<i32> for LimitOrderType {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
 pub struct LimitOrderTrancheUser {
     pub trade_pair_id: TradePairID,
     pub tick_index_taker_to_maker: Int64,
@@ -512,7 +512,6 @@ pub struct LimitOrderTrancheUser {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
 pub struct LimitOrderTrancheKey {
     pub trade_pair_id: TradePairID,
     pub tick_index_taker_to_maker: Int64,
@@ -520,19 +519,18 @@ pub struct LimitOrderTrancheKey {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
 pub struct LimitOrderTranche {
     pub key: LimitOrderTrancheKey,
     pub reserves_maker_denom: Int128,
     pub reserves_taker_denom: Int128,
     pub total_maker_denom: Int128,
     pub total_taker_denom: Int128,
-    pub expiration_time: Option<Timestamp>,
+    #[serde(deserialize_with = "deserialize_expiration_time")]
+    pub expiration_time: Option<i64>,
     pub price_taker_to_maker: String, // TODO: refactor to PrecDec
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
 pub struct DepositRecord {
     pub pair_id: PairID,
     pub shares_owned: Int128,
@@ -543,17 +541,9 @@ pub struct DepositRecord {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema, Default)]
-#[serde(rename_all = "snake_case")]
 pub struct PairID {
     pub token0: String,
     pub token1: String,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct TickLiquidity {
-    #[serde(rename = "Liquidity")]
-    pub liquidity: Liquidity,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -564,7 +554,6 @@ pub enum Liquidity {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
 pub struct PoolReserves {
     pub key: PoolReservesKey,
     pub reserves_maker_denom: Int128,
@@ -573,7 +562,6 @@ pub struct PoolReserves {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
 pub struct PoolReservesKey {
     pub trade_pair_id: TradePairID,
     pub tick_index_taker_to_maker: Int64,
@@ -581,24 +569,19 @@ pub struct PoolReservesKey {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
 pub struct TradePairID {
     pub maker_denom: String,
     pub taker_denom: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
 pub struct Pool {
-    #[serde(default)]
     pub id: Uint64,
     pub lower_tick0: Option<PoolReserves>,
     pub lower_tick1: Option<PoolReserves>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema, Default)]
-#[serde(rename_all = "snake_case")]
-#[serde(default)]
 pub struct PoolMetadata {
     pub id: Uint64,
     pub tick: Int64,
@@ -616,5 +599,33 @@ fn convert_page_request(page_request: Option<PageRequest>) -> Option<PageRequest
             reverse: p.reverse,
         }),
         None => None,
+    }
+}
+
+fn deserialize_expiration_time<'de, D>(deserializer: D) -> Result<Option<i64>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    // Deserialize the field as an Option<&str>
+    let opt_date_time_string: Option<&str> = Option::deserialize(deserializer)?;
+
+    // Convert the &str to a i64 or return None if it's None or an invalid format
+    match opt_date_time_string {
+        Some(date_time_str) => match date_time_str {
+            // default golang time.Time value used for JIT limit order type
+            "0001-01-01T00:00:00Z" => Ok(None),
+
+            _ => Ok(Some(
+                DateTime::parse_str_rfc3339(date_time_str)
+                    .map_err(|_| {
+                        serde::de::Error::invalid_value(
+                            serde::de::Unexpected::Str(date_time_str),
+                            &"an RFC 3339 formatted date time",
+                        )
+                    })?
+                    .timestamp(),
+            )),
+        },
+        None => Ok(None),
     }
 }

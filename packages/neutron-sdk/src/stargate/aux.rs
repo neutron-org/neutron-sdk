@@ -50,9 +50,9 @@ pub(crate) fn create_stargate_msg<Req: prost::Message>(req: Req, path: &str) -> 
     }
 }
 
-pub(crate) fn convert_timestamp(timestamp: u64) -> TimestampGen {
+pub(crate) fn convert_timestamp(timestamp: i64) -> TimestampGen {
     TimestampGen {
-        seconds: timestamp as i64,
+        seconds: timestamp,
         nanos: 0,
     }
 }

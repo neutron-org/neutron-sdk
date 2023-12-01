@@ -70,7 +70,7 @@ pub fn msg_place_limit_order(
     tick_index_in_to_out: i64,
     amount_in: String,
     order_type: LimitOrderType,
-    expiration_time: Option<u64>,
+    expiration_time: Option<i64>,
     max_amount_out: Option<String>,
 ) -> CosmosMsg {
     let msg = MsgPlaceLimitOrder {
