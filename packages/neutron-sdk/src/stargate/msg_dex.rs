@@ -1,11 +1,11 @@
-use crate::proto_types::neutron::dex::{
-    DepositOptions as DepositOptionsGen, LimitOrderType, MsgCancelLimitOrder, MsgDeposit,
-    MsgMultiHopSwap, MsgPlaceLimitOrder, MsgWithdrawFilledLimitOrder, MsgWithdrawal, MultiHopRoute,
-};
 use crate::stargate::aux::{convert_timestamp, create_stargate_msg};
-use cosmwasm_std::{CosmosMsg, Timestamp};
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
+use crate::stargate::proto_types::neutron::dex::{
+    MsgCancelLimitOrder, MsgDeposit, MsgMultiHopSwap, MsgPlaceLimitOrder,
+    MsgWithdrawFilledLimitOrder, MsgWithdrawal, MultiHopRoute,
+};
+use crate::stargate::types_dex::DepositOptions;
+use crate::stargate::types_dex::LimitOrderType;
+use cosmwasm_std::CosmosMsg;
 
 const DEPOSIT_MSG_PATH: &str = "/neutron.dex.MsgDeposit";
 const WITHDRAWAL_MSG_PATH: &str = "/neutron.dex.MsgWithdrawal";
@@ -70,7 +70,7 @@ pub fn msg_place_limit_order(
     tick_index_in_to_out: i64,
     amount_in: String,
     order_type: LimitOrderType,
-    expiration_time: Option<Timestamp>,
+    expiration_time: Option<u64>,
     max_amount_out: Option<String>,
 ) -> CosmosMsg {
     let msg = MsgPlaceLimitOrder {
@@ -80,7 +80,7 @@ pub fn msg_place_limit_order(
         token_out,
         tick_index_in_to_out,
         amount_in,
-        order_type: i32::from(order_type),
+        order_type: order_type as i32,
         expiration_time: expiration_time.map(convert_timestamp),
         max_amount_out: max_amount_out.unwrap_or_default(),
     };
@@ -123,17 +123,4 @@ pub fn msg_multi_hop_swap(
         pick_best_route,
     };
     create_stargate_msg(msg, MULTI_HOP_SWAP_MSG_PATH)
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-pub struct DepositOptions {
-    pub disable_autoswap: bool,
-}
-
-impl From<DepositOptions> for DepositOptionsGen {
-    fn from(o: DepositOptions) -> DepositOptionsGen {
-        DepositOptionsGen {
-            disable_autoswap: o.disable_autoswap,
-        }
-    }
 }

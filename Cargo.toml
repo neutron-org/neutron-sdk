@@ -18,6 +18,7 @@ cosmwasm-std = "1.4.0"
 cw2 = "1.1.1"
 schemars = "0.8.15"
 serde = { version = "1.0.188", default-features = false }
+serde_repr = { version = "0.1.17", default-features = false }
 serde-json-wasm = "1.0.0"
 cw-storage-plus = "1.1.0"
 cosmwasm-schema = { version = "1.4.0", default-features = false }

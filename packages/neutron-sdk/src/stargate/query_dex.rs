@@ -1,23 +1,28 @@
-use crate::proto_types::neutron::dex::{
-    LimitOrderType, MultiHopRoute, QueryAllInactiveLimitOrderTrancheRequest,
-    QueryAllInactiveLimitOrderTrancheResponse, QueryAllLimitOrderTrancheRequest,
-    QueryAllLimitOrderTrancheResponse, QueryAllLimitOrderTrancheUserRequest,
-    QueryAllLimitOrderTrancheUserResponse, QueryAllPoolMetadataRequest,
-    QueryAllPoolMetadataResponse, QueryAllPoolReservesRequest, QueryAllPoolReservesResponse,
-    QueryAllTickLiquidityRequest, QueryAllTickLiquidityResponse, QueryAllUserDepositsRequest,
-    QueryAllUserDepositsResponse, QueryAllUserLimitOrdersRequest, QueryAllUserLimitOrdersResponse,
-    QueryEstimateMultiHopSwapRequest, QueryEstimateMultiHopSwapResponse,
-    QueryEstimatePlaceLimitOrderRequest, QueryEstimatePlaceLimitOrderResponse,
-    QueryGetInactiveLimitOrderTrancheRequest, QueryGetInactiveLimitOrderTrancheResponse,
-    QueryGetLimitOrderTrancheRequest, QueryGetLimitOrderTrancheResponse,
-    QueryGetLimitOrderTrancheUserRequest, QueryGetLimitOrderTrancheUserResponse,
-    QueryGetPoolMetadataRequest, QueryGetPoolMetadataResponse, QueryGetPoolReservesRequest,
-    QueryGetPoolReservesResponse, QueryParamsRequest, QueryParamsResponse, QueryPoolByIdRequest,
-    QueryPoolRequest, QueryPoolResponse,
+use crate::stargate::aux::make_stargate_query;
+use crate::stargate::proto_types::neutron::dex::{
+    QueryAllInactiveLimitOrderTrancheRequest, QueryAllLimitOrderTrancheRequest,
+    QueryAllLimitOrderTrancheUserRequest, QueryAllPoolMetadataRequest, QueryAllPoolReservesRequest,
+    QueryAllTickLiquidityRequest, QueryAllUserDepositsRequest, QueryAllUserLimitOrdersRequest,
+    QueryEstimateMultiHopSwapRequest, QueryEstimatePlaceLimitOrderRequest,
+    QueryGetInactiveLimitOrderTrancheRequest, QueryGetLimitOrderTrancheRequest,
+    QueryGetLimitOrderTrancheUserRequest, QueryGetPoolMetadataRequest, QueryGetPoolReservesRequest,
+    QueryParamsRequest, QueryPoolByIdRequest, QueryPoolRequest,
 };
-use crate::stargate::aux::{convert_timestamp, make_stargate_query};
-use cosmos_sdk_proto::cosmos::base::query::v1beta1::PageRequest;
-use cosmwasm_std::{Deps, QuerierWrapper, StdResult, Timestamp};
+use crate::stargate::types_dex::{
+    AllInactiveLimitOrderTrancheRequest, AllInactiveLimitOrderTrancheResponse,
+    AllLimitOrderTrancheRequest, AllLimitOrderTrancheResponse, AllPoolMetadataRequest,
+    AllPoolMetadataResponse, AllPoolReservesRequest, AllPoolReservesResponse,
+    AllTickLiquidityRequest, AllTickLiquidityResponse, AllUserDepositsRequest,
+    AllUserDepositsResponse, AllUserLimitOrdersRequest, AllUserLimitOrdersResponse,
+    EstimateMultiHopSwapRequest, EstimateMultiHopSwapResponse, EstimatePlaceLimitOrderRequest,
+    EstimatePlaceLimitOrderResponse, GetInactiveLimitOrderTrancheRequest,
+    GetInactiveLimitOrderTrancheResponse, GetLimitOrderTrancheRequest,
+    GetLimitOrderTrancheResponse, GetPoolMetadataRequest, GetPoolMetadataResponse,
+    GetPoolReservesRequest, GetPoolReservesResponse, LimitOrderTrancheUserAllRequest,
+    LimitOrderTrancheUserAllRespose, LimitOrderTrancheUserRequest, LimitOrderTrancheUserResponse,
+    ParamsRequest, ParamsResponse, PoolByIdRequest, PoolRequest, PoolResponse,
+};
+use cosmwasm_std::{Deps, StdResult};
 
 const PARAMS_QUERY_PATH: &str = "/neutron.dex.Query/Params";
 const LIMIT_ORDER_TRANCHE_USER_QUERY_PATH: &str = "/neutron.dex.Query/LimitOrderTrancheUser";
@@ -41,281 +46,179 @@ const POOL_BY_ID_QUERY_PATH: &str = "/neutron.dex.Query/PoolByID";
 const POOL_METADATA_QUERY_PATH: &str = "/neutron.dex.Query/PoolMetadata";
 const POOL_METADATA_ALL_QUERY_PATH: &str = "/neutron.dex.Query/PoolMetadataAll";
 
-pub fn get_params(deps: Deps) -> StdResult<QueryParamsResponse> {
-    make_stargate_query(deps, QueryParamsRequest {}, PARAMS_QUERY_PATH)
+pub fn get_params(deps: Deps, req: ParamsRequest) -> StdResult<ParamsResponse> {
+    make_stargate_query(deps, QueryParamsRequest::from(req), PARAMS_QUERY_PATH)
 }
 
 pub fn get_limit_order_tranche_user(
     deps: Deps,
-    address: String,
-    tranche_key: String,
-) -> StdResult<QueryGetLimitOrderTrancheUserResponse> {
+    req: LimitOrderTrancheUserRequest,
+) -> StdResult<LimitOrderTrancheUserResponse> {
     make_stargate_query(
         deps,
-        QueryGetLimitOrderTrancheUserRequest {
-            address,
-            tranche_key,
-        },
+        QueryGetLimitOrderTrancheUserRequest::from(req),
         LIMIT_ORDER_TRANCHE_USER_QUERY_PATH,
     )
 }
 
 pub fn get_limit_order_tranche_user_all(
     deps: Deps,
-    pagination: Option<PageRequest>,
-) -> StdResult<QueryAllLimitOrderTrancheUserResponse> {
+    req: LimitOrderTrancheUserAllRequest,
+) -> StdResult<LimitOrderTrancheUserAllRespose> {
     make_stargate_query(
         deps,
-        QueryAllLimitOrderTrancheUserRequest { pagination },
+        QueryAllLimitOrderTrancheUserRequest::from(req),
         LIMIT_ORDER_TRANCHE_USER_ALL_QUERY_PATH,
     )
 }
 
 pub fn get_limit_order_tranche_user_all_by_address(
     deps: Deps,
-    address: String,
-    pagination: Option<PageRequest>,
-) -> StdResult<QueryAllUserLimitOrdersResponse> {
+    req: AllUserLimitOrdersRequest,
+) -> StdResult<AllUserLimitOrdersResponse> {
     make_stargate_query(
         deps,
-        QueryAllUserLimitOrdersRequest {
-            address,
-            pagination,
-        },
+        QueryAllUserLimitOrdersRequest::from(req),
         LIMIT_ORDER_TRANCHE_USER_ALL_BY_ADDRESS_QUERY_PATH,
     )
 }
 
 pub fn get_limit_order_tranche(
     deps: Deps,
-    pair_id: String,
-    tick_index: i64,
-    token_in: String,
-    tranche_key: String,
-) -> StdResult<QueryGetLimitOrderTrancheResponse> {
+    req: GetLimitOrderTrancheRequest,
+) -> StdResult<GetLimitOrderTrancheResponse> {
     make_stargate_query(
         deps,
-        QueryGetLimitOrderTrancheRequest {
-            pair_id,
-            tick_index,
-            token_in,
-            tranche_key,
-        },
+        QueryGetLimitOrderTrancheRequest::from(req),
         LIMIT_ORDER_TRANCHE_QUERY_PATH,
     )
 }
 
 pub fn get_limit_order_tranche_all(
     deps: Deps,
-    pair_id: String,
-    token_in: String,
-    pagination: Option<PageRequest>,
-) -> StdResult<QueryAllLimitOrderTrancheResponse> {
+    req: AllLimitOrderTrancheRequest,
+) -> StdResult<AllLimitOrderTrancheResponse> {
     make_stargate_query(
         deps,
-        QueryAllLimitOrderTrancheRequest {
-            pair_id,
-            token_in,
-            pagination,
-        },
+        QueryAllLimitOrderTrancheRequest::from(req),
         LIMIT_ORDER_TRANCHE_ALL_QUERY_PATH,
     )
 }
 
 pub fn get_user_deposits_all(
     deps: Deps,
-    address: String,
-    pagination: Option<PageRequest>,
-) -> StdResult<QueryAllUserDepositsResponse> {
+    req: AllUserDepositsRequest,
+) -> StdResult<AllUserDepositsResponse> {
     make_stargate_query(
         deps,
-        QueryAllUserDepositsRequest {
-            address,
-            pagination,
-        },
+        QueryAllUserDepositsRequest::from(req),
         USER_DEPOSITS_ALL_QUERY_PATH,
     )
 }
 
 pub fn get_tick_liquidity_all(
     deps: Deps,
-    pair_id: String,
-    token_in: String,
-    pagination: Option<PageRequest>,
-) -> StdResult<QueryAllTickLiquidityResponse> {
+    req: AllTickLiquidityRequest,
+) -> StdResult<AllTickLiquidityResponse> {
     make_stargate_query(
         deps,
-        QueryAllTickLiquidityRequest {
-            pair_id,
-            token_in,
-            pagination,
-        },
+        QueryAllTickLiquidityRequest::from(req),
         TICK_LIQUIDITY_ALL_QUERY_PATH,
     )
 }
 
 pub fn get_inactive_limit_order_tranche(
     deps: Deps,
-    pair_id: String,
-    token_in: String,
-    tick_index: i64,
-    tranche_key: String,
-) -> StdResult<QueryGetInactiveLimitOrderTrancheResponse> {
+    req: GetInactiveLimitOrderTrancheRequest,
+) -> StdResult<GetInactiveLimitOrderTrancheResponse> {
     make_stargate_query(
         deps,
-        QueryGetInactiveLimitOrderTrancheRequest {
-            pair_id,
-            token_in,
-            tick_index,
-            tranche_key,
-        },
+        QueryGetInactiveLimitOrderTrancheRequest::from(req),
         INACTIVE_LIMIT_ORDER_TRANCHE_QUERY_PATH,
     )
 }
 
 pub fn get_inactive_limit_order_tranche_all(
     deps: Deps,
-    pagination: Option<PageRequest>,
-) -> StdResult<QueryAllInactiveLimitOrderTrancheResponse> {
+    req: AllInactiveLimitOrderTrancheRequest,
+) -> StdResult<AllInactiveLimitOrderTrancheResponse> {
     make_stargate_query(
         deps,
-        QueryAllInactiveLimitOrderTrancheRequest { pagination },
+        QueryAllInactiveLimitOrderTrancheRequest::from(req),
         INACTIVE_LIMIT_ORDER_TRANCHE_ALL_QUERY_PATH,
     )
 }
 
 pub fn get_pool_reserves_all(
     deps: Deps,
-    pair_id: String,
-    token_in: String,
-    pagination: Option<PageRequest>,
-) -> StdResult<QueryAllPoolReservesResponse> {
+    req: AllPoolReservesRequest,
+) -> StdResult<AllPoolReservesResponse> {
     make_stargate_query(
         deps,
-        QueryAllPoolReservesRequest {
-            pair_id,
-            token_in,
-            pagination,
-        },
+        QueryAllPoolReservesRequest::from(req),
         POOL_RESERVES_ALL_QUERY_PATH,
     )
 }
 
 pub fn get_pool_reserves(
     deps: Deps,
-    pair_id: String,
-    token_in: String,
-    tick_index: i64,
-    fee: u64,
-) -> StdResult<QueryGetPoolReservesResponse> {
+    req: GetPoolReservesRequest,
+) -> StdResult<GetPoolReservesResponse> {
     make_stargate_query(
         deps,
-        QueryGetPoolReservesRequest {
-            pair_id,
-            token_in,
-            tick_index,
-            fee,
-        },
+        QueryGetPoolReservesRequest::from(req),
         POOL_RESERVES_QUERY_PATH,
     )
 }
 
 pub fn get_estimate_multi_hop_swap(
     deps: Deps,
-    creator: String,
-    receiver: String,
-    routes: Vec<Vec<String>>,
-    amount_in: String,
-    exit_limit_price: String,
-    pick_best_route: bool,
-) -> StdResult<QueryEstimateMultiHopSwapResponse> {
+    req: EstimateMultiHopSwapRequest,
+) -> StdResult<EstimateMultiHopSwapResponse> {
     make_stargate_query(
         deps,
-        QueryEstimateMultiHopSwapRequest {
-            creator,
-            receiver,
-            routes: routes
-                .into_iter()
-                .map(|r| MultiHopRoute { hops: r })
-                .collect(),
-            amount_in,
-            exit_limit_price,
-            pick_best_route,
-        },
+        QueryEstimateMultiHopSwapRequest::from(req),
         ESTIMATE_MULTI_HOP_SWAP_QUERY_PATH,
     )
 }
 
-#[allow(clippy::too_many_arguments)]
 pub fn get_estimate_place_limit_order(
     deps: Deps,
-    creator: String,
-    receiver: String,
-    token_in: String,
-    token_out: String,
-    tick_index_in_to_out: i64,
-    amount_in: String,
-    order_type: LimitOrderType,
-    expiration_time: Option<Timestamp>,
-    max_amount_out: Option<String>,
-) -> StdResult<QueryEstimatePlaceLimitOrderResponse> {
+    req: EstimatePlaceLimitOrderRequest,
+) -> StdResult<EstimatePlaceLimitOrderResponse> {
     make_stargate_query(
         deps,
-        QueryEstimatePlaceLimitOrderRequest {
-            creator,
-            receiver,
-            token_in,
-            token_out,
-            tick_index_in_to_out,
-            amount_in,
-            order_type: i32::from(order_type),
-            expiration_time: expiration_time.map(convert_timestamp),
-            max_amount_out: max_amount_out.unwrap_or_default(),
-        },
+        QueryEstimatePlaceLimitOrderRequest::from(req),
         ESTIMATE_PLACE_LIMIT_ORDER_QUERY_PATH,
     )
 }
 
-pub fn get_pool(
+pub fn get_pool(deps: Deps, req: PoolRequest) -> StdResult<PoolResponse> {
+    make_stargate_query(deps, QueryPoolRequest::from(req), POOL_QUERY_PATH)
+}
+
+pub fn get_pool_by_id(deps: Deps, req: PoolByIdRequest) -> StdResult<PoolResponse> {
+    make_stargate_query(deps, QueryPoolByIdRequest::from(req), POOL_BY_ID_QUERY_PATH)
+}
+
+pub fn get_pool_metadata(
     deps: Deps,
-    pair_id: String,
-    tick_index: i64,
-    fee: u64,
-) -> StdResult<QueryPoolResponse> {
+    req: GetPoolMetadataRequest,
+) -> StdResult<GetPoolMetadataResponse> {
     make_stargate_query(
         deps,
-        QueryPoolRequest {
-            pair_id,
-            tick_index,
-            fee,
-        },
-        POOL_QUERY_PATH,
-    )
-}
-
-pub fn get_pool_by_id(deps: Deps, pool_id: u64) -> StdResult<QueryPoolResponse> {
-    make_stargate_query(
-        deps,
-        QueryPoolByIdRequest { pool_id },
-        POOL_BY_ID_QUERY_PATH,
-    )
-}
-
-pub fn get_pool_metadata(deps: Deps, id: u64) -> StdResult<QueryGetPoolMetadataResponse> {
-    make_stargate_query(
-        deps,
-        QueryGetPoolMetadataRequest { id },
+        QueryGetPoolMetadataRequest::from(req),
         POOL_METADATA_QUERY_PATH,
     )
 }
 
 pub fn get_pool_metadata_all(
     deps: Deps,
-    pagination: Option<PageRequest>,
-) -> StdResult<QueryAllPoolMetadataResponse> {
+    req: AllPoolMetadataRequest,
+) -> StdResult<AllPoolMetadataResponse> {
     make_stargate_query(
         deps,
-        QueryAllPoolMetadataRequest { pagination },
+        QueryAllPoolMetadataRequest::from(req),
         POOL_METADATA_ALL_QUERY_PATH,
     )
 }

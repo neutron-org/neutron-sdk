@@ -92,6 +92,18 @@ pub struct PageRequest {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
+pub struct PageResponse {
+    /// **next_key** is the key to be passed to PageRequest.key to
+    /// query the next page most efficiently. It will be empty if
+    /// there are no more results.
+    pub next_key: Option<Binary>,
+    /// **total** is total number of results available if PageRequest.count_total
+    /// was set, its value is undefined otherwise
+    pub total: Option<u64>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 pub struct QueryRegisteredQueriesResponse {
     /// **registered_queries** is a list of registered queries
     pub registered_queries: Vec<RegisteredQuery>,
