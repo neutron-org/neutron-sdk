@@ -16,6 +16,13 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Deserializer, Serialize};
 use speedate::DateTime;
 
+/// JIT_LIMIT_ORDER_TYPE_EXP_DATE_TIME is the default golang time.Time value used for JIT limit
+/// order type in the dex module.
+const JIT_LIMIT_ORDER_TYPE_EXP_DATE_TIME: &str = "0001-01-01T00:00:00Z";
+/// JIT_LIMIT_ORDER_TYPE_EXP_TIMESTAMP is a mock unix timestamp value used to replace timestamp
+/// calc for JIT_LIMIT_ORDER_TYPE_EXP_DATE_TIME because the timestamp for this date time is invalid.
+const JIT_LIMIT_ORDER_TYPE_EXP_TIMESTAMP: i64 = 0;
+
 // Params query
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -527,7 +534,8 @@ pub struct LimitOrderTranche {
     pub total_taker_denom: Int128,
     #[serde(deserialize_with = "deserialize_expiration_time")]
     pub expiration_time: Option<i64>,
-    pub price_taker_to_maker: String, // TODO: refactor to PrecDec
+    /// a decimal with precision equal to 26
+    pub price_taker_to_maker: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -557,8 +565,10 @@ pub enum Liquidity {
 pub struct PoolReserves {
     pub key: PoolReservesKey,
     pub reserves_maker_denom: Int128,
-    pub price_taker_to_maker: String, // TODO: refactor to PrecDec
-    pub price_opposite_taker_to_maker: String, // TODO: refactor to PrecDec
+    /// a decimal with precision equal to 26
+    pub price_taker_to_maker: String,
+    /// a decimal with precision equal to 26
+    pub price_opposite_taker_to_maker: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -602,6 +612,12 @@ fn convert_page_request(page_request: Option<PageRequest>) -> Option<PageRequest
     }
 }
 
+/// deserialize_expiration_time deserealizes an optional expiration_time value on dex module's rules:
+/// - if it's None, it returns None (non-expiring limit orders);
+/// - if it's a default golang time.Time value used for JIT limit order type (0001-01-01T00:00:00Z),
+/// it returns 0, because the timestamp for this value is invalid (-62135596800);
+/// - in the rest of the cases, it assumes it's a valid RFC 3339 formatted date time and tries to
+/// parse it and returns a unix timestamp.
 fn deserialize_expiration_time<'de, D>(deserializer: D) -> Result<Option<i64>, D::Error>
 where
     D: Deserializer<'de>,
@@ -609,12 +625,13 @@ where
     // Deserialize the field as an Option<&str>
     let opt_date_time_string: Option<&str> = Option::deserialize(deserializer)?;
 
-    // Convert the &str to a i64 or return None if it's None or an invalid format
     match opt_date_time_string {
-        Some(date_time_str) => match date_time_str {
-            // default golang time.Time value used for JIT limit order type
-            "0001-01-01T00:00:00Z" => Ok(None),
+        None => Ok(None),
 
+        Some(date_time_str) => match date_time_str {
+            JIT_LIMIT_ORDER_TYPE_EXP_DATE_TIME => Ok(Some(JIT_LIMIT_ORDER_TYPE_EXP_TIMESTAMP)),
+
+            // some RFC 3339 formatted date time to be parsed to a unix timestamp
             _ => Ok(Some(
                 DateTime::parse_str_rfc3339(date_time_str)
                     .map_err(|_| {
@@ -626,6 +643,5 @@ where
                     .timestamp(),
             )),
         },
-        None => Ok(None),
     }
 }
