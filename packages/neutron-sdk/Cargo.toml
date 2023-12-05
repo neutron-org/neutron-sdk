@@ -12,7 +12,6 @@ readme = "README.md"
 cosmwasm-std = { workspace = true }
 cosmos-sdk-proto = { workspace = true }
 serde = { workspace = true }
-serde_repr = { workspace = true }
 schemars = { workspace = true }
 serde-json-wasm = { workspace = true }
 bech32 = { workspace = true }
