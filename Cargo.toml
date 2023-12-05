@@ -1,6 +1,5 @@
 [workspace]
 members = ["contracts/*", "packages/*"]
-exclude = ["proto-build"]
 
 [profile.release]
 opt-level = 3
