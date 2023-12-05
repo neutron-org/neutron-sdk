@@ -1,3 +1,0 @@
-[submodule "neutron"]
-	path = neutron
-	url = https://github.com/neutron-org/neutron.git
