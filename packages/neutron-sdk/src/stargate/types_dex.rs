@@ -1,14 +1,15 @@
 use crate::bindings::query::{PageRequest, PageResponse};
 use crate::stargate::aux::convert_timestamp;
 use crate::stargate::proto_types::neutron::dex::{
-    DepositOptions as DepositOptionsGen, MultiHopRoute, QueryAllInactiveLimitOrderTrancheRequest,
-    QueryAllLimitOrderTrancheRequest, QueryAllLimitOrderTrancheUserRequest,
-    QueryAllPoolMetadataRequest, QueryAllPoolReservesRequest, QueryAllTickLiquidityRequest,
-    QueryAllUserDepositsRequest, QueryAllUserLimitOrdersRequest, QueryEstimateMultiHopSwapRequest,
-    QueryEstimatePlaceLimitOrderRequest, QueryGetInactiveLimitOrderTrancheRequest,
-    QueryGetLimitOrderTrancheRequest, QueryGetLimitOrderTrancheUserRequest,
-    QueryGetPoolMetadataRequest, QueryGetPoolReservesRequest, QueryParamsRequest,
-    QueryPoolByIdRequest, QueryPoolRequest,
+    DepositOptions as DepositOptionsGen, MsgCancelLimitOrder, MsgDeposit, MsgMultiHopSwap,
+    MsgPlaceLimitOrder, MsgWithdrawFilledLimitOrder, MsgWithdrawal, MultiHopRoute,
+    QueryAllInactiveLimitOrderTrancheRequest, QueryAllLimitOrderTrancheRequest,
+    QueryAllLimitOrderTrancheUserRequest, QueryAllPoolMetadataRequest, QueryAllPoolReservesRequest,
+    QueryAllTickLiquidityRequest, QueryAllUserDepositsRequest, QueryAllUserLimitOrdersRequest,
+    QueryEstimateMultiHopSwapRequest, QueryEstimatePlaceLimitOrderRequest,
+    QueryGetInactiveLimitOrderTrancheRequest, QueryGetLimitOrderTrancheRequest,
+    QueryGetLimitOrderTrancheUserRequest, QueryGetPoolMetadataRequest, QueryGetPoolReservesRequest,
+    QueryParamsRequest, QueryPoolByIdRequest, QueryPoolRequest,
 };
 use cosmos_sdk_proto::cosmos::base::query::v1beta1::PageRequest as PageRequestGen;
 use cosmwasm_std::{Coin, Int128, Int64, Uint64};
@@ -18,10 +19,162 @@ use speedate::DateTime;
 
 /// JIT_LIMIT_ORDER_TYPE_EXP_DATE_TIME is the default golang time.Time value used for JIT limit
 /// order type in the dex module.
-const JIT_LIMIT_ORDER_TYPE_EXP_DATE_TIME: &str = "0001-01-01T00:00:00Z";
+pub const JIT_LIMIT_ORDER_TYPE_EXP_DATE_TIME: &str = "0001-01-01T00:00:00Z";
 /// JIT_LIMIT_ORDER_TYPE_EXP_TIMESTAMP is a mock unix timestamp value used to replace timestamp
 /// calc for JIT_LIMIT_ORDER_TYPE_EXP_DATE_TIME because the timestamp for this date time is invalid.
-const JIT_LIMIT_ORDER_TYPE_EXP_TIMESTAMP: i64 = 0;
+pub const JIT_LIMIT_ORDER_TYPE_EXP_TIMESTAMP: i64 = 0;
+
+// Deposit message
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+pub struct DepositRequest {
+    pub sender: String,
+    pub receiver: String,
+    pub token_a: String,
+    pub token_b: String,
+    pub amounts_a: Vec<String>,
+    pub amounts_b: Vec<String>,
+    pub tick_indexes_a_to_b: Vec<i64>,
+    pub fees: Vec<u64>,
+    pub options: Vec<DepositOptions>,
+}
+
+impl From<DepositRequest> for MsgDeposit {
+    fn from(v: DepositRequest) -> MsgDeposit {
+        MsgDeposit {
+            creator: v.sender,
+            receiver: v.receiver,
+            token_a: v.token_a,
+            token_b: v.token_b,
+            amounts_a: v.amounts_a,
+            amounts_b: v.amounts_b,
+            tick_indexes_a_to_b: v.tick_indexes_a_to_b,
+            fees: v.fees,
+            options: v.options.into_iter().map(|o| o.into()).collect(),
+        }
+    }
+}
+
+// Withdrawal message
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+pub struct WithdrawalRequest {
+    pub sender: String,
+    pub receiver: String,
+    pub token_a: String,
+    pub token_b: String,
+    pub shares_to_remove: Vec<String>,
+    pub tick_indexes_a_to_b: Vec<i64>,
+    pub fees: Vec<u64>,
+}
+
+impl From<WithdrawalRequest> for MsgWithdrawal {
+    fn from(v: WithdrawalRequest) -> MsgWithdrawal {
+        MsgWithdrawal {
+            creator: v.sender,
+            receiver: v.receiver,
+            token_a: v.token_a,
+            token_b: v.token_b,
+            shares_to_remove: v.shares_to_remove,
+            tick_indexes_a_to_b: v.tick_indexes_a_to_b,
+            fees: v.fees,
+        }
+    }
+}
+
+// PlaceLimitOrder message
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+pub struct PlaceLimitOrderRequest {
+    pub sender: String,
+    pub receiver: String,
+    pub token_in: String,
+    pub token_out: String,
+    pub tick_index_in_to_out: i64,
+    pub amount_in: String,
+    pub order_type: LimitOrderType,
+    pub expiration_time: Option<i64>,
+    pub max_amount_out: Option<String>,
+}
+
+impl From<PlaceLimitOrderRequest> for MsgPlaceLimitOrder {
+    fn from(v: PlaceLimitOrderRequest) -> MsgPlaceLimitOrder {
+        MsgPlaceLimitOrder {
+            creator: v.sender,
+            receiver: v.receiver,
+            token_in: v.token_in,
+            token_out: v.token_out,
+            tick_index_in_to_out: v.tick_index_in_to_out,
+            amount_in: v.amount_in,
+            order_type: v.order_type as i32,
+            expiration_time: v.expiration_time.map(convert_timestamp),
+            max_amount_out: v.max_amount_out.unwrap_or_default(),
+        }
+    }
+}
+
+// WithdrawFilledLimitOrder message
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+pub struct WithdrawFilledLimitOrderRequest {
+    pub sender: String,
+    pub tranche_key: String,
+}
+
+impl From<WithdrawFilledLimitOrderRequest> for MsgWithdrawFilledLimitOrder {
+    fn from(v: WithdrawFilledLimitOrderRequest) -> MsgWithdrawFilledLimitOrder {
+        MsgWithdrawFilledLimitOrder {
+            creator: v.sender,
+            tranche_key: v.tranche_key,
+        }
+    }
+}
+
+// CancelLimitOrder message
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+pub struct CancelLimitOrderRequest {
+    pub sender: String,
+    pub tranche_key: String,
+}
+
+impl From<CancelLimitOrderRequest> for MsgCancelLimitOrder {
+    fn from(v: CancelLimitOrderRequest) -> MsgCancelLimitOrder {
+        MsgCancelLimitOrder {
+            creator: v.sender,
+            tranche_key: v.tranche_key,
+        }
+    }
+}
+
+// MultiHopSwap message
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+pub struct MultiHopSwapRequest {
+    pub sender: String,
+    pub receiver: String,
+    pub routes: Vec<Vec<String>>,
+    pub amount_in: String,
+    pub exit_limit_price: String,
+    pub pick_best_route: bool,
+}
+
+impl From<MultiHopSwapRequest> for MsgMultiHopSwap {
+    fn from(v: MultiHopSwapRequest) -> MsgMultiHopSwap {
+        MsgMultiHopSwap {
+            creator: v.sender,
+            receiver: v.receiver,
+            routes: v
+                .routes
+                .into_iter()
+                .map(|r| MultiHopRoute { hops: r })
+                .collect(),
+            amount_in: v.amount_in,
+            exit_limit_price: v.exit_limit_price,
+            pick_best_route: v.pick_best_route,
+        }
+    }
+}
 
 // Params query
 
