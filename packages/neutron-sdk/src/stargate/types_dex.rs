@@ -686,7 +686,7 @@ pub struct LimitOrderTranche {
     pub total_maker_denom: Int128,
     pub total_taker_denom: Int128,
     #[serde(deserialize_with = "deserialize_expiration_time")]
-    pub expiration_time: Option<i64>,
+    pub expiration_time: Option<Int64>,
     /// a decimal with precision equal to 26
     pub price_taker_to_maker: String,
 }
@@ -771,7 +771,7 @@ fn convert_page_request(page_request: Option<PageRequest>) -> Option<PageRequest
 /// it returns 0, because the timestamp for this value is invalid (-62135596800);
 /// - in the rest of the cases, it assumes it's a valid RFC 3339 formatted date time and tries to
 /// parse it and returns a unix timestamp.
-fn deserialize_expiration_time<'de, D>(deserializer: D) -> Result<Option<i64>, D::Error>
+fn deserialize_expiration_time<'de, D>(deserializer: D) -> Result<Option<Int64>, D::Error>
 where
     D: Deserializer<'de>,
 {
@@ -782,7 +782,9 @@ where
         None => Ok(None),
 
         Some(date_time_str) => match date_time_str {
-            JIT_LIMIT_ORDER_TYPE_EXP_DATE_TIME => Ok(Some(JIT_LIMIT_ORDER_TYPE_EXP_TIMESTAMP)),
+            JIT_LIMIT_ORDER_TYPE_EXP_DATE_TIME => {
+                Ok(Some(JIT_LIMIT_ORDER_TYPE_EXP_TIMESTAMP.into()))
+            }
 
             // some RFC 3339 formatted date time to be parsed to a unix timestamp
             _ => Ok(Some(
@@ -793,7 +795,8 @@ where
                             &"an RFC 3339 formatted date time",
                         )
                     })?
-                    .timestamp(),
+                    .timestamp()
+                    .into(),
             )),
         },
     }
