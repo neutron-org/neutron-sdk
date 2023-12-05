@@ -222,7 +222,7 @@ pub struct LimitOrderTrancheUserAllRequest {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-pub struct LimitOrderTrancheUserAllRespose {
+pub struct LimitOrderTrancheUserAllResponse {
     pub limit_order_tranche_user: Vec<LimitOrderTrancheUser>,
     pub pagination: Option<PageResponse>,
 }

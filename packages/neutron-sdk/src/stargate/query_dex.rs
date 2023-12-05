@@ -19,7 +19,7 @@ use crate::stargate::types_dex::{
     GetInactiveLimitOrderTrancheResponse, GetLimitOrderTrancheRequest,
     GetLimitOrderTrancheResponse, GetPoolMetadataRequest, GetPoolMetadataResponse,
     GetPoolReservesRequest, GetPoolReservesResponse, LimitOrderTrancheUserAllRequest,
-    LimitOrderTrancheUserAllRespose, LimitOrderTrancheUserRequest, LimitOrderTrancheUserResponse,
+    LimitOrderTrancheUserAllResponse, LimitOrderTrancheUserRequest, LimitOrderTrancheUserResponse,
     ParamsRequest, ParamsResponse, PoolByIdRequest, PoolRequest, PoolResponse,
 };
 use cosmwasm_std::{Deps, StdResult};
@@ -64,7 +64,7 @@ pub fn get_limit_order_tranche_user(
 pub fn get_limit_order_tranche_user_all(
     deps: Deps,
     req: LimitOrderTrancheUserAllRequest,
-) -> StdResult<LimitOrderTrancheUserAllRespose> {
+) -> StdResult<LimitOrderTrancheUserAllResponse> {
     make_stargate_query(
         deps,
         QueryAllLimitOrderTrancheUserRequest::from(req),
