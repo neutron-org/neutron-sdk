@@ -40,6 +40,7 @@ pub const GOV_PROPOSAL_HEX_RESPONSE: &str = "0801129f010a202f636f736d6f732e676f7
 pub const STAKING_DENOM_HEX_RESPONSE: &str = "227374616b6522";
 pub const STAKING_VALIDATOR_HEX_RESPONSE: &str = "0a34636f736d6f7376616c6f706572313566716a706a39307275686a353771336c366135686461307274373767366d63656b326d747112430a1d2f636f736d6f732e63727970746f2e656432353531392e5075624b657912220a20b20c07b3eb900df72b48c24e9a2e06ff4fe73bbd255e433af8eae3b1988e698820032a09313030303030303030321b3130303030303030303030303030303030303030303030303030303a080a066d796e6f64654a00524a0a3b0a1231303030303030303030303030303030303012123230303030303030303030303030303030301a113130303030303030303030303030303030120b089cfcd3a20610e0dc890b5a0131";
 pub const DELEGATOR_DELEGATIONS_HEX_RESPONSE: &str = "0a2d636f736d6f73313566716a706a39307275686a353771336c366135686461307274373767366d63757a3777386e1234636f736d6f7376616c6f706572313566716a706a39307275686a353771336c366135686461307274373767366d63656b326d74711a1b313030303030303030303030303030303030303030303030303030";
+pub const VALIDATOR_SIGNING_INFO_HEX_RESPONSE: &str = "0a34636f736d6f7376616c636f6e73313966353366717132387636706d7a383737646e653735643464376c307236356432373530707718102200";
 
 #[test]
 fn test_balance_reconstruct() {
@@ -976,6 +977,32 @@ fn test_staking_validators_reconstruct_from_hex() {
                 max_change_rate: Some(Decimal::from_str("0.010000000000000000").unwrap()),
                 update_time: Some(1683291676u64), // mutating
                 min_self_delegation: Decimal::one(),
+            }]
+        }
+    );
+}
+
+#[test]
+fn test_validators_signing_infos_reconstruct_from_hex() {
+    let bytes = hex::decode(VALIDATOR_SIGNING_INFO_HEX_RESPONSE).unwrap(); // decode hex string to bytes
+    let base64_input = BASE64_STANDARD.encode(bytes); // encode bytes to base64 string
+
+    let s = StorageValue {
+        storage_prefix: String::default(), // not used in reconstruct
+        key: Binary::default(),            // not used in reconstruct
+        value: Binary::from_base64(base64_input.as_str()).unwrap(),
+    };
+    let signing_info = SigningInfo::reconstruct(&[s]).unwrap();
+    assert_eq!(
+        signing_info,
+        SigningInfo {
+            signing_infos: vec![ValidatorSigningInfo {
+                address: "cosmosvalcons19f53fqq28v6pmz877dne75d4d7l0r65d2750pw".to_string(),
+                start_height: 0,
+                index_offset: 16,
+                jailed_until: Some(0),
+                tombstoned: false,
+                missed_blocks_counter: 0
             }]
         }
     );
