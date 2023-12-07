@@ -11,6 +11,7 @@ use cosmos_sdk_proto::cosmos::distribution::v1beta1::FeePool as CosmosFeePool;
 use cosmos_sdk_proto::cosmos::gov::v1beta1::{
     Proposal as CosmosProposal, TallyResult as CosmosTallyResult,
 };
+use cosmos_sdk_proto::cosmos::slashing::v1beta1::ValidatorSigningInfo as CosmosValidatorSigningInfo;
 use cosmos_sdk_proto::cosmos::staking::v1beta1::Validator as CosmosValidator;
 use cosmos_sdk_proto::traits::Message;
 use cosmos_sdk_proto::Any;
@@ -34,13 +35,13 @@ use neutron_sdk::interchain_queries::v045::helpers::{
     create_total_denom_key, create_validator_key,
 };
 use neutron_sdk::interchain_queries::v045::types::{
-    Balances, FeePool, GovernmentProposal, Proposal, StakingValidator, TallyResult, TotalSupply,
-    Validator, RECIPIENT_FIELD,
+    Balances, FeePool, GovernmentProposal, Proposal, SigningInfo, StakingValidator, TallyResult,
+    TotalSupply, Validator, ValidatorSigningInfo, RECIPIENT_FIELD,
 };
 
 use neutron_sdk::interchain_queries::v045::queries::{
     BalanceResponse, DelegatorDelegationsResponse, FeePoolResponse, ProposalResponse,
-    TotalSupplyResponse, ValidatorResponse,
+    TotalSupplyResponse, ValidatorResponse, ValidatorSigningInfoResponse,
 };
 use neutron_sdk::NeutronError;
 use schemars::_serde_json::to_string;
@@ -146,6 +147,29 @@ fn build_interchain_query_staking_validator_value(validator: String) -> StorageV
         unbonding_time: None,
         commission: None,
         min_self_delegation: "1".to_string(),
+    };
+
+    StorageValue {
+        storage_prefix: "".to_string(),
+        key: Binary(validator_key),
+        value: Binary(validator.encode_to_vec()),
+    }
+}
+
+fn build_interchain_query_validator_signing_info_value(
+    validator: String,
+    jailed_until: Option<prost_types::Timestamp>,
+) -> StorageValue {
+    let operator_address = decode_and_convert(validator.as_str()).unwrap();
+    let validator_key = create_validator_key(operator_address).unwrap();
+
+    let validator = CosmosValidatorSigningInfo {
+        address: validator,
+        start_height: 1,
+        index_offset: 20,
+        jailed_until,
+        tombstoned: false,
+        missed_blocks_counter: 13,
     };
 
     StorageValue {
@@ -517,6 +541,7 @@ fn test_staking_validators_query() {
                         operator_address: "cosmosvaloper132juzk0gdmwuxvx4phug7m3ymyatxlh9734g4w"
                             .to_string(),
                         status: 1,
+                        consensus_pubkey: Some(vec!()),
                         tokens: "1".to_string(),
                         jailed: false,
                         delegator_shares: "1".to_string(),
@@ -537,6 +562,7 @@ fn test_staking_validators_query() {
                         operator_address: "cosmosvaloper1sjllsnramtg3ewxqwwrwjxfgc4n4ef9u2lcnj0"
                             .to_string(),
                         status: 1,
+                        consensus_pubkey: Some(vec!()),
                         tokens: "1".to_string(),
                         jailed: false,
                         delegator_shares: "1".to_string(),
@@ -552,6 +578,83 @@ fn test_staking_validators_query() {
                         max_rate: None,
                         max_change_rate: None,
                         update_time: None,
+                    }
+                ]
+            }
+        }
+    )
+}
+
+#[test]
+fn test_validators_signing_infos_query() {
+    let mut deps = dependencies(&[]);
+    let validators = vec![
+        (
+            "cosmosvaloper132juzk0gdmwuxvx4phug7m3ymyatxlh9734g4w".to_string(),
+            None,
+        ),
+        (
+            "cosmosvaloper1sjllsnramtg3ewxqwwrwjxfgc4n4ef9u2lcnj0".to_string(),
+            Some(prost_types::Timestamp {
+                seconds: 1203981203,
+                nanos: 123123,
+            }),
+        ),
+    ];
+
+    let msg = ExecuteMsg::RegisterValidatorsSigningInfosQuery {
+        connection_id: "connection".to_string(),
+        update_period: 10,
+        validators: validators.clone().into_iter().map(|(v, _)| v).collect(),
+    };
+
+    let keys = register_query(&mut deps, mock_env(), mock_info("", &[]), msg);
+
+    let registered_query =
+        build_registered_query_response(1, QueryParam::Keys(keys.0), QueryType::KV, 987);
+
+    let mut kv_results: Vec<StorageValue> = vec![];
+
+    for validator in validators {
+        let value = build_interchain_query_validator_signing_info_value(validator.0, validator.1);
+        kv_results.push(value);
+    }
+
+    let validators_response = QueryRegisteredQueryResultResponse {
+        result: InterchainQueryResult {
+            kv_results,
+            height: 0,
+            revision: 0,
+        },
+    };
+
+    deps.querier.add_registered_queries(1, registered_query);
+    deps.querier
+        .add_query_response(1, to_json_binary(&validators_response).unwrap());
+    let staking_validators = QueryMsg::ValidatorsSigningInfos { query_id: 1 };
+    let resp: ValidatorSigningInfoResponse =
+        from_json(query(deps.as_ref(), mock_env(), staking_validators).unwrap()).unwrap();
+    assert_eq!(
+        resp,
+        ValidatorSigningInfoResponse {
+            last_submitted_local_height: 987,
+            signing_infos: SigningInfo {
+                signing_infos: vec![
+                    ValidatorSigningInfo {
+                        address: "cosmosvaloper132juzk0gdmwuxvx4phug7m3ymyatxlh9734g4w".to_string(),
+                        start_height: 1,
+                        index_offset: 20,
+                        jailed_until: None,
+                        tombstoned: false,
+                        missed_blocks_counter: 13
+                    },
+                    ValidatorSigningInfo {
+                        address: "cosmosvaloper1sjllsnramtg3ewxqwwrwjxfgc4n4ef9u2lcnj0".to_string(),
+                        start_height: 1,
+                        index_offset: 20,
+                        jailed_until: Some(1203981203),
+                        tombstoned: false,
+                        missed_blocks_counter: 13,
                     }
                 ]
             }

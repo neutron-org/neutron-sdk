@@ -271,18 +271,18 @@ pub fn query(deps: Deps<NeutronQuery>, env: Env, msg: QueryMsg) -> NeutronResult
         QueryMsg::BankTotalSupply { query_id } => {
             Ok(to_json_binary(&query_bank_total(deps, env, query_id)?)?)
         }
-        QueryMsg::DistributionFeePool { query_id } => Ok(to_binary(&query_distribution_fee_pool(
+        QueryMsg::DistributionFeePool { query_id } => Ok(to_json_binary(
+            &query_distribution_fee_pool(deps, env, query_id)?,
+        )?),
+        QueryMsg::StakingValidators { query_id } => Ok(to_json_binary(&query_staking_validators(
             deps, env, query_id,
         )?)?),
-        QueryMsg::StakingValidators { query_id } => {
-            Ok(to_binary(&query_staking_validators(deps, env, query_id)?)?)
-        }
-        QueryMsg::ValidatorsSigningInfos { query_id } => Ok(to_binary(
+        QueryMsg::ValidatorsSigningInfos { query_id } => Ok(to_json_binary(
             &query_validators_signing_infos(deps, env, query_id)?,
         )?),
-        QueryMsg::GovernmentProposals { query_id } => Ok(to_binary(&query_government_proposals(
-            deps, env, query_id,
-        )?)?),
+        QueryMsg::GovernmentProposals { query_id } => Ok(to_json_binary(
+            &query_government_proposals(deps, env, query_id)?,
+        )?),
         QueryMsg::GetDelegations { query_id } => {
             Ok(to_json_binary(&query_delegations(deps, env, query_id)?)?)
         }
