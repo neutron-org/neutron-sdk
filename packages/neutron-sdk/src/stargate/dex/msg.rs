@@ -3,7 +3,7 @@ use crate::proto_types::neutron::dex::{
     MsgWithdrawFilledLimitOrder, MsgWithdrawal,
 };
 use crate::stargate::aux::create_stargate_msg;
-use crate::stargate::types_dex::{
+use crate::stargate::dex::types::{
     CancelLimitOrderRequest, DepositRequest, MultiHopSwapRequest, PlaceLimitOrderRequest,
     WithdrawFilledLimitOrderRequest, WithdrawalRequest,
 };

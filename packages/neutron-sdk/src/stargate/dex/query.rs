@@ -8,7 +8,7 @@ use crate::proto_types::neutron::dex::{
     QueryParamsRequest, QueryPoolByIdRequest, QueryPoolRequest,
 };
 use crate::stargate::aux::make_stargate_query;
-use crate::stargate::types_dex::{
+use crate::stargate::dex::types::{
     AllInactiveLimitOrderTrancheRequest, AllInactiveLimitOrderTrancheResponse,
     AllLimitOrderTrancheRequest, AllLimitOrderTrancheResponse, AllPoolMetadataRequest,
     AllPoolMetadataResponse, AllPoolReservesRequest, AllPoolReservesResponse,
