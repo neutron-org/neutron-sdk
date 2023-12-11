@@ -1,7 +1,7 @@
-pub(crate) mod aux;
 pub(crate) mod msg_dex;
 pub(crate) mod query_dex;
 
+pub mod aux;
 pub mod proto_types;
 pub mod types_dex;
 

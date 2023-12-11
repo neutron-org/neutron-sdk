@@ -11,7 +11,7 @@ use serde::de::DeserializeOwned;
 /// Since stargate query results are JSON-encoded instead of protobuf-encoded, the Res is
 /// expected to have a serde::de::DeserializeOwned trait. Why JSON, not proto? See the link:
 /// https://github.com/CosmWasm/wasmd/blob/6f6be7880f1caa666b86aaafea625208d70675dc/x/wasm/keeper/query_plugins.go#L360
-pub(crate) fn make_stargate_query<Req, Res>(deps: Deps, req: Req, path: &str) -> StdResult<Res>
+pub fn make_stargate_query<Req, Res>(deps: Deps, req: Req, path: &str) -> StdResult<Res>
 where
     Req: prost::Message,
     Res: DeserializeOwned,
@@ -27,7 +27,7 @@ where
 /// * **req** is a proto request model. Most likely it's a result of proto code generation;
 /// * **path** is an RPC request path. See Msg service definitions in neutron modules' proto files
 /// for additional info.
-pub(crate) fn create_stargate_msg<Req: prost::Message>(req: Req, path: &str) -> CosmosMsg {
+pub fn create_stargate_msg<Req: prost::Message>(req: Req, path: &str) -> CosmosMsg {
     CosmosMsg::Stargate {
         type_url: path.to_string(),
         value: Binary::from(req.encode_to_vec()),
