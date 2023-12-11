@@ -1,5 +1,4 @@
-use crate::stargate::aux::make_stargate_query;
-use crate::stargate::proto_types::neutron::dex::{
+use crate::proto_types::neutron::dex::{
     QueryAllInactiveLimitOrderTrancheRequest, QueryAllLimitOrderTrancheRequest,
     QueryAllLimitOrderTrancheUserRequest, QueryAllPoolMetadataRequest, QueryAllPoolReservesRequest,
     QueryAllTickLiquidityRequest, QueryAllUserDepositsRequest, QueryAllUserLimitOrdersRequest,
@@ -8,6 +7,7 @@ use crate::stargate::proto_types::neutron::dex::{
     QueryGetLimitOrderTrancheUserRequest, QueryGetPoolMetadataRequest, QueryGetPoolReservesRequest,
     QueryParamsRequest, QueryPoolByIdRequest, QueryPoolRequest,
 };
+use crate::stargate::aux::make_stargate_query;
 use crate::stargate::types_dex::{
     AllInactiveLimitOrderTrancheRequest, AllInactiveLimitOrderTrancheResponse,
     AllLimitOrderTrancheRequest, AllLimitOrderTrancheResponse, AllPoolMetadataRequest,

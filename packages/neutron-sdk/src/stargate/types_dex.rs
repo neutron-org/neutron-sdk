@@ -1,6 +1,5 @@
 use crate::bindings::query::{PageRequest, PageResponse};
-use crate::stargate::aux::proto_timestamp_from_i64;
-use crate::stargate::proto_types::neutron::dex::{
+use crate::proto_types::neutron::dex::{
     DepositOptions as DepositOptionsGen, MsgCancelLimitOrder, MsgDeposit, MsgMultiHopSwap,
     MsgPlaceLimitOrder, MsgWithdrawFilledLimitOrder, MsgWithdrawal, MultiHopRoute,
     QueryAllInactiveLimitOrderTrancheRequest, QueryAllLimitOrderTrancheRequest,
@@ -11,6 +10,7 @@ use crate::stargate::proto_types::neutron::dex::{
     QueryGetLimitOrderTrancheUserRequest, QueryGetPoolMetadataRequest, QueryGetPoolReservesRequest,
     QueryParamsRequest, QueryPoolByIdRequest, QueryPoolRequest,
 };
+use crate::stargate::aux::proto_timestamp_from_i64;
 use cosmos_sdk_proto::cosmos::base::query::v1beta1::PageRequest as PageRequestGen;
 use cosmwasm_std::{Coin, Int128, Int64, Uint64};
 use schemars::JsonSchema;
