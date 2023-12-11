@@ -34,7 +34,8 @@ pub(crate) fn create_stargate_msg<Req: prost::Message>(req: Req, path: &str) -> 
     }
 }
 
-pub(crate) fn convert_timestamp(timestamp: i64) -> TimestampGen {
+/// creates a prost_types::Timestamp from a given unix timestamp value in seconds.
+pub(crate) fn proto_timestamp_from_i64(timestamp: i64) -> TimestampGen {
     TimestampGen {
         seconds: timestamp,
         nanos: 0,

@@ -1,5 +1,5 @@
 use crate::bindings::query::{PageRequest, PageResponse};
-use crate::stargate::aux::convert_timestamp;
+use crate::stargate::aux::proto_timestamp_from_i64;
 use crate::stargate::proto_types::neutron::dex::{
     DepositOptions as DepositOptionsGen, MsgCancelLimitOrder, MsgDeposit, MsgMultiHopSwap,
     MsgPlaceLimitOrder, MsgWithdrawFilledLimitOrder, MsgWithdrawal, MultiHopRoute,
@@ -107,7 +107,7 @@ impl From<PlaceLimitOrderRequest> for MsgPlaceLimitOrder {
             tick_index_in_to_out: v.tick_index_in_to_out,
             amount_in: v.amount_in,
             order_type: v.order_type as i32,
-            expiration_time: v.expiration_time.map(convert_timestamp),
+            expiration_time: v.expiration_time.map(proto_timestamp_from_i64),
             max_amount_out: v.max_amount_out.unwrap_or_default(),
         }
     }
@@ -527,7 +527,7 @@ impl From<EstimatePlaceLimitOrderRequest> for QueryEstimatePlaceLimitOrderReques
             tick_index_in_to_out: v.tick_index_in_to_out,
             amount_in: v.amount_in,
             order_type: v.order_type as i32,
-            expiration_time: v.expiration_time.map(convert_timestamp),
+            expiration_time: v.expiration_time.map(proto_timestamp_from_i64),
             max_amount_out: v.max_amount_out.unwrap_or_default(),
         }
     }
