@@ -14,7 +14,7 @@ where
 }
 
 pub(crate) fn create_stargate_msg<Req: prost::Message>(req: Req, path: &str) -> CosmosMsg {
-    cosmwasm_std::CosmosMsg::Stargate {
+    CosmosMsg::Stargate {
         type_url: path.to_string(),
         value: Binary::from(req.encode_to_vec()),
     }
