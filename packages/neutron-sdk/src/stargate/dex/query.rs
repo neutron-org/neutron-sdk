@@ -46,10 +46,12 @@ const POOL_BY_ID_QUERY_PATH: &str = "/neutron.dex.Query/PoolByID";
 const POOL_METADATA_QUERY_PATH: &str = "/neutron.dex.Query/PoolMetadata";
 const POOL_METADATA_ALL_QUERY_PATH: &str = "/neutron.dex.Query/PoolMetadataAll";
 
+/// Queries the parameters of the module.
 pub fn get_params(deps: Deps, req: ParamsRequest) -> StdResult<ParamsResponse> {
     make_stargate_query(deps, QueryParamsRequest::from(req), PARAMS_QUERY_PATH)
 }
 
+/// Retrieves a `LimitOrderTrancheUser` by user address and tranche key.
 pub fn get_limit_order_tranche_user(
     deps: Deps,
     req: LimitOrderTrancheUserRequest,
@@ -61,6 +63,7 @@ pub fn get_limit_order_tranche_user(
     )
 }
 
+/// Retrieves a list of `LimitOrderTrancheUser` items.
 pub fn get_limit_order_tranche_user_all(
     deps: Deps,
     req: LimitOrderTrancheUserAllRequest,
@@ -72,6 +75,7 @@ pub fn get_limit_order_tranche_user_all(
     )
 }
 
+/// Retrieves a list of `LimitOrderTrancheUser` items by user address.
 pub fn get_limit_order_tranche_user_all_by_address(
     deps: Deps,
     req: AllUserLimitOrdersRequest,
@@ -83,6 +87,7 @@ pub fn get_limit_order_tranche_user_all_by_address(
     )
 }
 
+/// Retrieves a `LimitOrderTranche` by index.
 pub fn get_limit_order_tranche(
     deps: Deps,
     req: GetLimitOrderTrancheRequest,
@@ -94,6 +99,7 @@ pub fn get_limit_order_tranche(
     )
 }
 
+/// Retrieves a list of `LimitOrderTranche` items for a given pair_id / token_in combination.
 pub fn get_limit_order_tranche_all(
     deps: Deps,
     req: AllLimitOrderTrancheRequest,
@@ -105,6 +111,7 @@ pub fn get_limit_order_tranche_all(
     )
 }
 
+/// Retrieves a list of `DepositRecord` items by user address.
 pub fn get_user_deposits_all(
     deps: Deps,
     req: AllUserDepositsRequest,
@@ -116,6 +123,7 @@ pub fn get_user_deposits_all(
     )
 }
 
+/// Retrieves a list of `TickLiquidity` items for a given pair_id / token_in combination.
 pub fn get_tick_liquidity_all(
     deps: Deps,
     req: AllTickLiquidityRequest,
@@ -127,6 +135,7 @@ pub fn get_tick_liquidity_all(
     )
 }
 
+/// Retrieves an inactive `LimitOrderTranche` by index.
 pub fn get_inactive_limit_order_tranche(
     deps: Deps,
     req: GetInactiveLimitOrderTrancheRequest,
@@ -138,6 +147,7 @@ pub fn get_inactive_limit_order_tranche(
     )
 }
 
+/// Retrieves a list of inactive `LimitOrderTranche` items.
 pub fn get_inactive_limit_order_tranche_all(
     deps: Deps,
     req: AllInactiveLimitOrderTrancheRequest,
@@ -149,6 +159,7 @@ pub fn get_inactive_limit_order_tranche_all(
     )
 }
 
+/// Retrieves a list of `PoolReserves` items for a given pair_id / token_in combination.
 pub fn get_pool_reserves_all(
     deps: Deps,
     req: AllPoolReservesRequest,
@@ -160,6 +171,7 @@ pub fn get_pool_reserves_all(
     )
 }
 
+/// Retrieves a `PoolReserves` by index.
 pub fn get_pool_reserves(
     deps: Deps,
     req: GetPoolReservesRequest,
@@ -171,6 +183,7 @@ pub fn get_pool_reserves(
     )
 }
 
+/// Queries the simulated result of a multihop swap.
 pub fn get_estimate_multi_hop_swap(
     deps: Deps,
     req: EstimateMultiHopSwapRequest,
@@ -197,10 +210,12 @@ pub fn get_pool(deps: Deps, req: PoolRequest) -> StdResult<PoolResponse> {
     make_stargate_query(deps, QueryPoolRequest::from(req), POOL_QUERY_PATH)
 }
 
+/// Queries a pool by ID.
 pub fn get_pool_by_id(deps: Deps, req: PoolByIdRequest) -> StdResult<PoolResponse> {
     make_stargate_query(deps, QueryPoolByIdRequest::from(req), POOL_BY_ID_QUERY_PATH)
 }
 
+/// Queries a `PoolMetadata` by ID.
 pub fn get_pool_metadata(
     deps: Deps,
     req: GetPoolMetadataRequest,
@@ -212,6 +227,7 @@ pub fn get_pool_metadata(
     )
 }
 
+/// Queries a list of `PoolMetadata` items.
 pub fn get_pool_metadata_all(
     deps: Deps,
     req: AllPoolMetadataRequest,

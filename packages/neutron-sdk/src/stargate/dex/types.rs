@@ -28,14 +28,23 @@ pub const JIT_LIMIT_ORDER_TYPE_EXP_TIMESTAMP: i64 = 0;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct DepositRequest {
+    /// The account from which deposit Tokens will be debited.
     pub sender: String,
+    /// The account to which PoolShares will be issued.
     pub receiver: String,
+    /// Denom for one side of the deposit.
     pub token_a: String,
+    /// Denom for the opposing side of the deposit.
     pub token_b: String,
+    /// Amounts of token_a to deposit.
     pub amounts_a: Vec<String>,
+    /// Amounts of token_b to deposit.
     pub amounts_b: Vec<String>,
+    /// Tick indexes to deposit at defined in terms of token_a to token_b (i.e. token_a is on the left).
     pub tick_indexes_a_to_b: Vec<i64>,
+    /// Fees to use for each deposit.
     pub fees: Vec<u64>,
+    /// Additional deposit options.
     pub options: Vec<DepositOptions>,
 }
 
@@ -59,12 +68,20 @@ impl From<DepositRequest> for MsgDeposit {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct WithdrawalRequest {
+    /// The account from which the PoolShares are removed.
     pub sender: String,
+    /// The account to which the tokens are credited.
     pub receiver: String,
+    /// Denom for one side of the deposit.
     pub token_a: String,
+    /// Denom for the opposing side of the deposit.
     pub token_b: String,
+    /// Amount of shares to remove from each pool.
     pub shares_to_remove: Vec<String>,
+    /// Tick indexes of the target LiquidityPools defined in terms of tokan_a to token_b (i.e.
+    /// token_a is on the left).
     pub tick_indexes_a_to_b: Vec<i64>,
+    /// Fee for the target LiquidityPools.
     pub fees: Vec<u64>,
 }
 
@@ -86,13 +103,22 @@ impl From<WithdrawalRequest> for MsgWithdrawal {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct PlaceLimitOrderRequest {
+    /// Account from which token_in is debited.
     pub sender: String,
+    /// Account to which token_out is credited or that will be allowed to withdraw or cancel a
+    /// maker order.
     pub receiver: String,
+    /// Token being “sold”.
     pub token_in: String,
+    /// Token being “bought”.
     pub token_out: String,
+    /// Limit tick for a limit order, specified in terms of token_in to token_out.
     pub tick_index_in_to_out: i64,
+    /// Amount of TokenIn to be traded.
     pub amount_in: String,
+    /// Type of limit order to be used.
     pub order_type: LimitOrderType,
+    /// Expiration time for order. Only valid for GoodTilTime limit orders.
     pub expiration_time: Option<i64>,
     pub max_amount_out: Option<String>,
 }
@@ -117,7 +143,9 @@ impl From<PlaceLimitOrderRequest> for MsgPlaceLimitOrder {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct WithdrawFilledLimitOrderRequest {
+    /// Account which controls the limit order and to which proceeds are credited.
     pub sender: String,
+    /// Tranche key for the target limit order.
     pub tranche_key: String,
 }
 
@@ -134,7 +162,9 @@ impl From<WithdrawFilledLimitOrderRequest> for MsgWithdrawFilledLimitOrder {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct CancelLimitOrderRequest {
+    /// Account which controls the limit order and to which any untraded amount is credited.
     pub sender: String,
+    /// Tranche key for the target limit order.
     pub tranche_key: String,
 }
 
@@ -151,11 +181,20 @@ impl From<CancelLimitOrderRequest> for MsgCancelLimitOrder {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct MultiHopSwapRequest {
+    /// Account from which token_in is debited.
     pub sender: String,
+    /// Account to which token_out is credited.
     pub receiver: String,
+    /// Array of possible routes. E.g. [[“token_a”, “token_c”, “token_d”, “token_b”]]. The complete
+    /// amount of specified by `amount_in` will always be used. If there is insufficient liquidity
+    /// in a route to swap 100% of the `amount_in` the route will fail. The first route that does
+    /// not run out of liquidity, hit the `exit_limit_price` or return an error will be used.
     pub routes: Vec<Vec<String>>,
+    /// Amount of token_in to swap.
     pub amount_in: String,
+    /// Minimum price that that must be satisfied for a route to succeed.
     pub exit_limit_price: String,
+    /// If true all routes are run and the route with the best price is used.
     pub pick_best_route: bool,
 }
 
@@ -343,7 +382,7 @@ pub struct AllTickLiquidityRequest {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct AllTickLiquidityResponse {
-    pub tick_liquidity: Vec<Liquidity>,
+    pub tick_liquidity: Vec<TickLiquidity>,
     pub pagination: Option<PageResponse>,
 }
 
@@ -613,6 +652,8 @@ impl From<AllPoolMetadataRequest> for QueryAllPoolMetadataRequest {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct DepositOptions {
+    /// Autoswap provides a mechanism for users to deposit the entirety of their specified deposit
+    /// amounts by paying a small fee. By default the `autoswap` option is enabled.
     pub disable_autoswap: bool,
 }
 
@@ -685,6 +726,7 @@ pub struct LimitOrderTranche {
     pub reserves_taker_denom: Int128,
     pub total_maker_denom: Int128,
     pub total_taker_denom: Int128,
+    /// unix timestamp in seconds;
     #[serde(deserialize_with = "deserialize_expiration_time")]
     pub expiration_time: Option<Int64>,
     /// a decimal with precision equal to 26
@@ -709,7 +751,7 @@ pub struct PairID {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub enum Liquidity {
+pub enum TickLiquidity {
     PoolReserves(PoolReserves),
     LimitOrderTranche(LimitOrderTranche),
 }
