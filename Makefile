@@ -13,9 +13,6 @@ clippy:
 fmt:
 	@cargo fmt -- --check
 
-build_proto:
-	@./build_proto.sh
-
 compile:
 	@./build_release.sh
 
@@ -23,4 +20,4 @@ check_contracts:
 	@cargo install cosmwasm-check
 	@cosmwasm-check --available-capabilities iterator,staking,stargate,neutron artifacts/*.wasm
 
-build: build_proto schema clippy test fmt compile check_contracts
+build: schema clippy test fmt compile check_contracts
