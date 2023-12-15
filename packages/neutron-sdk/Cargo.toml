@@ -9,7 +9,7 @@ homepage = "https://neutron.org"
 readme = "README.md"
 
 [dependencies]
-cosmwasm-std = { workspace = true }
+cosmwasm-std = { workspace = true, features = ["stargate"] }
 cosmos-sdk-proto = { workspace = true }
 serde = { workspace = true }
 schemars = { workspace = true }
