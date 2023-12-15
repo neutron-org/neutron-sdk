@@ -87,7 +87,7 @@ pub fn get_limit_order_tranche_user_all_by_address(
     )
 }
 
-/// Retrieves a `LimitOrderTranche` by index.
+/// Retrieves a `LimitOrderTranche` by a tranche's key (pair_id + token_in + tick_index + tranche_key).
 pub fn get_limit_order_tranche(
     deps: Deps,
     req: GetLimitOrderTrancheRequest,
@@ -171,7 +171,7 @@ pub fn get_pool_reserves_all(
     )
 }
 
-/// Retrieves a `PoolReserves` by index.
+/// Retrieves a `PoolReserves` by pool reserves key (pair_id + token_in + tick_index + fee).
 pub fn get_pool_reserves(
     deps: Deps,
     req: GetPoolReservesRequest,
@@ -195,6 +195,7 @@ pub fn get_estimate_multi_hop_swap(
     )
 }
 
+/// Queries the simulated result of a limit order placement.
 pub fn get_estimate_place_limit_order(
     deps: Deps,
     req: EstimatePlaceLimitOrderRequest,
@@ -206,6 +207,7 @@ pub fn get_estimate_place_limit_order(
     )
 }
 
+/// Queries a pool by pair, tick and fee.
 pub fn get_pool(deps: Deps, req: PoolRequest) -> StdResult<PoolResponse> {
     make_stargate_query(deps, QueryPoolRequest::from(req), POOL_QUERY_PATH)
 }

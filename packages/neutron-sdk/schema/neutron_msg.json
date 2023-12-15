@@ -14,8 +14,7 @@
           "type": "object",
           "required": [
             "connection_id",
-            "interchain_account_id",
-            "register_fee"
+            "interchain_account_id"
           ],
           "properties": {
             "connection_id": {
@@ -28,7 +27,10 @@
             },
             "register_fee": {
               "description": "*register_fee** is a fees required to be payed to register interchain account",
-              "type": "array",
+              "type": [
+                "array",
+                "null"
+              ],
               "items": {
                 "$ref": "#/definitions/Coin"
               }
