@@ -21,6 +21,45 @@ pub struct DepositRecord {
     #[prost(uint64, tag = "6")]
     pub fee: u64,
 }
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct TradePairId {
+    #[prost(string, tag = "2")]
+    pub maker_denom: ::prost::alloc::string::String,
+    #[prost(string, tag = "3")]
+    pub taker_denom: ::prost::alloc::string::String,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct LimitOrderTrancheKey {
+    #[prost(message, optional, tag = "1")]
+    pub trade_pair_id: ::core::option::Option<TradePairId>,
+    #[prost(int64, tag = "2")]
+    pub tick_index_taker_to_maker: i64,
+    #[prost(string, tag = "3")]
+    pub tranche_key: ::prost::alloc::string::String,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct LimitOrderTranche {
+    #[prost(message, optional, tag = "1")]
+    pub key: ::core::option::Option<LimitOrderTrancheKey>,
+    #[prost(string, tag = "2")]
+    pub reserves_maker_denom: ::prost::alloc::string::String,
+    #[prost(string, tag = "3")]
+    pub reserves_taker_denom: ::prost::alloc::string::String,
+    #[prost(string, tag = "4")]
+    pub total_maker_denom: ::prost::alloc::string::String,
+    #[prost(string, tag = "5")]
+    pub total_taker_denom: ::prost::alloc::string::String,
+    /// expiration_time is represented as an RFC 3339 formatted date.
+    /// LimitOrders with expiration_time set are valid as long as blockTime <= expiration_time.
+    /// JIT orders also use expiration_time to handle deletion, but represent a special case.
+    /// All JIT orders have an expiration_time of 0001-01-01T00:00:00Z, and an exception is made to
+    /// still treat these orders as live. Order deletion still functions the
+    /// same, and the orders will be deleted at the end of the block.
+    #[prost(message, optional, tag = "6")]
+    pub expiration_time: ::core::option::Option<::prost_types::Timestamp>,
+    #[prost(string, tag = "7")]
+    pub price_taker_to_maker: ::prost::alloc::string::String,
+}
 /// Params defines the parameters for the module.
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Params {
@@ -28,13 +67,6 @@ pub struct Params {
     pub fee_tiers: ::prost::alloc::vec::Vec<u64>,
     #[prost(string, tag = "2")]
     pub max_true_taker_spread: ::prost::alloc::string::String,
-}
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct TradePairId {
-    #[prost(string, tag = "2")]
-    pub maker_denom: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
-    pub taker_denom: ::prost::alloc::string::String,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct DepositOptions {
@@ -118,8 +150,9 @@ pub struct MsgPlaceLimitOrderResponse {
     #[prost(message, optional, tag = "2")]
     pub coin_in: ::core::option::Option<cosmos_sdk_proto::cosmos::base::v1beta1::Coin>,
     /// Total amount of coin received from the taker portion of the limit order
-    /// This is the amount of coin immediately available in the users account after executing the
-    /// limit order. It does not include any future proceeds from the maker portion which will have withdrawn in the future
+    /// This is the amount of coin immediately available in the users account after
+    /// executing the limit order. It does not include any future proceeds from the
+    /// maker portion which will have withdrawn in the future
     #[prost(message, optional, tag = "3")]
     pub taker_coin_out: ::core::option::Option<cosmos_sdk_proto::cosmos::base::v1beta1::Coin>,
 }
@@ -158,8 +191,8 @@ pub struct MsgMultiHopSwap {
     pub amount_in: ::prost::alloc::string::String,
     #[prost(string, tag = "5")]
     pub exit_limit_price: ::prost::alloc::string::String,
-    /// If pickBestRoute == true then all routes are run and the route with the best price is chosen
-    /// otherwise, the first succesful route is used.
+    /// If pickBestRoute == true then all routes are run and the route with the
+    /// best price is chosen otherwise, the first succesful route is used.
     #[prost(bool, tag = "6")]
     pub pick_best_route: bool,
 }
@@ -227,35 +260,15 @@ pub struct LimitOrderTrancheUser {
     pub order_type: i32,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct LimitOrderTrancheKey {
-    #[prost(message, optional, tag = "1")]
-    pub trade_pair_id: ::core::option::Option<TradePairId>,
+pub struct PoolMetadata {
+    #[prost(uint64, tag = "1")]
+    pub id: u64,
     #[prost(int64, tag = "2")]
-    pub tick_index_taker_to_maker: i64,
-    #[prost(string, tag = "3")]
-    pub tranche_key: ::prost::alloc::string::String,
-}
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct LimitOrderTranche {
-    #[prost(message, optional, tag = "1")]
-    pub key: ::core::option::Option<LimitOrderTrancheKey>,
-    #[prost(string, tag = "2")]
-    pub reserves_maker_denom: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
-    pub reserves_taker_denom: ::prost::alloc::string::String,
-    #[prost(string, tag = "4")]
-    pub total_maker_denom: ::prost::alloc::string::String,
-    /// GoodTilDate is represented as seconds since  January 1, year 1, 00:00:00.00 UTC
-    /// LimitOrders with goodTilDate set are valid as long as blockTime <= goodTilDate
-    #[prost(string, tag = "5")]
-    pub total_taker_denom: ::prost::alloc::string::String,
-    /// JIT orders also use goodTilDate to handle deletion but represent a special case
-    /// All JIT orders have a goodTilDate of 0 and an exception is made to still still treat these orders as live
-    /// Order deletion still functions the same and the orders will be deleted at the end of the block
-    #[prost(message, optional, tag = "6")]
-    pub expiration_time: ::core::option::Option<::prost_types::Timestamp>,
-    #[prost(string, tag = "7")]
-    pub price_taker_to_maker: ::prost::alloc::string::String,
+    pub tick: i64,
+    #[prost(uint64, tag = "3")]
+    pub fee: u64,
+    #[prost(message, optional, tag = "4")]
+    pub pair_id: ::core::option::Option<PairId>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct PoolReservesKey {
@@ -292,17 +305,6 @@ pub mod tick_liquidity {
         LimitOrderTranche(super::LimitOrderTranche),
     }
 }
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct PoolMetadata {
-    #[prost(uint64, tag = "1")]
-    pub id: u64,
-    #[prost(int64, tag = "2")]
-    pub tick: i64,
-    #[prost(uint64, tag = "3")]
-    pub fee: u64,
-    #[prost(message, optional, tag = "4")]
-    pub pair_id: ::core::option::Option<PairId>,
-}
 /// GenesisState defines the dex module's genesis state.
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GenesisState {
@@ -328,7 +330,8 @@ pub struct LimitOrderExpiration {
     #[prost(bytes = "vec", tag = "2")]
     pub tranche_ref: ::prost::alloc::vec::Vec<u8>,
 }
-// NOTE: This struct is never actually stored in the KV store. It is merely a convenience wrapper for holding both sides of a pool.
+// NOTE: This struct is never actually stored in the KV store. It is merely a
+// convenience wrapper for holding both sides of a pool.
 
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Pool {
@@ -535,8 +538,8 @@ pub struct QueryEstimateMultiHopSwapRequest {
     pub amount_in: ::prost::alloc::string::String,
     #[prost(string, tag = "5")]
     pub exit_limit_price: ::prost::alloc::string::String,
-    /// If pickBestRoute == true then all routes are run and the route with the best price is chosen
-    /// otherwise, the first succesful route is used.
+    /// If pickBestRoute == true then all routes are run and the route with the
+    /// best price is chosen otherwise, the first succesful route is used.
     #[prost(bool, tag = "6")]
     pub pick_best_route: bool,
 }
@@ -570,15 +573,17 @@ pub struct QueryEstimatePlaceLimitOrderRequest {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryEstimatePlaceLimitOrderResponse {
     /// Total amount of coin used for the limit order
-    /// You can derive makerLimitInCoin using the equation: totalInCoin = swapInCoin + makerLimitInCoin
+    /// You can derive makerLimitInCoin using the equation: totalInCoin =
+    /// swapInCoin + makerLimitInCoin
     #[prost(message, optional, tag = "1")]
     pub total_in_coin: ::core::option::Option<cosmos_sdk_proto::cosmos::base::v1beta1::Coin>,
     /// Total amount of the token in that was immediately swapped for swapOutCoin
     #[prost(message, optional, tag = "2")]
     pub swap_in_coin: ::core::option::Option<cosmos_sdk_proto::cosmos::base::v1beta1::Coin>,
     /// Total amount of coin received from the taker portion of the limit order
-    /// This is the amount of coin immediately available in the users account after executing the
-    /// limit order. It does not include any future proceeds from the maker portion which will have withdrawn in the future
+    /// This is the amount of coin immediately available in the users account after
+    /// executing the limit order. It does not include any future proceeds from the
+    /// maker portion which will have withdrawn in the future
     #[prost(message, optional, tag = "3")]
     pub swap_out_coin: ::core::option::Option<cosmos_sdk_proto::cosmos::base::v1beta1::Coin>,
 }

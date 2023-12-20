@@ -22,7 +22,8 @@ pub struct Params {
     /// See: <https://github.com/CosmWasm/token-factory/issues/11>
     #[prost(uint64, tag = "2")]
     pub denom_creation_gas_consume: u64,
-    /// FeeCollectorAddress is the address where fees collected from denom creation are sent to
+    /// FeeCollectorAddress is the address where fees collected from denom creation
+    /// are sent to
     #[prost(string, tag = "3")]
     pub fee_collector_address: ::prost::alloc::string::String,
 }

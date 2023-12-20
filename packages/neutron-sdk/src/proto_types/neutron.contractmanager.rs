@@ -1,7 +1,8 @@
 // @generated
 /// Failure message contains information about ACK failures and can be used to
 /// replay ACK in case of requirement.
-/// Note that Failure means that sudo handler to cosmwasm contract failed for some reason
+/// Note that Failure means that sudo handler to cosmwasm contract failed for
+/// some reason
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Failure {
     /// Address of the failed contract

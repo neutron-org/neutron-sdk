@@ -4,7 +4,6 @@ pub mod neutron {
     }
 
     pub mod interchaintxs {
-        include!("neutron.interchaintxs.rs");
         pub mod v1 {
             include!("neutron.interchaintxs.v1.rs");
         }
