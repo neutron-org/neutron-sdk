@@ -27,8 +27,8 @@ where
 /// * **req** is a proto request model. Most likely it's a result of proto code generation;
 /// * **path** is an RPC request path. See Msg service definitions in neutron modules' proto files
 /// for additional info.
-pub fn create_stargate_msg<Req: prost::Message>(path: &str, req: Req) -> CosmosMsg {
-    CosmosMsg::Stargate {
+pub fn create_stargate_msg<Req: prost::Message, T>(path: &str, req: Req) -> CosmosMsg<T> {
+    CosmosMsg::Stargate::<T> {
         type_url: path.to_string(),
         value: Binary::from(req.encode_to_vec()),
     }
