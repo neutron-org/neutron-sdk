@@ -10,7 +10,7 @@ use serde::de::DeserializeOwned;
 ///
 /// Since stargate query results are JSON-encoded instead of protobuf-encoded, the Res is
 /// expected to have a serde::de::DeserializeOwned trait. Why JSON, not proto? See the link:
-/// https://github.com/CosmWasm/wasmd/blob/6f6be7880f1caa666b86aaafea625208d70675dc/x/wasm/keeper/query_plugins.go#L360
+/// <https://github.com/CosmWasm/wasmd/blob/6f6be7880f1caa666b86aaafea625208d70675dc/x/wasm/keeper/query_plugins.go#L360>
 pub fn make_stargate_query<Req, Res>(deps: Deps, path: &str, req: Req) -> StdResult<Res>
 where
     Req: prost::Message,

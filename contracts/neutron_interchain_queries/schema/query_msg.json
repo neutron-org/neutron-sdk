@@ -159,6 +159,28 @@
     {
       "type": "object",
       "required": [
+        "get_unbonding_delegations"
+      ],
+      "properties": {
+        "get_unbonding_delegations": {
+          "type": "object",
+          "required": [
+            "query_id"
+          ],
+          "properties": {
+            "query_id": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
         "cw20_balance"
       ],
       "properties": {

@@ -8,8 +8,9 @@ use crate::interchain_queries::v045::helpers::{
 };
 use crate::interchain_queries::v045::types::{
     Balances, Delegations, FeePool, GovernmentProposal, Proposal, SigningInfo, StakingValidator,
-    TallyResult, TotalSupply, Validator as ContractValidator, ValidatorSigningInfo, DECIMAL_PLACES,
-    KEY_BOND_DENOM, STAKING_STORE_KEY,
+    TallyResult, TotalSupply, UnbondingDelegations, UnbondingEntry, UnbondingResponse,
+    Validator as ContractValidator, ValidatorSigningInfo, DECIMAL_PLACES, KEY_BOND_DENOM,
+    STAKING_STORE_KEY,
 };
 use crate::{NeutronError, NeutronResult};
 use base64::prelude::*;
@@ -25,7 +26,8 @@ use cosmos_sdk_proto::cosmos::staking::v1beta1::{
 };
 use cosmos_sdk_proto::traits::Message;
 use cosmwasm_std::{
-    to_json_binary, Addr, Binary, Coin as StdCoin, Decimal, Delegation as StdDelegation, Uint128,
+    to_json_binary, Addr, Binary, Coin as StdCoin, Decimal, Delegation as StdDelegation, Timestamp,
+    Uint128,
 };
 use hex;
 use std::ops::Mul;
@@ -40,6 +42,7 @@ pub const GOV_PROPOSAL_HEX_RESPONSE: &str = "0801129f010a202f636f736d6f732e676f7
 pub const STAKING_DENOM_HEX_RESPONSE: &str = "227374616b6522";
 pub const STAKING_VALIDATOR_HEX_RESPONSE: &str = "0a34636f736d6f7376616c6f706572313566716a706a39307275686a353771336c366135686461307274373767366d63656b326d747112430a1d2f636f736d6f732e63727970746f2e656432353531392e5075624b657912220a20b20c07b3eb900df72b48c24e9a2e06ff4fe73bbd255e433af8eae3b1988e698820032a09313030303030303030321b3130303030303030303030303030303030303030303030303030303a080a066d796e6f64654a00524a0a3b0a1231303030303030303030303030303030303012123230303030303030303030303030303030301a113130303030303030303030303030303030120b089cfcd3a20610e0dc890b5a0131";
 pub const DELEGATOR_DELEGATIONS_HEX_RESPONSE: &str = "0a2d636f736d6f73313566716a706a39307275686a353771336c366135686461307274373767366d63757a3777386e1234636f736d6f7376616c6f706572313566716a706a39307275686a353771336c366135686461307274373767366d63656b326d74711a1b313030303030303030303030303030303030303030303030303030";
+pub const DELEGATOR_UNBONDING_DELEGATIONS_HEX_RESPONSE: &str = "0a2d636f736d6f73316d396c33353878756e6868776473303536387a6134396d7a68767578783975787265357475641234636f736d6f7376616c6f7065723138686c356339786e35647a6532673530756177306c326d723032657735377a6b3061756b746e1a2108ed02120c08ba97f9ac0610f6abf18f021a0531303030302205313030303028011a2008f902120b08c797f9ac0610e59a89011a053230303030220532303030302802";
 pub const VALIDATOR_SIGNING_INFO_HEX_RESPONSE: &str = "0a34636f736d6f7376616c636f6e73313966353366717132387636706d7a383737646e653735643464376c307236356432373530707718102200";
 
 #[test]
@@ -1104,6 +1107,46 @@ fn test_delegations_reconstruct_from_hex() {
                     amount: Uint128::from(100000000u64)
                 },
             }],
+        }
+    );
+}
+
+#[test]
+fn test_unbonding_delegations_reconstruct_from_hex() {
+    let unbonding_delegations_bytes =
+        hex::decode(DELEGATOR_UNBONDING_DELEGATIONS_HEX_RESPONSE).unwrap(); // decode hex string to bytes
+    let unbonding_delegations_base64_input = BASE64_STANDARD.encode(unbonding_delegations_bytes); // encode bytes to base64 string
+
+    let st_values: Vec<StorageValue> = vec![StorageValue {
+        storage_prefix: String::default(), // not used in reconstruct
+        key: Binary::default(),            // not used in reconstruct
+        value: Binary::from_base64(unbonding_delegations_base64_input.as_str()).unwrap(),
+    }];
+
+    let unbonding_delegations = UnbondingDelegations::reconstruct(&st_values).unwrap();
+    assert_eq!(
+        unbonding_delegations,
+        UnbondingDelegations {
+            unbonding_responses: vec![UnbondingResponse {
+                delegator_address: Addr::unchecked("cosmos1m9l358xunhhwds0568za49mzhvuxx9uxre5tud"),
+                validator_address: String::from(
+                    "cosmosvaloper18hl5c9xn5dze2g50uaw0l2mr02ew57zk0auktn"
+                ),
+                entries: vec![
+                    UnbondingEntry {
+                        balance: Uint128::new(10_000),
+                        completion_time: Some(Timestamp::from_nanos(1704872890570185206)),
+                        creation_height: 365,
+                        initial_balance: Uint128::new(10_000),
+                    },
+                    UnbondingEntry {
+                        balance: Uint128::new(20_000),
+                        completion_time: Some(Timestamp::from_nanos(1704872903002248037)),
+                        creation_height: 377,
+                        initial_balance: Uint128::new(20_000),
+                    }
+                ],
+            }]
         }
     );
 }

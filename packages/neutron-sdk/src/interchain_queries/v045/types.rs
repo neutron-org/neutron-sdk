@@ -8,10 +8,10 @@ use cosmos_sdk_proto::cosmos::{
     distribution::v1beta1::FeePool as CosmosFeePool,
     gov::v1beta1::Proposal as CosmosProposal,
     slashing::v1beta1::ValidatorSigningInfo as CosmosValidatorSigningInfo,
-    staking::v1beta1::{Delegation, Validator as CosmosValidator},
+    staking::v1beta1::{Delegation, UnbondingDelegation, Validator as CosmosValidator},
 };
 use cosmos_sdk_proto::traits::Message;
-use cosmwasm_std::{from_json, Addr, Coin, Decimal, StdError, Uint128};
+use cosmwasm_std::{from_json, Addr, Coin, Decimal, StdError, Timestamp, Uint128};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::{ops::Div, str::FromStr};
@@ -35,15 +35,19 @@ pub const BALANCES_PREFIX: u8 = 0x02;
 /// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/bank/types/key.go#L28>
 pub const SUPPLY_PREFIX: u8 = 0x00;
 
-/// Key for delegations in the **staking** module's storage
-/// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/staking/types/keys.go#L39>
-pub const DELEGATION_KEY: u8 = 0x31;
-
 /// Key for validators in the **staking** module's storage
 /// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/staking/types/keys.go#L35>
 pub const VALIDATORS_KEY: u8 = 0x21;
 
-/// Key for validators in the **staking** module's storage
+/// Key for delegations in the **staking** module's storage
+/// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/staking/types/keys.go#L39>
+pub const DELEGATION_KEY: u8 = 0x31;
+
+/// Key for unbonding delegations in the **staking** module's storage
+/// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/staking/types/keys.go#L40>
+pub const UNBONDING_DELEGATION_KEY: u8 = 0x32;
+
+/// Key for validators in the **slashing** module's storage
 /// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/slashing/types/keys.go#L34>
 pub const VALIDATOR_SIGNING_INFO_KEY: u8 = 0x01;
 
@@ -464,5 +468,63 @@ impl KVReconstruct for Delegations {
         }
 
         Ok(Delegations { delegations })
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+pub struct UnbondingEntry {
+    pub balance: Uint128,
+    pub completion_time: Option<Timestamp>,
+    pub creation_height: u64,
+    pub initial_balance: Uint128,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+pub struct UnbondingResponse {
+    pub delegator_address: Addr,
+    pub validator_address: String,
+    pub entries: Vec<UnbondingEntry>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+/// A structure that can be reconstructed from **StorageValues**'s for the
+/// **Delegator Unbonding Delegation Interchain Query**.
+/// Contains unbonding delegations which some delegator has on remote chain.
+pub struct UnbondingDelegations {
+    pub unbonding_responses: Vec<UnbondingResponse>,
+}
+
+impl KVReconstruct for UnbondingDelegations {
+    fn reconstruct(storage_values: &[StorageValue]) -> NeutronResult<UnbondingDelegations> {
+        let mut unbonding_responses: Vec<UnbondingResponse> =
+            Vec::with_capacity(storage_values.len());
+
+        for storage_value in storage_values {
+            let unbonding_delegation_sdk: UnbondingDelegation =
+                UnbondingDelegation::decode(storage_value.value.as_slice())?;
+
+            let mut unbonding_response = UnbondingResponse {
+                delegator_address: Addr::unchecked(unbonding_delegation_sdk.delegator_address),
+                validator_address: unbonding_delegation_sdk.validator_address,
+                entries: Vec::with_capacity(unbonding_delegation_sdk.entries.len()),
+            };
+            for entry in unbonding_delegation_sdk.entries {
+                let unbonding_entry = UnbondingEntry {
+                    balance: Uint128::from_str(&entry.balance)?,
+                    completion_time: entry.completion_time.map(|t| {
+                        Timestamp::from_seconds(t.seconds as u64).plus_nanos(t.nanos as u64)
+                    }),
+                    creation_height: entry.creation_height as u64,
+                    initial_balance: Uint128::from_str(&entry.initial_balance)?,
+                };
+                unbonding_response.entries.push(unbonding_entry);
+            }
+
+            unbonding_responses.push(unbonding_response);
+        }
+
+        Ok(UnbondingDelegations {
+            unbonding_responses,
+        })
     }
 }

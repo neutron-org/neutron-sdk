@@ -62,21 +62,12 @@ contract_address=$(neutrond tx wasm instantiate "$code_id" '{}'      \
     | wait_tx | jq -r '.logs[0].events[] | select(.type == "instantiate").attributes[] | select(.key == "_contract_address").value')
 echo "Contract address: $contract_address"
 
-tx_result="$(neutrond tx bank send demowallet1 "$contract_address" 100000untrn \
-    --chain-id "$CHAIN_ID_1" --home "$HOME_1" --node "$NEUTRON_NODE"           \
-    --keyring-backend=test -y --gas-prices 0.0025untrn                         \
-    --broadcast-mode=sync --output json | wait_tx)"
-code="$(echo "$tx_result" | jq '.code')"
-if [[ "$code" -ne 0 ]]; then
-  echo "Failed to send money to contract: $(echo "$tx_result" | jq '.raw_log')" && exit 1
-fi
-echo "Sent money to contract to pay fees"
-
 msg='{"register":{
   "connection_id": "connection-0",
-  "interchain_account_id": "test"
+  "interchain_account_id": "test",
+  "register_fee": [{"denom":"untrn","amount":"1000000"}]
 }}'
-tx_result="$(neutrond tx wasm execute "$contract_address" "$msg"  \
+tx_result="$(neutrond tx wasm execute "$contract_address" "$msg" --amount 1100000untrn  \
     --from "$ADDRESS_1" -y --chain-id "$CHAIN_ID_1" --output json \
     --broadcast-mode=sync --gas-prices 0.0025untrn --gas 1000000  \
     --keyring-backend=test --home "$HOME_1" --node "$NEUTRON_NODE" | wait_tx)"
@@ -92,11 +83,9 @@ for i in $(seq 60); do
 done
 echo " done"
 
-# FIXME: why do we even perform a query like this, can't we do `neutrond query wasm smart blah-blah`?
-query='{"interchain_account_address_from_contract":{"interchain_account_id":"test"}}'
-query_b64_urlenc="$(echo -n "$query" | base64 | tr -d '\n' | jq -sRr '@uri')"
-url="http://127.0.0.1:1317/wasm/contract/$contract_address/smart/$query_b64_urlenc?encoding=base64"
-ica_address=$(curl -s "$url" | jq -r '.result.smart' | base64 -d | jq -r '.[0]')
+msg='{"interchain_account_address_from_contract":{"interchain_account_id":"test"}}'
+ica_address="$(neutrond query wasm contract-state smart "$contract_address" "$msg" \
+    --node "$NEUTRON_NODE" --output json | jq -r '.data[0]')"
 echo "ICA address: $ica_address"
 
 tx_result=$(gaiad tx bank send "$ADDRESS_2" "$ica_address" 50000uatom       \
