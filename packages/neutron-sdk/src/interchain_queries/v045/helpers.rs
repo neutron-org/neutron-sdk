@@ -2,7 +2,8 @@ use crate::errors::error::NeutronResult;
 use crate::interchain_queries::helpers::length_prefix;
 use crate::interchain_queries::v045::types::{
     BALANCES_PREFIX, DELEGATION_KEY, FEE_POOL_KEY, PARAMS_STORE_DELIMITER, PROPOSALS_KEY_PREFIX,
-    SUPPLY_PREFIX, VALIDATORS_KEY, VALIDATOR_SIGNING_INFO_KEY, WASM_CONTRACT_STORE_PREFIX,
+    SUPPLY_PREFIX, UNBONDING_DELEGATION_KEY, VALIDATORS_KEY, VALIDATOR_SIGNING_INFO_KEY,
+    WASM_CONTRACT_STORE_PREFIX,
 };
 use cosmos_sdk_proto::cosmos::staking::v1beta1::Commission as ValidatorCommission;
 use cosmwasm_std::{Binary, Decimal, Uint128};
@@ -80,6 +81,30 @@ pub fn create_delegation_key<AddrBytes: AsRef<[u8]>>(
     delegations_key.extend_from_slice(length_prefix(validator_address)?.as_slice());
 
     Ok(delegations_key)
+}
+
+/// Creates unbonding delegations Cosmos-SDK storage prefix for delegator with **delegator_addr**
+/// <https://github.com/cosmos/cosmos-sdk/blob/ad9e5620fb3445c716e9de45cfcdb56e8f1745bf/x/staking/types/keys.go#L209>
+pub fn create_unbonding_delegations_key<AddrBytes: AsRef<[u8]>>(
+    delegator_address: AddrBytes,
+) -> NeutronResult<Vec<u8>> {
+    let mut key: Vec<u8> = vec![UNBONDING_DELEGATION_KEY];
+    key.extend_from_slice(length_prefix(delegator_address)?.as_slice());
+
+    Ok(key)
+}
+
+/// Creates Cosmos-SDK storage key for unbonding delegation between delegator with **delegator_addr** and validator with **validator_addr**
+/// <https://github.com/cosmos/cosmos-sdk/blob/ad9e5620fb3445c716e9de45cfcdb56e8f1745bf/x/staking/types/keys.go#L187>
+pub fn create_unbonding_delegation_key<AddrBytes: AsRef<[u8]>>(
+    delegator_address: AddrBytes,
+    validator_address: AddrBytes,
+) -> NeutronResult<Vec<u8>> {
+    let mut unbonding_delegations_key: Vec<u8> =
+        create_unbonding_delegations_key(delegator_address)?;
+    unbonding_delegations_key.extend_from_slice(length_prefix(validator_address)?.as_slice());
+
+    Ok(unbonding_delegations_key)
 }
 
 /// Creates Cosmos-SDK storage key for validator with **operator_address**

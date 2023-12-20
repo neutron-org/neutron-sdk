@@ -1,10 +1,15 @@
-use crate::bindings::query::NeutronQuery;
-use crate::interchain_queries::queries::{check_query_type, get_registered_query, query_kv_result};
-use crate::interchain_queries::types::QueryType;
-use crate::interchain_queries::v045::types::{
-    Balances, Delegations, FeePool, GovernmentProposal, SigningInfo, StakingValidator, TotalSupply,
+use crate::{
+    bindings::query::NeutronQuery,
+    interchain_queries::{
+        queries::{check_query_type, get_registered_query, query_kv_result},
+        types::QueryType,
+        v045::types::{
+            Balances, Delegations, FeePool, GovernmentProposal, SigningInfo, StakingValidator,
+            TotalSupply, UnbondingDelegations,
+        },
+    },
+    NeutronResult,
 };
-use crate::NeutronResult;
 use cosmwasm_std::{Deps, Env};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -55,6 +60,13 @@ pub struct ProposalResponse {
 #[serde(rename_all = "snake_case")]
 pub struct DelegatorDelegationsResponse {
     pub delegations: Vec<cosmwasm_std::Delegation>,
+    pub last_submitted_local_height: u64,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct DelegatorUnbondingDelegationsResponse {
+    pub unbonding_delegations: UnbondingDelegations,
     pub last_submitted_local_height: u64,
 }
 
@@ -199,6 +211,25 @@ pub fn query_delegations(
 
     Ok(DelegatorDelegationsResponse {
         delegations: delegations.delegations,
+        last_submitted_local_height: registered_query
+            .registered_query
+            .last_submitted_result_local_height,
+    })
+}
+
+pub fn query_unbonding_delegations(
+    deps: Deps<NeutronQuery>,
+    _env: Env,
+    registered_query_id: u64,
+) -> NeutronResult<DelegatorUnbondingDelegationsResponse> {
+    let registered_query = get_registered_query(deps, registered_query_id)?;
+
+    check_query_type(registered_query.registered_query.query_type, QueryType::KV)?;
+
+    let unbonding_delegations: UnbondingDelegations = query_kv_result(deps, registered_query_id)?;
+
+    Ok(DelegatorUnbondingDelegationsResponse {
+        unbonding_delegations,
         last_submitted_local_height: registered_query
             .registered_query
             .last_submitted_result_local_height,

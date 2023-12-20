@@ -3,8 +3,6 @@ use cosmos_sdk_proto::cosmos::staking::v1beta1::{
     MsgDelegate, MsgDelegateResponse, MsgUndelegate, MsgUndelegateResponse,
 };
 use cosmos_sdk_proto::traits::Message;
-#[cfg(not(feature = "library"))]
-use cosmwasm_std::entry_point;
 use cosmwasm_std::{
     to_json_binary, Binary, Coin as CoinSDK, CosmosMsg, CustomQuery, Deps, DepsMut, Env,
     MessageInfo, Reply, Response, StdError, StdResult, SubMsg,
@@ -53,7 +51,7 @@ struct OpenAckVersion {
     tx_type: String,
 }
 
-#[cfg_attr(not(feature = "library"), entry_point)]
+#[cfg_attr(not(feature = "library"), cosmwasm_std::entry_point)]
 pub fn instantiate(
     deps: DepsMut,
     _env: Env,
@@ -65,7 +63,7 @@ pub fn instantiate(
     Ok(Response::default())
 }
 
-#[entry_point]
+#[cfg_attr(not(feature = "library"), cosmwasm_std::entry_point)]
 pub fn execute(
     deps: DepsMut<NeutronQuery>,
     env: Env,
@@ -119,7 +117,7 @@ pub fn execute(
     }
 }
 
-#[cfg_attr(not(feature = "library"), entry_point)]
+#[cfg_attr(not(feature = "library"), cosmwasm_std::entry_point)]
 pub fn query(deps: Deps<NeutronQuery>, env: Env, msg: QueryMsg) -> NeutronResult<Binary> {
     match msg {
         QueryMsg::InterchainAccountAddress {
@@ -330,7 +328,7 @@ fn execute_undelegate(
     Ok(Response::default().add_submessages(vec![submsg]))
 }
 
-#[cfg_attr(not(feature = "library"), entry_point)]
+#[cfg_attr(not(feature = "library"), cosmwasm_std::entry_point)]
 pub fn sudo(deps: DepsMut, env: Env, msg: SudoMsg) -> StdResult<Response> {
     deps.api
         .debug(format!("WASMDEBUG: sudo: received sudo msg: {:?}", msg).as_str());
@@ -363,7 +361,7 @@ pub fn sudo(deps: DepsMut, env: Env, msg: SudoMsg) -> StdResult<Response> {
     }
 }
 
-#[cfg_attr(not(feature = "library"), entry_point)]
+#[cfg_attr(not(feature = "library"), cosmwasm_std::entry_point)]
 pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
     deps.api.debug("WASMDEBUG: migrate");
     Ok(Response::default())
@@ -647,7 +645,7 @@ fn get_ica(
         .ok_or_else(|| StdError::generic_err("Interchain account is not created yet"))
 }
 
-#[entry_point]
+#[cfg_attr(not(feature = "library"), cosmwasm_std::entry_point)]
 pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> StdResult<Response> {
     deps.api
         .debug(format!("WASMDEBUG: reply msg: {:?}", msg).as_str());
