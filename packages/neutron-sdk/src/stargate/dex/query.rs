@@ -48,7 +48,7 @@ const POOL_METADATA_ALL_QUERY_PATH: &str = "/neutron.dex.Query/PoolMetadataAll";
 
 /// Queries the parameters of the module.
 pub fn get_params(deps: Deps, req: ParamsRequest) -> StdResult<ParamsResponse> {
-    make_stargate_query(deps, QueryParamsRequest::from(req), PARAMS_QUERY_PATH)
+    make_stargate_query(deps, PARAMS_QUERY_PATH, QueryParamsRequest::from(req))
 }
 
 /// Retrieves a `LimitOrderTrancheUser` by user address and tranche key.
@@ -58,8 +58,8 @@ pub fn get_limit_order_tranche_user(
 ) -> StdResult<LimitOrderTrancheUserResponse> {
     make_stargate_query(
         deps,
-        QueryGetLimitOrderTrancheUserRequest::from(req),
         LIMIT_ORDER_TRANCHE_USER_QUERY_PATH,
+        QueryGetLimitOrderTrancheUserRequest::from(req),
     )
 }
 
@@ -70,8 +70,8 @@ pub fn get_limit_order_tranche_user_all(
 ) -> StdResult<LimitOrderTrancheUserAllResponse> {
     make_stargate_query(
         deps,
-        QueryAllLimitOrderTrancheUserRequest::from(req),
         LIMIT_ORDER_TRANCHE_USER_ALL_QUERY_PATH,
+        QueryAllLimitOrderTrancheUserRequest::from(req),
     )
 }
 
@@ -82,8 +82,8 @@ pub fn get_limit_order_tranche_user_all_by_address(
 ) -> StdResult<AllUserLimitOrdersResponse> {
     make_stargate_query(
         deps,
-        QueryAllUserLimitOrdersRequest::from(req),
         LIMIT_ORDER_TRANCHE_USER_ALL_BY_ADDRESS_QUERY_PATH,
+        QueryAllUserLimitOrdersRequest::from(req),
     )
 }
 
@@ -94,8 +94,8 @@ pub fn get_limit_order_tranche(
 ) -> StdResult<GetLimitOrderTrancheResponse> {
     make_stargate_query(
         deps,
-        QueryGetLimitOrderTrancheRequest::from(req),
         LIMIT_ORDER_TRANCHE_QUERY_PATH,
+        QueryGetLimitOrderTrancheRequest::from(req),
     )
 }
 
@@ -106,8 +106,8 @@ pub fn get_limit_order_tranche_all(
 ) -> StdResult<AllLimitOrderTrancheResponse> {
     make_stargate_query(
         deps,
-        QueryAllLimitOrderTrancheRequest::from(req),
         LIMIT_ORDER_TRANCHE_ALL_QUERY_PATH,
+        QueryAllLimitOrderTrancheRequest::from(req),
     )
 }
 
@@ -118,8 +118,8 @@ pub fn get_user_deposits_all(
 ) -> StdResult<AllUserDepositsResponse> {
     make_stargate_query(
         deps,
-        QueryAllUserDepositsRequest::from(req),
         USER_DEPOSITS_ALL_QUERY_PATH,
+        QueryAllUserDepositsRequest::from(req),
     )
 }
 
@@ -130,8 +130,8 @@ pub fn get_tick_liquidity_all(
 ) -> StdResult<AllTickLiquidityResponse> {
     make_stargate_query(
         deps,
-        QueryAllTickLiquidityRequest::from(req),
         TICK_LIQUIDITY_ALL_QUERY_PATH,
+        QueryAllTickLiquidityRequest::from(req),
     )
 }
 
@@ -142,8 +142,8 @@ pub fn get_inactive_limit_order_tranche(
 ) -> StdResult<GetInactiveLimitOrderTrancheResponse> {
     make_stargate_query(
         deps,
-        QueryGetInactiveLimitOrderTrancheRequest::from(req),
         INACTIVE_LIMIT_ORDER_TRANCHE_QUERY_PATH,
+        QueryGetInactiveLimitOrderTrancheRequest::from(req),
     )
 }
 
@@ -154,8 +154,8 @@ pub fn get_inactive_limit_order_tranche_all(
 ) -> StdResult<AllInactiveLimitOrderTrancheResponse> {
     make_stargate_query(
         deps,
-        QueryAllInactiveLimitOrderTrancheRequest::from(req),
         INACTIVE_LIMIT_ORDER_TRANCHE_ALL_QUERY_PATH,
+        QueryAllInactiveLimitOrderTrancheRequest::from(req),
     )
 }
 
@@ -166,8 +166,8 @@ pub fn get_pool_reserves_all(
 ) -> StdResult<AllPoolReservesResponse> {
     make_stargate_query(
         deps,
-        QueryAllPoolReservesRequest::from(req),
         POOL_RESERVES_ALL_QUERY_PATH,
+        QueryAllPoolReservesRequest::from(req),
     )
 }
 
@@ -178,8 +178,8 @@ pub fn get_pool_reserves(
 ) -> StdResult<GetPoolReservesResponse> {
     make_stargate_query(
         deps,
-        QueryGetPoolReservesRequest::from(req),
         POOL_RESERVES_QUERY_PATH,
+        QueryGetPoolReservesRequest::from(req),
     )
 }
 
@@ -190,8 +190,8 @@ pub fn get_estimate_multi_hop_swap(
 ) -> StdResult<EstimateMultiHopSwapResponse> {
     make_stargate_query(
         deps,
-        QueryEstimateMultiHopSwapRequest::from(req),
         ESTIMATE_MULTI_HOP_SWAP_QUERY_PATH,
+        QueryEstimateMultiHopSwapRequest::from(req),
     )
 }
 
@@ -202,19 +202,19 @@ pub fn get_estimate_place_limit_order(
 ) -> StdResult<EstimatePlaceLimitOrderResponse> {
     make_stargate_query(
         deps,
-        QueryEstimatePlaceLimitOrderRequest::from(req),
         ESTIMATE_PLACE_LIMIT_ORDER_QUERY_PATH,
+        QueryEstimatePlaceLimitOrderRequest::from(req),
     )
 }
 
 /// Queries a pool by pair, tick and fee.
 pub fn get_pool(deps: Deps, req: PoolRequest) -> StdResult<PoolResponse> {
-    make_stargate_query(deps, QueryPoolRequest::from(req), POOL_QUERY_PATH)
+    make_stargate_query(deps, POOL_QUERY_PATH, QueryPoolRequest::from(req))
 }
 
 /// Queries a pool by ID.
 pub fn get_pool_by_id(deps: Deps, req: PoolByIdRequest) -> StdResult<PoolResponse> {
-    make_stargate_query(deps, QueryPoolByIdRequest::from(req), POOL_BY_ID_QUERY_PATH)
+    make_stargate_query(deps, POOL_BY_ID_QUERY_PATH, QueryPoolByIdRequest::from(req))
 }
 
 /// Queries a `PoolMetadata` by ID.
@@ -224,8 +224,8 @@ pub fn get_pool_metadata(
 ) -> StdResult<GetPoolMetadataResponse> {
     make_stargate_query(
         deps,
-        QueryGetPoolMetadataRequest::from(req),
         POOL_METADATA_QUERY_PATH,
+        QueryGetPoolMetadataRequest::from(req),
     )
 }
 
@@ -236,7 +236,7 @@ pub fn get_pool_metadata_all(
 ) -> StdResult<AllPoolMetadataResponse> {
     make_stargate_query(
         deps,
-        QueryAllPoolMetadataRequest::from(req),
         POOL_METADATA_ALL_QUERY_PATH,
+        QueryAllPoolMetadataRequest::from(req),
     )
 }
