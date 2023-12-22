@@ -2,8 +2,8 @@ use cosmos_sdk_proto::cosmos::bank::v1beta1::MsgSend;
 use cosmos_sdk_proto::cosmos::tx::v1beta1::{TxBody, TxRaw};
 use cosmos_sdk_proto::traits::Message;
 use cosmwasm_std::{
-    entry_point, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult,
-    Uint128,
+    entry_point, to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError,
+    StdResult, Uint128,
 };
 use cw2::set_contract_version;
 
@@ -250,27 +250,27 @@ pub fn remove_interchain_query(query_id: u64) -> NeutronResult<Response<NeutronM
 pub fn query(deps: Deps<NeutronQuery>, env: Env, msg: QueryMsg) -> NeutronResult<Binary> {
     match msg {
         //TODO: check if query.result.height is too old (for all interchain queries)
-        QueryMsg::Balance { query_id } => Ok(to_binary(&query_balance(deps, env, query_id)?)?),
+        QueryMsg::Balance { query_id } => Ok(to_json_binary(&query_balance(deps, env, query_id)?)?),
         QueryMsg::BankTotalSupply { query_id } => {
-            Ok(to_binary(&query_bank_total(deps, env, query_id)?)?)
+            Ok(to_json_binary(&query_bank_total(deps, env, query_id)?)?)
         }
-        QueryMsg::DistributionFeePool { query_id } => Ok(to_binary(&query_distribution_fee_pool(
+        QueryMsg::DistributionFeePool { query_id } => Ok(to_json_binary(
+            &query_distribution_fee_pool(deps, env, query_id)?,
+        )?),
+        QueryMsg::StakingValidators { query_id } => Ok(to_json_binary(&query_staking_validators(
             deps, env, query_id,
         )?)?),
-        QueryMsg::StakingValidators { query_id } => {
-            Ok(to_binary(&query_staking_validators(deps, env, query_id)?)?)
-        }
-        QueryMsg::GovernmentProposals { query_id } => Ok(to_binary(&query_government_proposals(
-            deps, env, query_id,
-        )?)?),
+        QueryMsg::GovernmentProposals { query_id } => Ok(to_json_binary(
+            &query_government_proposals(deps, env, query_id)?,
+        )?),
         QueryMsg::GetDelegations { query_id } => {
-            Ok(to_binary(&query_delegations(deps, env, query_id)?)?)
+            Ok(to_json_binary(&query_delegations(deps, env, query_id)?)?)
         }
         QueryMsg::Cw20Balance { query_id } => {
-            Ok(to_binary(&query_cw20_balance(deps, env, query_id)?)?)
+            Ok(to_json_binary(&query_cw20_balance(deps, env, query_id)?)?)
         }
         QueryMsg::GetRegisteredQuery { query_id } => {
-            Ok(to_binary(&get_registered_query(deps, query_id)?)?)
+            Ok(to_json_binary(&get_registered_query(deps, query_id)?)?)
         }
         QueryMsg::GetRecipientTxs { recipient } => query_recipient_txs(deps, recipient),
     }
@@ -280,7 +280,7 @@ fn query_recipient_txs(deps: Deps<NeutronQuery>, recipient: String) -> NeutronRe
     let txs = RECIPIENT_TXS
         .load(deps.storage, &recipient)
         .unwrap_or_default();
-    Ok(to_binary(&GetRecipientTxsResponse { transfers: txs })?)
+    Ok(to_json_binary(&GetRecipientTxsResponse { transfers: txs })?)
 }
 
 pub fn query_cw20_balance(

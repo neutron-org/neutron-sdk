@@ -1,4 +1,4 @@
-use cosmwasm_std::{from_binary, to_vec, Binary, StdResult, Storage};
+use cosmwasm_std::{from_json, to_json_vec, Binary, StdResult, Storage};
 use cw_storage_plus::{Item, Map};
 
 use crate::contract::SudoPayload;
@@ -28,13 +28,13 @@ pub fn get_next_id(store: &mut dyn Storage) -> StdResult<u64> {
 
 pub fn save_reply_payload(store: &mut dyn Storage, payload: SudoPayload) -> StdResult<u64> {
     let id = get_next_id(store)?;
-    REPLY_QUEUE_ID.save(store, id, &to_vec(&payload)?)?;
+    REPLY_QUEUE_ID.save(store, id, &to_json_vec(&payload)?)?;
     Ok(id)
 }
 
 pub fn read_reply_payload(store: &dyn Storage, id: u64) -> StdResult<SudoPayload> {
     let data = REPLY_QUEUE_ID.load(store, id)?;
-    from_binary(&Binary(data))
+    from_json(Binary(data))
 }
 
 /// SUDO_PAYLOAD - tmp storage for sudo handler payloads
@@ -50,7 +50,7 @@ pub fn save_sudo_payload(
     seq_id: u64,
     payload: SudoPayload,
 ) -> StdResult<()> {
-    SUDO_PAYLOAD.save(store, (channel_id, seq_id), &to_vec(&payload)?)
+    SUDO_PAYLOAD.save(store, (channel_id, seq_id), &to_json_vec(&payload)?)
 }
 
 pub fn read_sudo_payload(
@@ -59,5 +59,5 @@ pub fn read_sudo_payload(
     seq_id: u64,
 ) -> StdResult<SudoPayload> {
     let data = SUDO_PAYLOAD.load(store, (channel_id, seq_id))?;
-    from_binary(&Binary(data))
+    from_json(Binary(data))
 }

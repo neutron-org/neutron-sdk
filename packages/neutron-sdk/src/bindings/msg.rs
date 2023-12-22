@@ -38,6 +38,9 @@ pub enum NeutronMsg {
         /// **interchain_account_id** is an identifier of your new interchain account. Can be any string.
         /// This identifier allows contracts to have multiple interchain accounts on remote chains.
         interchain_account_id: String,
+
+        /// **register_fee** is a fees required to be payed to register interchain account
+        register_fee: Option<Vec<Coin>>,
     },
 
     /// SubmitTx starts the process of executing any Cosmos-SDK *msgs* on remote chain.
@@ -131,12 +134,14 @@ pub enum NeutronMsg {
     /// Contracts can create denoms, namespaced under the contract's address.
     /// A contract may create any number of independent sub-denoms.
     CreateDenom { subdenom: String },
+
     /// TokenFactory message.
     /// Contracts can change the admin of a denom that they are the admin of.
     ChangeAdmin {
         denom: String,
         new_admin_address: String,
     },
+
     /// TokenFactory message.
     /// Contracts can mint native tokens for an existing factory denom
     /// that they are the admin of.
@@ -145,6 +150,7 @@ pub enum NeutronMsg {
         amount: Uint128,
         mint_to_address: String,
     },
+
     /// TokenFactory message.
     /// Contracts can burn native tokens for an existing factory denom
     /// that they are the admin of.
@@ -154,6 +160,13 @@ pub enum NeutronMsg {
         amount: Uint128,
         /// Must be set to `""` for now
         burn_from_address: String,
+    },
+
+    /// TokenFactory message.
+    /// Contracts can set before send hooks for denoms, namespaced under the contract's address.
+    SetBeforeSendHook {
+        denom: String,
+        contract_addr: String,
     },
 
     /// AddSchedule adds new schedule with a given `name`.
@@ -169,9 +182,16 @@ pub enum NeutronMsg {
         /// list of cosmwasm messages to be executed
         msgs: Vec<MsgExecuteContract>,
     },
+
     /// RemoveSchedule removes the schedule with a given `name`.
     /// [Permissioned - DAO or Security DAO only]
     RemoveSchedule { name: String },
+
+    /// Contractmanager message
+    /// Resubmits failed acknowledgement.
+    /// Acknowledgement failure is created when contract returns error or acknowledgement is out of gas.
+    /// [Permissioned - only from contract that is initial caller of IBC transaction]
+    ResubmitFailure { failure_id: u64 },
 }
 
 impl NeutronMsg {
@@ -181,10 +201,12 @@ impl NeutronMsg {
     pub fn register_interchain_account(
         connection_id: String,
         interchain_account_id: String,
+        register_fee: Option<Vec<Coin>>,
     ) -> Self {
         NeutronMsg::RegisterInterchainAccount {
             connection_id,
             interchain_account_id,
+            register_fee,
         }
     }
 
@@ -299,25 +321,7 @@ impl NeutronMsg {
         }
     }
 
-    /// Basic helper to define a parameter change proposal passed to AdminModule:
-    /// * **proposal** is struct which contains proposal that sets upgrade block.
-    pub fn submit_software_upgrade_proposal(proposal: SoftwareUpgradeProposal) -> Self {
-        NeutronMsg::SubmitAdminProposal {
-            admin_proposal: AdminProposal::SoftwareUpgradeProposal(proposal),
-        }
-    }
-
-    /// Basic helper to define a parameter change proposal passed to AdminModule:
-    /// * **proposal** is struct which contains proposal that cancels software upgrade.
-    pub fn submit_cancel_software_upgrade_proposal(
-        proposal: CancelSoftwareUpgradeProposal,
-    ) -> Self {
-        NeutronMsg::SubmitAdminProposal {
-            admin_proposal: AdminProposal::CancelSoftwareUpgradeProposal(proposal),
-        }
-    }
-
-    /// Basic helper to define a parameter change proposal passed to AdminModule:
+    /// Basic helper to define an  ibc upgrade proposal passed to AdminModule:
     /// * **proposal** is struct which contains proposal that upgrades network.
     pub fn submit_upgrade_proposal(proposal: UpgradeProposal) -> Self {
         NeutronMsg::SubmitAdminProposal {
@@ -325,23 +329,7 @@ impl NeutronMsg {
         }
     }
 
-    /// Basic helper to define a parameter change proposal passed to AdminModule:
-    /// * **proposal** is struct which contains proposal that pins code ids.
-    pub fn submit_pin_codes_proposal(proposal: PinCodesProposal) -> Self {
-        NeutronMsg::SubmitAdminProposal {
-            admin_proposal: AdminProposal::PinCodesProposal(proposal),
-        }
-    }
-
-    /// Basic helper to define a parameter change proposal passed to AdminModule:
-    /// * **proposal** is struct which contains proposal that unpins codes ids.
-    pub fn submit_unpin_codes_proposal(proposal: UnpinCodesProposal) -> Self {
-        NeutronMsg::SubmitAdminProposal {
-            admin_proposal: AdminProposal::UnpinCodesProposal(proposal),
-        }
-    }
-
-    /// Basic helper to define a parameter change proposal passed to AdminModule:
+    /// Basic helper to define an ibc update client change proposal passed to AdminModule:
     /// * **proposal** is struct which contains proposal updates cliient.
     pub fn submit_client_update_proposal(proposal: ClientUpdateProposal) -> Self {
         NeutronMsg::SubmitAdminProposal {
@@ -349,28 +337,25 @@ impl NeutronMsg {
         }
     }
 
-    /// Basic helper to define a parameter change proposal passed to AdminModule:
-    /// * **proposal** is struct which contains proposal updates admin of contract.
-    pub fn submit_update_admin_proposal(proposal: UpdateAdminProposal) -> Self {
+    /// Basic helper to define sdk47 compatible proposal passed to AdminModule:
+    /// * **proposal** is struct which contains JSON encoded sdk message.
+    pub fn submit_proposal_execute_message(proposal: ProposalExecuteMessage) -> Self {
         NeutronMsg::SubmitAdminProposal {
-            admin_proposal: AdminProposal::UpdateAdminProposal(proposal),
+            admin_proposal: AdminProposal::ProposalExecuteMessage(proposal),
         }
     }
 
-    /// Basic helper to define a parameter change proposal passed to AdminModule:
-    /// * **proposal** is struct which contains proposal that clears admin of contract.
-    pub fn submit_clear_admin_proposal(proposal: ClearAdminProposal) -> Self {
-        NeutronMsg::SubmitAdminProposal {
-            admin_proposal: AdminProposal::ClearAdminProposal(proposal),
-        }
-    }
-
+    // Basic helper to build create denom message passed to TokenFactory module:
+    // * **subdenom** is a subdenom name for denom to be created.
     pub fn submit_create_denom(subdenom: impl Into<String>) -> Self {
         NeutronMsg::CreateDenom {
             subdenom: subdenom.into(),
         }
     }
 
+    // Basic helper to define change of admin for a token passed to TokenFactory module:
+    // * **denom** is a name of the denom to change an admin for;
+    // * **new_admin_address** is a new admin address for a denom.
     pub fn submit_change_admin(
         denom: impl Into<String>,
         new_admin_address: impl Into<String>,
@@ -381,6 +366,10 @@ impl NeutronMsg {
         }
     }
 
+    // Basic helper to define mint tokens passed to TokenFactory module:
+    // * **denom** is a name of the denom;
+    // * **amount** is an amount of tokens to mint;
+    // * **mint_to_address** is an address that will receive minted tokens.
     pub fn submit_mint_tokens(
         denom: impl Into<String>,
         amount: Uint128,
@@ -393,6 +382,9 @@ impl NeutronMsg {
         }
     }
 
+    // Basic helper to define burn tokens passed to TokenFactory module:
+    // * **denom** is a name of the denom;
+    // * **amount** is an amount of tokens to burn.
     pub fn submit_burn_tokens(denom: impl Into<String>, amount: Uint128) -> Self {
         NeutronMsg::BurnTokens {
             denom: denom.into(),
@@ -401,12 +393,36 @@ impl NeutronMsg {
         }
     }
 
+    // Basic helper to create set before send hook message passed to TokenFactory module:
+    // * **denom** is a name for denom for hook to be created.
+    pub fn submit_set_before_send_hook(
+        denom: impl Into<String>,
+        contract_addr: impl Into<String>,
+    ) -> Self {
+        NeutronMsg::SetBeforeSendHook {
+            denom: denom.into(),
+            contract_addr: contract_addr.into(),
+        }
+    }
+
+    // Basic helper to define add schedule passed to Cron module:
+    // * **name** is a name of the schedule;
+    // * **period** is a period of schedule execution in blocks;
+    // * **msgs** is the messages that will be executed.
     pub fn submit_add_schedule(name: String, period: u64, msgs: Vec<MsgExecuteContract>) -> Self {
         NeutronMsg::AddSchedule { name, period, msgs }
     }
 
+    // Basic helper to define remove schedule passed to Cron module:
+    // * **name** is a name of the schedule to be removed.
     pub fn submit_remove_schedule(name: String) -> Self {
         NeutronMsg::RemoveSchedule { name }
+    }
+
+    // Basic helper to define resubmit failure passed to Contractmanager module:
+    // * **failure_id** is an id of the failure to be resubmitted.
+    pub fn submit_resubmit_failure(failure_id: u64) -> Self {
+        NeutronMsg::ResubmitFailure { failure_id }
     }
 }
 
@@ -450,15 +466,67 @@ pub struct MsgIbcTransferResponse {
 #[serde(rename_all = "snake_case")]
 /// AdminProposal defines the struct for various proposals which Neutron's Admin Module may accept.
 pub enum AdminProposal {
+    /// Proposal to change params. Note that this works for old params.
+    /// New params has their own `MsgUpdateParams` msgs that can be supplied to `ProposalExecuteMessage`
     ParamChangeProposal(ParamChangeProposal),
-    SoftwareUpgradeProposal(SoftwareUpgradeProposal),
-    CancelSoftwareUpgradeProposal(CancelSoftwareUpgradeProposal),
+
+    /// Proposal to upgrade IBC client
     UpgradeProposal(UpgradeProposal),
+
+    /// Proposal to update IBC client
     ClientUpdateProposal(ClientUpdateProposal),
+
+    /// Proposal to execute CosmosMsg.
+    ProposalExecuteMessage(ProposalExecuteMessage),
+
+    #[deprecated(
+        since = "0.7.0",
+        note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
+    )]
+    /// Deprecated. Proposal to upgrade network
+    SoftwareUpgradeProposal(SoftwareUpgradeProposal),
+
+    #[deprecated(
+        since = "0.7.0",
+        note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
+    )]
+    /// Deprecated. Proposal to cancel existing software upgrade
+    CancelSoftwareUpgradeProposal(CancelSoftwareUpgradeProposal),
+
+    /// Deprecated. Will fail to execute if you use it.
+    #[deprecated(
+        since = "0.7.0",
+        note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
+    )]
+    /// Deprecated. Proposal to pin wasm contract codes
     PinCodesProposal(PinCodesProposal),
+
+    #[deprecated(
+        since = "0.7.0",
+        note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
+    )]
+    /// Deprecated. Deprecated. Proposal to unpin wasm contract codes.
     UnpinCodesProposal(UnpinCodesProposal),
+
+    #[deprecated(
+        since = "0.7.0",
+        note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
+    )]
+    /// Deprecated. Proposal to call sudo on contract.
     SudoContractProposal(SudoContractProposal),
+
+    #[deprecated(
+        since = "0.7.0",
+        note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
+    )]
+    /// Deprecated. Proposal to update contract admin.
     UpdateAdminProposal(UpdateAdminProposal),
+
+    #[deprecated(
+        since = "0.7.0",
+        note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
+    )]
+    /// Deprecated. Proposal to clear contract admin.
     ClearAdminProposal(ClearAdminProposal),
 }
 
@@ -488,28 +556,6 @@ pub struct ParamChange {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-/// SoftwareUpgradeProposal defines the struct for software upgrade proposal.
-pub struct SoftwareUpgradeProposal {
-    /// **title** is a text title of proposal. Non unique.
-    pub title: String,
-    /// **description** is a text description of proposal. Non unique.
-    pub description: String,
-    /// **plan** is a plan of upgrade.
-    pub plan: Plan,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-/// CancelSoftwareUpgradeProposal defines the struct for cancel software upgrade proposal.
-pub struct CancelSoftwareUpgradeProposal {
-    /// **title** is a text title of proposal. Non unique.
-    pub title: String,
-    /// **description** is a text description of proposal. Non unique.
-    pub description: String,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
 /// Plan defines the struct for planned upgrade.
 pub struct Plan {
     /// **name** is a name for the upgrade
@@ -522,7 +568,7 @@ pub struct Plan {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-/// UpgradeProposal defines the struct for  upgrade proposal.
+/// UpgradeProposal defines the struct for IBC upgrade proposal.
 pub struct UpgradeProposal {
     /// **title** is a text title of proposal.
     pub title: String,
@@ -550,31 +596,59 @@ pub struct ClientUpdateProposal {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-/// PinCodesProposal defines the struct for pin contract codes proposal.
-pub struct PinCodesProposal {
-    /// **title** is a text title of proposal.
-    pub title: String,
-    /// **description** is a text description of proposal.
-    pub description: String,
-    /// **code_ids** is an array of codes to be pined.
-    pub code_ids: Vec<u64>,
+/// ProposalExecuteMessage defines the struct for sdk47 compatible admin proposal.
+pub struct ProposalExecuteMessage {
+    /// **message** is a json representing an sdk message passed to admin module to execute.
+    pub message: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-/// UnpinCodesProposal defines the struct for unpin contract codes proposal.
-pub struct UnpinCodesProposal {
-    /// **title** is a text title of proposal.
-    pub title: String,
-    /// **description** is a text description of proposal.
-    pub description: String,
-    /// **code_ids** is an array of codes to be unpined.
-    pub code_ids: Vec<u64>,
+/// MsgExecuteContract defines a call to the contract execution
+pub struct MsgExecuteContract {
+    /// **contract** is a contract address that will be called
+    pub contract: String,
+    /// **msg** is a contract call message
+    pub msg: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-/// SudoContractProposal defines the struct for sudo execution proposal.
+#[deprecated(
+    since = "0.7.0",
+    note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
+)]
+/// Deprecated. SoftwareUpgradeProposal defines the struct for software upgrade proposal.
+pub struct SoftwareUpgradeProposal {
+    /// **title** is a text title of proposal. Non unique.
+    pub title: String,
+    /// **description** is a text description of proposal. Non unique.
+    pub description: String,
+    /// **plan** is a plan of upgrade.
+    pub plan: Plan,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+#[deprecated(
+    since = "0.7.0",
+    note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
+)]
+/// Deprecated. CancelSoftwareUpgradeProposal defines the struct for cancel software upgrade proposal.
+pub struct CancelSoftwareUpgradeProposal {
+    /// **title** is a text title of proposal. Non unique.
+    pub title: String,
+    /// **description** is a text description of proposal. Non unique.
+    pub description: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+#[deprecated(
+    since = "0.7.0",
+    note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
+)]
+/// Deprecated. SudoContractProposal defines the struct for sudo execution proposal.
 pub struct SudoContractProposal {
     /// **title** is a text title of proposal.
     pub title: String,
@@ -588,7 +662,43 @@ pub struct SudoContractProposal {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-/// UpdateAdminProposal defines the struct for  update admin proposal.
+#[deprecated(
+    since = "0.7.0",
+    note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
+)]
+/// Deprecated. PinCodesProposal defines the struct for pin contract codes proposal.
+pub struct PinCodesProposal {
+    /// **title** is a text title of proposal.
+    pub title: String,
+    /// **description** is a text description of proposal.
+    pub description: String,
+    /// **code_ids** is an array of codes to be pined.
+    pub code_ids: Vec<u64>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+#[deprecated(
+    since = "0.7.0",
+    note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
+)]
+/// Deprecated. UnpinCodesProposal defines the struct for unpin contract codes proposal.
+pub struct UnpinCodesProposal {
+    /// **title** is a text title of proposal.
+    pub title: String,
+    /// **description** is a text description of proposal.
+    pub description: String,
+    /// **code_ids** is an array of codes to be unpined.
+    pub code_ids: Vec<u64>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+#[deprecated(
+    since = "0.7.0",
+    note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
+)]
+/// Deprecated. UpdateAdminProposal defines the struct for update admin proposal.
 pub struct UpdateAdminProposal {
     /// **title** is a text title of proposal.
     pub title: String,
@@ -602,7 +712,11 @@ pub struct UpdateAdminProposal {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-/// SudoContractProposal defines the struct for clear admin proposal.
+#[deprecated(
+    since = "0.7.0",
+    note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
+)]
+/// Deprecated. SudoContractProposal defines the struct for clear admin proposal.
 pub struct ClearAdminProposal {
     /// **title** is a text title of proposal.
     pub title: String,
@@ -610,14 +724,4 @@ pub struct ClearAdminProposal {
     pub description: String,
     /// **contract** is an address of contract admin will be removed.
     pub contract: String,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-/// MsgExecuteContract defines a call to the contract execution
-pub struct MsgExecuteContract {
-    /// **contract** is a contract address that will be called
-    pub contract: String,
-    /// **msg** is a contract call message
-    pub msg: String,
 }
