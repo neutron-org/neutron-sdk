@@ -217,6 +217,8 @@ pub fn query_delegations(
     })
 }
 
+/// Returns list of unbonding delegations of particular delegator on remote chain
+/// * ***registered_query_id*** is an identifier of the corresponding registered interchain query
 pub fn query_unbonding_delegations(
     deps: Deps<NeutronQuery>,
     _env: Env,
