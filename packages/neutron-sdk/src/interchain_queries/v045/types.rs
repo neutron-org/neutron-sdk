@@ -69,7 +69,7 @@ pub const BANK_STORE_KEY: &str = "bank";
 /// Name of the standard **staking** Cosmos-SDK module
 pub const STAKING_STORE_KEY: &str = "staking";
 
-/// Name of the standard **staking** Cosmos-SDK module
+/// Name of the standard **slashing* Cosmos-SDK module
 pub const SLASHING_STORE_KEY: &str = "slashing";
 
 /// Name of the standard **distribution** Cosmos-SDK module
