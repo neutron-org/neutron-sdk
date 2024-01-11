@@ -268,7 +268,7 @@ impl KVReconstruct for StakingValidator {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-/// Validator structure for the querier. Contains validator signing info from slashing`` module
+/// Validator structure for the querier. Contains validator signing info from `slashing` module
 pub struct ValidatorSigningInfo {
     pub address: String,
     /// Height at which validator was first a candidate OR was unjailed
