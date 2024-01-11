@@ -235,7 +235,7 @@ pub fn new_register_delegator_unbonding_delegations_query_msg(
     for v in validators {
         let val_addr = decode_and_convert(&v)?;
 
-        // crate unbonding delegation key to get unbonding delegation structure
+        // create unbonding delegation key to get unbonding delegation structure
         keys.push(KVKey {
             path: STAKING_STORE_KEY.to_string(),
             key: Binary(create_unbonding_delegation_key(&delegator_addr, &val_addr)?),
