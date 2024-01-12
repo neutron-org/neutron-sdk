@@ -471,14 +471,20 @@ impl KVReconstruct for Delegations {
     }
 }
 
+/// Represents a single unbonding delegation from some validator to some delegator on remote chain
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct UnbondingEntry {
+    /// Amount of tokens to be unbonded at **completion_time**
     pub balance: Uint128,
+    /// Point of time representing completion of unbonding delegation
     pub completion_time: Option<Timestamp>,
+    /// Block height on remote network at which the undelegation was initiated
     pub creation_height: u64,
+    /// Amount of tokens initially scheduled to receive at completion
     pub initial_balance: Uint128,
 }
 
+/// Contains unbonding delegations which some delegator has on remote chain
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct UnbondingResponse {
     pub delegator_address: Addr,
