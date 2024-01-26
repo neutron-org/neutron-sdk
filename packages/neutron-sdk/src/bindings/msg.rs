@@ -210,7 +210,7 @@ pub enum DexMsg {
         amounts_b: Vec<Uint128>,
         tick_indexes_a_to_b: Vec<i64>,
         fees: Vec<u64>,
-        options: Vec<Option<DepositOption>>,
+        options: Vec<DepositOption>,
     },
     Withdrawal {
         receiver: String,
@@ -240,7 +240,7 @@ pub enum DexMsg {
     },
     MultiHopSwap {
         receiver: String,
-        routes: Vec<Option<MultiHopRoute>>,
+        routes: Vec<MultiHopRoute>,
         amount_in: Uint128,
         exit_limit_price: PrecDec,
         pick_best_route: bool,
