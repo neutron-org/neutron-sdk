@@ -354,6 +354,7 @@ impl From<AllLimitOrderTrancheRequest> for QueryAllLimitOrderTrancheRequest {
 pub struct AllUserDepositsRequest {
     pub address: String,
     pub pagination: Option<PageRequest>,
+    pub include_pool_data: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -367,6 +368,7 @@ impl From<AllUserDepositsRequest> for QueryAllUserDepositsRequest {
         QueryAllUserDepositsRequest {
             address: v.address,
             pagination: convert_page_request(v.pagination),
+            include_pool_data: v.include_pool_data,
         }
     }
 }
