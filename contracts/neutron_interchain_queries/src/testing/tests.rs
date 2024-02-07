@@ -212,6 +212,26 @@ fn build_interchain_query_gov_proposal_value(proposal_id: u64) -> StorageValue {
     }
 }
 
+// fn build_interchain_query_gov_proposal_votes_value(proposal_id: u64) -> StorageValue {
+//     let proposal_votes_key = create_gov_proposal_votes_key(proposal_id).unwrap();
+
+//     let votes: Vec<Vote> = vec![Vote {
+//         proposal_id: proposal_id,
+//         voter: "voter".to_string(),
+//         option: VoteOption::Unspecified as i32,
+//         options: vec![WeightedVoteOption {
+//             option: VoteOption::Yes as i32,
+//             weight: "1".to_string(),
+//         }],
+//     }];
+
+//     StorageValue {
+//         storage_prefix: "".to_string(),
+//         key: Binary(proposal_votes_key),
+//         value: Binary(votes.encode_to_vec()),
+//     }
+// }
+
 fn build_interchain_query_balance_response(addr: Addr, denom: String, amount: String) -> Binary {
     let converted_addr_bytes = decode_and_convert(addr.as_str()).unwrap();
 

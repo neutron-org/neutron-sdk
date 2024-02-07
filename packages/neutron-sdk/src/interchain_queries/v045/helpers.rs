@@ -9,6 +9,8 @@ use cosmos_sdk_proto::cosmos::staking::v1beta1::Commission as ValidatorCommissio
 use cosmwasm_std::{Binary, Decimal, Uint128};
 use std::str::{from_utf8, FromStr};
 
+use super::types::VOTES_KEY_PREFIX;
+
 /// Creates KV key to get **module** param by **key**
 pub fn create_params_store_key(module: &str, key: &str) -> Vec<u8> {
     let mut s = String::with_capacity(module.len() + 1 + key.len());
@@ -160,6 +162,27 @@ pub fn create_gov_proposal_key(proposal_id: u64) -> NeutronResult<Vec<u8>> {
     key.extend_from_slice(proposal_id.to_be_bytes().as_slice());
 
     Ok(key)
+}
+
+/// Creates Cosmos-SDK governance key for votes for proposal with specific id
+/// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/gov/types/keys.go#L48>
+pub fn create_gov_proposal_votes_key(proposal_id: u64) -> NeutronResult<Vec<u8>> {
+    let mut key: Vec<u8> = vec![VOTES_KEY_PREFIX];
+    key.extend_from_slice(proposal_id.to_be_bytes().as_slice());
+
+    Ok(key)
+}
+
+/// Creates Cosmos-SDK storage key for specific voter on specific proposal
+/// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/gov/types/keys.go#L106>
+pub fn create_gov_proposal_voters_votes_key<AddrBytes: AsRef<[u8]>>(
+    proposal_id: u64,
+    voter_address: AddrBytes,
+) -> NeutronResult<Vec<u8>> {
+    let mut votes_key: Vec<u8> = create_gov_proposal_votes_key(proposal_id)?;
+    votes_key.extend_from_slice(length_prefix(voter_address)?.as_slice());
+
+    Ok(votes_key)
 }
 
 /// Returns validator max change rate

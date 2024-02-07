@@ -17,6 +17,7 @@ use crate::{
 };
 use cosmwasm_std::Binary;
 
+use super::helpers::create_gov_proposal_voters_votes_key;
 use super::helpers::create_validator_signing_info_key;
 use super::types::SLASHING_STORE_KEY;
 
@@ -110,6 +111,36 @@ pub fn new_register_gov_proposal_query_msg(
         let kv_key = KVKey {
             path: GOV_STORE_KEY.to_string(),
             key: Binary(create_gov_proposal_key(id)?),
+        };
+
+        kv_keys.push(kv_key)
+    }
+
+    NeutronMsg::register_interchain_query(QueryPayload::KV(kv_keys), connection_id, update_period)
+}
+
+/// Creates a message to register an Interchain Query to get governance proposal votes on the remote chain
+///
+/// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
+/// * **proposal_id** is a proposal id from remote chain.
+/// * **update_period** is used to say how often the query must be updated.
+pub fn new_register_gov_proposal_votes_query_msg(
+    connection_id: String,
+    proposal_id: u64,
+    voters: Vec<String>,
+    update_period: u64,
+) -> NeutronResult<NeutronMsg> {
+    let mut kv_keys: Vec<KVKey> = Vec::with_capacity(voters.len());
+
+    for voter in voters {
+        let voter_addr = decode_and_convert(&voter)?;
+
+        let kv_key = KVKey {
+            path: GOV_STORE_KEY.to_string(),
+            key: Binary(create_gov_proposal_voters_votes_key(
+                proposal_id,
+                &voter_addr,
+            )?),
         };
 
         kv_keys.push(kv_key)

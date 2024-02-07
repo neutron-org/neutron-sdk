@@ -3,6 +3,7 @@ use crate::{
     bindings::types::StorageValue,
     errors::error::{NeutronError, NeutronResult},
 };
+use cosmos_sdk_proto::cosmos::gov::v1beta1::Vote;
 use cosmos_sdk_proto::cosmos::{
     base::v1beta1::Coin as CosmosCoin,
     distribution::v1beta1::FeePool as CosmosFeePool,
@@ -58,6 +59,10 @@ pub const FEE_POOL_KEY: u8 = 0x00;
 /// Key for Proposals in the **gov** module's storage
 /// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/gov/types/keys.go#L41>
 pub const PROPOSALS_KEY_PREFIX: u8 = 0x00;
+
+/// Key for Votes in the **gov** module's storage
+/// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/gov/types/keys.go#L48>
+pub const VOTES_KEY_PREFIX: u8 = 0x20;
 
 /// Key for Wasm Contract Store in the **wasm** module's storage
 /// <https://github.com/CosmWasm/wasmd/blob/e6d451bf9dd96a555b10e72aa3c0f6b820d34684/x/wasm/types/keys.go#L28>
@@ -385,6 +390,54 @@ impl KVReconstruct for GovernmentProposal {
         }
 
         Ok(GovernmentProposal { proposals })
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+/// Proposal vote option defines the members of a governance proposal vote option.
+pub struct WeightedVoteOption {
+    pub option: i32,
+    pub weight: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+/// Proposal vote defines the core field members of a governance proposal votes.
+pub struct ProposalVote {
+    pub proposal_id: u64,
+    pub voter: String,
+    pub options: Vec<WeightedVoteOption>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+/// A structure that can be reconstructed from **StorageValues**'s for the **Government Proposal Votes Interchain Query**.
+pub struct GovernmentProposalVotes {
+    pub proposal_votes: Vec<ProposalVote>,
+}
+
+impl KVReconstruct for GovernmentProposalVotes {
+    fn reconstruct(storage_values: &[StorageValue]) -> NeutronResult<GovernmentProposalVotes> {
+        let mut proposal_votes = Vec::with_capacity(storage_values.len());
+
+        for kv in storage_values {
+            let voter_vote: Vote = Vote::decode(kv.value.as_slice())?;
+
+            let vote = ProposalVote {
+                proposal_id: voter_vote.proposal_id,
+                voter: voter_vote.voter,
+                options: voter_vote
+                    .options
+                    .into_iter()
+                    .map(|v| WeightedVoteOption {
+                        option: v.option,
+                        weight: v.weight,
+                    })
+                    .collect(),
+            };
+
+            proposal_votes.push(vote);
+        }
+
+        Ok(GovernmentProposalVotes { proposal_votes })
     }
 }
 
