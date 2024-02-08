@@ -126,7 +126,7 @@ pub fn new_register_gov_proposal_query_msg(
 /// * **update_period** is used to say how often the query must be updated.
 pub fn new_register_gov_proposal_votes_query_msg(
     connection_id: String,
-    proposal_id: u64,
+    proposals_ids: Vec<u64>,
     voters: Vec<String>,
     update_period: u64,
 ) -> NeutronResult<NeutronMsg> {
@@ -135,15 +135,17 @@ pub fn new_register_gov_proposal_votes_query_msg(
     for voter in voters {
         let voter_addr = decode_and_convert(&voter)?;
 
-        let kv_key = KVKey {
-            path: GOV_STORE_KEY.to_string(),
-            key: Binary(create_gov_proposal_voters_votes_key(
-                proposal_id,
-                &voter_addr,
-            )?),
-        };
+        for proposal_id in proposals_ids.clone() {
+            let kv_key = KVKey {
+                path: GOV_STORE_KEY.to_string(),
+                key: Binary(create_gov_proposal_voters_votes_key(
+                    proposal_id,
+                    &voter_addr,
+                )?),
+            };
 
-        kv_keys.push(kv_key)
+            kv_keys.push(kv_key)
+        }
     }
 
     NeutronMsg::register_interchain_query(QueryPayload::KV(kv_keys), connection_id, update_period)

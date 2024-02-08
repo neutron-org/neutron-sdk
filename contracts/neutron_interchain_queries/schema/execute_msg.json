@@ -199,41 +199,6 @@
     {
       "type": "object",
       "required": [
-        "register_government_proposal_votes_query"
-      ],
-      "properties": {
-        "register_government_proposal_votes_query": {
-          "type": "object",
-          "required": [
-            "connection_id",
-            "proposals_ids",
-            "update_period"
-          ],
-          "properties": {
-            "connection_id": {
-              "type": "string"
-            },
-            "proposals_ids": {
-              "type": "array",
-              "items": {
-                "type": "integer",
-                "format": "uint64",
-                "minimum": 0.0
-              }
-            },
-            "update_period": {
-              "type": "integer",
-              "format": "uint64",
-              "minimum": 0.0
-            }
-          }
-        }
-      },
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "required": [
         "register_transfers_query"
       ],
       "properties": {
