@@ -17,8 +17,7 @@ use crate::{
 };
 use cosmwasm_std::Binary;
 
-use super::helpers::create_gov_proposal_voters_votes_key;
-use super::helpers::create_validator_signing_info_key;
+use super::helpers::{create_gov_proposals_voters_votes_keys, create_validator_signing_info_key};
 use super::types::SLASHING_STORE_KEY;
 
 /// Creates a message to register an Interchain Query to get balance of account on remote chain for particular denom
@@ -130,23 +129,7 @@ pub fn new_register_gov_proposal_votes_query_msg(
     voters: Vec<String>,
     update_period: u64,
 ) -> NeutronResult<NeutronMsg> {
-    let mut kv_keys: Vec<KVKey> = Vec::with_capacity(voters.len());
-
-    for voter in voters {
-        let voter_addr = decode_and_convert(&voter)?;
-
-        for proposal_id in proposals_ids.clone() {
-            let kv_key = KVKey {
-                path: GOV_STORE_KEY.to_string(),
-                key: Binary(create_gov_proposal_voters_votes_key(
-                    proposal_id,
-                    &voter_addr,
-                )?),
-            };
-
-            kv_keys.push(kv_key)
-        }
-    }
+    let kv_keys = create_gov_proposals_voters_votes_keys(proposals_ids, voters)?;
 
     NeutronMsg::register_interchain_query(QueryPayload::KV(kv_keys), connection_id, update_period)
 }
