@@ -255,18 +255,19 @@ impl Into<String> for KVKeys {
     }
 }
 
-#[derive(Serialize_repr, Deserialize_repr, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[repr(u8)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema, Default)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum LimitOrderType {
-    GoodTilCancelled = 0,
-    FillOrKill = 1,
-    ImmediateOrCancel = 2,
-    JustInTime = 3,
-    GoodTilTime = 4,
+    #[default]
+    GoodTilCancelled,
+    FillOrKill,
+    ImmediateOrCancel,
+    JustInTime,
+    GoodTilTime,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema, Default)]
+#[serde(rename_all = "snake_case", default)]
 pub struct LimitOrderTrancheUser {
     trade_pair_id: TradePairID,
     tick_index_taker_to_maker: i64,
@@ -298,7 +299,7 @@ pub struct LimitOrderTranche {
     price_taker_to_maker: PrecDec,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema, Default)]
 #[serde(rename_all = "snake_case")]
 pub struct TradePairID {
     maker_denom: String,
