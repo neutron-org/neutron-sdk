@@ -1,5 +1,5 @@
 use crate::bindings::types::{Failure, InterchainQueryResult, RegisteredQuery};
-use cosmwasm_std::{Binary, Coin, CustomQuery, Int128, QueryRequest, Uint128, Uint64};
+use cosmwasm_std::{Binary, Coin, CustomQuery, Int128, QueryRequest};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 

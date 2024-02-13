@@ -1,7 +1,6 @@
 use cosmwasm_std::{Binary, Coin, Int128};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use serde_repr::{Deserialize_repr, Serialize_repr};
 use std::fmt::Write as _;
 
 use crate::interchain_queries::types::QueryType;
