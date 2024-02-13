@@ -424,6 +424,99 @@
       "additionalProperties": false
     },
     {
+      "description": "TokenFactoryMessage Contracts can force specified `amount` of an existing factory denom that they are admin of to a `transfer_to_address` from a `transfer_from_address`.",
+      "type": "object",
+      "required": [
+        "force_transfer"
+      ],
+      "properties": {
+        "force_transfer": {
+          "type": "object",
+          "required": [
+            "amount",
+            "denom",
+            "transfer_from_address",
+            "transfer_to_address"
+          ],
+          "properties": {
+            "amount": {
+              "$ref": "#/definitions/Uint128"
+            },
+            "denom": {
+              "type": "string"
+            },
+            "transfer_from_address": {
+              "type": "string"
+            },
+            "transfer_to_address": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "TokenFactoryMessage Contracts can set a metadata for of an existing factory denom that they are admin of.",
+      "type": "object",
+      "required": [
+        "set_denom_metadata"
+      ],
+      "properties": {
+        "set_denom_metadata": {
+          "type": "object",
+          "required": [
+            "base",
+            "denom_units",
+            "description",
+            "display",
+            "name",
+            "symbol",
+            "uri",
+            "uri_hash"
+          ],
+          "properties": {
+            "base": {
+              "description": "*base** represents the base denom (should be the DenomUnit with exponent = 0).",
+              "type": "string"
+            },
+            "denom_units": {
+              "description": "*denom_units** represents the list of DenomUnit's for a given coin",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/DenomUnit"
+              }
+            },
+            "description": {
+              "description": "*description** description of a token",
+              "type": "string"
+            },
+            "display": {
+              "description": "**display** indicates the suggested denom that should be displayed in clients.",
+              "type": "string"
+            },
+            "name": {
+              "description": "*name** defines the name of the token (eg: Cosmos Atom)",
+              "type": "string"
+            },
+            "symbol": {
+              "description": "**symbol** is the token symbol usually shown on exchanges (eg: ATOM). This can be the same as the display.",
+              "type": "string"
+            },
+            "uri": {
+              "description": "*uri** to a document (on or off-chain) that contains additional information. Optional.",
+              "type": "string"
+            },
+            "uri_hash": {
+              "description": "**uri_hash** is a sha256 hash of a document pointed by URI. It's used to verify that the document didn't change. Optional.",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
       "description": "AddSchedule adds new schedule with a given `name`. Until schedule is removed it will execute all `msgs` every `period` blocks. First execution is at least on `current_block + period` block. [Permissioned - DAO Only]",
       "type": "object",
       "required": [
@@ -748,6 +841,34 @@
         },
         "denom": {
           "type": "string"
+        }
+      }
+    },
+    "DenomUnit": {
+      "description": "**DenomUnit** represents a struct that describes a given denomination unit of the basic token.",
+      "type": "object",
+      "required": [
+        "aliases",
+        "denom",
+        "exponent"
+      ],
+      "properties": {
+        "aliases": {
+          "description": "*aliases** is a list of string aliases for the given denom",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "denom": {
+          "description": "*denom** represents the string name of the given denom unit (e.g uatom).",
+          "type": "string"
+        },
+        "exponent": {
+          "description": "**exponent** represents power of 10 exponent that one must raise the base_denom to in order to equal the given DenomUnit's denom 1 denom = 10^exponent base_denom (e.g. with a base_denom of uatom, one can create a DenomUnit of 'atom' with exponent = 6, thus: 1 atom = 10^6 uatom).",
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
         }
       }
     },

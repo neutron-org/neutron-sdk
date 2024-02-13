@@ -5,7 +5,7 @@ use crate::{
     NeutronError, NeutronResult,
 };
 
-use cosmwasm_std::{Binary, Coin, CosmosMsg, CustomMsg, StdError, Uint128};
+use cosmwasm_std::{Binary, Coin, CosmosMsg, CustomMsg, DenomUnit, StdError, Uint128};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json_wasm::to_string;
@@ -167,6 +167,41 @@ pub enum NeutronMsg {
     SetBeforeSendHook {
         denom: String,
         contract_addr: String,
+    },
+
+    /// TokenFactoryMessage
+    /// Contracts can force specified `amount` of an existing factory denom
+    /// that they are admin of to a `transfer_to_address` from a `transfer_from_address`.
+    ForceTransfer {
+        denom: String,
+        amount: Uint128,
+        transfer_from_address: String,
+        transfer_to_address: String,
+    },
+
+    /// TokenFactoryMessage
+    /// Contracts can set a metadata for of an existing factory denom
+    /// that they are admin of.
+    SetDenomMetadata {
+        /// **description** description of a token
+        description: String,
+        /// **denom_units** represents the list of DenomUnit's for a given coin
+        denom_units: Vec<DenomUnit>,
+        /// **base** represents the base denom (should be the DenomUnit with exponent = 0).
+        base: String,
+        /// **display** indicates the suggested denom that should be
+        /// displayed in clients.
+        display: String,
+        /// **name** defines the name of the token (eg: Cosmos Atom)
+        name: String,
+        /// **symbol** is the token symbol usually shown on exchanges (eg: ATOM). This can
+        /// be the same as the display.
+        symbol: String,
+        /// **uri** to a document (on or off-chain) that contains additional information. Optional.
+        uri: String,
+        /// **uri_hash** is a sha256 hash of a document pointed by URI. It's used to verify that
+        /// the document didn't change. Optional.
+        uri_hash: String,
     },
 
     /// AddSchedule adds new schedule with a given `name`.
@@ -345,17 +380,17 @@ impl NeutronMsg {
         }
     }
 
-    // Basic helper to build create denom message passed to TokenFactory module:
-    // * **subdenom** is a subdenom name for denom to be created.
+    /// Basic helper to build create denom message passed to TokenFactory module:
+    /// * **subdenom** is a subdenom name for denom to be created.
     pub fn submit_create_denom(subdenom: impl Into<String>) -> Self {
         NeutronMsg::CreateDenom {
             subdenom: subdenom.into(),
         }
     }
 
-    // Basic helper to define change of admin for a token passed to TokenFactory module:
-    // * **denom** is a name of the denom to change an admin for;
-    // * **new_admin_address** is a new admin address for a denom.
+    /// Basic helper to define change of admin for a token passed to TokenFactory module:
+    /// * **denom** is a name of the denom to change an admin for;
+    /// * **new_admin_address** is a new admin address for a denom.
     pub fn submit_change_admin(
         denom: impl Into<String>,
         new_admin_address: impl Into<String>,
@@ -366,10 +401,10 @@ impl NeutronMsg {
         }
     }
 
-    // Basic helper to define mint tokens passed to TokenFactory module:
-    // * **denom** is a name of the denom;
-    // * **amount** is an amount of tokens to mint;
-    // * **mint_to_address** is an address that will receive minted tokens.
+    /// Basic helper to define mint tokens passed to TokenFactory module:
+    /// * **denom** is a name of the denom;
+    /// * **amount** is an amount of tokens to mint;
+    /// * **mint_to_address** is an address that will receive minted tokens.
     pub fn submit_mint_tokens(
         denom: impl Into<String>,
         amount: Uint128,
@@ -382,9 +417,9 @@ impl NeutronMsg {
         }
     }
 
-    // Basic helper to define burn tokens passed to TokenFactory module:
-    // * **denom** is a name of the denom;
-    // * **amount** is an amount of tokens to burn.
+    /// Basic helper to define burn tokens passed to TokenFactory module:
+    /// * **denom** is a name of the denom;
+    /// * **amount** is an amount of tokens to burn.
     pub fn submit_burn_tokens(denom: impl Into<String>, amount: Uint128) -> Self {
         NeutronMsg::BurnTokens {
             denom: denom.into(),
@@ -393,8 +428,8 @@ impl NeutronMsg {
         }
     }
 
-    // Basic helper to create set before send hook message passed to TokenFactory module:
-    // * **denom** is a name for denom for hook to be created.
+    /// Basic helper to create set before send hook message passed to TokenFactory module:
+    /// * **denom** is a name for denom for hook to be created.
     pub fn submit_set_before_send_hook(
         denom: impl Into<String>,
         contract_addr: impl Into<String>,
@@ -405,22 +440,75 @@ impl NeutronMsg {
         }
     }
 
-    // Basic helper to define add schedule passed to Cron module:
-    // * **name** is a name of the schedule;
-    // * **period** is a period of schedule execution in blocks;
-    // * **msgs** is the messages that will be executed.
+    /// Basic helper to create force transfer message passed to TokenFactory module:
+    /// * **denom** is a name for a denom to transfer;
+    /// * **amount** is an amount of **denom** tokens to transfer;
+    /// * **from_address** is from which address to transfer tokens;
+    /// * **to_address** is where to transfer tokens.
+    pub fn submit_force_transfer(
+        denom: impl Into<String>,
+        amount: Uint128,
+        from_address: impl Into<String>,
+        to_address: impl Into<String>,
+    ) -> Self {
+        NeutronMsg::ForceTransfer {
+            denom: denom.into(),
+            amount,
+            transfer_from_address: from_address.into(),
+            transfer_to_address: to_address.into(),
+        }
+    }
+    /// Basic helper to create a set denom metadata message passed to TokenFactory module:
+    /// * **description** description of a token;
+    /// * **denom_units** represents the list of DenomUnit's for a given coin;
+    /// * **base** represents the base denom (should be the DenomUnit with exponent = 0);
+    /// * **display** indicates the suggested denom that should be
+    /// displayed in clients;
+    /// * **name** defines the name of the token (eg: Cosmos Atom);
+    /// * **symbol** is the token symbol usually shown on exchanges (eg: ATOM). This can
+    /// be the same as the display;
+    /// * **uri** to a document (on or off-chain) that contains additional information. Optional;
+    /// * **uri_hash** is a sha256 hash of a document pointed by URI. It's used to verify that
+    /// the document didn't change. Optional.
+    #[allow(clippy::too_many_arguments)]
+    pub fn submit_set_denom_metadata(
+        description: String,
+        denom_units: Vec<DenomUnit>,
+        base: String,
+        display: String,
+        name: String,
+        symbol: String,
+        uri: String,
+        uri_hash: String,
+    ) -> Self {
+        NeutronMsg::SetDenomMetadata {
+            description,
+            denom_units,
+            base,
+            display,
+            name,
+            symbol,
+            uri,
+            uri_hash,
+        }
+    }
+
+    /// Basic helper to define add schedule passed to Cron module:
+    /// * **name** is a name of the schedule;
+    /// * **period** is a period of schedule execution in blocks;
+    /// * **msgs** is the messages that will be executed.
     pub fn submit_add_schedule(name: String, period: u64, msgs: Vec<MsgExecuteContract>) -> Self {
         NeutronMsg::AddSchedule { name, period, msgs }
     }
 
-    // Basic helper to define remove schedule passed to Cron module:
-    // * **name** is a name of the schedule to be removed.
+    /// Basic helper to define remove schedule passed to Cron module:
+    /// * **name** is a name of the schedule to be removed.
     pub fn submit_remove_schedule(name: String) -> Self {
         NeutronMsg::RemoveSchedule { name }
     }
 
-    // Basic helper to define resubmit failure passed to Contractmanager module:
-    // * **failure_id** is an id of the failure to be resubmitted.
+    /// Basic helper to define resubmit failure passed to Contractmanager module:
+    /// * **failure_id** is an id of the failure to be resubmitted.
     pub fn submit_resubmit_failure(failure_id: u64) -> Self {
         NeutronMsg::ResubmitFailure { failure_id }
     }
