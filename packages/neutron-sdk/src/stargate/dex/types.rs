@@ -1,4 +1,4 @@
-use crate::bindings::query::{PageRequest, PageResponse};
+use crate::bindings::query::PageRequest;
 use crate::proto_types::neutron::dex::{
     DepositOptions as DepositOptionsGen, MsgCancelLimitOrder, MsgDeposit, MsgMultiHopSwap,
     MsgPlaceLimitOrder, MsgWithdrawFilledLimitOrder, MsgWithdrawal, MultiHopRoute,
@@ -12,7 +12,7 @@ use crate::proto_types::neutron::dex::{
 };
 use crate::stargate::aux::proto_timestamp_from_i64;
 use cosmos_sdk_proto::cosmos::base::query::v1beta1::PageRequest as PageRequestGen;
-use cosmwasm_std::{Coin, Int128, Int64, Uint64};
+use cosmwasm_std::{Binary, Coin, Int128, Int64, Uint64};
 use schemars::JsonSchema;
 use serde::{Deserialize, Deserializer, Serialize};
 use speedate::DateTime;
@@ -792,6 +792,18 @@ pub struct PoolMetadata {
     pub tick: Int64,
     pub fee: Uint64,
     pub pair_id: PairID,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct PageResponse {
+    /// **next_key** is the key to be passed to PageRequest.key to
+    /// query the next page most efficiently. It will be empty if
+    /// there are no more results.
+    pub next_key: Option<Binary>,
+    /// **total** is total number of results available if PageRequest.count_total
+    /// was set, its value is undefined otherwise
+    pub total: Option<Uint64>,
 }
 
 fn convert_page_request(page_request: Option<PageRequest>) -> Option<PageRequestGen> {
