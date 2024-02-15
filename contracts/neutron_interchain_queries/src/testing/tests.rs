@@ -461,10 +461,10 @@ fn test_gov_proposals_query() {
                         voting_end_time: None,
                         voting_start_time: None,
                         final_tally_result: Some(TallyResult {
-                            abstain: "0".to_string(),
-                            yes: "0".to_string(),
-                            no: "0".to_string(),
-                            no_with_veto: "0".to_string()
+                            abstain: Uint128::zero(),
+                            yes: Uint128::zero(),
+                            no: Uint128::zero(),
+                            no_with_veto: Uint128::zero()
                         })
                     },
                     Proposal {
@@ -480,10 +480,10 @@ fn test_gov_proposals_query() {
                         voting_end_time: None,
                         voting_start_time: None,
                         final_tally_result: Some(TallyResult {
-                            abstain: "0".to_string(),
-                            yes: "0".to_string(),
-                            no: "0".to_string(),
-                            no_with_veto: "0".to_string()
+                            abstain: Uint128::zero(),
+                            yes: Uint128::zero(),
+                            no: Uint128::zero(),
+                            no_with_veto: Uint128::zero()
                         })
                     },
                     Proposal {
@@ -499,10 +499,10 @@ fn test_gov_proposals_query() {
                         voting_end_time: None,
                         voting_start_time: None,
                         final_tally_result: Some(TallyResult {
-                            abstain: "0".to_string(),
-                            yes: "0".to_string(),
-                            no: "0".to_string(),
-                            no_with_veto: "0".to_string()
+                            abstain: Uint128::zero(),
+                            yes: Uint128::zero(),
+                            no: Uint128::zero(),
+                            no_with_veto: Uint128::zero()
                         })
                     }
                 ]

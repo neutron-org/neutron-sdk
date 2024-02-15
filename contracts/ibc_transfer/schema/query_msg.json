@@ -1,0 +1,202 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "QueryMsg",
+  "oneOf": [
+    {
+      "type": "object",
+      "required": [
+        "balance"
+      ],
+      "properties": {
+        "balance": {
+          "type": "object",
+          "required": [
+            "query_id"
+          ],
+          "properties": {
+            "query_id": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "bank_total_supply"
+      ],
+      "properties": {
+        "bank_total_supply": {
+          "type": "object",
+          "required": [
+            "query_id"
+          ],
+          "properties": {
+            "query_id": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "distribution_fee_pool"
+      ],
+      "properties": {
+        "distribution_fee_pool": {
+          "type": "object",
+          "required": [
+            "query_id"
+          ],
+          "properties": {
+            "query_id": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "staking_validators"
+      ],
+      "properties": {
+        "staking_validators": {
+          "type": "object",
+          "required": [
+            "query_id"
+          ],
+          "properties": {
+            "query_id": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "government_proposals"
+      ],
+      "properties": {
+        "government_proposals": {
+          "type": "object",
+          "required": [
+            "query_id"
+          ],
+          "properties": {
+            "query_id": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "get_delegations"
+      ],
+      "properties": {
+        "get_delegations": {
+          "type": "object",
+          "required": [
+            "query_id"
+          ],
+          "properties": {
+            "query_id": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "cw20_balance"
+      ],
+      "properties": {
+        "cw20_balance": {
+          "type": "object",
+          "required": [
+            "query_id"
+          ],
+          "properties": {
+            "query_id": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "get_registered_query"
+      ],
+      "properties": {
+        "get_registered_query": {
+          "type": "object",
+          "required": [
+            "query_id"
+          ],
+          "properties": {
+            "query_id": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "get_recipient_txs"
+      ],
+      "properties": {
+        "get_recipient_txs": {
+          "type": "object",
+          "required": [
+            "recipient"
+          ],
+          "properties": {
+            "recipient": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  ]
+}
