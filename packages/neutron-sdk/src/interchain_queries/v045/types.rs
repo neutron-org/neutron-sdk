@@ -326,10 +326,10 @@ impl KVReconstruct for SigningInfo {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 /// TallyResult defines a standard tally for a governance proposal.
 pub struct TallyResult {
-    pub yes: String,
-    pub no: String,
-    pub abstain: String,
-    pub no_with_veto: String,
+    pub yes: Uint128,
+    pub no: Uint128,
+    pub abstain: Uint128,
+    pub no_with_veto: Uint128,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -379,10 +379,11 @@ impl KVReconstruct for GovernmentProposal {
                 voting_end_time: proposal.voting_end_time.map(|v| v.seconds as u64),
                 voting_start_time: proposal.voting_start_time.map(|v| v.seconds as u64),
                 final_tally_result: final_tally_result.as_ref().map(|v| TallyResult {
-                    abstain: v.abstain.to_string(),
-                    no: v.no.to_string(),
-                    no_with_veto: v.no_with_veto.to_string(),
-                    yes: v.yes.to_string(),
+                    abstain: Uint128::from_str(v.abstain.as_str()).unwrap_or(Uint128::zero()),
+                    no: Uint128::from_str(v.no.as_str()).unwrap_or(Uint128::zero()),
+                    no_with_veto: Uint128::from_str(v.no_with_veto.as_str())
+                        .unwrap_or(Uint128::zero()),
+                    yes: Uint128::from_str(v.yes.as_str()).unwrap_or(Uint128::zero()),
                 }),
             };
 
