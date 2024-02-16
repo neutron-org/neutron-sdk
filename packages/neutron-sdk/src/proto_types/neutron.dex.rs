@@ -7,6 +7,45 @@ pub struct PairId {
     pub token1: ::prost::alloc::string::String,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
+pub struct TradePairId {
+    #[prost(string, tag = "2")]
+    pub maker_denom: ::prost::alloc::string::String,
+    #[prost(string, tag = "3")]
+    pub taker_denom: ::prost::alloc::string::String,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct PoolReservesKey {
+    #[prost(message, optional, tag = "1")]
+    pub trade_pair_id: ::core::option::Option<TradePairId>,
+    #[prost(int64, tag = "2")]
+    pub tick_index_taker_to_maker: i64,
+    #[prost(uint64, tag = "3")]
+    pub fee: u64,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct PoolReserves {
+    #[prost(message, optional, tag = "1")]
+    pub key: ::core::option::Option<PoolReservesKey>,
+    #[prost(string, tag = "2")]
+    pub reserves_maker_denom: ::prost::alloc::string::String,
+    #[prost(string, tag = "3")]
+    pub price_taker_to_maker: ::prost::alloc::string::String,
+    #[prost(string, tag = "4")]
+    pub price_opposite_taker_to_maker: ::prost::alloc::string::String,
+}
+// NOTE: This struct is never actually stored in the KV store. It is merely a
+// convenience wrapper for holding both sides of a pool.
+
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct Pool {
+    #[prost(uint64, tag = "1")]
+    pub id: u64,
+    #[prost(message, optional, tag = "2")]
+    pub lower_tick0: ::core::option::Option<PoolReserves>,
+    #[prost(message, optional, tag = "3")]
+    pub upper_tick1: ::core::option::Option<PoolReserves>,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct DepositRecord {
     #[prost(message, optional, tag = "1")]
     pub pair_id: ::core::option::Option<PairId>,
@@ -20,13 +59,10 @@ pub struct DepositRecord {
     pub upper_tick_index: i64,
     #[prost(uint64, tag = "6")]
     pub fee: u64,
-}
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct TradePairId {
-    #[prost(string, tag = "2")]
-    pub maker_denom: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
-    pub taker_denom: ::prost::alloc::string::String,
+    #[prost(string, tag = "7")]
+    pub total_shares: ::prost::alloc::string::String,
+    #[prost(message, optional, tag = "8")]
+    pub pool: ::core::option::Option<Pool>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct LimitOrderTrancheKey {
@@ -47,14 +83,12 @@ pub struct LimitOrderTranche {
     pub reserves_taker_denom: ::prost::alloc::string::String,
     #[prost(string, tag = "4")]
     pub total_maker_denom: ::prost::alloc::string::String,
+    /// LimitOrders with expiration_time set are valid as long as blockTime <= expiration_time
     #[prost(string, tag = "5")]
     pub total_taker_denom: ::prost::alloc::string::String,
-    /// expiration_time is represented as an RFC 3339 formatted date.
-    /// LimitOrders with expiration_time set are valid as long as blockTime <= expiration_time.
-    /// JIT orders also use expiration_time to handle deletion, but represent a special case.
-    /// All JIT orders have an expiration_time of 0001-01-01T00:00:00Z, and an exception is made to
-    /// still treat these orders as live. Order deletion still functions the
-    /// same, and the orders will be deleted at the end of the block.
+    /// JIT orders also use expiration_time to handle deletion but represent a special case
+    /// All JIT orders have a expiration_time of 0 and an exception is made to still treat these orders as live
+    /// Order deletion still functions the same and the orders will be deleted at the end of the block
     #[prost(message, optional, tag = "6")]
     pub expiration_time: ::core::option::Option<::prost_types::Timestamp>,
     #[prost(string, tag = "7")]
@@ -271,26 +305,6 @@ pub struct PoolMetadata {
     pub pair_id: ::core::option::Option<PairId>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct PoolReservesKey {
-    #[prost(message, optional, tag = "1")]
-    pub trade_pair_id: ::core::option::Option<TradePairId>,
-    #[prost(int64, tag = "2")]
-    pub tick_index_taker_to_maker: i64,
-    #[prost(uint64, tag = "3")]
-    pub fee: u64,
-}
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct PoolReserves {
-    #[prost(message, optional, tag = "1")]
-    pub key: ::core::option::Option<PoolReservesKey>,
-    #[prost(string, tag = "2")]
-    pub reserves_maker_denom: ::prost::alloc::string::String,
-    #[prost(string, tag = "3")]
-    pub price_taker_to_maker: ::prost::alloc::string::String,
-    #[prost(string, tag = "4")]
-    pub price_opposite_taker_to_maker: ::prost::alloc::string::String,
-}
-#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct TickLiquidity {
     #[prost(oneof = "tick_liquidity::Liquidity", tags = "1, 2")]
     pub liquidity: ::core::option::Option<tick_liquidity::Liquidity>,
@@ -324,23 +338,11 @@ pub struct GenesisState {
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct LimitOrderExpiration {
-    /// see limitOrderTranche.proto for details on goodTilDate
+    /// see limitOrderTranche.proto for details on expiration_time
     #[prost(message, optional, tag = "1")]
     pub expiration_time: ::core::option::Option<::prost_types::Timestamp>,
     #[prost(bytes = "vec", tag = "2")]
     pub tranche_ref: ::prost::alloc::vec::Vec<u8>,
-}
-// NOTE: This struct is never actually stored in the KV store. It is merely a
-// convenience wrapper for holding both sides of a pool.
-
-#[derive(Clone, PartialEq, ::prost::Message)]
-pub struct Pool {
-    #[prost(uint64, tag = "1")]
-    pub id: u64,
-    #[prost(message, optional, tag = "2")]
-    pub lower_tick0: ::core::option::Option<PoolReserves>,
-    #[prost(message, optional, tag = "3")]
-    pub upper_tick1: ::core::option::Option<PoolReserves>,
 }
 /// QueryParamsRequest is request type for the Query/Params RPC method.
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -419,6 +421,8 @@ pub struct QueryAllUserDepositsRequest {
     #[prost(message, optional, tag = "2")]
     pub pagination:
         ::core::option::Option<cosmos_sdk_proto::cosmos::base::query::v1beta1::PageRequest>,
+    #[prost(bool, tag = "3")]
+    pub include_pool_data: bool,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryAllUserDepositsResponse {
