@@ -113,6 +113,7 @@ pub enum DexQuery {
     // Queries a list of UserDeposits items.
     UserDepositAll {
         address: String,
+        include_pool_data: bool,
         pagination: Option<PageRequest>,
     },
     // Queries a list of TickLiquidity items.
@@ -252,6 +253,8 @@ pub struct DepositRecord {
     lower_tick_index: i64,
     upper_tick_index: i64,
     fee: Option<u64>,
+    total_shares: Option<Int128>,
+    pool: Option<Pool>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema, Default)]
@@ -356,7 +359,7 @@ pub struct Pool {
     #[serde(default)]
     id: u64,
     lower_tick0: Option<PoolReserves>,
-    lower_tick1: Option<PoolReserves>,
+    upper_tick1: Option<PoolReserves>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]

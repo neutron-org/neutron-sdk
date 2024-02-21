@@ -353,8 +353,8 @@ impl From<AllLimitOrderTrancheRequest> for QueryAllLimitOrderTrancheRequest {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct AllUserDepositsRequest {
     pub address: String,
-    pub pagination: Option<PageRequest>,
     pub include_pool_data: bool,
+    pub pagination: Option<PageRequest>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -743,6 +743,8 @@ pub struct DepositRecord {
     pub lower_tick_index: Int64,
     pub upper_tick_index: Int64,
     pub fee: Option<Int64>,
+    total_shares: Option<Int128>,
+    pool: Option<Pool>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema, Default)]
