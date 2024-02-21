@@ -9,8 +9,7 @@ use cosmwasm_std::{Binary, Coin, CosmosMsg, CustomMsg, DenomUnit, StdError, Uint
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json_wasm::to_string;
-
-use super::types::LimitOrderType;
+use crate::bindings::dex::msg::DexMsg;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 /// IbcFee defines struct for fees that refund the relayer for `SudoMsg` messages submission.
@@ -234,87 +233,6 @@ pub enum NeutronMsg {
     Dex(DexMsg),
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub enum DexMsg {
-    Deposit {
-        receiver: String,
-        token_a: String,
-        token_b: String,
-        amounts_a: Vec<Uint128>,
-        amounts_b: Vec<Uint128>,
-        tick_indexes_a_to_b: Vec<i64>,
-        fees: Vec<u64>,
-        options: Vec<DepositOption>,
-    },
-    Withdrawal {
-        receiver: String,
-        token_a: String,
-        token_b: String,
-        shares_to_remove: Vec<Uint128>,
-        tick_indexes_a_to_b: Vec<i64>,
-        fees: Vec<u64>,
-    },
-    PlaceLimitOrder {
-        receiver: String,
-        token_in: String,
-        token_out: String,
-        tick_index_in_to_out: i64,
-        amount_in: Uint128,
-        order_type: LimitOrderType,
-        // TODO: fix time representation
-        // expirationTime is only valid iff orderType == GOOD_TIL_TIME.
-        expiration_time: Option<u64>,
-        max_amount_out: Option<Uint128>,
-    },
-    WithdrawFilledLimitOrder {
-        tranche_key: String,
-    },
-    CancelLimitOrder {
-        tranche_key: String,
-    },
-    MultiHopSwap {
-        receiver: String,
-        routes: Vec<MultiHopRoute>,
-        amount_in: Uint128,
-        exit_limit_price: PrecDec,
-        pick_best_route: bool,
-    },
-}
-
-// TODO implement math for PrecDec
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-#[serde(from = "String")]
-#[serde(into = "String")]
-pub struct PrecDec {
-    i: String,
-}
-
-#[allow(clippy::from_over_into)]
-impl Into<String> for PrecDec {
-    fn into(self) -> String {
-        self.i
-    }
-}
-
-impl From<String> for PrecDec {
-    fn from(value: String) -> Self {
-        PrecDec { i: value }
-    }
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct DepositOption {
-    disable_swap: bool,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct MultiHopRoute {
-    hops: Vec<String>,
-}
 
 impl NeutronMsg {
     /// Basic helper to define a register interchain account message:

@@ -1,11 +1,9 @@
-use cosmwasm_std::{Binary, Coin, Int128};
+use cosmwasm_std::{Binary, Coin};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::fmt::Write as _;
 
 use crate::interchain_queries::types::QueryType;
-
-use super::msg::PrecDec;
 
 /// Encodes bytes slice into hex string
 pub fn encode_hex(bytes: &[u8]) -> String {
@@ -252,55 +250,4 @@ impl Into<String> for KVKeys {
             .collect::<Vec<String>>()
             .join(KV_KEYS_DELIMITER)
     }
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema, Default)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum LimitOrderType {
-    #[default]
-    GoodTilCancelled,
-    FillOrKill,
-    ImmediateOrCancel,
-    JustInTime,
-    GoodTilTime,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema, Default)]
-#[serde(rename_all = "snake_case", default)]
-pub struct LimitOrderTrancheUser {
-    trade_pair_id: TradePairID,
-    tick_index_taker_to_maker: i64,
-    tranche_key: String,
-    address: String,
-    shares_owned: Int128,
-    shares_withdrawn: Int128,
-    shares_cancelled: Int128,
-    order_type: LimitOrderType,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct LimitOrderTrancheKey {
-    pub trade_pair_id: TradePairID,
-    pub tick_index_taker_to_maker: i64,
-    pub tranche_key: String,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct LimitOrderTranche {
-    pub key: LimitOrderTrancheKey,
-    reserves_maker_denom: Int128,
-    reserves_taker_denom: Int128,
-    total_maker_denom: Int128,
-    total_taker_denom: Int128,
-    expiration_time: Option<u64>,
-    price_taker_to_maker: PrecDec,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema, Default)]
-#[serde(rename_all = "snake_case")]
-pub struct TradePairID {
-    maker_denom: String,
-    taker_denom: String,
 }
