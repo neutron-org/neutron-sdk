@@ -12,6 +12,9 @@ pub enum NeutronError {
     #[error("{0}")]
     Fmt(#[from] std::fmt::Error),
 
+    #[error("{0}")]
+    FromUTF8Error(#[from] std::string::FromUtf8Error),
+
     #[error("Bech32 error")]
     Bech32(#[from] bech32::Error),
 

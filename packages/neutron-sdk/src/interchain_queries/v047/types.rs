@@ -4,7 +4,6 @@ use crate::{
     errors::error::{NeutronError, NeutronResult},
 };
 use cosmos_sdk_proto::cosmos::{
-    base::v1beta1::Coin as CosmosCoin,
     distribution::v1beta1::FeePool as CosmosFeePool,
     gov::v1beta1::Proposal as CosmosProposal,
     slashing::v1beta1::ValidatorSigningInfo as CosmosValidatorSigningInfo,
@@ -96,22 +95,21 @@ pub const HEIGHT_FIELD: &str = "tx.height";
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 /// A structure that can be reconstructed from **StorageValues**'s for the **Balance Interchain Query**.
-/// Contains coins that are held by some account on remote chain.
+/// Contains amounts of coins that are held by some account on remote chain.
 pub struct Balances {
-    pub coins: Vec<Coin>,
+    pub amounts: Vec<Uint128>,
 }
 
 impl KVReconstruct for Balances {
     fn reconstruct(storage_values: &[StorageValue]) -> NeutronResult<Balances> {
-        let mut coins: Vec<Coin> = Vec::with_capacity(storage_values.len());
+        let mut amounts: Vec<Uint128> = Vec::with_capacity(storage_values.len());
 
         for kv in storage_values {
-            let balance: CosmosCoin = CosmosCoin::decode(kv.value.as_slice())?;
-            let amount = Uint128::from_str(balance.amount.as_str())?;
-            coins.push(Coin::new(amount.u128(), balance.denom));
+            let amount = Uint128::from_str(&String::from_utf8(kv.value.to_vec())?)?;
+            amounts.push(amount);
         }
 
-        Ok(Balances { coins })
+        Ok(Balances { amounts })
     }
 }
 
