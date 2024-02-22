@@ -1,6 +1,7 @@
 use crate::bindings::types::StorageValue;
 use crate::interchain_queries::helpers::decode_and_convert;
 use crate::interchain_queries::types::KVReconstruct;
+
 use crate::interchain_queries::v045::helpers::{
     create_account_denom_balance_key, create_delegation_key, create_fee_pool_key,
     create_gov_proposal_key, create_params_store_key, create_total_denom_key, create_validator_key,
@@ -22,9 +23,12 @@ use cosmos_sdk_proto::cosmos::staking::v1beta1::{
 };
 use cosmos_sdk_proto::traits::Message;
 use cosmwasm_std::{
-    to_json_binary, Addr, Binary, Coin as StdCoin, Decimal, Delegation as StdDelegation, Uint128,
+    to_json_binary, Addr, Binary, Coin as StdCoin, Decimal, Decimal256, Delegation as StdDelegation,
+    Uint128,
 };
 use hex;
+use prost::Message as ProstMessage;
+use std::ops::Div;
 use std::ops::Mul;
 use std::str::FromStr;
 
@@ -939,4 +943,96 @@ fn test_delegations_reconstruct_from_hex() {
             }],
         }
     );
+}
+
+#[test]
+fn overflov_test() {
+    let delegation_shares = Decimal256::from_str(&"960000020000").unwrap();
+    let validator_tokens = Decimal256::from_str(&"967000020000").unwrap();
+    let delegator_shares = Decimal256::from_str(&"967000020000").unwrap();
+
+    println!("validator.tokens {:?}", validator_tokens);
+    println!("delegation_shares {:?}", delegation_shares);
+    println!("delegator_shares {:?}", delegator_shares);
+    let delegated_tokens = delegation_shares
+        .checked_mul(validator_tokens)
+        .unwrap()
+        .div(delegator_shares);
+    println!("{:?}", delegated_tokens);
+}
+
+#[test]
+fn test_delegations_reconstruct_overflow() {
+    struct TestCase {
+        stake_denom: String,
+        delegations: Vec<Delegation>,
+        validators: Vec<Validator>,
+        expected_result: NeutronResult<Delegations>,
+    }
+    let test_cases: Vec<TestCase> = vec![TestCase {
+        stake_denom: "stake".to_string(),
+        delegations: vec![Delegation {
+            delegator_address: "osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs".to_string(),
+            validator_address: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3".to_string(),
+            shares: "960000020000".to_string(),
+        }],
+        validators: vec![Validator {
+            operator_address: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3".to_string(),
+            consensus_pubkey: None,
+            jailed: false,
+            status: 0,
+            tokens: "967000020000".to_string(),
+            delegator_shares: "967000020000".to_string(),
+            description: None,
+            unbonding_height: 0,
+            unbonding_time: None,
+            commission: None,
+            min_self_delegation: "".to_string(),
+        }],
+        expected_result: Ok(Delegations {
+            delegations: vec![StdDelegation {
+                delegator: Addr::unchecked("osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs"),
+                validator: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3".to_string(),
+                amount: StdCoin::new(960000020000u128, "stake"),
+            }],
+        }),
+    }];
+
+    for ts in &test_cases {
+        // prepare storage values
+        let mut st_values: Vec<StorageValue> = vec![StorageValue {
+            storage_prefix: STAKING_STORE_KEY.to_string(),
+            key: Binary(create_params_store_key(STAKING_STORE_KEY, KEY_BOND_DENOM)),
+            value: {
+                if ts.stake_denom.is_empty() {
+                    return Default::default();
+                }
+                to_binary(&ts.stake_denom).unwrap()
+            },
+        }];
+
+        for (i, d) in ts.delegations.iter().enumerate() {
+            let delegator_addr = decode_and_convert(&d.delegator_address).unwrap();
+            let val_addr = decode_and_convert(&d.validator_address).unwrap();
+
+            st_values.push(StorageValue {
+                storage_prefix: STAKING_STORE_KEY.to_string(),
+                key: Binary(create_delegation_key(&delegator_addr, &val_addr).unwrap()),
+                value: Binary::from(d.encode_to_vec()),
+            });
+
+            if let Some(v) = ts.validators.get(i) {
+                st_values.push(StorageValue {
+                    storage_prefix: STAKING_STORE_KEY.to_string(),
+                    key: Binary(create_validator_key(&val_addr).unwrap()),
+                    value: Binary::from(v.encode_to_vec()),
+                });
+            }
+        }
+
+        // test reconstruction
+        let delegations = Delegations::reconstruct(&st_values);
+
+        assert_eq!(delegations, ts.expected_result)
+    }
 }

@@ -1,4 +1,4 @@
-use cosmwasm_std::{DecimalRangeExceeded, OverflowError, StdError};
+use cosmwasm_std::{Decimal256RangeExceeded, DecimalRangeExceeded, OverflowError, StdError};
 use serde_json_wasm;
 use thiserror::Error;
 
@@ -32,6 +32,9 @@ pub enum NeutronError {
 
     #[error("Decimal range exceeded")]
     DecimalRangeExceeded(#[from] DecimalRangeExceeded),
+
+    #[error("Decimal range exceeded")]
+    Decimal256RangeExceeded(#[from] Decimal256RangeExceeded),
 
     #[error("Overflow error")]
     OverflowError(#[from] OverflowError),
