@@ -104,9 +104,11 @@ impl KVReconstruct for Balances {
         let mut coins: Vec<Coin> = Vec::with_capacity(storage_values.len());
 
         for kv in storage_values {
-            let balance: CosmosCoin = CosmosCoin::decode(kv.value.as_slice())?;
-            let amount = Uint128::from_str(balance.amount.as_str())?;
-            coins.push(Coin::new(amount.u128(), balance.denom));
+            if kv.value.len() > 0 {
+                let balance: CosmosCoin = CosmosCoin::decode(kv.value.as_slice())?;
+                let amount = Uint128::from_str(balance.amount.as_str())?;
+                coins.push(Coin::new(amount.u128(), balance.denom));
+            }
         }
 
         Ok(Balances { coins })

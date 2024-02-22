@@ -21,7 +21,7 @@ use neutron_sdk::interchain_queries::v045::queries::{
 use neutron_sdk::interchain_queries::{
     check_query_type, get_registered_query, query_kv_result,
     v045::{
-        new_register_balance_query_msg, new_register_bank_total_supply_query_msg,
+        new_register_balances_query_msg, new_register_bank_total_supply_query_msg,
         new_register_delegator_delegations_query_msg, new_register_distribution_fee_pool_query_msg,
         new_register_gov_proposal_query_msg, new_register_staking_validators_query_msg,
         new_register_transfers_query_msg,
@@ -128,7 +128,7 @@ pub fn register_balance_query(
     denom: String,
     update_period: u64,
 ) -> NeutronResult<Response<NeutronMsg>> {
-    let msg = new_register_balance_query_msg(connection_id, addr, denom, update_period)?;
+    let msg = new_register_balances_query_msg(connection_id, addr, vec![denom], update_period)?;
 
     Ok(Response::new().add_message(msg))
 }
