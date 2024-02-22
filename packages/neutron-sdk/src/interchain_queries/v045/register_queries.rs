@@ -53,6 +53,7 @@ pub fn new_register_balances_query_msg(
 /// * **addr** address of an account on remote chain for which you want to get balances;
 /// * **denom** denomination of the coin for which you want to get balance;
 /// * **update_period** is used to say how often the query must be updated.
+#[deprecated(note = "Please use new_register_balances_query_msg instead")]
 pub fn new_register_balance_query_msg(
     connection_id: String,
     addr: String,
