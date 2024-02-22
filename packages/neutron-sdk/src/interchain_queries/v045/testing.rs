@@ -1181,15 +1181,15 @@ fn test_delegations_reconstruct_overflow() {
         delegations: vec![Delegation {
             delegator_address: "osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs".to_string(),
             validator_address: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3".to_string(),
-            shares: "960000020000".to_string(),
+            shares: "340282366920938463463".to_string(),
         }],
         validators: vec![Validator {
             operator_address: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3".to_string(),
             consensus_pubkey: None,
             jailed: false,
             status: 0,
-            tokens: "967000020000".to_string(),
-            delegator_shares: "967000020000".to_string(),
+            tokens: "340282366920938463463".to_string(),
+            delegator_shares: "340282366920938463463".to_string(),
             description: None,
             unbonding_height: 0,
             unbonding_time: None,
@@ -1200,7 +1200,7 @@ fn test_delegations_reconstruct_overflow() {
             delegations: vec![StdDelegation {
                 delegator: Addr::unchecked("osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs"),
                 validator: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3".to_string(),
-                amount: StdCoin::new(960000020000u128, "stake"),
+                amount: StdCoin::new(340282366920938463463u128, "stake"),
             }],
         }),
     }];
