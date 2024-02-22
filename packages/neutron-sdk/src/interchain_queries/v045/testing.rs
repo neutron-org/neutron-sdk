@@ -4,10 +4,13 @@ use crate::interchain_queries::types::KVReconstruct;
 use crate::interchain_queries::v045::helpers::{
     create_account_denom_balance_key, create_delegation_key, create_fee_pool_key,
     create_gov_proposal_key, create_params_store_key, create_total_denom_key, create_validator_key,
+    create_validator_signing_info_key,
 };
 use crate::interchain_queries::v045::types::{
-    Balances, Delegations, FeePool, GovernmentProposal, Proposal, StakingValidator, TallyResult,
-    TotalSupply, Validator as ContractValidator, DECIMAL_PLACES, KEY_BOND_DENOM, STAKING_STORE_KEY,
+    Balances, Delegations, FeePool, GovernmentProposal, Proposal, SigningInfo, StakingValidator,
+    TallyResult, TotalSupply, UnbondingDelegations, UnbondingEntry, UnbondingResponse,
+    Validator as ContractValidator, ValidatorSigningInfo, DECIMAL_PLACES, KEY_BOND_DENOM,
+    STAKING_STORE_KEY,
 };
 use crate::{NeutronError, NeutronResult};
 use base64::prelude::*;
@@ -17,12 +20,14 @@ use cosmos_sdk_proto::cosmos::distribution::v1beta1::FeePool as CosmosFeePool;
 use cosmos_sdk_proto::cosmos::gov::v1beta1::{
     Proposal as CosmosProposal, TallyResult as CosmosTallyResult,
 };
+use cosmos_sdk_proto::cosmos::slashing::v1beta1::ValidatorSigningInfo as CosmosValidatorSigningInfo;
 use cosmos_sdk_proto::cosmos::staking::v1beta1::{
     Commission, CommissionRates, Delegation, Description, Validator,
 };
 use cosmos_sdk_proto::traits::Message;
 use cosmwasm_std::{
-    to_json_binary, Addr, Binary, Coin as StdCoin, Decimal, Delegation as StdDelegation, Uint128,
+    to_json_binary, Addr, Binary, Coin as StdCoin, Decimal, Delegation as StdDelegation, Timestamp,
+    Uint128,
 };
 use hex;
 use std::ops::Mul;
@@ -37,6 +42,8 @@ pub const GOV_PROPOSAL_HEX_RESPONSE: &str = "0801129f010a202f636f736d6f732e676f7
 pub const STAKING_DENOM_HEX_RESPONSE: &str = "227374616b6522";
 pub const STAKING_VALIDATOR_HEX_RESPONSE: &str = "0a34636f736d6f7376616c6f706572313566716a706a39307275686a353771336c366135686461307274373767366d63656b326d747112430a1d2f636f736d6f732e63727970746f2e656432353531392e5075624b657912220a20b20c07b3eb900df72b48c24e9a2e06ff4fe73bbd255e433af8eae3b1988e698820032a09313030303030303030321b3130303030303030303030303030303030303030303030303030303a080a066d796e6f64654a00524a0a3b0a1231303030303030303030303030303030303012123230303030303030303030303030303030301a113130303030303030303030303030303030120b089cfcd3a20610e0dc890b5a0131";
 pub const DELEGATOR_DELEGATIONS_HEX_RESPONSE: &str = "0a2d636f736d6f73313566716a706a39307275686a353771336c366135686461307274373767366d63757a3777386e1234636f736d6f7376616c6f706572313566716a706a39307275686a353771336c366135686461307274373767366d63656b326d74711a1b313030303030303030303030303030303030303030303030303030";
+pub const DELEGATOR_UNBONDING_DELEGATIONS_HEX_RESPONSE: &str = "0a2d636f736d6f73316d396c33353878756e6868776473303536387a6134396d7a68767578783975787265357475641234636f736d6f7376616c6f7065723138686c356339786e35647a6532673530756177306c326d723032657735377a6b3061756b746e1a2108ed02120c08ba97f9ac0610f6abf18f021a0531303030302205313030303028011a2008f902120b08c797f9ac0610e59a89011a053230303030220532303030302802";
+pub const VALIDATOR_SIGNING_INFO_HEX_RESPONSE: &str = "0a34636f736d6f7376616c636f6e73313966353366717132387636706d7a383737646e653735643464376c307236356432373530707718102200";
 
 #[test]
 fn test_balance_reconstruct() {
@@ -176,6 +183,7 @@ fn test_staking_validators_reconstruct() {
                     operator_address: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3"
                         .to_string(),
                     status: 0,
+                    consensus_pubkey: None,
                     tokens: "1000000000000000000".to_string(),
                     delegator_shares: "1000000000000000000".to_string(),
                     moniker: None,
@@ -197,7 +205,10 @@ fn test_staking_validators_reconstruct() {
         TestCase {
             validators: vec![Validator {
                 operator_address: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3".to_string(),
-                consensus_pubkey: None,
+                consensus_pubkey: Some(prost_types::Any {
+                    type_url: "consensus_pubkey".to_string(),
+                    value: vec![],
+                }),
                 jailed: false,
                 status: 0,
                 tokens: "1000000000000000000".to_string(),
@@ -232,6 +243,7 @@ fn test_staking_validators_reconstruct() {
                     operator_address: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3"
                         .to_string(),
                     status: 0,
+                    consensus_pubkey: Some(vec![]),
                     tokens: "1000000000000000000".to_string(),
                     delegator_shares: "1000000000000000000".to_string(),
                     moniker: Some("Test validator".to_string()),
@@ -255,7 +267,10 @@ fn test_staking_validators_reconstruct() {
                 Validator {
                     operator_address: "cosmosvaloper132juzk0gdmwuxvx4phug7m3ymyatxlh9734g4w"
                         .to_string(),
-                    consensus_pubkey: None,
+                    consensus_pubkey: Some(prost_types::Any {
+                        type_url: "consensus_pubkey".to_string(),
+                        value: vec![1u8, 2u8, 3u8, 4u8],
+                    }),
                     jailed: false,
                     status: 0,
                     tokens: "1000000000000000000".to_string(),
@@ -287,6 +302,7 @@ fn test_staking_validators_reconstruct() {
                         operator_address: "cosmosvaloper132juzk0gdmwuxvx4phug7m3ymyatxlh9734g4w"
                             .to_string(),
                         status: 0,
+                        consensus_pubkey: Some(vec![1u8, 2u8, 3u8, 4u8]),
                         tokens: "1000000000000000000".to_string(),
                         delegator_shares: "1000000000000000000".to_string(),
                         moniker: None,
@@ -307,6 +323,7 @@ fn test_staking_validators_reconstruct() {
                         operator_address: "cosmosvaloper1sjllsnramtg3ewxqwwrwjxfgc4n4ef9u2lcnj0"
                             .to_string(),
                         status: 0,
+                        consensus_pubkey: None,
                         tokens: "2000000000000000000".to_string(),
                         delegator_shares: "3000000000000000000".to_string(),
                         moniker: None,
@@ -350,6 +367,129 @@ fn test_staking_validators_reconstruct() {
         let stakin_validator = StakingValidator::reconstruct(&st_values);
 
         assert_eq!(stakin_validator, ts.expected_result)
+    }
+}
+
+#[test]
+fn test_validators_signing_infos_reconstruct() {
+    struct TestCase {
+        signing_infos: Vec<CosmosValidatorSigningInfo>,
+        expected_result: NeutronResult<SigningInfo>,
+    }
+
+    let test_cases: Vec<TestCase> = vec![
+        TestCase {
+            signing_infos: vec![CosmosValidatorSigningInfo {
+                address: "cosmosvalcons1yjf46k064988jdjje068zmrqg8xh4fqqe2wwnl".to_string(),
+                start_height: 1,
+                index_offset: 1,
+                jailed_until: None,
+                tombstoned: false,
+                missed_blocks_counter: 987675,
+            }],
+            expected_result: Ok(SigningInfo {
+                signing_infos: vec![ValidatorSigningInfo {
+                    address: "cosmosvalcons1yjf46k064988jdjje068zmrqg8xh4fqqe2wwnl".to_string(),
+                    start_height: 1,
+                    index_offset: 1,
+                    jailed_until: None,
+                    tombstoned: false,
+                    missed_blocks_counter: 987675,
+                }],
+            }),
+        },
+        TestCase {
+            signing_infos: vec![CosmosValidatorSigningInfo {
+                address: "cosmosvalcons1yjf46k064988jdjje068zmrqg8xh4fqqe2wwnl".to_string(),
+                start_height: 1,
+                index_offset: 1,
+                jailed_until: Some(prost_types::Timestamp {
+                    seconds: 321654,
+                    nanos: 123123,
+                }),
+                tombstoned: false,
+                missed_blocks_counter: 987675,
+            }],
+            expected_result: Ok(SigningInfo {
+                signing_infos: vec![ValidatorSigningInfo {
+                    address: "cosmosvalcons1yjf46k064988jdjje068zmrqg8xh4fqqe2wwnl".to_string(),
+                    start_height: 1,
+                    index_offset: 1,
+                    jailed_until: Some(321654),
+                    tombstoned: false,
+                    missed_blocks_counter: 987675,
+                }],
+            }),
+        },
+        TestCase {
+            signing_infos: vec![
+                CosmosValidatorSigningInfo {
+                    address: "cosmosvalcons1yjf46k064988jdjje068zmrqg8xh4fqqe2wwnl".to_string(),
+                    start_height: 1,
+                    index_offset: 1,
+                    jailed_until: None,
+                    tombstoned: true,
+                    missed_blocks_counter: 987675,
+                },
+                CosmosValidatorSigningInfo {
+                    address: "cosmosvalcons16tnak7apushwznnd3wtku8gm0rt3xytz6ut006".to_string(),
+                    start_height: 1,
+                    index_offset: 1,
+                    jailed_until: Some(prost_types::Timestamp {
+                        seconds: 321654,
+                        nanos: 123123,
+                    }),
+                    tombstoned: false,
+                    missed_blocks_counter: 345012,
+                },
+            ],
+            expected_result: Ok(SigningInfo {
+                signing_infos: vec![
+                    ValidatorSigningInfo {
+                        address: "cosmosvalcons1yjf46k064988jdjje068zmrqg8xh4fqqe2wwnl".to_string(),
+                        start_height: 1,
+                        index_offset: 1,
+                        jailed_until: None,
+                        tombstoned: true,
+                        missed_blocks_counter: 987675,
+                    },
+                    ValidatorSigningInfo {
+                        address: "cosmosvalcons16tnak7apushwznnd3wtku8gm0rt3xytz6ut006".to_string(),
+                        start_height: 1,
+                        index_offset: 1,
+                        jailed_until: Some(321654),
+                        tombstoned: false,
+                        missed_blocks_counter: 345012,
+                    },
+                ],
+            }),
+        },
+        TestCase {
+            signing_infos: vec![],
+            expected_result: Ok(SigningInfo {
+                signing_infos: vec![],
+            }),
+        },
+    ];
+
+    for ts in test_cases {
+        let mut st_values: Vec<StorageValue> = vec![];
+
+        for info in &ts.signing_infos {
+            let val_addr = decode_and_convert(info.address.as_str()).unwrap();
+
+            let signing_info_key = create_validator_signing_info_key(&val_addr).unwrap();
+            let s = StorageValue {
+                storage_prefix: "".to_string(),
+                key: Binary(signing_info_key),
+                value: Binary(info.encode_to_vec()),
+            };
+            st_values.push(s);
+        }
+
+        let signing_infos = SigningInfo::reconstruct(&st_values);
+
+        assert_eq!(signing_infos, ts.expected_result)
     }
 }
 
@@ -820,6 +960,10 @@ fn test_staking_validators_reconstruct_from_hex() {
                 operator_address: String::from(
                     "cosmosvaloper15fqjpj90ruhj57q3l6a5hda0rt77g6mcek2mtq" // mutating
                 ),
+                consensus_pubkey: Some(vec![
+                    10, 32, 178, 12, 7, 179, 235, 144, 13, 247, 43, 72, 194, 78, 154, 46, 6, 255,
+                    79, 231, 59, 189, 37, 94, 67, 58, 248, 234, 227, 177, 152, 142, 105, 136
+                ]),
                 jailed: false,
                 status: 3,
                 tokens: String::from("100000000"),
@@ -836,6 +980,32 @@ fn test_staking_validators_reconstruct_from_hex() {
                 max_change_rate: Some(Decimal::from_str("0.010000000000000000").unwrap()),
                 update_time: Some(1683291676u64), // mutating
                 min_self_delegation: Decimal::one(),
+            }]
+        }
+    );
+}
+
+#[test]
+fn test_validators_signing_infos_reconstruct_from_hex() {
+    let bytes = hex::decode(VALIDATOR_SIGNING_INFO_HEX_RESPONSE).unwrap(); // decode hex string to bytes
+    let base64_input = BASE64_STANDARD.encode(bytes); // encode bytes to base64 string
+
+    let s = StorageValue {
+        storage_prefix: String::default(), // not used in reconstruct
+        key: Binary::default(),            // not used in reconstruct
+        value: Binary::from_base64(base64_input.as_str()).unwrap(),
+    };
+    let signing_info = SigningInfo::reconstruct(&[s]).unwrap();
+    assert_eq!(
+        signing_info,
+        SigningInfo {
+            signing_infos: vec![ValidatorSigningInfo {
+                address: "cosmosvalcons19f53fqq28v6pmz877dne75d4d7l0r65d2750pw".to_string(),
+                start_height: 0,
+                index_offset: 16,
+                jailed_until: Some(0),
+                tombstoned: false,
+                missed_blocks_counter: 0
             }]
         }
     );
@@ -937,6 +1107,46 @@ fn test_delegations_reconstruct_from_hex() {
                     amount: Uint128::from(100000000u64)
                 },
             }],
+        }
+    );
+}
+
+#[test]
+fn test_unbonding_delegations_reconstruct_from_hex() {
+    let unbonding_delegations_bytes =
+        hex::decode(DELEGATOR_UNBONDING_DELEGATIONS_HEX_RESPONSE).unwrap(); // decode hex string to bytes
+    let unbonding_delegations_base64_input = BASE64_STANDARD.encode(unbonding_delegations_bytes); // encode bytes to base64 string
+
+    let st_values: Vec<StorageValue> = vec![StorageValue {
+        storage_prefix: String::default(), // not used in reconstruct
+        key: Binary::default(),            // not used in reconstruct
+        value: Binary::from_base64(unbonding_delegations_base64_input.as_str()).unwrap(),
+    }];
+
+    let unbonding_delegations = UnbondingDelegations::reconstruct(&st_values).unwrap();
+    assert_eq!(
+        unbonding_delegations,
+        UnbondingDelegations {
+            unbonding_responses: vec![UnbondingResponse {
+                delegator_address: Addr::unchecked("cosmos1m9l358xunhhwds0568za49mzhvuxx9uxre5tud"),
+                validator_address: String::from(
+                    "cosmosvaloper18hl5c9xn5dze2g50uaw0l2mr02ew57zk0auktn"
+                ),
+                entries: vec![
+                    UnbondingEntry {
+                        balance: Uint128::new(10_000),
+                        completion_time: Some(Timestamp::from_nanos(1704872890570185206)),
+                        creation_height: 365,
+                        initial_balance: Uint128::new(10_000),
+                    },
+                    UnbondingEntry {
+                        balance: Uint128::new(20_000),
+                        completion_time: Some(Timestamp::from_nanos(1704872903002248037)),
+                        creation_height: 377,
+                        initial_balance: Uint128::new(20_000),
+                    }
+                ],
+            }]
         }
     );
 }

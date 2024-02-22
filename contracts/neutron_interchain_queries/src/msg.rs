@@ -30,6 +30,11 @@ pub enum ExecuteMsg {
         update_period: u64,
         validators: Vec<String>,
     },
+    RegisterValidatorsSigningInfosQuery {
+        connection_id: String,
+        update_period: u64,
+        validators: Vec<String>,
+    },
     RegisterGovernmentProposalsQuery {
         connection_id: String,
         proposals_ids: Vec<u64>,
@@ -42,6 +47,12 @@ pub enum ExecuteMsg {
         min_height: Option<u64>,
     },
     RegisterDelegatorDelegationsQuery {
+        delegator: String,
+        validators: Vec<String>,
+        connection_id: String,
+        update_period: u64,
+    },
+    RegisterDelegatorUnbondingDelegationsQuery {
         delegator: String,
         validators: Vec<String>,
         connection_id: String,
@@ -71,8 +82,10 @@ pub enum QueryMsg {
     BankTotalSupply { query_id: u64 },
     DistributionFeePool { query_id: u64 },
     StakingValidators { query_id: u64 },
+    ValidatorsSigningInfos { query_id: u64 },
     GovernmentProposals { query_id: u64 },
     GetDelegations { query_id: u64 },
+    GetUnbondingDelegations { query_id: u64 },
     Cw20Balance { query_id: u64 },
     GetRegisteredQuery { query_id: u64 },
     GetRecipientTxs { recipient: String },
