@@ -28,6 +28,5 @@ cw-storage-plus = { workspace = true }
 cosmos-sdk-proto = { workspace = true }
 neutron-sdk = { path = "../../packages/neutron-sdk", default-features = false }
 prost-types = { workspace = true }
-
-[dev-dependencies]
 cosmwasm-schema = { workspace = true }
+

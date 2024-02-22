@@ -5,12 +5,12 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
-    /// this query goes to neutron and get stored ICA with a specific query
+    /// query stored ICA from Neutron
     InterchainAccountAddress {
         interchain_account_id: String,
         connection_id: String,
     },
-    // this query returns ICA from contract store, which saved from acknowledgement
+    /// query ICA from contract store, saved during processing the acknowledgement
     InterchainAccountAddressFromContract {
         interchain_account_id: String,
     },
