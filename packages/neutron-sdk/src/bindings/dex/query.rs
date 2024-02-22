@@ -10,83 +10,82 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum DexQuery {
-    // Parameters queries the parameters of the module.
+    /// Parameters queries the parameters of the module.
     Params {},
-    // Queries a LimitOrderTrancheUser by index.
+    /// Queries a LimitOrderTrancheUser by index.
     LimitOrderTrancheUser {
         address: String,
         tranche_key: String,
     },
-    // Queries a list of LimitOrderTrancheMap items.
+    /// Queries a list of LimitOrderTrancheMap items.
     LimitOrderTrancheUserAll {
         pagination: Option<PageRequest>,
     },
-    // Queries a list of LimitOrderTrancheUser items for a given address.
+    /// Queries a list of LimitOrderTrancheUser items for a given address.
     LimitOrderTrancheUserAllByAddress {
         address: String,
         pagination: Option<PageRequest>,
     },
-    // Queries a LimitOrderTranche by index.
+    /// Queries a LimitOrderTranche by index.
     LimitOrderTranche {
         pair_id: String,
         tick_index: i64,
         token_in: String,
         tranche_key: String,
     },
-    // Queries a list of LimitOrderTranche items for a given pairID / TokenIn combination.
+    /// Queries a list of LimitOrderTranche items for a given pairID / TokenIn combination.
     LimitOrderTrancheAll {
         pair_id: String,
         token_in: String,
         pagination: Option<PageRequest>,
     },
-    // Queries a list of UserDeposits items.
+    /// Queries a list of UserDeposits items.
     UserDepositAll {
         address: String,
         include_pool_data: bool,
         pagination: Option<PageRequest>,
     },
-    // Queries a list of TickLiquidity items.
+    /// Queries a list of TickLiquidity items.
     TickLiquidityAll {
         pair_id: String,
         token_in: String,
         pagination: Option<PageRequest>,
     },
-    // Queries a InactiveLimitOrderTranche by index.
+    /// Queries a InactiveLimitOrderTranche by index.
     InactiveLimitOrderTranche {
         pair_id: String,
         tick_index: i64,
         token_in: String,
         tranche_key: String,
     },
-    // Queries a list of InactiveLimitOrderTranche items.
+    /// Queries a list of InactiveLimitOrderTranche items.
     InactiveLimitOrderTrancheAll {
         pagination: Option<PageRequest>,
     },
-    // Queries a list of PoolReserves items.
+    /// Queries a list of PoolReserves items.
     PoolReservesAll {
         pair_id: String,
         token_in: String,
         pagination: Option<PageRequest>,
     },
-    // Queries a PoolReserve by index
+    /// Queries a PoolReserve by index
     PoolReserves {
         pair_id: String,
         token_in: String,
         tick_index: i64,
         fee: u64,
     },
-    // Queries the simulated result of a multihop swap
+    /// Queries the simulated result of a multihop swap
     EstimateMultiHopSwap {
         creator: String,
         receiver: String,
         routes: Vec<MultiHopRoute>,
-        amount_id: Int128,
+        amount_in: Int128,
         exit_limit_price: PrecDec,
         pick_best_route: bool,
     },
-    // Queries the simulated result of a PlaceLimit order
+    /// Queries the simulated result of a PlaceLimit order
     EstimatePlaceLimitOrder {
-        creator: String,
         receiver: String,
         token_in: String,
         token_out: String,
@@ -97,22 +96,22 @@ pub enum DexQuery {
         expiration_time: Option<u64>,
         max_amount_out: Option<Int128>,
     },
-    // Queries a pool by pair, tick and fee
+    /// Queries a pool by pair, tick and fee
     Pool {
         pair_id: String,
         tick_index: i64,
         fee: u64,
     },
-    // Queries a pool by ID
+    /// Queries a pool by ID
     #[serde(rename = "pool_by_id")]
     PoolByID {
         pool_id: u64,
     },
-    // Queries a PoolMetadata by ID
+    /// Queries a PoolMetadata by ID
     PoolMetadata {
         id: u64,
     },
-    // Queries a list of PoolMetadata items.
+    /// Queries a list of PoolMetadata items.
     PoolMetadataAll {
         pagination: Option<PageRequest>,
     },
@@ -210,14 +209,14 @@ pub struct EstimateMultiHopSwapResponse {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct EstimatePlaceLimitOrderResponse {
-    // Total amount of coin used for the limit order
-    // You can derive makerLimitInCoin using the equation: totalInCoin = swapInCoin + makerLimitInCoin
+    /// Total amount of coin used for the limit order
+    /// You can derive makerLimitInCoin using the equation: totalInCoin = swapInCoin + makerLimitInCoin
     pub total_in_coin: Coin,
-    // Total amount of the token in that was immediately swapped for swapOutCoin
+    /// Total amount of the token in that was immediately swapped for swapOutCoin
     pub swap_in_coin: Coin,
-    // Total amount of coin received from the taker portion of the limit order
-    // This is the amount of coin immediately available in the users account after executing the
-    // limit order. It does not include any future proceeds from the maker portion which will have withdrawn in the future
+    /// Total amount of coin received from the taker portion of the limit order
+    /// This is the amount of coin immediately available in the users account after executing the
+    /// limit order. It does not include any future proceeds from the maker portion which will have withdrawn in the future
     pub swap_out_coin: Coin,
 }
 
