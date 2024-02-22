@@ -1,6 +1,7 @@
 use crate::bindings::types::StorageValue;
 use crate::interchain_queries::helpers::decode_and_convert;
 use crate::interchain_queries::types::KVReconstruct;
+use cosmwasm_std::to_binary;
 
 use crate::interchain_queries::v045::helpers::{
     create_account_denom_balance_key, create_delegation_key, create_fee_pool_key,
@@ -27,7 +28,6 @@ use cosmwasm_std::{
     Delegation as StdDelegation, Uint128,
 };
 use hex;
-use prost::Message as ProstMessage;
 use std::ops::Div;
 use std::ops::Mul;
 use std::str::FromStr;
@@ -947,9 +947,9 @@ fn test_delegations_reconstruct_from_hex() {
 
 #[test]
 fn overflov_test() {
-    let delegation_shares = Decimal256::from_str(&"960000020000").unwrap();
-    let validator_tokens = Decimal256::from_str(&"967000020000").unwrap();
-    let delegator_shares = Decimal256::from_str(&"967000020000").unwrap();
+    let delegation_shares = Decimal256::from_str("960000020000").unwrap();
+    let validator_tokens = Decimal256::from_str("967000020000").unwrap();
+    let delegator_shares = Decimal256::from_str("967000020000").unwrap();
 
     println!("validator.tokens {:?}", validator_tokens);
     println!("delegation_shares {:?}", delegation_shares);
@@ -1007,7 +1007,7 @@ fn test_delegations_reconstruct_overflow() {
                 if ts.stake_denom.is_empty() {
                     return Default::default();
                 }
-                to_binary(&ts.stake_denom).unwrap()
+                to_json_binary(&ts.stake_denom).unwrap()
             },
         }];
 
