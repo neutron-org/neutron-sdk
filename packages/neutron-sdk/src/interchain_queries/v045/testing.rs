@@ -921,6 +921,17 @@ fn test_balance_reconstruct_from_hex() {
 }
 
 #[test]
+fn test_balance_reconstruct_from_empty_value() {
+    let s = StorageValue {
+        storage_prefix: String::default(), // not used in reconstruct
+        key: Binary::default(),            // not used in reconstruct
+        value: Binary::from(vec![]),
+    };
+    let bank_balances = Balances::reconstruct(&[s]).unwrap();
+    assert_eq!(bank_balances, Balances { coins: vec![] });
+}
+
+#[test]
 fn test_bank_total_supply_reconstruct_from_hex() {
     let bytes = hex::decode(TOTAL_SUPPLY_HEX_RESPONSE).unwrap(); // decode hex string to bytes
     let base64_input = BASE64_STANDARD.encode(bytes); // encode bytes to base64 string
