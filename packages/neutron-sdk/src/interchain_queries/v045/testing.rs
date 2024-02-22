@@ -3,14 +3,14 @@ use crate::interchain_queries::helpers::decode_and_convert;
 use crate::interchain_queries::types::KVReconstruct;
 use crate::interchain_queries::v045::helpers::{
     create_account_denom_balance_key, create_delegation_key, create_fee_pool_key,
-    create_gov_proposal_key, create_params_store_key, create_total_denom_key, create_validator_key,
-    create_validator_signing_info_key,
+    create_gov_proposal_key, create_gov_proposal_votes_key, create_params_store_key,
+    create_total_denom_key, create_validator_key, create_validator_signing_info_key,
 };
 use crate::interchain_queries::v045::types::{
-    Balances, Delegations, FeePool, GovernmentProposal, Proposal, SigningInfo, StakingValidator,
-    TallyResult, TotalSupply, UnbondingDelegations, UnbondingEntry, UnbondingResponse,
-    Validator as ContractValidator, ValidatorSigningInfo, DECIMAL_PLACES, KEY_BOND_DENOM,
-    STAKING_STORE_KEY,
+    Balances, Delegations, FeePool, GovernmentProposal, GovernmentProposalVotes, Proposal,
+    ProposalVote, SigningInfo, StakingValidator, TallyResult, TotalSupply, UnbondingDelegations,
+    UnbondingEntry, UnbondingResponse, Validator as ContractValidator, ValidatorSigningInfo,
+    WeightedVoteOption, DECIMAL_PLACES, KEY_BOND_DENOM, STAKING_STORE_KEY,
 };
 use crate::{NeutronError, NeutronResult};
 use base64::prelude::*;
@@ -18,7 +18,8 @@ use base64::Engine;
 use cosmos_sdk_proto::cosmos::base::v1beta1::{Coin, DecCoin};
 use cosmos_sdk_proto::cosmos::distribution::v1beta1::FeePool as CosmosFeePool;
 use cosmos_sdk_proto::cosmos::gov::v1beta1::{
-    Proposal as CosmosProposal, TallyResult as CosmosTallyResult,
+    Proposal as CosmosProposal, TallyResult as CosmosTallyResult, Vote,
+    WeightedVoteOption as CosmosWeightedVoteOption,
 };
 use cosmos_sdk_proto::cosmos::slashing::v1beta1::ValidatorSigningInfo as CosmosValidatorSigningInfo;
 use cosmos_sdk_proto::cosmos::staking::v1beta1::{
@@ -39,6 +40,7 @@ pub const TOTAL_SUPPLY_HEX_RESPONSE: &str = "333030303031303938";
 pub const FEE_POOL_HEX_RESPONSE: &str =
     "0a1d0a057374616b6512143231393630303030303030303030303030303030";
 pub const GOV_PROPOSAL_HEX_RESPONSE: &str = "0801129f010a202f636f736d6f732e676f762e763162657461312e5465787450726f706f73616c127b0a11416464204e65772056616c696461746f721266546869732070726f706f73616c20726571756573747320616464696e672061206e65772076616c696461746f7220746f20746865206e6574776f726b20746f20696d70726f766520646563656e7472616c697a6174696f6e20616e642073656375726974792e1801220c0a01301201301a01302201302a0c08c9fdd3a20610988990d103320c08c9c3dea20610988990d1033a0d0a057374616b65120431303030420b088092b8c398feffffff014a0b088092b8c398feffffff01";
+pub const GOV_PROPOSAL_VOTES_HEX_RESPONSE: &str = "0804122d636f736d6f73313068397374633576366e7467657967663578663934356e6a717135683332723533757175767722170801121331303030303030303030303030303030303030";
 pub const STAKING_DENOM_HEX_RESPONSE: &str = "227374616b6522";
 pub const STAKING_VALIDATOR_HEX_RESPONSE: &str = "0a34636f736d6f7376616c6f706572313566716a706a39307275686a353771336c366135686461307274373767366d63656b326d747112430a1d2f636f736d6f732e63727970746f2e656432353531392e5075624b657912220a20b20c07b3eb900df72b48c24e9a2e06ff4fe73bbd255e433af8eae3b1988e698820032a09313030303030303030321b3130303030303030303030303030303030303030303030303030303a080a066d796e6f64654a00524a0a3b0a1231303030303030303030303030303030303012123230303030303030303030303030303030301a113130303030303030303030303030303030120b089cfcd3a20610e0dc890b5a0131";
 pub const DELEGATOR_DELEGATIONS_HEX_RESPONSE: &str = "0a2d636f736d6f73313566716a706a39307275686a353771336c366135686461307274373767366d63757a3777386e1234636f736d6f7376616c6f706572313566716a706a39307275686a353771336c366135686461307274373767366d63656b326d74711a1b313030303030303030303030303030303030303030303030303030";
@@ -676,6 +678,105 @@ fn test_government_proposals_reconstruct() {
     }
 }
 
+#[allow(deprecated)]
+#[test]
+fn test_proposal_votes_reconstruct() {
+    struct TestCase {
+        proposal_votes: Vec<Vote>,
+        expected_result: NeutronResult<GovernmentProposalVotes>,
+    }
+
+    let test_cases: Vec<TestCase> = vec![
+        TestCase {
+            proposal_votes: vec![Vote {
+                proposal_id: 1,
+                voter: "cosmos1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs".to_string(),
+                option: 0,
+                options: vec![CosmosWeightedVoteOption {
+                    weight: "1000000000000000000".to_string(),
+                    option: 1,
+                }],
+            }],
+            expected_result: Ok(GovernmentProposalVotes {
+                proposal_votes: vec![ProposalVote {
+                    proposal_id: 1,
+                    voter: "cosmos1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs".to_string(),
+                    options: vec![WeightedVoteOption {
+                        weight: "1000000000000000000".to_string(),
+                        option: 1,
+                    }],
+                }],
+            }),
+        },
+        TestCase {
+            proposal_votes: vec![
+                Vote {
+                    proposal_id: 1,
+                    voter: "cosmos1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs".to_string(),
+                    option: 0,
+                    options: vec![CosmosWeightedVoteOption {
+                        weight: "1000000000000000000".to_string(),
+                        option: 1,
+                    }],
+                },
+                Vote {
+                    proposal_id: 2,
+                    voter: "osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs".to_string(),
+                    option: 0,
+                    options: vec![CosmosWeightedVoteOption {
+                        weight: "567890".to_string(),
+                        option: 2,
+                    }],
+                },
+            ],
+            expected_result: Ok(GovernmentProposalVotes {
+                proposal_votes: vec![
+                    ProposalVote {
+                        proposal_id: 1,
+                        voter: "cosmos1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs".to_string(),
+                        options: vec![WeightedVoteOption {
+                            weight: "1000000000000000000".to_string(),
+                            option: 1,
+                        }],
+                    },
+                    ProposalVote {
+                        proposal_id: 2,
+                        voter: "osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs".to_string(),
+                        options: vec![WeightedVoteOption {
+                            weight: "567890".to_string(),
+                            option: 2,
+                        }],
+                    },
+                ],
+            }),
+        },
+        TestCase {
+            proposal_votes: vec![],
+            expected_result: Ok(GovernmentProposalVotes {
+                proposal_votes: vec![],
+            }),
+        },
+    ];
+
+    for ts in test_cases {
+        let mut st_values: Vec<StorageValue> = vec![];
+
+        for votes in &ts.proposal_votes {
+            let proposal_key = create_gov_proposal_votes_key(votes.proposal_id).unwrap();
+            let s = StorageValue {
+                storage_prefix: "".to_string(),
+                key: Binary(proposal_key),
+                value: Binary(votes.encode_to_vec()),
+            };
+            st_values.push(s);
+        }
+
+        let gov_proposals_votes = GovernmentProposalVotes::reconstruct(&st_values);
+
+        assert_eq!(gov_proposals_votes, ts.expected_result)
+    }
+}
+
 #[test]
 fn test_fee_pool_reconstruct() {
     struct TestCase {
@@ -1044,6 +1145,32 @@ fn test_government_proposals_reconstruct_from_hex() {
                     no_with_veto: Uint128::zero()
                 }),
             }]
+        }
+    );
+}
+
+#[test]
+fn test_proposal_votes_reconstruct_from_hex() {
+    let bytes = hex::decode(GOV_PROPOSAL_VOTES_HEX_RESPONSE).unwrap(); // decode hex string to bytes
+    let base64_input = BASE64_STANDARD.encode(bytes); // encode bytes to base64 string
+
+    let s = StorageValue {
+        storage_prefix: String::default(), // not used in reconstruct
+        key: Binary::default(),            // not used in reconstruct
+        value: Binary::from_base64(base64_input.as_str()).unwrap(),
+    };
+    let votes = GovernmentProposalVotes::reconstruct(&[s]).unwrap();
+    assert_eq!(
+        votes,
+        GovernmentProposalVotes {
+            proposal_votes: vec![ProposalVote {
+                proposal_id: 4,
+                voter: "cosmos10h9stc5v6ntgeygf5xf945njqq5h32r53uquvw".to_string(),
+                options: vec![WeightedVoteOption {
+                    weight: "1000000000000000000".to_string(),
+                    option: 1,
+                }],
+            }],
         }
     );
 }
