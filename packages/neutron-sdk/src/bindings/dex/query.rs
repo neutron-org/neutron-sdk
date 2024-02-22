@@ -1,6 +1,6 @@
 use crate::bindings::dex::types::{
     DepositRecord, LimitOrderTranche, LimitOrderTrancheUser, LimitOrderType, MultiHopRoute, Params,
-    Pool, PoolMetadata, PoolReserves, PrecDec, TickLiquidity, 
+    Pool, PoolMetadata, PoolReserves, PrecDec, TickLiquidity,
 };
 use crate::bindings::query::{PageRequest, PageResponse};
 use cosmwasm_std::{Coin, Int128};
@@ -18,9 +18,7 @@ pub enum DexQuery {
         tranche_key: String,
     },
     /// Queries a list of LimitOrderTrancheMap items.
-    LimitOrderTrancheUserAll {
-        pagination: Option<PageRequest>,
-    },
+    LimitOrderTrancheUserAll { pagination: Option<PageRequest> },
     /// Queries a list of LimitOrderTrancheUser items for a given address.
     LimitOrderTrancheUserAllByAddress {
         address: String,
@@ -59,9 +57,7 @@ pub enum DexQuery {
         tranche_key: String,
     },
     /// Queries a list of InactiveLimitOrderTranche items.
-    InactiveLimitOrderTrancheAll {
-        pagination: Option<PageRequest>,
-    },
+    InactiveLimitOrderTrancheAll { pagination: Option<PageRequest> },
     /// Queries a list of PoolReserves items.
     PoolReservesAll {
         pair_id: String,
@@ -104,17 +100,11 @@ pub enum DexQuery {
     },
     /// Queries a pool by ID
     #[serde(rename = "pool_by_id")]
-    PoolByID {
-        pool_id: u64,
-    },
+    PoolByID { pool_id: u64 },
     /// Queries a PoolMetadata by ID
-    PoolMetadata {
-        id: u64,
-    },
+    PoolMetadata { id: u64 },
     /// Queries a list of PoolMetadata items.
-    PoolMetadataAll {
-        pagination: Option<PageRequest>,
-    },
+    PoolMetadataAll { pagination: Option<PageRequest> },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]

@@ -5,11 +5,11 @@ use crate::{
     NeutronError, NeutronResult,
 };
 
+use crate::bindings::dex::msg::DexMsg;
 use cosmwasm_std::{Binary, Coin, CosmosMsg, CustomMsg, DenomUnit, StdError, Uint128};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_json_wasm::to_string;
-use crate::bindings::dex::msg::DexMsg;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 /// IbcFee defines struct for fees that refund the relayer for `SudoMsg` messages submission.
@@ -232,7 +232,6 @@ pub enum NeutronMsg {
     /// Dex messages
     Dex(DexMsg),
 }
-
 
 impl NeutronMsg {
     /// Basic helper to define a register interchain account message:
