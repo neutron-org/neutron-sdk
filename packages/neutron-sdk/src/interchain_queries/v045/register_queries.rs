@@ -29,8 +29,16 @@ pub fn new_register_balances_query_msg(
     denoms: Vec<String>,
     update_period: u64,
 ) -> NeutronResult<NeutronMsg> {
-    let converted_addr_bytes = decode_and_convert(addr.as_str())?;
+    let kv_keys = get_balances_query_keys(addr, denoms)?;
+    NeutronMsg::register_interchain_query(QueryPayload::KV(kv_keys), connection_id, update_period)
+}
 
+/// Creates a keys for an Interchain Query to get balance of account on remote chain for list of denoms
+///
+/// * **addr** address of an account on remote chain for which you want to get balances;
+/// * **denoms** denominations of the coins for which you want to get balance;
+pub fn get_balances_query_keys(addr: String, denoms: Vec<String>) -> NeutronResult<Vec<KVKey>> {
+    let converted_addr_bytes = decode_and_convert(addr.as_str())?;
     let mut kv_keys: Vec<KVKey> = Vec::with_capacity(denoms.len());
 
     for denom in denoms {
@@ -43,8 +51,7 @@ pub fn new_register_balances_query_msg(
 
         kv_keys.push(kv_key)
     }
-
-    NeutronMsg::register_interchain_query(QueryPayload::KV(kv_keys), connection_id, update_period)
+    Ok(kv_keys)
 }
 
 /// Creates a message to register an Interchain Query to get balance of account on remote chain for a particular denom
