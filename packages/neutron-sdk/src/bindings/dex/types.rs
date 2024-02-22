@@ -6,10 +6,35 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum LimitOrderType {
     #[default]
+    /// Good-til-Cancelled limit orders are hybrid maker and taker limit orders.
+    /// They will attempt to trade the supplied AmountIn at the TickIndex or better.
+    /// However, if they total AmountIn cannot be traded at the limit price they are remaining
+    /// amount will be placed as a maker limit order. The proceeds from the taker portion
+    /// are deposited into the user’s account immediately, however, the proceeds from the
+    /// maker portion must be explicitly withdrawn via WithdrawLimitOrder.
     GoodTilCancelled,
+    /// Fill-or-Kill limit orders are taker limit orders that either successfully swap 100%
+    /// of the supplied AmountIn or return an error. If there is insufficient liquidity to
+    /// complete the trade at or above the supplied TickIndex a Fill-or-Kill order will
+    /// return an error `codespace: dex, code: 1134`
+    /// (https://github.com/neutron-org/neutron/blob/main/x/dex/types/errors.go#L107 ErrGoodTilOrderWithoutExpiration).
     FillOrKill,
+    /// Immediate-or-Cancel limit orders are taker orders that will swap as much as of the
+    /// AmountIn as possible given available liquidity above the supplied TickIndex.
+    /// Unlike Fill-or-Kill orders they will still successfully complete even if they
+    /// are only able to partially trade through the AmountIn at the TickIndex or better.
     ImmediateOrCancel,
+    /// Just-in-Time limit orders are an advanced maker limit order that provides tradeable
+    /// liquidity for exactly one block. At the end of the same block in which the Just-in-Time
+    /// order was submitted the order is canceled and any untraded portion will no longer be
+    /// usable as active liquidity.
     JustInTime,
+    /// Good-til-Time limit order function exactly the same as Good-til-Cancelled limit orders
+    /// first trying to trade as a taker limit order and then placing any remaining amount
+    /// as a maker limit order. However, the maker portion of the limit order has a specified ExpirationTime.
+    /// After the ExpirationTime the order will be cancelled and can no longer be traded against.
+    /// When withdrawing a Good-til-Time limit order the user will receive both the successfully
+    /// traded portion of the limit order (TokenOut) as well as any remaining untraded amount (TokenIn).
     GoodTilTime,
 }
 
