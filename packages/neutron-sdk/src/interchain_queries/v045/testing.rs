@@ -26,11 +26,10 @@ use cosmos_sdk_proto::cosmos::staking::v1beta1::{
 };
 use cosmos_sdk_proto::traits::Message;
 use cosmwasm_std::{
-    to_json_binary, Addr, Binary, Coin as StdCoin, Decimal, Decimal256,
-    Delegation as StdDelegation, Timestamp, Uint128,
+    to_json_binary, Addr, Binary, Coin as StdCoin, Decimal, Delegation as StdDelegation, Timestamp,
+    Uint128,
 };
 use hex;
-use std::ops::Div;
 use std::ops::Mul;
 use std::str::FromStr;
 
