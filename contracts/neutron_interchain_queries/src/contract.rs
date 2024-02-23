@@ -6,6 +6,7 @@ use cosmwasm_std::{
     StdResult, Uint128,
 };
 use cw2::set_contract_version;
+use neutron_sdk::interchain_queries::v045::register_queries::new_register_validators_signing_infos_query_msg;
 
 use crate::msg::{
     Cw20BalanceResponse, ExecuteMsg, GetRecipientTxsResponse, InstantiateMsg, MigrateMsg, QueryMsg,
@@ -16,15 +17,17 @@ use neutron_sdk::bindings::query::{NeutronQuery, QueryRegisteredQueryResponse};
 use neutron_sdk::bindings::types::{Height, KVKey};
 use neutron_sdk::interchain_queries::v045::queries::{
     query_balance, query_bank_total, query_delegations, query_distribution_fee_pool,
-    query_government_proposals, query_staking_validators,
+    query_government_proposals, query_staking_validators, query_unbonding_delegations,
+    query_validators_signing_infos,
 };
 use neutron_sdk::interchain_queries::{
     check_query_type, get_registered_query, query_kv_result,
     v045::{
         new_register_balance_query_msg, new_register_bank_total_supply_query_msg,
-        new_register_delegator_delegations_query_msg, new_register_distribution_fee_pool_query_msg,
-        new_register_gov_proposal_query_msg, new_register_staking_validators_query_msg,
-        new_register_transfers_query_msg,
+        new_register_delegator_delegations_query_msg,
+        new_register_delegator_unbonding_delegations_query_msg,
+        new_register_distribution_fee_pool_query_msg, new_register_gov_proposal_query_msg,
+        new_register_staking_validators_query_msg, new_register_transfers_query_msg,
         register_queries::new_register_wasm_contract_store_query_msg,
         types::{COSMOS_SDK_TRANSFER_MSG_URL, RECIPIENT_FIELD},
     },
@@ -89,12 +92,28 @@ pub fn execute(
             validators,
             update_period,
         } => register_staking_validators_query(connection_id, validators, update_period),
+        ExecuteMsg::RegisterValidatorsSigningInfosQuery {
+            connection_id,
+            validators,
+            update_period,
+        } => register_validators_signing_infos_query(connection_id, validators, update_period),
         ExecuteMsg::RegisterDelegatorDelegationsQuery {
             connection_id,
             delegator,
             validators,
             update_period,
         } => register_delegations_query(connection_id, delegator, validators, update_period),
+        ExecuteMsg::RegisterDelegatorUnbondingDelegationsQuery {
+            connection_id,
+            delegator,
+            validators,
+            update_period,
+        } => register_unbonding_delegations_query(
+            connection_id,
+            delegator,
+            validators,
+            update_period,
+        ),
         ExecuteMsg::RegisterTransfersQuery {
             connection_id,
             recipient,
@@ -172,6 +191,17 @@ pub fn register_staking_validators_query(
     Ok(Response::new().add_message(msg))
 }
 
+pub fn register_validators_signing_infos_query(
+    connection_id: String,
+    validators: Vec<String>,
+    update_period: u64,
+) -> NeutronResult<Response<NeutronMsg>> {
+    let msg =
+        new_register_validators_signing_infos_query_msg(connection_id, validators, update_period)?;
+
+    Ok(Response::new().add_message(msg))
+}
+
 pub fn register_delegations_query(
     connection_id: String,
     delegator: String,
@@ -179,6 +209,22 @@ pub fn register_delegations_query(
     update_period: u64,
 ) -> NeutronResult<Response<NeutronMsg>> {
     let msg = new_register_delegator_delegations_query_msg(
+        connection_id,
+        delegator,
+        validators,
+        update_period,
+    )?;
+
+    Ok(Response::new().add_message(msg))
+}
+
+pub fn register_unbonding_delegations_query(
+    connection_id: String,
+    delegator: String,
+    validators: Vec<String>,
+    update_period: u64,
+) -> NeutronResult<Response<NeutronMsg>> {
+    let msg = new_register_delegator_unbonding_delegations_query_msg(
         connection_id,
         delegator,
         validators,
@@ -260,12 +306,18 @@ pub fn query(deps: Deps<NeutronQuery>, env: Env, msg: QueryMsg) -> NeutronResult
         QueryMsg::StakingValidators { query_id } => Ok(to_json_binary(&query_staking_validators(
             deps, env, query_id,
         )?)?),
+        QueryMsg::ValidatorsSigningInfos { query_id } => Ok(to_json_binary(
+            &query_validators_signing_infos(deps, env, query_id)?,
+        )?),
         QueryMsg::GovernmentProposals { query_id } => Ok(to_json_binary(
             &query_government_proposals(deps, env, query_id)?,
         )?),
         QueryMsg::GetDelegations { query_id } => {
             Ok(to_json_binary(&query_delegations(deps, env, query_id)?)?)
         }
+        QueryMsg::GetUnbondingDelegations { query_id } => Ok(to_json_binary(
+            &query_unbonding_delegations(deps, env, query_id)?,
+        )?),
         QueryMsg::Cw20Balance { query_id } => {
             Ok(to_json_binary(&query_cw20_balance(deps, env, query_id)?)?)
         }

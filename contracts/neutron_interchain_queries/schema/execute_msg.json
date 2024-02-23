@@ -131,6 +131,39 @@
     {
       "type": "object",
       "required": [
+        "register_validators_signing_infos_query"
+      ],
+      "properties": {
+        "register_validators_signing_infos_query": {
+          "type": "object",
+          "required": [
+            "connection_id",
+            "update_period",
+            "validators"
+          ],
+          "properties": {
+            "connection_id": {
+              "type": "string"
+            },
+            "update_period": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "validators": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
         "register_government_proposals_query"
       ],
       "properties": {
@@ -208,6 +241,43 @@
       ],
       "properties": {
         "register_delegator_delegations_query": {
+          "type": "object",
+          "required": [
+            "connection_id",
+            "delegator",
+            "update_period",
+            "validators"
+          ],
+          "properties": {
+            "connection_id": {
+              "type": "string"
+            },
+            "delegator": {
+              "type": "string"
+            },
+            "update_period": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "validators": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "register_delegator_unbonding_delegations_query"
+      ],
+      "properties": {
+        "register_delegator_unbonding_delegations_query": {
           "type": "object",
           "required": [
             "connection_id",

@@ -27,7 +27,9 @@ neutron-sdk = { path = "../../packages/neutron-sdk", default-features = false }
 cosmos-sdk-proto = { workspace = true }
 cw-storage-plus = { workspace = true }
 serde-json-wasm = { workspace = true }
+prost-types = { workspace = true }
+cosmwasm-schema = { workspace = true }
 
 [dev-dependencies]
 base64 = { workspace = true }
-cosmwasm-schema = { workspace = true }
+
