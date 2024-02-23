@@ -73,7 +73,6 @@ pub enum DexQuery {
     },
     /// Queries the simulated result of a multihop swap
     EstimateMultiHopSwap {
-        creator: String,
         receiver: String,
         routes: Vec<MultiHopRoute>,
         amount_in: Int128,
