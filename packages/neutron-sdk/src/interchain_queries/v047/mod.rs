@@ -1,15 +1,10 @@
-pub mod helpers;
-pub mod queries;
-pub mod register_queries;
-pub mod types;
+// import all unchanged helpers and methods from v045 package
+// to make it available from v047 package (kinda proxy) since they work with Cosmos SDK 0.47 as usual
+pub use crate::interchain_queries::v045::helpers;
+pub use crate::interchain_queries::v045::register_queries;
 
-pub use register_queries::{
-    new_register_balance_query_msg, new_register_bank_total_supply_query_msg,
-    new_register_delegator_delegations_query_msg,
-    new_register_delegator_unbonding_delegations_query_msg,
-    new_register_distribution_fee_pool_query_msg, new_register_gov_proposal_query_msg,
-    new_register_staking_validators_query_msg, new_register_transfers_query_msg,
-};
+pub mod queries;
+pub mod types;
 
 #[cfg(test)]
 mod testing;
