@@ -1153,22 +1153,6 @@ fn test_unbonding_delegations_reconstruct_from_hex() {
 }
 
 #[test]
-fn overflov_test() {
-    let delegation_shares = Decimal256::from_str("960000020000").unwrap();
-    let validator_tokens = Decimal256::from_str("967000020000").unwrap();
-    let delegator_shares = Decimal256::from_str("967000020000").unwrap();
-
-    println!("validator.tokens {:?}", validator_tokens);
-    println!("delegation_shares {:?}", delegation_shares);
-    println!("delegator_shares {:?}", delegator_shares);
-    let delegated_tokens = delegation_shares
-        .checked_mul(validator_tokens)
-        .unwrap()
-        .div(delegator_shares);
-    println!("{:?}", delegated_tokens);
-}
-
-#[test]
 fn test_delegations_reconstruct_overflow() {
     struct TestCase {
         stake_denom: String,
