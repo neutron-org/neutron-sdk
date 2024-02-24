@@ -67,12 +67,22 @@ pub fn deconstruct_account_denom_balance_key<Key: IntoIterator<Item = u8>>(
     let address_length =
         key.next()
             .ok_or(NeutronError::AccountDenomBalanceKeyDeconstructionError(
-                "invalid key length {:?}".to_string(),
+                "invalid key length".to_string(),
             ))?;
     let address: AddressBytes = (&mut key).take(address_length as usize).collect();
+    if address.len() != address_length as usize {
+        return Err(NeutronError::AccountDenomBalanceKeyDeconstructionError(
+            "address length in key in invalid".to_string(),
+        ));
+    }
 
     // and the rest should be denom
     let denom = String::from_utf8(key.collect::<Vec<u8>>())?;
+    if denom.is_empty() {
+        return Err(NeutronError::AccountDenomBalanceKeyDeconstructionError(
+            "denom in key can't be empty".to_string(),
+        ));
+    }
 
     Ok((address, denom))
 }

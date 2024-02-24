@@ -1,10 +1,10 @@
 use crate::bindings::types::StorageValue;
 use crate::interchain_queries::helpers::decode_and_convert;
-use crate::interchain_queries::types::KVReconstruct;
+use crate::interchain_queries::types::{AddressBytes, KVReconstruct};
 use crate::interchain_queries::v045::helpers::{
     create_account_denom_balance_key, create_delegation_key, create_fee_pool_key,
     create_gov_proposal_key, create_params_store_key, create_total_denom_key, create_validator_key,
-    create_validator_signing_info_key,
+    create_validator_signing_info_key, deconstruct_account_denom_balance_key,
 };
 use crate::interchain_queries::v045::types::{
     Balances, Delegations, FeePool, GovernmentProposal, Proposal, SigningInfo, StakingValidator,
@@ -12,6 +12,7 @@ use crate::interchain_queries::v045::types::{
     Validator as ContractValidator, ValidatorSigningInfo, DECIMAL_PLACES, KEY_BOND_DENOM,
     STAKING_STORE_KEY,
 };
+use crate::interchain_queries::v047::types::BALANCES_PREFIX;
 use crate::{NeutronError, NeutronResult};
 use base64::prelude::*;
 use base64::Engine;
@@ -962,7 +963,7 @@ fn test_staking_validators_reconstruct_from_hex() {
                 ),
                 consensus_pubkey: Some(vec![
                     10, 32, 178, 12, 7, 179, 235, 144, 13, 247, 43, 72, 194, 78, 154, 46, 6, 255,
-                    79, 231, 59, 189, 37, 94, 67, 58, 248, 234, 227, 177, 152, 142, 105, 136
+                    79, 231, 59, 189, 37, 94, 67, 58, 248, 234, 227, 177, 152, 142, 105, 136,
                 ]),
                 jailed: false,
                 status: 3,
@@ -1005,7 +1006,7 @@ fn test_validators_signing_infos_reconstruct_from_hex() {
                 index_offset: 16,
                 jailed_until: Some(0),
                 tombstoned: false,
-                missed_blocks_counter: 0
+                missed_blocks_counter: 0,
             }]
         }
     );
@@ -1030,7 +1031,7 @@ fn test_government_proposals_reconstruct_from_hex() {
                 proposal_type: Some(String::from("/cosmos.gov.v1beta1.TextProposal")),
                 total_deposit: vec![StdCoin {
                     denom: String::from("stake"),
-                    amount: Uint128::from(1000u64)
+                    amount: Uint128::from(1000u64),
                 }],
                 status: 1i32,
                 submit_time: Some(1683291849u64),      // mutating
@@ -1041,7 +1042,7 @@ fn test_government_proposals_reconstruct_from_hex() {
                     yes: String::from("0"),
                     no: String::from("0"),
                     abstain: String::from("0"),
-                    no_with_veto: String::from("0")
+                    no_with_veto: String::from("0"),
                 }),
             }]
         }
@@ -1104,7 +1105,7 @@ fn test_delegations_reconstruct_from_hex() {
                 validator: String::from("cosmosvaloper15fqjpj90ruhj57q3l6a5hda0rt77g6mcek2mtq"), // mutating
                 amount: StdCoin {
                     denom: String::from("stake"),
-                    amount: Uint128::from(100000000u64)
+                    amount: Uint128::from(100000000u64),
                 },
             }],
         }
@@ -1144,9 +1145,64 @@ fn test_unbonding_delegations_reconstruct_from_hex() {
                         completion_time: Some(Timestamp::from_nanos(1704872903002248037)),
                         creation_height: 377,
                         initial_balance: Uint128::new(20_000),
-                    }
+                    },
                 ],
             }]
         }
     );
+}
+
+#[test]
+fn test_deconstruct_account_denom_balance_key() {
+    struct TestCase {
+        key: Vec<u8>,
+        expected_result: NeutronResult<(AddressBytes, String)>,
+    }
+
+    let testcases = vec![
+        TestCase {
+            key: create_account_denom_balance_key("addr1", "uatom").unwrap(),
+            expected_result: Ok((
+                "addr1".bytes().collect::<AddressBytes>(),
+                "uatom".to_string(),
+            )),
+        },
+        TestCase {
+            key: vec![],
+            expected_result: Err(NeutronError::AccountDenomBalanceKeyDeconstructionError(
+                "invalid key length".to_string(),
+            )),
+        },
+        TestCase {
+            key: vec![BALANCES_PREFIX],
+            expected_result: Err(NeutronError::AccountDenomBalanceKeyDeconstructionError(
+                "invalid key length".to_string(),
+            )),
+        },
+        TestCase {
+            key: vec![BALANCES_PREFIX, 10, 1],
+            expected_result: Err(NeutronError::AccountDenomBalanceKeyDeconstructionError(
+                "address length in key in invalid".to_string(),
+            )),
+        },
+        TestCase {
+            key: vec![BALANCES_PREFIX, 2, 1, 2],
+            expected_result: Err(NeutronError::AccountDenomBalanceKeyDeconstructionError(
+                "denom in key can't be empty".to_string(),
+            )),
+        },
+        TestCase {
+            key: vec![BALANCES_PREFIX, 2, 1, 2, 0, 159, 146, 150],
+            expected_result: Err(NeutronError::FromUTF8Error(
+                String::from_utf8(vec![0, 159, 146, 150]).unwrap_err(),
+            )),
+        },
+    ];
+
+    for tc in testcases {
+        assert_eq!(
+            deconstruct_account_denom_balance_key(tc.key),
+            tc.expected_result
+        );
+    }
 }
