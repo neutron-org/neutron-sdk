@@ -22,7 +22,7 @@ use super::helpers::{
 };
 
 pub const DECIMAL_PLACES: u32 = 18;
-const DECIMAL_FRACTIONAL: u128 = 10u128.pow(DECIMAL_PLACES);
+pub const DECIMAL_FRACTIONAL: u128 = 10u128.pow(DECIMAL_PLACES);
 
 /// Protobuf type url of standard Cosmos SDK bank transfer message
 pub const COSMOS_SDK_TRANSFER_MSG_URL: &str = "/cosmos.bank.v1beta1.MsgSend";

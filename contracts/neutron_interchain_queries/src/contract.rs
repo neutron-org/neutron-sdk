@@ -6,7 +6,7 @@ use cosmwasm_std::{
     StdResult, Uint128,
 };
 use cw2::set_contract_version;
-use neutron_sdk::interchain_queries::v045::register_queries::new_register_validators_signing_infos_query_msg;
+use neutron_sdk::interchain_queries::v047::register_queries::new_register_validators_signing_infos_query_msg;
 
 use crate::msg::{
     Cw20BalanceResponse, ExecuteMsg, GetRecipientTxsResponse, InstantiateMsg, MigrateMsg, QueryMsg,
@@ -15,20 +15,22 @@ use crate::state::{Transfer, RECIPIENT_TXS, TRANSFERS};
 use neutron_sdk::bindings::msg::NeutronMsg;
 use neutron_sdk::bindings::query::{NeutronQuery, QueryRegisteredQueryResponse};
 use neutron_sdk::bindings::types::{Height, KVKey};
-use neutron_sdk::interchain_queries::v045::queries::{
+use neutron_sdk::interchain_queries::v047::queries::{
     query_balance, query_bank_total, query_delegations, query_distribution_fee_pool,
     query_government_proposals, query_staking_validators, query_unbonding_delegations,
     query_validators_signing_infos,
 };
 use neutron_sdk::interchain_queries::{
     check_query_type, get_registered_query, query_kv_result,
-    v045::{
-        new_register_balance_query_msg, new_register_bank_total_supply_query_msg,
-        new_register_delegator_delegations_query_msg,
-        new_register_delegator_unbonding_delegations_query_msg,
-        new_register_distribution_fee_pool_query_msg, new_register_gov_proposal_query_msg,
-        new_register_staking_validators_query_msg, new_register_transfers_query_msg,
-        register_queries::new_register_wasm_contract_store_query_msg,
+    v047::{
+        register_queries::{
+            new_register_balance_query_msg, new_register_bank_total_supply_query_msg,
+            new_register_delegator_delegations_query_msg,
+            new_register_delegator_unbonding_delegations_query_msg,
+            new_register_distribution_fee_pool_query_msg, new_register_gov_proposal_query_msg,
+            new_register_staking_validators_query_msg, new_register_transfers_query_msg,
+            new_register_wasm_contract_store_query_msg,
+        },
         types::{COSMOS_SDK_TRANSFER_MSG_URL, RECIPIENT_FIELD},
     },
 };

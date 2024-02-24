@@ -3,13 +3,13 @@ use crate::interchain_queries::helpers::decode_and_convert;
 use crate::interchain_queries::types::KVReconstruct;
 use crate::interchain_queries::v047::helpers::{
     create_account_denom_balance_key, create_delegation_key, create_fee_pool_key,
-    create_gov_proposal_key, create_params_store_key, create_total_denom_key, create_validator_key,
+    create_gov_proposal_key, create_total_denom_key, create_validator_key,
     create_validator_signing_info_key,
 };
 use crate::interchain_queries::v047::types::{
     Balances, Delegations, FeePool, GovernmentProposal, Proposal, SigningInfo, StakingValidator,
     TallyResult, TotalSupply, UnbondingDelegations, UnbondingEntry, UnbondingResponse,
-    Validator as ContractValidator, ValidatorSigningInfo, DECIMAL_PLACES, KEY_BOND_DENOM,
+    Validator as ContractValidator, ValidatorSigningInfo, DECIMAL_PLACES, STAKING_PARAMS_KEY,
     STAKING_STORE_KEY,
 };
 use crate::{NeutronError, NeutronResult};
@@ -22,12 +22,11 @@ use cosmos_sdk_proto::cosmos::gov::v1beta1::{
 };
 use cosmos_sdk_proto::cosmos::slashing::v1beta1::ValidatorSigningInfo as CosmosValidatorSigningInfo;
 use cosmos_sdk_proto::cosmos::staking::v1beta1::{
-    Commission, CommissionRates, Delegation, Description, Validator,
+    Commission, CommissionRates, Delegation, Description, Params, Validator,
 };
 use cosmos_sdk_proto::traits::Message;
 use cosmwasm_std::{
-    to_json_binary, Addr, Binary, Coin as StdCoin, Decimal, Delegation as StdDelegation, Timestamp,
-    Uint128,
+    Addr, Binary, Coin as StdCoin, Decimal, Delegation as StdDelegation, Timestamp, Uint128,
 };
 use hex;
 use std::ops::Mul;
@@ -39,7 +38,7 @@ pub const TOTAL_SUPPLY_HEX_RESPONSE: &str = "31363434313731393838393035373639";
 pub const FEE_POOL_HEX_RESPONSE: &str =
     "0a630a446962632f31324441343233303445453143453936303731463731324141344435383138364144313143333136354330444344413731453031374135344633393335453636121b3434343235323231373030303030303030303030303030303030300a630a446962632f31344639424333453434423841394331424531464230383938304641423837303334433939303545463137434632463530303846433038353231383831314343121b3138393735333433323030303030303030303030303030303030300a620a446962632f31464244443538443433384234443034443236434246423245373232433138393834413046314135323436384334463432463337443130324633443346333939121a32353435353334383030303030303030303030303030303030300a620a446962632f32313831414142303231384541433234424339463836424431333634464242464133453645334643433235453838453345363843313544433645373532443836121a38393736343437323030303030303030303030303030303030300a5e0a446962632f323731373130394139353535394633413137454643304338393742373639314532324132323742333046433343354345374137434538383438313632393730341216393030303030303030303030303030303030303030300a640a446962632f34324534374135424137303845424536453043323237303036323534463237383445323039463444424433433642423737454443344232394546383735453845121c323332353636383932303030303030303030303030303030303030300a620a446962632f38314430384243333946423532304542443934384346303137393130444436393730324433344246354143313630463736443342354346433434344542434530121a33333633393935353030303030303030303030303030303030300a1c0a0574686574611213313531373130393430373239393334333933380a290a057561746f6d12203133353338343330393338303535303237343635383338343139363137323031";
 pub const GOV_PROPOSAL_HEX_RESPONSE: &str = "08011291030a232f636f736d6f732e676f762e76312e4d7367457865634c6567616379436f6e74656e7412e9020ab7020a202f636f736d6f732e676f762e763162657461312e5465787450726f706f73616c1292020a4441646a7573746d656e74206f6620626c6f636b735f7065725f7965617220746f20636f6d6520616c69676e656420776974682061637475616c20626c6f636b2074696d6512c9015468697320676f7665726e616e63652070726f706f73616c20697320666f722061646a7573746d656e74206f6620626c6f636b735f7065725f7965617220706172616d6574657220746f206e6f726d616c697a652074686520696e666c6174696f6e207261746520616e642072657761726420726174652e5c6e2069706673206c696e6b3a2068747470733a2f2f697066732e696f2f697066732f516d587145427235367865557a4670676a736d444b4d5369743369716e4b6144454c347461627850586f7a397863122d636f736d6f73313064303779323635676d6d757674347a30773961773838306a6e73723730306a367a6e396b6e1803222f0a0e3937313138393033353236373939120c3430323338303537373233341a0c3332303534353430303030302201302a0b0897c1c7e40510e4838e13320b0897ab91e50510e4838e133a120a057561746f6d1209353132313030303030420c088fcccae405109399d2ac024a0c088fb694e505109399d2ac025a4441646a7573746d656e74206f6620626c6f636b735f7065725f7965617220746f20636f6d6520616c69676e656420776974682061637475616c20626c6f636b2074696d6562c9015468697320676f7665726e616e63652070726f706f73616c20697320666f722061646a7573746d656e74206f6620626c6f636b735f7065725f7965617220706172616d6574657220746f206e6f726d616c697a652074686520696e666c6174696f6e207261746520616e642072657761726420726174652e5c6e2069706673206c696e6b3a2068747470733a2f2f697066732e696f2f697066732f516d587145427235367865557a4670676a736d444b4d5369743369716e4b6144454c347461627850586f7a397863";
-pub const STAKING_DENOM_HEX_RESPONSE: &str = "227561746f6d22";
+pub const STAKING_PARAMS_HEX_RESPONSE: &str = "0a040880c60a109601180720904e2a057561746f6d321135303030303030303030303030303030303a1532353030303030303030303030303030303030303042123235303030303030303030303030303030304a12353030303030303030303030303030303030";
 pub const STAKING_VALIDATOR_HEX_RESPONSE: &str = "0a34636f736d6f7376616c6f70657231307636777664656e65653872396c36776c73706863677572326c746c387a746b6672766a396112430a1d2f636f736d6f732e63727970746f2e656432353531392e5075624b657912220a20da3f8d90a407031bb7eaf76ecb5b031c96487998e2ee7c67995222cefd3b329120032a0f32353030323832373430353233363432213235303032383237343035323336343030303030303030303030303030303030303a3f0a0a656172746820f09f8c8e1210436f696e6261736520437573746f64791a0a68797068612e636f6f702a134120746573746e65742076616c696461746f7240f4b5704a0c0893efd1f605109bfa83af02524d0a3e0a123230303030303030303030303030303030301213313030303030303030303030303030303030301a1331303030303030303030303030303030303030120b08ff98e8f10510b7c886275a0731303030303030721b3130323030303030333030303030303030303030303030303030307a1c38363935303034363237303030303030303030303030303030303030";
 pub const DELEGATOR_DELEGATIONS_HEX_RESPONSE: &str = "0a2d636f736d6f7331706d6a776d306138707673326d3870617579673272756c6479386e657934716e387a676439361234636f736d6f7376616c6f70657231307636777664656e65653872396c36776c73706863677572326c746c387a746b6672766a39611a1635303030303030303030303030303030303030303030";
 pub const DELEGATOR_UNBONDING_DELEGATIONS_HEX_RESPONSE: &str = "0a2d636f736d6f73316d396c33353878756e6868776473303536387a6134396d7a68767578783975787265357475641234636f736d6f7376616c6f7065723138686c356339786e35647a6532673530756177306c326d723032657735377a6b3061756b746e1a2108ed02120c08ba97f9ac0610f6abf18f021a0531303030302205313030303028011a2008f902120b08c797f9ac0610e59a89011a053230303030220532303030302802";
@@ -729,14 +728,21 @@ fn test_fee_pool_reconstruct() {
 #[test]
 fn test_delegations_reconstruct() {
     struct TestCase {
-        stake_denom: String,
+        staking_params: Params,
         delegations: Vec<Delegation>,
         validators: Vec<Validator>,
         expected_result: NeutronResult<Delegations>,
     }
     let test_cases: Vec<TestCase> = vec![
         TestCase {
-            stake_denom: "stake".to_string(),
+            staking_params: Params {
+                unbonding_time: None,
+                max_validators: 0,
+                max_entries: 0,
+                historical_entries: 0,
+                bond_denom: "stake".to_string(),
+                min_commission_rate: "".to_string(),
+            },
             delegations: vec![Delegation {
                 delegator_address: "osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs".to_string(),
                 validator_address: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3".to_string(),
@@ -764,7 +770,14 @@ fn test_delegations_reconstruct() {
             }),
         },
         TestCase {
-            stake_denom: "stake".to_string(),
+            staking_params: Params {
+                unbonding_time: None,
+                max_validators: 0,
+                max_entries: 0,
+                historical_entries: 0,
+                bond_denom: "stake".to_string(),
+                min_commission_rate: "".to_string(),
+            },
             delegations: vec![
                 Delegation {
                     delegator_address: "osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs".to_string(),
@@ -825,7 +838,14 @@ fn test_delegations_reconstruct() {
             }),
         },
         TestCase {
-            stake_denom: "stake".to_string(),
+            staking_params: Params {
+                unbonding_time: None,
+                max_validators: 0,
+                max_entries: 0,
+                historical_entries: 0,
+                bond_denom: "stake".to_string(),
+                min_commission_rate: "".to_string(),
+            },
             delegations: vec![],
             validators: vec![],
             expected_result: Ok(Delegations {
@@ -833,15 +853,22 @@ fn test_delegations_reconstruct() {
             }),
         },
         TestCase {
-            stake_denom: Default::default(),
+            staking_params: Default::default(),
             delegations: vec![],
             validators: vec![],
             expected_result: Err(NeutronError::InvalidQueryResultFormat(
-                "denom is empty".into(),
+                "params is empty".into(),
             )),
         },
         TestCase {
-            stake_denom: "stake".to_string(),
+            staking_params: Params {
+                unbonding_time: None,
+                max_validators: 0,
+                max_entries: 0,
+                historical_entries: 0,
+                bond_denom: "stake".to_string(),
+                min_commission_rate: "".to_string(),
+            },
             delegations: vec![Delegation {
                 delegator_address: "osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs".to_string(),
                 validator_address: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3".to_string(),
@@ -858,12 +885,12 @@ fn test_delegations_reconstruct() {
         // prepare storage values
         let mut st_values: Vec<StorageValue> = vec![StorageValue {
             storage_prefix: STAKING_STORE_KEY.to_string(),
-            key: Binary(create_params_store_key(STAKING_STORE_KEY, KEY_BOND_DENOM)),
+            key: Binary(vec![STAKING_PARAMS_KEY]),
             value: {
-                if ts.stake_denom.is_empty() {
+                if ts.staking_params.bond_denom.is_empty() {
                     return Default::default();
                 }
-                to_json_binary(&ts.stake_denom).unwrap()
+                Binary::from(ts.staking_params.encode_to_vec())
             },
         }];
 
@@ -1112,8 +1139,8 @@ fn test_fee_pool_reconstruct_from_hex() {
 
 #[test]
 fn test_delegations_reconstruct_from_hex() {
-    let staking_denom_bytes = hex::decode(STAKING_DENOM_HEX_RESPONSE).unwrap(); // decode hex string to bytes
-    let staking_denom_base64_input = BASE64_STANDARD.encode(staking_denom_bytes); // encode bytes to base64 string
+    let staking_params_bytes = hex::decode(STAKING_PARAMS_HEX_RESPONSE).unwrap(); // decode hex string to bytes
+    let staking_params_base64_input = BASE64_STANDARD.encode(staking_params_bytes); // encode bytes to base64 string
     let staking_validator_bytes = hex::decode(STAKING_VALIDATOR_HEX_RESPONSE).unwrap(); // decode hex string to bytes
     let staking_validator_base64_input = BASE64_STANDARD.encode(staking_validator_bytes); // encode bytes to base64 string
     let delegation_bytes = hex::decode(DELEGATOR_DELEGATIONS_HEX_RESPONSE).unwrap(); // decode hex string to bytes
@@ -1122,7 +1149,7 @@ fn test_delegations_reconstruct_from_hex() {
     let mut st_values: Vec<StorageValue> = vec![StorageValue {
         storage_prefix: String::default(), // not used in reconstruct
         key: Binary::default(),            // not used in reconstruct
-        value: Binary::from_base64(staking_denom_base64_input.as_str()).unwrap(),
+        value: Binary::from_base64(staking_params_base64_input.as_str()).unwrap(),
     }];
     st_values.push(StorageValue {
         storage_prefix: String::default(), // not used in reconstruct
