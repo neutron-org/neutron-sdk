@@ -927,9 +927,7 @@ fn test_balance_reconstruct_from_hex() {
 
     let s = StorageValue {
         storage_prefix: String::default(), // not used in reconstruct
-        key: Binary(
-            create_account_denom_balance_key("addr".to_string(), "uatom".to_string()).unwrap(),
-        ), // not used in reconstruct
+        key: Binary(create_account_denom_balance_key("addr", "uatom").unwrap()), // not used in reconstruct
         value: Binary::from_base64(base64_input.as_str()).unwrap(),
     };
     let bank_balances = Balances::reconstruct(&[s]).unwrap();
