@@ -682,12 +682,12 @@ fn test_query_delegator_delegations() {
             // response for `RegisterDelegatorDelegationsQuery` with necessary KV values to test reconstruction logic.
             // The values are taken from osmosis network
             kv_results: vec![
-                // params value of staking module for key 'staking/BondDenom'
-                // value: uosmo
+                // params value of staking module for key 'staking/params'
+                // value: Params
                 StorageValue {
-                    storage_prefix: "params".to_string(),
-                    key: Binary::from(BASE64_STANDARD.decode("c3Rha2luZy9Cb25kRGVub20=").unwrap()),
-                    value: Binary::from(BASE64_STANDARD.decode("InVvc21vIg==").unwrap()),
+                    storage_prefix: "staking".to_string(),
+                    key: Binary::from(BASE64_STANDARD.decode("UQ==").unwrap()),
+                    value: Binary::from(BASE64_STANDARD.decode("CgQIgN9uEGQYByCQTioFdWF0b20yATA6FC0xMDAwMDAwMDAwMDAwMDAwMDAwQhMxMDAwMDAwMDAwMDAwMDAwMDAwShMxMDAwMDAwMDAwMDAwMDAwMDAw").unwrap()),
                 },
                 // delegation
                 // from: osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs
@@ -765,17 +765,17 @@ fn test_query_delegator_delegations() {
                 Delegation {
                     delegator: Addr::unchecked("osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs"),
                     validator: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3".to_string(),
-                    amount: Coin::new(5177628u128, "uosmo".to_string()),
+                    amount: Coin::new(5177628u128, "uatom".to_string()),
                 },
                 Delegation {
                     delegator: Addr::unchecked("osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs"),
                     validator: "osmovaloper1ej2es5fjztqjcd4pwa0zyvaevtjd2y5w37wr9t".to_string(),
-                    amount: Coin::new(29620221u128, "uosmo".to_string()),
+                    amount: Coin::new(29620221u128, "uatom".to_string()),
                 },
                 Delegation {
                     delegator: Addr::unchecked("osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs"),
                     validator: "osmovaloper1lzhlnpahvznwfv4jmay2tgaha5kmz5qxwmj9we".to_string(),
-                    amount: Coin::new(219920u128, "uosmo".to_string()),
+                    amount: Coin::new(219920u128, "uatom".to_string()),
                 },
             ],
         }
