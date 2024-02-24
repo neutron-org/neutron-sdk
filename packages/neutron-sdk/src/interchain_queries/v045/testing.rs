@@ -12,7 +12,7 @@ use crate::interchain_queries::v045::types::{
     Validator as ContractValidator, ValidatorSigningInfo, DECIMAL_PLACES, KEY_BOND_DENOM,
     STAKING_STORE_KEY,
 };
-use crate::interchain_queries::v047::types::BALANCES_PREFIX;
+use crate::interchain_queries::v047::types::{BALANCES_PREFIX, STAKING_PARAMS_KEY};
 use crate::{NeutronError, NeutronResult};
 use base64::prelude::*;
 use base64::Engine;
@@ -1171,6 +1171,12 @@ fn test_deconstruct_account_denom_balance_key() {
             key: vec![],
             expected_result: Err(NeutronError::AccountDenomBalanceKeyDeconstructionError(
                 "invalid key length".to_string(),
+            )),
+        },
+        TestCase {
+            key: vec![STAKING_PARAMS_KEY],
+            expected_result: Err(NeutronError::AccountDenomBalanceKeyDeconstructionError(
+                "first element is not 2".to_string(),
             )),
         },
         TestCase {
