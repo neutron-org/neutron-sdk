@@ -6,6 +6,7 @@ pub use crate::interchain_queries::v045::types::*;
 use crate::interchain_queries::types::KVReconstruct;
 use crate::{bindings::types::StorageValue, errors::error::NeutronResult, NeutronError};
 
+use crate::interchain_queries::v047::helpers::deconstruct_account_denom_balance_key;
 use cosmos_sdk_proto::cosmos::staking::v1beta1::{
     Delegation, Params, Validator as CosmosValidator,
 };
@@ -25,19 +26,21 @@ pub const STAKING_PARAMS_KEY: u8 = 0x51;
 /// A structure that can be reconstructed from **StorageValues**'s for the **Balance Interchain Query**.
 /// Contains amounts of coins that are held by some account on remote chain.
 pub struct Balances {
-    pub amounts: Vec<Uint128>,
+    pub coins: Vec<Coin>,
 }
 
 impl KVReconstruct for Balances {
     fn reconstruct(storage_values: &[StorageValue]) -> NeutronResult<Balances> {
-        let mut amounts: Vec<Uint128> = Vec::with_capacity(storage_values.len());
+        let mut coins: Vec<Coin> = Vec::with_capacity(storage_values.len());
 
         for kv in storage_values {
+            let (_, denom) = deconstruct_account_denom_balance_key(kv.key.to_vec())?;
             let amount = Uint128::from_str(&String::from_utf8(kv.value.to_vec())?)?;
-            amounts.push(amount);
+
+            coins.push(Coin::new(amount.u128(), denom))
         }
 
-        Ok(Balances { amounts })
+        Ok(Balances { coins })
     }
 }
 

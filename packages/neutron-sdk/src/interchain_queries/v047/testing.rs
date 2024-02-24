@@ -86,9 +86,9 @@ fn test_balance_reconstruct() {
         }
 
         let balances = Balances::reconstruct(&st_values).unwrap();
-        assert_eq!(balances.amounts.len(), ts.coins.len());
-        for (i, amount) in balances.amounts.iter().enumerate() {
-            assert_eq!(amount, ts.coins[i].1)
+        assert_eq!(balances.coins.len(), ts.coins.len());
+        for (i, coin) in balances.coins.iter().enumerate() {
+            assert_eq!(coin.amount, ts.coins[i].1)
         }
     }
 }
@@ -927,14 +927,16 @@ fn test_balance_reconstruct_from_hex() {
 
     let s = StorageValue {
         storage_prefix: String::default(), // not used in reconstruct
-        key: Binary::default(),            // not used in reconstruct
+        key: Binary(
+            create_account_denom_balance_key("addr".to_string(), "uatom".to_string()).unwrap(),
+        ), // not used in reconstruct
         value: Binary::from_base64(base64_input.as_str()).unwrap(),
     };
     let bank_balances = Balances::reconstruct(&[s]).unwrap();
     assert_eq!(
         bank_balances,
         Balances {
-            amounts: vec![Uint128::from(494213561u64)]
+            coins: vec![StdCoin::new(494213561u128, "uatom")]
         }
     );
 }

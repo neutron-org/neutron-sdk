@@ -285,7 +285,7 @@ fn test_query_balance() {
         BalanceResponse {
             last_submitted_local_height: 987,
             balances: Balances {
-                amounts: vec![Uint128::from(8278104u128)]
+                coins: vec![Coin::new(8278104u128, "uosmo")]
             },
         }
     )

@@ -19,7 +19,7 @@ pub enum NeutronError {
     Bech32(#[from] bech32::Error),
 
     #[error("Prost protobuf error")]
-    ProstProtobuf(#[from] cosmos_sdk_proto::prost::DecodeError),
+    ProstProtobuf(#[from] prost::DecodeError),
 
     #[error("Serde JSON (Wasm) error")]
     SerdeJSONWasm(String),
@@ -47,6 +47,9 @@ pub enum NeutronError {
 
     #[error("Too many transaction filters, max allowed: {max:?}")]
     TooManyTransactionFilters { max: usize },
+
+    #[error("Can't deconstruct account denom balance key")]
+    AccountDenomBalanceKeyDeconstructionError(String),
 }
 
 impl From<serde_json_wasm::de::Error> for NeutronError {
