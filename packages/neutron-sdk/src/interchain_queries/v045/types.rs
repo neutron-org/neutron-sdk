@@ -476,14 +476,10 @@ impl KVReconstruct for Delegations {
 }
 
 fn uint256_to_u128(value: Uint256) -> Result<u128, StdError> {
-    // Convert Uint256 to string
-    let value_str = value.to_string();
-
-    // Attempt to parse the string as u128
-    match value_str.parse::<u128>() {
-        Ok(parsed_value) => Ok(parsed_value),
-        Err(_) => Err(StdError::generic_err("Uint256 value exceeds u128 limits")),
-    }
+    let converted: Uint128 = value
+        .try_into()
+        .map_err(|_| StdError::generic_err("Uint256 value exceeds u128 limits"))?;
+    Ok(converted.u128())
 }
 
 /// Represents a single unbonding delegation from some validator to some delegator on remote chain
