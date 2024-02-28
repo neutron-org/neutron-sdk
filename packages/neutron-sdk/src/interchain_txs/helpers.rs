@@ -5,6 +5,7 @@ use cosmos_sdk_proto::{
 use cosmwasm_std::{Binary, StdError, StdResult};
 
 /// Decodes acknowledgement into `Vec<MsgData>` structure
+/// We consider this method as deprecated. Use v047 instead.
 pub fn decode_acknowledgement_response(data: Binary) -> StdResult<Vec<MsgData>> {
     let tx_msg_data: Result<TxMsgData, _> = TxMsgData::decode(data.as_slice());
 
