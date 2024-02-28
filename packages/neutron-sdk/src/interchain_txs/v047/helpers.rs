@@ -1,7 +1,4 @@
-use cosmos_sdk_proto::{
-    cosmos::base::abci::v1beta1::TxMsgData,
-    traits::Message,
-};
+use cosmos_sdk_proto::{cosmos::base::abci::v1beta1::TxMsgData, traits::Message};
 use cosmwasm_std::{Binary, StdError, StdResult};
 use prost_types::Any;
 
