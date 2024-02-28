@@ -25,8 +25,8 @@ pub fn decode_acknowledgement_response(data: Binary) -> StdResult<Vec<MsgData>> 
                     })
                     .collect::<StdResult<Vec<MsgData>>>()
             } else {
-                // field `.data` is deprecated since cosmos-sdk v047.
-                // but for backwards compatibility we still allow this.
+                // Field `.data` is deprecated since cosmos-sdk v047.
+                // But for backwards compatibility we still allow that. Given function can be used w both v045 & v047
                 #[allow(deprecated)]
                 Ok(msg.data)
             }

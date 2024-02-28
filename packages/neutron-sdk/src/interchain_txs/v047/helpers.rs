@@ -1,5 +1,5 @@
 use cosmos_sdk_proto::{
-    cosmos::base::abci::v1beta1::{MsgData, TxMsgData},
+    cosmos::base::abci::v1beta1::TxMsgData,
     traits::Message,
 };
 use cosmwasm_std::{Binary, StdError, StdResult};
