@@ -19,7 +19,7 @@ use neutron_sdk::{
         query::{NeutronQuery, QueryInterchainAccountAddressResponse},
         types::ProtobufAny,
     },
-    interchain_txs::helpers::{
+    interchain_txs::v045::helpers::{
         decode_acknowledgement_response, decode_message_response, get_port_id,
     },
     query::min_ibc_fee::query_min_ibc_fee,

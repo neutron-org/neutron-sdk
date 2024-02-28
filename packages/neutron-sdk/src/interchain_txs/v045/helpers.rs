@@ -6,18 +6,31 @@ use cosmwasm_std::{Binary, StdError, StdResult};
 
 /// Decodes acknowledgement into `Vec<MsgData>` structure
 pub fn decode_acknowledgement_response(data: Binary) -> StdResult<Vec<MsgData>> {
-    let msg_data: Result<TxMsgData, _> = TxMsgData::decode(data.as_slice());
-    match msg_data {
+    let tx_msg_data: Result<TxMsgData, _> = TxMsgData::decode(data.as_slice());
+
+    match tx_msg_data {
         Err(e) => Err(StdError::generic_err(format!(
             "Can't decode response: {}",
             e
         ))),
-        // TODO: field `.data` is deprecated. We should stop using it when we finally upgrade
-        //       to Cosmos SDK v0.47+.
-        // We still use it here since current Neutron uses Cosmos SDK v0.45 which relies
-        // on this deprecated field.
-        #[allow(deprecated)]
-        Ok(msg) => Ok(msg.data),
+        Ok(msg) => {
+            if !msg.msg_responses.is_empty() {
+                msg.msg_responses
+                    .into_iter()
+                    .map(|any_msg| {
+                        Ok(MsgData {
+                            msg_type: any_msg.type_url,
+                            data: any_msg.value,
+                        })
+                    })
+                    .collect::<StdResult<Vec<MsgData>>>()
+            } else {
+                // field `.data` is deprecated since cosmos-sdk v047.
+                // but for backwards compatibility we still allow this.
+                #[allow(deprecated)]
+                Ok(msg.data)
+            }
+        }
     }
 }
 
