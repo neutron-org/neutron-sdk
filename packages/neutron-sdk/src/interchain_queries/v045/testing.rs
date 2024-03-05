@@ -1161,6 +1161,7 @@ fn test_deconstruct_account_denom_balance_key() {
 
     let testcases = vec![
         TestCase {
+            // valid key
             key: create_account_denom_balance_key("addr1", "uatom").unwrap(),
             expected_result: Ok((
                 "addr1".bytes().collect::<AddressBytes>(),
@@ -1168,30 +1169,37 @@ fn test_deconstruct_account_denom_balance_key() {
             )),
         },
         TestCase {
+            // empty key
             key: vec![],
             expected_result: Err(NeutronError::AccountDenomBalanceKeyDeconstructionError(
                 "invalid key length".to_string(),
             )),
         },
         TestCase {
+            // first element in the key is not BALANCES_PREFIX
             key: vec![81],
             expected_result: Err(NeutronError::AccountDenomBalanceKeyDeconstructionError(
                 "first element in key does not equal to BALANCES_PREFIX: 81 != 2".to_string(),
             )),
         },
         TestCase {
+            // first element in the key is BALANCES_PREFIX but key length is invalid
             key: vec![BALANCES_PREFIX],
             expected_result: Err(NeutronError::AccountDenomBalanceKeyDeconstructionError(
                 "invalid key length".to_string(),
             )),
         },
         TestCase {
+            // invalid address length in key
+            // second element must define addr length, but here we say that length is 10,
+            // but actually it's 1 which is wrong
             key: vec![BALANCES_PREFIX, 10, 1],
             expected_result: Err(NeutronError::AccountDenomBalanceKeyDeconstructionError(
                 "address length in key is invalid".to_string(),
             )),
         },
         TestCase {
+            // first element is correct, addr length is good, but there is no denom in the key
             key: vec![BALANCES_PREFIX, 2, 1, 2],
             expected_result: Err(NeutronError::AccountDenomBalanceKeyDeconstructionError(
                 "denom in key can't be empty".to_string(),
