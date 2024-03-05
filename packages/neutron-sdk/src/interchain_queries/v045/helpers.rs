@@ -72,7 +72,7 @@ pub fn deconstruct_account_denom_balance_key<Key: IntoIterator<Item = u8>>(
     let address: AddressBytes = (&mut key).take(address_length as usize).collect();
     if address.len() != address_length as usize {
         return Err(NeutronError::AccountDenomBalanceKeyDeconstructionError(
-            "address length in key in invalid".to_string(),
+            "address length in key is invalid".to_string(),
         ));
     }
 
