@@ -6,13 +6,13 @@ use crate::interchain_queries::v045::helpers::{
     create_gov_proposal_key, create_params_store_key, create_total_denom_key, create_validator_key,
     create_validator_signing_info_key, deconstruct_account_denom_balance_key,
 };
+use crate::interchain_queries::v045::types::BALANCES_PREFIX;
 use crate::interchain_queries::v045::types::{
     Balances, Delegations, FeePool, GovernmentProposal, Proposal, SigningInfo, StakingValidator,
     TallyResult, TotalSupply, UnbondingDelegations, UnbondingEntry, UnbondingResponse,
     Validator as ContractValidator, ValidatorSigningInfo, DECIMAL_PLACES, KEY_BOND_DENOM,
     STAKING_STORE_KEY,
 };
-use crate::interchain_queries::v047::types::{BALANCES_PREFIX, STAKING_PARAMS_KEY};
 use crate::{NeutronError, NeutronResult};
 use base64::prelude::*;
 use base64::Engine;
@@ -1174,7 +1174,7 @@ fn test_deconstruct_account_denom_balance_key() {
             )),
         },
         TestCase {
-            key: vec![STAKING_PARAMS_KEY],
+            key: vec![81],
             expected_result: Err(NeutronError::AccountDenomBalanceKeyDeconstructionError(
                 "first element in key does not equal to BALANCES_PREFIX: 81 != 2".to_string(),
             )),
