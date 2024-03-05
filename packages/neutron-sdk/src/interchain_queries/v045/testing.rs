@@ -1150,3 +1150,79 @@ fn test_unbonding_delegations_reconstruct_from_hex() {
         }
     );
 }
+
+#[test]
+fn test_delegations_reconstruct_overflow() {
+    struct TestCase {
+        stake_denom: String,
+        delegations: Vec<Delegation>,
+        validators: Vec<Validator>,
+        expected_result: NeutronResult<Delegations>,
+    }
+    let test_cases: Vec<TestCase> = vec![TestCase {
+        stake_denom: "stake".to_string(),
+        delegations: vec![Delegation {
+            delegator_address: "osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs".to_string(),
+            validator_address: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3".to_string(),
+            shares: "340282366920938463463".to_string(),
+        }],
+        validators: vec![Validator {
+            operator_address: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3".to_string(),
+            consensus_pubkey: None,
+            jailed: false,
+            status: 0,
+            tokens: "340282366920938463463".to_string(),
+            delegator_shares: "340282366920938463463".to_string(),
+            description: None,
+            unbonding_height: 0,
+            unbonding_time: None,
+            commission: None,
+            min_self_delegation: "".to_string(),
+        }],
+        expected_result: Ok(Delegations {
+            delegations: vec![StdDelegation {
+                delegator: Addr::unchecked("osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs"),
+                validator: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3".to_string(),
+                amount: StdCoin::new(340282366920938463463u128, "stake"),
+            }],
+        }),
+    }];
+
+    for ts in &test_cases {
+        // prepare storage values
+        let mut st_values: Vec<StorageValue> = vec![StorageValue {
+            storage_prefix: STAKING_STORE_KEY.to_string(),
+            key: Binary(create_params_store_key(STAKING_STORE_KEY, KEY_BOND_DENOM)),
+            value: {
+                if ts.stake_denom.is_empty() {
+                    return Default::default();
+                }
+                to_json_binary(&ts.stake_denom).unwrap()
+            },
+        }];
+
+        for (i, d) in ts.delegations.iter().enumerate() {
+            let delegator_addr = decode_and_convert(&d.delegator_address).unwrap();
+            let val_addr = decode_and_convert(&d.validator_address).unwrap();
+
+            st_values.push(StorageValue {
+                storage_prefix: STAKING_STORE_KEY.to_string(),
+                key: Binary(create_delegation_key(&delegator_addr, &val_addr).unwrap()),
+                value: Binary::from(d.encode_to_vec()),
+            });
+
+            if let Some(v) = ts.validators.get(i) {
+                st_values.push(StorageValue {
+                    storage_prefix: STAKING_STORE_KEY.to_string(),
+                    key: Binary(create_validator_key(&val_addr).unwrap()),
+                    value: Binary::from(v.encode_to_vec()),
+                });
+            }
+        }
+
+        // test reconstruction
+        let delegations = Delegations::reconstruct(&st_values);
+
+        assert_eq!(delegations, ts.expected_result)
+    }
+}
