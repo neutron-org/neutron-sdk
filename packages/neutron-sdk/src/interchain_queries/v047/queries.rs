@@ -1,6 +1,10 @@
 // import all queries from v045 package
-// to it available from v047 package (kinda proxy) since they work with Cosmos SDK 0.47 as usual
+// to make it available from v047 package (kinda proxy) since they work with Cosmos SDK 0.47 as usual
 pub use crate::interchain_queries::v045::queries::*;
+
+// But at the same time we replace v045::BalancesResponse and v045::query_balance() with
+// corresponding structure and method below to create a structure and a method
+// compatible with Cosmos SDK 0.47
 
 use crate::interchain_queries::v047::types::Delegations;
 use crate::{
@@ -15,10 +19,6 @@ use crate::{
 use cosmwasm_std::{Deps, Env};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-
-// But at the same time we replace v045::BalancesResponse and v045::query_balance() with
-// corresponding structure and method below to create a structure and a method
-// compatible with Cosmos SDK 0.47
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]

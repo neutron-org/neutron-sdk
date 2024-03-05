@@ -1,5 +1,5 @@
 // import all helpers from v045 package
-// to it available from v047 package (kinda proxy) since they work with Cosmos SDK 0.47 as usual
+// to make it available from v047 package (kinda proxy) since they work with Cosmos SDK 0.47 as usual
 pub use crate::interchain_queries::v045::register_queries::*;
 
 use crate::bindings::msg::NeutronMsg;

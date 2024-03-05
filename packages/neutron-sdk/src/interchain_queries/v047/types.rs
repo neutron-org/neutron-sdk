@@ -1,7 +1,10 @@
 use std::ops::Div;
 // import all types from v045 package
-// to it available from v047 package (kinda proxy) since they work with Cosmos SDK 0.47 as usual
+// to make it available from v047 package (kinda proxy) since they work with Cosmos SDK 0.47 as usual
 pub use crate::interchain_queries::v045::types::*;
+
+// But at the same time we replace some structs from v045 with structs below to create structures
+// compatible with Cosmos SDK 0.47
 
 use crate::interchain_queries::types::KVReconstruct;
 use crate::{bindings::types::StorageValue, errors::error::NeutronResult, NeutronError};
@@ -20,8 +23,6 @@ use std::str::FromStr;
 /// <https://github.com/cosmos/cosmos-sdk/blob/54120626e9994b2f1cc7a2bebc60cfb99703028f/x/staking/types/keys.go#L56>
 pub const STAKING_PARAMS_KEY: u8 = 0x51;
 
-// But at the same time we replace some structs from v045 with the struct below to create structures
-// compatible with Cosmos SDK 0.47
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 /// A structure that can be reconstructed from **StorageValues**'s for the **Balance Interchain Query**.
 /// Contains amounts of coins that are held by some account on remote chain.
