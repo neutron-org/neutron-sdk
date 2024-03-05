@@ -1176,7 +1176,7 @@ fn test_deconstruct_account_denom_balance_key() {
         TestCase {
             key: vec![STAKING_PARAMS_KEY],
             expected_result: Err(NeutronError::AccountDenomBalanceKeyDeconstructionError(
-                "first element is not 2".to_string(),
+                "first element in key does not equal to BALANCES_PREFIX: 81 != 2".to_string(),
             )),
         },
         TestCase {
@@ -1188,7 +1188,7 @@ fn test_deconstruct_account_denom_balance_key() {
         TestCase {
             key: vec![BALANCES_PREFIX, 10, 1],
             expected_result: Err(NeutronError::AccountDenomBalanceKeyDeconstructionError(
-                "address length in key in invalid".to_string(),
+                "address length in key is invalid".to_string(),
             )),
         },
         TestCase {
@@ -1198,6 +1198,7 @@ fn test_deconstruct_account_denom_balance_key() {
             )),
         },
         TestCase {
+            // must fail since [0, 159, 146, 150] are invalid UTF-8 bytes
             key: vec![BALANCES_PREFIX, 2, 1, 2, 0, 159, 146, 150],
             expected_result: Err(NeutronError::FromUTF8Error(
                 String::from_utf8(vec![0, 159, 146, 150]).unwrap_err(),

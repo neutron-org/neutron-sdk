@@ -48,7 +48,7 @@ pub enum NeutronError {
     #[error("Too many transaction filters, max allowed: {max:?}")]
     TooManyTransactionFilters { max: usize },
 
-    #[error("Can't deconstruct account denom balance key")]
+    #[error("Can't deconstruct account denom balance key: {0}")]
     AccountDenomBalanceKeyDeconstructionError(String),
 }
 

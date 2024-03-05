@@ -51,15 +51,18 @@ pub fn deconstruct_account_denom_balance_key<Key: IntoIterator<Item = u8>>(
     let mut key = key.into_iter();
 
     // the first element must be BALANCES_PREFIX
-    if key
+    let prefix = key
         .next()
         .ok_or(NeutronError::AccountDenomBalanceKeyDeconstructionError(
             "invalid key length".to_string(),
-        ))?
-        != BALANCES_PREFIX
-    {
+        ))?;
+    if prefix != BALANCES_PREFIX {
         return Err(NeutronError::AccountDenomBalanceKeyDeconstructionError(
-            format!("first element is not {:?}", BALANCES_PREFIX).to_string(),
+            format!(
+                "first element in key does not equal to BALANCES_PREFIX: {:?} != {:?}",
+                prefix, BALANCES_PREFIX
+            )
+            .to_string(),
         ));
     }
 

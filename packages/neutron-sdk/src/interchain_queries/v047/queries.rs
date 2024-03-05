@@ -2,8 +2,7 @@
 // to make it available from v047 package (kinda proxy) since they work with Cosmos SDK 0.47 as usual
 pub use crate::interchain_queries::v045::queries::*;
 
-// But at the same time we replace v045::BalancesResponse and v045::query_balance() with
-// corresponding structure and method below to create a structure and a method
+// But at the same time we redefine some methods from v045 with methods below to create methods
 // compatible with Cosmos SDK 0.47
 
 use crate::interchain_queries::v047::types::Delegations;
