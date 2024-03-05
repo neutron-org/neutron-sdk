@@ -1,3 +1,5 @@
+use super::helpers::create_validator_signing_info_key;
+use super::types::SLASHING_STORE_KEY;
 use crate::interchain_queries::types::{
     QueryPayload, TransactionFilterItem, TransactionFilterOp, TransactionFilterValue,
 };
@@ -17,35 +19,57 @@ use crate::{
 };
 use cosmwasm_std::Binary;
 
-use super::helpers::create_validator_signing_info_key;
-use super::types::SLASHING_STORE_KEY;
+/// Creates a message to register an Interchain Query to get balance of account on remote chain for list of denoms
+///
+/// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
+/// * **addr** address of an account on remote chain for which you want to get balances;
+/// * **denoms** denominations of the coins for which you want to get balance;
+/// * **update_period** is used to say how often the query must be updated.
+pub fn new_register_balances_query_msg(
+    connection_id: String,
+    addr: String,
+    denoms: Vec<String>,
+    update_period: u64,
+) -> NeutronResult<NeutronMsg> {
+    let kv_keys = get_balances_query_keys(addr, denoms)?;
+    NeutronMsg::register_interchain_query(QueryPayload::KV(kv_keys), connection_id, update_period)
+}
 
-/// Creates a message to register an Interchain Query to get balance of account on remote chain for particular denom
+/// Creates a keys for an Interchain Query to get balance of account on remote chain for list of denoms
+///
+/// * **addr** address of an account on remote chain for which you want to get balances;
+/// * **denoms** denominations of the coins for which you want to get balance;
+pub fn get_balances_query_keys(addr: String, denoms: Vec<String>) -> NeutronResult<Vec<KVKey>> {
+    let converted_addr_bytes = decode_and_convert(addr.as_str())?;
+    let mut kv_keys: Vec<KVKey> = Vec::with_capacity(denoms.len());
+
+    for denom in denoms {
+        let balance_key = create_account_denom_balance_key(converted_addr_bytes.clone(), denom)?;
+
+        let kv_key = KVKey {
+            path: BANK_STORE_KEY.to_string(),
+            key: Binary(balance_key),
+        };
+
+        kv_keys.push(kv_key)
+    }
+    Ok(kv_keys)
+}
+
+/// Creates a message to register an Interchain Query to get balance of account on remote chain for a particular denom
 ///
 /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
 /// * **addr** address of an account on remote chain for which you want to get balances;
 /// * **denom** denomination of the coin for which you want to get balance;
 /// * **update_period** is used to say how often the query must be updated.
+#[deprecated(note = "Please use new_register_balances_query_msg instead")]
 pub fn new_register_balance_query_msg(
     connection_id: String,
     addr: String,
     denom: String,
     update_period: u64,
 ) -> NeutronResult<NeutronMsg> {
-    let converted_addr_bytes = decode_and_convert(addr.as_str())?;
-
-    let balance_key = create_account_denom_balance_key(converted_addr_bytes, denom)?;
-
-    let kv_key = KVKey {
-        path: BANK_STORE_KEY.to_string(),
-        key: Binary(balance_key),
-    };
-
-    NeutronMsg::register_interchain_query(
-        QueryPayload::KV(vec![kv_key]),
-        connection_id,
-        update_period,
-    )
+    new_register_balances_query_msg(connection_id, addr, vec![denom], update_period)
 }
 
 /// Creates a message to register an Interchain Query to get total supply on remote chain for particular denom
