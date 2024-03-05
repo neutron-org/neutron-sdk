@@ -36,7 +36,7 @@ use neutron_sdk::interchain_queries::v047::helpers::{
 };
 use neutron_sdk::interchain_queries::v047::types::{
     Balances, FeePool, GovernmentProposal, Proposal, SigningInfo, StakingValidator, TallyResult,
-    TotalSupply, Validator, ValidatorSigningInfo, RECIPIENT_FIELD,
+    TotalSupply, Validator, ValidatorSigningInfo, RECIPIENT_FIELD, STAKING_PARAMS_KEY,
 };
 
 use neutron_sdk::interchain_queries::v047::queries::{
@@ -686,7 +686,7 @@ fn test_query_delegator_delegations() {
                 // value: Params
                 StorageValue {
                     storage_prefix: "staking".to_string(),
-                    key: Binary::from(BASE64_STANDARD.decode("UQ==").unwrap()),
+                    key: Binary::from([STAKING_PARAMS_KEY]),
                     value: Binary::from(BASE64_STANDARD.decode("CgQIgN9uEGQYByCQTioFdWF0b20yATA6FC0xMDAwMDAwMDAwMDAwMDAwMDAwQhMxMDAwMDAwMDAwMDAwMDAwMDAwShMxMDAwMDAwMDAwMDAwMDAwMDAw").unwrap()),
                 },
                 // delegation
