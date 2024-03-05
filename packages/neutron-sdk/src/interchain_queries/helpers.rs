@@ -1,5 +1,6 @@
 use crate::errors::error::{NeutronError, NeutronResult};
 use crate::interchain_queries::types::{AddressBytes, MAX_ADDR_LEN};
+use cosmwasm_std::{StdError, Uint128, Uint256};
 
 /// Decodes a bech32 encoded string and converts to base64 encoded bytes
 /// <https://github.com/cosmos/cosmos-sdk/blob/ad9e5620fb3445c716e9de45cfcdb56e8f1745bf/types/bech32/bech32.go#L20>
@@ -28,4 +29,11 @@ pub fn length_prefix<AddrBytes: AsRef<[u8]>>(addr: AddrBytes) -> NeutronResult<V
     p.extend_from_slice(addr.as_ref());
 
     Ok(p)
+}
+
+pub fn uint256_to_u128(value: Uint256) -> Result<u128, StdError> {
+    let converted: Uint128 = value
+        .try_into()
+        .map_err(|_| StdError::generic_err("Uint256 value exceeds u128 limits"))?;
+    Ok(converted.u128())
 }

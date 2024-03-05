@@ -9,12 +9,13 @@ pub use crate::interchain_queries::v045::types::*;
 use crate::interchain_queries::types::KVReconstruct;
 use crate::{bindings::types::StorageValue, errors::error::NeutronResult, NeutronError};
 
+use crate::interchain_queries::helpers::uint256_to_u128;
 use crate::interchain_queries::v047::helpers::deconstruct_account_denom_balance_key;
 use cosmos_sdk_proto::cosmos::staking::v1beta1::{
     Delegation, Params, Validator as CosmosValidator,
 };
 use cosmos_sdk_proto::traits::Message;
-use cosmwasm_std::{Addr, Coin, Decimal, Uint128};
+use cosmwasm_std::{Addr, Coin, Decimal256, Uint128, Uint256};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
@@ -100,15 +101,18 @@ impl KVReconstruct for Delegations {
             }
             let validator: CosmosValidator = CosmosValidator::decode(chunk[1].value.as_slice())?;
 
-            let delegation_shares =
-                Decimal::from_atomics(Uint128::from_str(&delegation_sdk.shares)?, DECIMAL_PLACES)?;
-
-            let delegator_shares = Decimal::from_atomics(
-                Uint128::from_str(&validator.delegator_shares)?,
+            let delegation_shares = Decimal256::from_atomics(
+                Uint256::from_str(&delegation_sdk.shares)?,
                 DECIMAL_PLACES,
             )?;
 
-            let validator_tokens = Decimal::from_atomics(Uint128::from_str(&validator.tokens)?, 0)?;
+            let delegator_shares = Decimal256::from_atomics(
+                Uint256::from_str(&validator.delegator_shares)?,
+                DECIMAL_PLACES,
+            )?;
+
+            let validator_tokens =
+                Decimal256::from_atomics(Uint128::from_str(&validator.tokens)?, 0)?;
 
             // https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/staking/keeper/querier.go#L463
             // delegated_tokens = quotient(delegation.shares * validator.tokens / validator.total_shares);
@@ -116,10 +120,10 @@ impl KVReconstruct for Delegations {
                 .checked_mul(validator_tokens)?
                 .div(delegator_shares)
                 .atomics()
-                .u128()
-                .div(DECIMAL_FRACTIONAL);
+                .div(Uint256::from_u128(DECIMAL_FRACTIONAL));
 
-            delegation_std.amount = Coin::new(delegated_tokens, &params.bond_denom);
+            delegation_std.amount =
+                Coin::new(uint256_to_u128(delegated_tokens)?, &params.bond_denom);
 
             delegations.push(delegation_std);
         }
