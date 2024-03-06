@@ -7,10 +7,13 @@ use cosmos_sdk_proto::cosmos::{
     base::v1beta1::Coin as CosmosCoin,
     distribution::v1beta1::FeePool as CosmosFeePool,
     gov::v1beta1::Proposal as CosmosProposal,
-    staking::v1beta1::{Delegation, Validator as CosmosValidator},
+    slashing::v1beta1::ValidatorSigningInfo as CosmosValidatorSigningInfo,
+    staking::v1beta1::{Delegation, UnbondingDelegation, Validator as CosmosValidator},
 };
 use cosmos_sdk_proto::traits::Message;
-use cosmwasm_std::{from_json, Addr, Coin, Decimal, StdError, Uint128};
+use cosmwasm_std::{
+    from_json, Addr, Coin, Decimal, Decimal256, StdError, Timestamp, Uint128, Uint256,
+};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::{ops::Div, str::FromStr};
@@ -34,13 +37,21 @@ pub const BALANCES_PREFIX: u8 = 0x02;
 /// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/bank/types/key.go#L28>
 pub const SUPPLY_PREFIX: u8 = 0x00;
 
+/// Key for validators in the **staking** module's storage
+/// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/staking/types/keys.go#L35>
+pub const VALIDATORS_KEY: u8 = 0x21;
+
 /// Key for delegations in the **staking** module's storage
 /// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/staking/types/keys.go#L39>
 pub const DELEGATION_KEY: u8 = 0x31;
 
-/// Key for validators in the **staking** module's storage
-/// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/staking/types/keys.go#L35>
-pub const VALIDATORS_KEY: u8 = 0x21;
+/// Key for unbonding delegations in the **staking** module's storage
+/// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/staking/types/keys.go#L40>
+pub const UNBONDING_DELEGATION_KEY: u8 = 0x32;
+
+/// Key for validators in the **slashing** module's storage
+/// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/slashing/types/keys.go#L34>
+pub const VALIDATOR_SIGNING_INFO_KEY: u8 = 0x01;
 
 /// Key for Fee Pool in the **distribution** module's storage
 /// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/distribution/types/keys.go#L46>
@@ -59,6 +70,9 @@ pub const BANK_STORE_KEY: &str = "bank";
 
 /// Name of the standard **staking** Cosmos-SDK module
 pub const STAKING_STORE_KEY: &str = "staking";
+
+/// Name of the standard **slashing* Cosmos-SDK module
+pub const SLASHING_STORE_KEY: &str = "slashing";
 
 /// Name of the standard **distribution** Cosmos-SDK module
 pub const DISTRIBUTION_STORE_KEY: &str = "distribution";
@@ -181,6 +195,8 @@ pub struct Validator {
     pub tokens: String,
     /// delegator_shares defines total shares issued to a validator's delegators.
     pub delegator_shares: String,
+    /// consensus_pubkey is the consensus public key of the validator, as a Protobuf Any.
+    pub consensus_pubkey: Option<Vec<u8>>,
     /// moniker defines a human-readable name for the validator.
     pub moniker: Option<String>,
     /// identity defines an optional identity signature (ex. UPort or Keybase).
@@ -222,6 +238,7 @@ impl KVReconstruct for StakingValidator {
             let validator: CosmosValidator = CosmosValidator::decode(kv.value.as_slice())?;
             let description = &validator.description;
             let commission = &validator.commission;
+            let consensus_pubkey = &validator.consensus_pubkey;
 
             let validator = Validator {
                 operator_address: validator.operator_address,
@@ -231,6 +248,7 @@ impl KVReconstruct for StakingValidator {
                 tokens: validator.tokens,
                 unbonding_height: validator.unbonding_height as u64,
                 unbonding_time: validator.unbonding_time.map(|v| v.seconds as u64),
+                consensus_pubkey: consensus_pubkey.as_ref().map(|v| v.value.clone()),
                 moniker: description.as_ref().map(|v| v.moniker.to_string()),
                 identity: description.as_ref().map(|v| v.identity.to_string()),
                 website: description.as_ref().map(|v| v.website.to_string()),
@@ -248,6 +266,57 @@ impl KVReconstruct for StakingValidator {
         }
 
         Ok(StakingValidator { validators })
+    }
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+/// Validator structure for the querier. Contains validator signing info from `slashing` module
+pub struct ValidatorSigningInfo {
+    pub address: String,
+    /// Height at which validator was first a candidate OR was unjailed
+    pub start_height: u64,
+    /// Index which is incremented each time the validator was a bonded
+    /// in a block and may have signed a precommit or not. This in conjunction with the
+    /// `SignedBlocksWindow` param determines the index in the `MissedBlocksBitArray`.
+    pub index_offset: u32,
+    /// Timestamp until which the validator is jailed due to liveness downtime.
+    pub jailed_until: Option<u64>,
+    /// Whether or not a validator has been tombstoned (killed out of validator set). It is set
+    /// once the validator commits an equivocation or for any other configured misbehiavor.
+    pub tombstoned: bool,
+    /// A counter kept to avoid unnecessary array reads.
+    /// Note that `Sum(MissedBlocksBitArray)` always equals `MissedBlocksCounter`.
+    pub missed_blocks_counter: u32,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+/// A structure that can be reconstructed from **StorageValues**'s for the **Staking Validator Interchain Query**.
+/// Contains validator info from remote chain.
+pub struct SigningInfo {
+    pub signing_infos: Vec<ValidatorSigningInfo>,
+}
+
+impl KVReconstruct for SigningInfo {
+    fn reconstruct(storage_values: &[StorageValue]) -> NeutronResult<SigningInfo> {
+        let mut signing_infos = Vec::with_capacity(storage_values.len());
+
+        for kv in storage_values {
+            let signing_info: CosmosValidatorSigningInfo =
+                CosmosValidatorSigningInfo::decode(kv.value.as_slice())?;
+
+            let validator = ValidatorSigningInfo {
+                address: signing_info.address,
+                start_height: signing_info.start_height as u64,
+                index_offset: signing_info.index_offset as u32,
+                jailed_until: signing_info.jailed_until.map(|v| v.seconds as u64),
+                tombstoned: signing_info.tombstoned,
+                missed_blocks_counter: signing_info.missed_blocks_counter as u32,
+            };
+
+            signing_infos.push(validator)
+        }
+
+        Ok(SigningInfo { signing_infos })
     }
 }
 
@@ -376,15 +445,18 @@ impl KVReconstruct for Delegations {
             }
             let validator: CosmosValidator = CosmosValidator::decode(chunk[1].value.as_slice())?;
 
-            let delegation_shares =
-                Decimal::from_atomics(Uint128::from_str(&delegation_sdk.shares)?, DECIMAL_PLACES)?;
-
-            let delegator_shares = Decimal::from_atomics(
-                Uint128::from_str(&validator.delegator_shares)?,
+            let delegation_shares = Decimal256::from_atomics(
+                Uint256::from_str(&delegation_sdk.shares)?,
                 DECIMAL_PLACES,
             )?;
 
-            let validator_tokens = Decimal::from_atomics(Uint128::from_str(&validator.tokens)?, 0)?;
+            let delegator_shares = Decimal256::from_atomics(
+                Uint256::from_str(&validator.delegator_shares)?,
+                DECIMAL_PLACES,
+            )?;
+
+            let validator_tokens =
+                Decimal256::from_atomics(Uint128::from_str(&validator.tokens)?, 0)?;
 
             // https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/staking/keeper/querier.go#L463
             // delegated_tokens = quotient(delegation.shares * validator.tokens / validator.total_shares);
@@ -392,14 +464,84 @@ impl KVReconstruct for Delegations {
                 .checked_mul(validator_tokens)?
                 .div(delegator_shares)
                 .atomics()
-                .u128()
-                .div(DECIMAL_FRACTIONAL);
+                .div(Uint256::from_u128(DECIMAL_FRACTIONAL));
 
-            delegation_std.amount = Coin::new(delegated_tokens, &denom);
+            delegation_std.amount = Coin::new(uint256_to_u128(delegated_tokens)?, &denom);
 
             delegations.push(delegation_std);
         }
 
         Ok(Delegations { delegations })
+    }
+}
+
+fn uint256_to_u128(value: Uint256) -> Result<u128, StdError> {
+    let converted: Uint128 = value
+        .try_into()
+        .map_err(|_| StdError::generic_err("Uint256 value exceeds u128 limits"))?;
+    Ok(converted.u128())
+}
+
+/// Represents a single unbonding delegation from some validator to some delegator on remote chain
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+pub struct UnbondingEntry {
+    /// Amount of tokens to be unbonded at **completion_time**
+    pub balance: Uint128,
+    /// Point of time representing completion of unbonding delegation
+    pub completion_time: Option<Timestamp>,
+    /// Block height on remote network at which the undelegation was initiated
+    pub creation_height: u64,
+    /// Amount of tokens initially scheduled to receive at completion
+    pub initial_balance: Uint128,
+}
+
+/// Contains unbonding delegations which some delegator has on remote chain
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+pub struct UnbondingResponse {
+    pub delegator_address: Addr,
+    pub validator_address: String,
+    pub entries: Vec<UnbondingEntry>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+/// A structure that can be reconstructed from **StorageValues**'s for the
+/// **Delegator Unbonding Delegation Interchain Query**.
+/// Contains unbonding delegations which some delegator has on remote chain.
+pub struct UnbondingDelegations {
+    pub unbonding_responses: Vec<UnbondingResponse>,
+}
+
+impl KVReconstruct for UnbondingDelegations {
+    fn reconstruct(storage_values: &[StorageValue]) -> NeutronResult<UnbondingDelegations> {
+        let mut unbonding_responses: Vec<UnbondingResponse> =
+            Vec::with_capacity(storage_values.len());
+
+        for storage_value in storage_values {
+            let unbonding_delegation_sdk: UnbondingDelegation =
+                UnbondingDelegation::decode(storage_value.value.as_slice())?;
+
+            let mut unbonding_response = UnbondingResponse {
+                delegator_address: Addr::unchecked(unbonding_delegation_sdk.delegator_address),
+                validator_address: unbonding_delegation_sdk.validator_address,
+                entries: Vec::with_capacity(unbonding_delegation_sdk.entries.len()),
+            };
+            for entry in unbonding_delegation_sdk.entries {
+                let unbonding_entry = UnbondingEntry {
+                    balance: Uint128::from_str(&entry.balance)?,
+                    completion_time: entry.completion_time.map(|t| {
+                        Timestamp::from_seconds(t.seconds as u64).plus_nanos(t.nanos as u64)
+                    }),
+                    creation_height: entry.creation_height as u64,
+                    initial_balance: Uint128::from_str(&entry.initial_balance)?,
+                };
+                unbonding_response.entries.push(unbonding_entry);
+            }
+
+            unbonding_responses.push(unbonding_response);
+        }
+
+        Ok(UnbondingDelegations {
+            unbonding_responses,
+        })
     }
 }

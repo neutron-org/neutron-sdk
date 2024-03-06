@@ -3,7 +3,7 @@
   "title": "QueryMsg",
   "oneOf": [
     {
-      "description": "this query goes to neutron and get stored ICA with a specific query",
+      "description": "query stored ICA from Neutron",
       "type": "object",
       "required": [
         "interchain_account_address"
@@ -28,6 +28,7 @@
       "additionalProperties": false
     },
     {
+      "description": "query ICA from contract store, saved during processing the acknowledgement",
       "type": "object",
       "required": [
         "interchain_account_address_from_contract"

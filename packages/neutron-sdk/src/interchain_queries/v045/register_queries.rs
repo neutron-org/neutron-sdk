@@ -12,10 +12,13 @@ use crate::{
     interchain_queries::v045::helpers::{
         create_account_denom_balance_key, create_delegation_key, create_fee_pool_key,
         create_gov_proposal_key, create_params_store_key, create_total_denom_key,
-        create_validator_key, create_wasm_contract_store_key,
+        create_unbonding_delegation_key, create_validator_key, create_wasm_contract_store_key,
     },
 };
 use cosmwasm_std::Binary;
+
+use super::helpers::create_validator_signing_info_key;
+use super::types::SLASHING_STORE_KEY;
 
 /// Creates a message to register an Interchain Query to get balance of account on remote chain for particular denom
 ///
@@ -141,6 +144,32 @@ pub fn new_register_staking_validators_query_msg(
     NeutronMsg::register_interchain_query(QueryPayload::KV(kv_keys), connection_id, update_period)
 }
 
+/// Creates a message to register an Interchain Query to get validators signing infos on remote chain
+///
+/// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
+/// * **validators** is an list of validators valcons addresses of an account on remote chain for which you want to get rewards ;
+/// * **update_period** is used to say how often the query must be updated.
+pub fn new_register_validators_signing_infos_query_msg(
+    connection_id: String,
+    validators: Vec<String>,
+    update_period: u64,
+) -> NeutronResult<NeutronMsg> {
+    let mut kv_keys: Vec<KVKey> = Vec::with_capacity(validators.len());
+
+    for validator in validators {
+        let valcons_addr = decode_and_convert(&validator)?;
+
+        let kv_key = KVKey {
+            path: SLASHING_STORE_KEY.to_string(),
+            key: Binary(create_validator_signing_info_key(&valcons_addr)?),
+        };
+
+        kv_keys.push(kv_key)
+    }
+
+    NeutronMsg::register_interchain_query(QueryPayload::KV(kv_keys), connection_id, update_period)
+}
+
 /// Creates a message to register an Interchain Query to get delegations of particular delegator on remote chain.
 ///
 /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
@@ -153,7 +182,7 @@ pub fn new_register_delegator_delegations_query_msg(
     validators: Vec<String>,
     update_period: u64,
 ) -> NeutronResult<NeutronMsg> {
-    let delegator_addr = decode_and_convert(delegator.as_str())?;
+    let delegator_addr = decode_and_convert(&delegator)?;
 
     // Allocate memory for such KV keys as:
     // * staking module params to get staking denomination
@@ -167,9 +196,10 @@ pub fn new_register_delegator_delegations_query_msg(
         key: Binary(create_params_store_key(STAKING_STORE_KEY, KEY_BOND_DENOM)),
     });
 
-    for v in &validators {
+    for v in validators {
+        let val_addr = decode_and_convert(&v)?;
+
         // create delegation key to get delegation structure
-        let val_addr = decode_and_convert(v.as_str())?;
         keys.push(KVKey {
             path: STAKING_STORE_KEY.to_string(),
             key: Binary(create_delegation_key(&delegator_addr, &val_addr)?),
@@ -179,6 +209,36 @@ pub fn new_register_delegator_delegations_query_msg(
         keys.push(KVKey {
             path: STAKING_STORE_KEY.to_string(),
             key: Binary(create_validator_key(&val_addr)?),
+        })
+    }
+
+    NeutronMsg::register_interchain_query(QueryPayload::KV(keys), connection_id, update_period)
+}
+
+/// Creates a message to register an Interchain Query to get unbonding delegations of particular delegator on remote chain.
+///
+/// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
+/// * **delegator** is an address of an account on remote chain for which you want to get list of unbonding delegations;
+/// * **validators** is a list of validators addresses for which you want to get unbonding delegations from particular **delegator**;
+/// * **update_period** is used to say how often the query must be updated.
+pub fn new_register_delegator_unbonding_delegations_query_msg(
+    connection_id: String,
+    delegator: String,
+    validators: Vec<String>,
+    update_period: u64,
+) -> NeutronResult<NeutronMsg> {
+    let delegator_addr = decode_and_convert(&delegator)?;
+
+    // Allocate memory, one KV key per validator
+    let mut keys: Vec<KVKey> = Vec::with_capacity(validators.len());
+
+    for v in validators {
+        let val_addr = decode_and_convert(&v)?;
+
+        // create unbonding delegation key to get unbonding delegation structure
+        keys.push(KVKey {
+            path: STAKING_STORE_KEY.to_string(),
+            key: Binary(create_unbonding_delegation_key(&delegator_addr, &val_addr)?),
         })
     }
 
