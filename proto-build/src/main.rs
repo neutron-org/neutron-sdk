@@ -1,14 +1,16 @@
-//! Build CosmosSDK/Tendermint/IBC proto files. This build script clones the CosmosSDK version
-//! specified in the COSMOS_SDK_REV constant and then uses that to build the required
-//! proto files for further compilation. This is based on the proto-compiler code
-//! in github.com/informalsystems/ibc-rs
+//! This build script clones the Neutron version specified in the "revenue" execution parameter,
+//! uses that to build the required proto files and makes a "proto_types" module in the "neutron-sdk"
+//! lib out of the generated files. This is based on the proto-compiler code in
+//! github.com/informalsystems/ibc-rs.
 
 use regex::Regex;
+use std::collections::BTreeMap;
+use std::env;
+use std::io::Write;
 use std::{
     ffi::{OsStr, OsString},
-    fs::{self, create_dir_all, remove_dir_all},
+    fs::{self, create_dir_all, remove_dir_all, File},
     io,
-    ops::Add,
     path::{Path, PathBuf},
     process,
 };
@@ -17,18 +19,10 @@ use walkdir::WalkDir;
 const PROTO_BUILD_DIR: &str = "proto-build";
 const BUF_CONFIG_FILE: &str = "buf.yaml";
 const BUF_GEN_CONFIG_FILE: &str = "buf.neutron.gen.yaml";
-
 const PROTO_DIR: &str = "packages/neutron-sdk/src/proto_types";
-
-/// The directory the generated neutron proto files go into in this repo
 const TMP_BUILD_DIR: &str = "/tmp/tmp-protobuf/";
-
 const NEUTRON_DIR: &str = "neutron";
 
-/// Reformat proto https://github.com/neutron-org/neutron/pull/396
-const NEUTRON_REV: &str = "60b7d38358efb2f8e45e25ee4db8e19a6462dd9e";
-
-// TODO(tarcieri): use a logger for this
 macro_rules! info {
     ($msg:expr) => {
             println!("[info] {}", $msg)
@@ -39,6 +33,12 @@ macro_rules! info {
 }
 
 fn main() {
+    let args: Vec<String> = env::args().collect();
+    if args.len() != 2 {
+        panic!("neutron revision (commit hash) is expected as the only argument");
+    }
+    let revision = &args[1];
+
     let tmp_build_dir: PathBuf = TMP_BUILD_DIR.parse().unwrap();
     let proto_dir: PathBuf = PROTO_DIR.parse().unwrap();
 
@@ -50,18 +50,17 @@ fn main() {
 
     fs::create_dir_all(&temp_neutron_dir).unwrap();
 
-    update_submodules();
-    output_neutron_version(&temp_neutron_dir);
+    update_submodules(revision);
     compile_neutron_proto_and_services(&temp_neutron_dir);
-
     copy_generated_files(&temp_neutron_dir, &proto_dir);
+    output_neutron_version(&proto_dir, revision);
 
     info!("Running rustfmt on prost/tonic-generated code");
     run_rustfmt(&proto_dir);
 
     println!(
-        "Rebuild protos with proto-build (neutron-rev: {}))",
-        NEUTRON_REV
+        "Rebuild protos with proto-build (neutron revision: {})",
+        revision
     );
 }
 
@@ -128,16 +127,16 @@ fn run_rustfmt(dir: &Path) {
     run_cmd("rustfmt", args);
 }
 
-fn update_submodules() {
+fn update_submodules(revision: &String) {
     info!("Updating neutron submodule...");
     run_git(["submodule", "update", "--init"]);
     run_git(["-C", NEUTRON_DIR, "fetch"]);
-    run_git(["-C", NEUTRON_DIR, "reset", "--hard", NEUTRON_REV]);
+    run_git(["-C", NEUTRON_DIR, "reset", "--hard", revision]);
 }
 
-fn output_neutron_version(out_dir: &Path) {
+fn output_neutron_version(out_dir: &Path, revision: &String) {
     let path = out_dir.join("NEUTRON_COMMIT");
-    fs::write(path, NEUTRON_REV).unwrap();
+    fs::write(path, revision).unwrap();
 }
 
 fn compile_neutron_proto_and_services(out_dir: &Path) {
@@ -176,37 +175,6 @@ fn collect_protos(proto_paths: &[String], protos: &mut Vec<PathBuf>) {
     }
 }
 
-// pub struct Module {
-//     pub submodules: HashMap<String, ModulePart>,
-// }
-
-// pub struct ModulePart {
-//     pub name: String,
-//     pub ancestor: Option<String>,
-//     pub children: HashMap<String, ModulePart>,
-// }
-
-// impl Module {
-//     pub fn add_module_from_proto(filename: String) {
-//         let parts = filename.split(".").collect::<Vec<&str>>();
-//     }
-// }
-
-// impl ModulePart {
-//     pub fn new_from_proto(filename: String) -> Self {
-//         let parts = filename.split(".").collect::<Vec<&str>>();
-//         let name: String = parts.get(0).unwrap().to_string();
-//         let mut res = Self {
-//             name,
-//             ancestor: None,
-//             children: HashMap::new(),
-//         };
-//         res
-//     }
-
-//     pub fn extend()
-// }
-
 fn copy_generated_files(from_dir: &Path, to_dir: &Path) {
     info!("Copying generated files into '{}'...", to_dir.display());
 
@@ -214,57 +182,25 @@ fn copy_generated_files(from_dir: &Path, to_dir: &Path) {
     remove_dir_all(to_dir).unwrap_or_default();
     create_dir_all(to_dir).unwrap();
 
-    let mut mod_content: String = Default::default();
-
-    // let mut modules: HashMap<String, ModulePart> = HashMap::new();
-
     // Copy new compiled files (prost does not use folder structures)
-    let errors = WalkDir::new(from_dir)
+    let files = WalkDir::new(from_dir)
         .into_iter()
         .filter_map(|e| e.ok())
-        .filter(|e| e.file_type().is_file())
+        .filter(|e| {
+            e.file_type().is_file()
+                && str::ends_with(e.file_name().to_str().unwrap_or_default(), ".rs")
+        })
         .map(|e| {
             let filename = e.file_name().to_os_string().to_str().unwrap().to_string();
-            mod_content = mod_content
-                .clone()
-                .add(build_lib_mod_for_proto(filename.clone()).as_str());
-
-            info!("new mod content:");
-            info!(mod_content);
-            copy_and_patch(e.path(), format!("{}/{}", to_dir.display(), filename))
+            copy_and_patch(e.path(), format!("{}/{}", to_dir.display(), filename)).unwrap();
+            filename
         })
-        .filter_map(|e| e.err())
-        .collect::<Vec<_>>();
+        .collect::<Vec<String>>();
 
-    if !errors.is_empty() {
-        for e in errors {
-            eprintln!("[error] Error while copying compiled file: {}", e);
-        }
-
-        panic!("[error] Aborted.");
-    }
-    info!("build mod content:");
-    info!(mod_content);
-}
-
-fn build_lib_mod_for_proto(proto_file: String) -> String {
-    info!("bulding mod content for {}", proto_file);
-    let parts = proto_file.split('.').collect::<Vec<&str>>();
-    info!("got its parts: {:?}", parts);
-    add_part_to_mod(parts, 0)
-}
-
-fn add_part_to_mod(parts: Vec<&str>, i: usize) -> String {
-    let part = parts.get(i).unwrap().to_string();
-
-    let mut res: String = format!("pub mod {} {{", part);
-    if parts.get(i + 1).is_none() {
-        return format!("include!(\"{}\");", parts.join("."));
-    }
-    res = res.clone().add(add_part_to_mod(parts, i + 1).as_str());
-    res = res.clone().add("}");
-    info!("got a part for mod: {}", res);
-    res
+    let mut file =
+        File::create("packages/neutron-sdk/src/proto_types/mod.rs").expect("Unable to create file");
+    file.write_all(generate_mod_rs(files).as_bytes())
+        .expect("Unable to write data");
 }
 
 fn copy_and_patch(src: impl AsRef<Path>, dest: impl AsRef<Path>) -> io::Result<()> {
@@ -302,4 +238,96 @@ fn copy_and_patch(src: impl AsRef<Path>, dest: impl AsRef<Path>) -> io::Result<(
     }
 
     fs::write(dest, &contents)
+}
+
+enum ModuleContent {
+    Submodule(BTreeMap<String, ModuleContent>),
+    File(String),
+}
+
+/// ChatGPT-generated code that creates a mod.rs file content out of a list of proto files generated
+/// in Rust. All the passed files are expected to have names of modules and versions split by dots,
+/// and these split parts are used to create layered submodules. Merging of submodules is supported.
+///
+/// Example: ["neutron.contractmanager.v1.rs", "neutron.contractmanager.rs"] result in the following:
+///
+/// pub mod neutron {
+///     pub mod contractmanager {
+///         include!("neutron.contractmanager.rs");
+///         pub mod v1 {
+///             include!("neutron.contractmanager.v1.rs");
+///         }
+///     }
+/// }
+fn generate_mod_rs(file_names: Vec<String>) -> String {
+    let mut mod_rs = String::new();
+    let mut modules = BTreeMap::new();
+
+    for file_name in file_names {
+        let parts: Vec<&str> = file_name.split('.').collect();
+        insert_into_module(&mut modules, &parts, file_name.clone());
+    }
+
+    fn insert_into_module(
+        modules: &mut BTreeMap<String, ModuleContent>,
+        parts: &[&str],
+        file_name: String,
+    ) {
+        if parts.len() == 1 {
+            modules.insert(
+                parts[0].to_string(),
+                ModuleContent::File(file_name.to_string()),
+            );
+        } else {
+            let module_name = parts[0];
+            let sub_parts = &parts[1..];
+            let sub_module = modules
+                .entry(module_name.to_string())
+                .or_insert_with(|| ModuleContent::Submodule(BTreeMap::new()));
+            match sub_module {
+                ModuleContent::Submodule(sub_module_map) => {
+                    insert_into_module(sub_module_map, sub_parts, file_name);
+                }
+                ModuleContent::File(_) => {
+                    modules.insert(
+                        module_name.to_string(),
+                        ModuleContent::File(file_name.to_string()),
+                    );
+                }
+            }
+        }
+    }
+
+    fn generate_module(
+        module_dict: &BTreeMap<String, ModuleContent>,
+        mod_rs: &mut String,
+        indentation: &str,
+    ) {
+        for (module_name, content) in module_dict {
+            if module_name != "rs" {
+                mod_rs.push_str(&format!("{}pub mod {} {{\n", indentation, module_name));
+                match content {
+                    ModuleContent::Submodule(submodule) => {
+                        generate_module(submodule, mod_rs, &format!("{}    ", indentation));
+                    }
+                    ModuleContent::File(file) => {
+                        mod_rs.push_str(&format!("{}    include!(\"{}\");\n", indentation, file));
+                    }
+                }
+                mod_rs.push_str(&format!("{}}}\n", indentation));
+            } else {
+                match content {
+                    ModuleContent::Submodule(submodule) => {
+                        generate_module(submodule, mod_rs, indentation);
+                    }
+                    ModuleContent::File(file) => {
+                        mod_rs.push_str(&format!("{}include!(\"{}\");\n", indentation, file));
+                    }
+                }
+            }
+        }
+    }
+
+    generate_module(&modules, &mut mod_rs, "");
+    mod_rs
 }
