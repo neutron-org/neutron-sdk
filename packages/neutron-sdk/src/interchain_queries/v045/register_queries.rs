@@ -100,7 +100,7 @@ pub fn new_register_distribution_fee_pool_query_msg(
 /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
 /// * **proposals_ids** is a list of proposals ids from remote chain.
 /// * **update_period** is used to say how often the query must be updated.
-pub fn new_register_gov_proposal_query_msg(
+pub fn new_register_gov_proposals_query_msg(
     connection_id: String,
     proposals_ids: Vec<u64>,
     update_period: u64,
