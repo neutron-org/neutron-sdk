@@ -192,7 +192,7 @@ pub fn create_gov_proposal_votes_key(proposal_id: u64) -> NeutronResult<Vec<u8>>
 
 /// Creates Cosmos-SDK storage key for specific voter on specific proposal
 /// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/gov/types/keys.go#L106>
-pub fn create_gov_proposal_voters_votes_key<AddrBytes: AsRef<[u8]>>(
+pub fn create_gov_proposal_voter_votes_key<AddrBytes: AsRef<[u8]>>(
     proposal_id: u64,
     voter_address: AddrBytes,
 ) -> NeutronResult<Vec<u8>> {
