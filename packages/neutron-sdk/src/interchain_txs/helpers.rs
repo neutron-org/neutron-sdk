@@ -1,6 +1,4 @@
-use cosmos_sdk_proto::{
-    traits::Message,
-};
+use cosmos_sdk_proto::traits::Message;
 use cosmwasm_std::{StdError, StdResult};
 
 /// Decodes protobuf any item into T structure

@@ -34,12 +34,3 @@ pub fn decode_acknowledgement_response(data: Binary) -> StdResult<Vec<MsgData>> 
         }
     }
 }
-
-/// Decodes protobuf any item into T structure
-pub fn decode_message_response<T: Message + Default>(item: &Vec<u8>) -> StdResult<T> {
-    let res = T::decode(item.as_slice());
-    match res {
-        Err(e) => Err(StdError::generic_err(format!("Can't decode item: {}", e))),
-        Ok(data) => Ok(data),
-    }
-}
