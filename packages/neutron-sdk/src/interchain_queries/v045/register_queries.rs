@@ -131,7 +131,7 @@ pub fn update_gov_proposal_query_msg(
 /// * **proposals_ids** is a list of proposals ids from remote chain.
 /// * **voters** is a list of voter to get voting info from remote chain.
 /// * **update_period** is used to say how often the query must be updated.
-pub fn new_register_gov_proposal_votes_query_msg(
+pub fn new_register_gov_proposals_voters_votes_query_msg(
     connection_id: String,
     proposals_ids: Vec<u64>,
     voters: Vec<String>,
