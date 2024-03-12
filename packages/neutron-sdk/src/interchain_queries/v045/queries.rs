@@ -4,8 +4,8 @@ use crate::{
         queries::{check_query_type, get_registered_query, query_kv_result},
         types::QueryType,
         v045::types::{
-            Balances, Delegations, FeePool, GovernmentProposal, SigningInfo, StakingValidator,
-            TotalSupply, UnbondingDelegations,
+            Balances, Delegations, FeePool, GovernmentProposal, GovernmentProposalVotes,
+            SigningInfo, StakingValidator, TotalSupply, UnbondingDelegations,
         },
     },
     NeutronResult,
@@ -13,8 +13,6 @@ use crate::{
 use cosmwasm_std::{Deps, Env};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-
-use super::types::GovernmentProposalVotes;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]

@@ -11,14 +11,13 @@ use crate::{
     interchain_queries::helpers::decode_and_convert,
     interchain_queries::v045::helpers::{
         create_account_denom_balance_key, create_delegation_key, create_fee_pool_key,
-        create_gov_proposals_voters_votes_keys, create_params_store_key, create_total_denom_key,
-        create_unbonding_delegation_key, create_validator_key, create_validator_signing_info_key,
-        create_wasm_contract_store_key,
+        create_gov_proposal_keys, create_gov_proposals_voters_votes_keys, create_params_store_key,
+        create_total_denom_key, create_unbonding_delegation_key, create_validator_key,
+        create_validator_signing_info_key, create_wasm_contract_store_key,
     },
 };
 use cosmwasm_std::Binary;
 
-use super::helpers::create_gov_proposal_keys;
 use super::types::SLASHING_STORE_KEY;
 
 /// Creates a message to register an Interchain Query to get balance of account on remote chain for particular denom
@@ -116,20 +115,14 @@ pub fn new_register_gov_proposal_query_msg(
 /// * **proposals_ids** is a list of proposals ids from remote chain.
 /// * **new_update_period** is used to update period of how often the query must be updated.
 /// * **new_update_period** is used to update list of transaction filters.
-pub fn update_register_gov_proposal_query_msg(
+pub fn update_gov_proposal_query_msg(
     query_id: u64,
     proposals_ids: Vec<u64>,
     new_update_period: Option<u64>,
-    new_transactions_filter: Option<Vec<TransactionFilterItem>>,
 ) -> NeutronResult<NeutronMsg> {
     let kv_keys = create_gov_proposal_keys(proposals_ids)?;
 
-    NeutronMsg::update_interchain_query(
-        query_id,
-        Some(kv_keys),
-        new_update_period,
-        new_transactions_filter,
-    )
+    NeutronMsg::update_interchain_query(query_id, Some(kv_keys), new_update_period, None)
 }
 
 /// Creates a message to register an Interchain Query to get governance proposal votes on the remote chain
@@ -156,21 +149,15 @@ pub fn new_register_gov_proposal_votes_query_msg(
 /// * **voters** is a list of voter to get voting info from remote chain.
 /// * **new_update_period** is used to update period of how often the query must be updated.
 /// * **new_update_period** is used to update list of transaction filters.
-pub fn update_register_gov_proposal_votes_query_msg(
+pub fn update_gov_proposal_votes_query_msg(
     query_id: u64,
     proposals_ids: Vec<u64>,
     voters: Vec<String>,
     new_update_period: Option<u64>,
-    new_transactions_filter: Option<Vec<TransactionFilterItem>>,
 ) -> NeutronResult<NeutronMsg> {
     let kv_keys = create_gov_proposals_voters_votes_keys(proposals_ids, voters)?;
 
-    NeutronMsg::update_interchain_query(
-        query_id,
-        Some(kv_keys),
-        new_update_period,
-        new_transactions_filter,
-    )
+    NeutronMsg::update_interchain_query(query_id, Some(kv_keys), new_update_period, None)
 }
 
 /// Creates a message to register an Interchain Query to get validator info on remote chain
