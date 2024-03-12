@@ -26,7 +26,7 @@ use neutron_sdk::interchain_queries::{
         new_register_balance_query_msg, new_register_bank_total_supply_query_msg,
         new_register_delegator_delegations_query_msg,
         new_register_delegator_unbonding_delegations_query_msg,
-        new_register_distribution_fee_pool_query_msg, new_register_gov_proposal_query_msg,
+        new_register_distribution_fee_pool_query_msg, new_register_gov_proposals_query_msg,
         new_register_staking_validators_query_msg, new_register_transfers_query_msg,
         register_queries::new_register_wasm_contract_store_query_msg,
         types::{COSMOS_SDK_TRANSFER_MSG_URL, RECIPIENT_FIELD},
@@ -176,7 +176,7 @@ pub fn register_gov_proposal_query(
     proposals_ids: Vec<u64>,
     update_period: u64,
 ) -> NeutronResult<Response<NeutronMsg>> {
-    let msg = new_register_gov_proposal_query_msg(connection_id, proposals_ids, update_period)?;
+    let msg = new_register_gov_proposals_query_msg(connection_id, proposals_ids, update_period)?;
 
     Ok(Response::new().add_message(msg))
 }
