@@ -1,11 +1,13 @@
 use crate::bindings::types::KVKey;
 use crate::errors::error::NeutronResult;
 use crate::interchain_queries::helpers::{decode_and_convert, length_prefix};
+use crate::interchain_queries::types::AddressBytes;
 use crate::interchain_queries::v045::types::{
     BALANCES_PREFIX, DELEGATION_KEY, FEE_POOL_KEY, PARAMS_STORE_DELIMITER, PROPOSALS_KEY_PREFIX,
     SUPPLY_PREFIX, UNBONDING_DELEGATION_KEY, VALIDATORS_KEY, VALIDATOR_SIGNING_INFO_KEY,
     WASM_CONTRACT_STORE_PREFIX,
 };
+use crate::NeutronError;
 use cosmos_sdk_proto::cosmos::staking::v1beta1::Commission as ValidatorCommission;
 use cosmwasm_std::{Binary, Decimal, Uint128};
 use std::str::{from_utf8, FromStr};
@@ -42,6 +44,53 @@ pub fn create_account_denom_balance_key<AddrBytes: AsRef<[u8]>, S: AsRef<str>>(
     account_balance_key.extend_from_slice(denom.as_ref().as_bytes());
 
     Ok(account_balance_key)
+}
+
+/// Deconstructs a storage key for an **account** balance of a particular **denom**.
+/// Returns two values: **address** of an account and **denom**
+pub fn deconstruct_account_denom_balance_key<Key: IntoIterator<Item = u8>>(
+    key: Key,
+) -> NeutronResult<(AddressBytes, String)> {
+    let mut key = key.into_iter();
+
+    // the first element must be BALANCES_PREFIX
+    let prefix = key
+        .next()
+        .ok_or(NeutronError::AccountDenomBalanceKeyDeconstructionError(
+            "invalid key length".to_string(),
+        ))?;
+    if prefix != BALANCES_PREFIX {
+        return Err(NeutronError::AccountDenomBalanceKeyDeconstructionError(
+            format!(
+                "first element in key does not equal to BALANCES_PREFIX: {:?} != {:?}",
+                prefix, BALANCES_PREFIX
+            )
+            .to_string(),
+        ));
+    }
+
+    // next we try read address bytes
+    let address_length =
+        key.next()
+            .ok_or(NeutronError::AccountDenomBalanceKeyDeconstructionError(
+                "invalid key length".to_string(),
+            ))?;
+    let address: AddressBytes = (&mut key).take(address_length as usize).collect();
+    if address.len() != address_length as usize {
+        return Err(NeutronError::AccountDenomBalanceKeyDeconstructionError(
+            "address length in key is invalid".to_string(),
+        ));
+    }
+
+    // and the rest should be denom
+    let denom = String::from_utf8(key.collect::<Vec<u8>>())?;
+    if denom.is_empty() {
+        return Err(NeutronError::AccountDenomBalanceKeyDeconstructionError(
+            "denom in key can't be empty".to_string(),
+        ));
+    }
+
+    Ok((address, denom))
 }
 
 /// Creates **denom** balance Cosmos-SDK storage key for account with **addr**
