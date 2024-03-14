@@ -1,3 +1,4 @@
+use crate::interchain_queries::helpers::uint256_to_u128;
 use crate::interchain_queries::types::KVReconstruct;
 use crate::{
     bindings::types::StorageValue,
@@ -11,9 +12,7 @@ use cosmos_sdk_proto::cosmos::{
     staking::v1beta1::{Delegation, UnbondingDelegation, Validator as CosmosValidator},
 };
 use cosmos_sdk_proto::traits::Message;
-use cosmwasm_std::{
-    from_json, Addr, Coin, Decimal, Decimal256, StdError, Timestamp, Uint128, Uint256,
-};
+use cosmwasm_std::{from_json, Addr, Coin, Decimal, Decimal256, Timestamp, Uint128, Uint256};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::{ops::Div, str::FromStr};
@@ -24,7 +23,7 @@ use super::helpers::{
 };
 
 pub const DECIMAL_PLACES: u32 = 18;
-const DECIMAL_FRACTIONAL: u128 = 10u128.pow(DECIMAL_PLACES);
+pub const DECIMAL_FRACTIONAL: u128 = 10u128.pow(DECIMAL_PLACES);
 
 /// Protobuf type url of standard Cosmos SDK bank transfer message
 pub const COSMOS_SDK_TRANSFER_MSG_URL: &str = "/cosmos.bank.v1beta1.MsgSend";
@@ -95,16 +94,6 @@ pub const WASM_STORE_KEY: &str = "wasm";
 
 pub const RECIPIENT_FIELD: &str = "transfer.recipient";
 pub const HEIGHT_FIELD: &str = "tx.height";
-
-impl KVReconstruct for Uint128 {
-    fn reconstruct(storage_values: &[StorageValue]) -> NeutronResult<Uint128> {
-        let value = storage_values
-            .first()
-            .ok_or_else(|| StdError::generic_err("empty query result"))?;
-        let balance: Uint128 = from_json(&value.value)?;
-        Ok(balance)
-    }
-}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 /// A structure that can be reconstructed from **StorageValues**'s for the **Balance Interchain Query**.
@@ -473,13 +462,6 @@ impl KVReconstruct for Delegations {
 
         Ok(Delegations { delegations })
     }
-}
-
-fn uint256_to_u128(value: Uint256) -> Result<u128, StdError> {
-    let converted: Uint128 = value
-        .try_into()
-        .map_err(|_| StdError::generic_err("Uint256 value exceeds u128 limits"))?;
-    Ok(converted.u128())
 }
 
 /// Represents a single unbonding delegation from some validator to some delegator on remote chain

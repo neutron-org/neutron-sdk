@@ -2,6 +2,7 @@ use crate::{
     bindings::types::{KVKey, StorageValue},
     errors::error::NeutronResult,
 };
+use cosmwasm_std::{from_json, StdError, Uint128};
 use schemars::{JsonSchema, _serde_json::Value};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
@@ -121,4 +122,14 @@ pub type AddressBytes = Vec<u8>;
 pub trait KVReconstruct: Sized {
     /// Reconstructs this value from the slice of **StorageValue**'s.
     fn reconstruct(kvs: &[StorageValue]) -> NeutronResult<Self>;
+}
+
+impl KVReconstruct for Uint128 {
+    fn reconstruct(storage_values: &[StorageValue]) -> NeutronResult<Uint128> {
+        let value = storage_values
+            .first()
+            .ok_or_else(|| StdError::generic_err("empty query result"))?;
+        let balance: Uint128 = from_json(&value.value)?;
+        Ok(balance)
+    }
 }
