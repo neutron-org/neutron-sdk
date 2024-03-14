@@ -37,7 +37,11 @@ impl KVReconstruct for Balances {
 
         for kv in storage_values {
             let (_, denom) = deconstruct_account_denom_balance_key(kv.key.to_vec())?;
-            let amount = Uint128::from_str(&String::from_utf8(kv.value.to_vec())?)?;
+            let amount = if kv.value.is_empty() {
+                Uint128::zero()
+            } else {
+                Uint128::from_str(&String::from_utf8(kv.value.to_vec())?)?
+            };
 
             coins.push(Coin::new(amount.u128(), denom))
         }

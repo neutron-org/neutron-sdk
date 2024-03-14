@@ -50,24 +50,24 @@ pub const VALIDATOR_SIGNING_INFO_HEX_RESPONSE: &str = "0a34636f736d6f7376616c636
 fn test_balance_reconstruct() {
     struct TestCase {
         addr: String,
-        coins: Vec<(String, Uint128)>,
+        coins: Vec<(String, String)>,
     }
     let test_cases: Vec<TestCase> = vec![
         TestCase {
             addr: "osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs".to_string(),
-            coins: vec![("uosmo".to_string(), Uint128::from(100u128))],
+            coins: vec![("uosmo".to_string(), "100".to_string())],
         },
         TestCase {
             addr: "osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs".to_string(),
             coins: vec![
-                ("uosmo".to_string(), Uint128::from(100u128)),
-                ("uatom".to_string(), Uint128::from(500u128)),
-                ("uluna".to_string(), Uint128::from(80u128)),
+                ("uosmo".to_string(), "100".to_string()),
+                ("uatom".to_string(), "500".to_string()),
+                ("uluna".to_string(), "80".to_string()),
             ],
         },
         TestCase {
             addr: "osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs".to_string(),
-            coins: vec![],
+            coins: vec![("uluna".to_string(), "".to_string())],
         },
     ];
 
@@ -82,7 +82,7 @@ fn test_balance_reconstruct() {
             let s = StorageValue {
                 storage_prefix: "".to_string(),
                 key: Binary(balance_key),
-                value: Binary(coin.1.to_string().into_bytes()),
+                value: Binary(coin.1.clone().into_bytes()),
             };
             st_values.push(s);
         }
@@ -90,7 +90,13 @@ fn test_balance_reconstruct() {
         let balances = Balances::reconstruct(&st_values).unwrap();
         assert_eq!(balances.coins.len(), ts.coins.len());
         for (i, coin) in balances.coins.iter().enumerate() {
-            assert_eq!(coin.amount, ts.coins[i].1)
+            assert_eq!(coin.denom, ts.coins[i].0);
+            // special testcase where value is an empty string
+            if ts.coins[i].1.is_empty() {
+                assert_eq!(coin.amount, Uint128::zero());
+                continue;
+            }
+            assert_eq!(coin.amount, Uint128::from_str(&ts.coins[i].1).unwrap())
         }
     }
 }
