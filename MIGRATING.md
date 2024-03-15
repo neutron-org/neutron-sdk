@@ -22,10 +22,10 @@ neutron-sdk = "0.9.0"
 -use neutron_sdk::interchain_queries::v045::queries::{...}
 +use neutron_sdk::interchain_queries::v047::queries::{...}
 
--use neutron_sdk::interchain_queries::v047::register_queries::{...}
+-use neutron_sdk::interchain_queries::v045::register_queries::{...}
 +use neutron_sdk::interchain_queries::v047::register_queries::{...}
 
--use neutron_sdk::interchain_queries::v047::types::{...};
+-use neutron_sdk::interchain_queries::v045::types::{...};
 +use neutron_sdk::interchain_queries::v047::types::{...};
 ```
 
