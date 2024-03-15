@@ -1,9 +1,8 @@
 # Migrating
 
 This guide explains what is needed to upgrade contracts when migrating over releases of`neutron-sdk`. Note that you can
-also view the complete CHANGELOG on [releases page](https://github.com/neutron-org/neutron-sdk/releases) to understand
-the
-differences.
+also view the
+[complete CHANGELOG](./CHANGELOG.md) to understand the differences.
 
 ## 0.8.0 -> 0.9.0
 
