@@ -5,6 +5,9 @@
 Now Neutron-SDK supports ICQ and ICTX helpers for different version of Cosmos-SDK and specifically 0.9.0 release
 introduces ICQ and ICTX helpers for Cosmos SDK 0.47.
 
+So if your contract requires interaction with remote chain that uses Cosmos SDK 0.47 you should use helpers from `v047`
+packages.
+
 ### Added
 
 * ICQ helpers for Cosmos SDK 0.47 by @pr0n00gler in https://github.com/neutron-org/neutron-sdk/pull/133
