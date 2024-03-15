@@ -29,7 +29,7 @@ neutron-sdk = "0.9.0"
 +use neutron_sdk::interchain_queries::v047::types::{...};
 ```
 
-* Helper for Interchain transactions module `decode_acknowledgement_response` have moved
+* Helper for Interchain transactions module `decode_acknowledgement_response` has been moved
   from `neutron_sdk::interchain_txs::helpers` package to respective packages for different Cosmos SDK version (`v045`
   and `v047` respectively):
 
