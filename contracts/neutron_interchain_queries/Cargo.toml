@@ -24,7 +24,6 @@ required-features = ["interface"]
 # [[example]]
 
 
-
 [lib]
 crate-type = ["cdylib", "rlib"]
 
@@ -51,29 +50,30 @@ cw2 = "0.15.1"
 cw721-base = "0.18.0"
 schemars = "0.8.10"
 serde = { version = "1.0.103", default-features = false, features = ["derive"] }
-neutron-sdk = { path = "../../packages/neutron-sdk", default-features = false, version = "0.6.0"}
+neutron-sdk = { default-features = false, version = "0.9.0" }
 base64 = "0.13.0"
-cosmos-sdk-proto = { version = "0.14.0", default-features = false, features=["cosmwasm"] }
-cw-storage-plus = { version = "0.14.0", features = ["iterator"]}
-prost = "0.11"
+cosmos-sdk-proto = { version = "0.20.0", default-features = false, features = [
+  "cosmwasm",
+] }
+cw-storage-plus = { version = "0.14.0", features = ["iterator"] }
+prost = "0.12.3"
 serde-json-wasm = "0.4.1"
 cosmwasm-schema = { version = "1.2.0", default-features = false }
 bech32 = "0.9.1"
 cw0 = "0.10.3"
 cw721 = "0.18.0"
-#cw-orch = { version = "0.13.3", optional = true, features=["daemon"] }
-cw-orch = { git="https://github.com/abstractsdk/cw-orchestrator", branch="update/minimum_block_wait_time", optional = true, features=["daemon"] }
-# cw-orch = {path="../../../../BOOT/cw-orchestrator/cw-orch", optional = true, features=["daemon"]}
-prost-types = "0.11.9"
+cw-orch = { version = "0.21.1", optional = true, features = ["daemon"] }
+prost-types = "0.12.3"
 hex = "0.4.3"
 snailquote = "0.3.1"
+# cosmos-anybuf = { git = "https://github.com/AbstractSDK/cosmos-anybuf", version = "0.1.0" }
+cosmos-anybuf = { path = "../../../cosmos-anybuf/cosmos-anybuf" }
 
 [dev-dependencies]
 tokio = "1.29.1"
-# cw-orch = { version = "0.13.3", features=["daemon"] }
-cw-orch = { git="https://github.com/abstractsdk/cw-orchestrator", branch="update/minimum_block_wait_time", features=["daemon"] }
+cw-orch = { version = "0.21.1", features = ["daemon"] }
 # cw-orch = {path="../../../../BOOT/cw-orchestrator/cw-orch", features=["daemon"]}
 
-neutron_interchain_queries = {path=".", features=["interface"]}
+neutron_interchain_queries = { path = ".", features = ["interface"] }
 env_logger = "0.10.0"
 dotenv = "0.15.0"

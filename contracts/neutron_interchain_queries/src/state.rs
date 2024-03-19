@@ -1,14 +1,7 @@
-use cosmwasm_std::Empty;
-use cosmwasm_std::Order;
-use cosmwasm_std::from_binary;
-use cosmwasm_std::to_vec;
-use cosmwasm_std::Binary;
-use cosmwasm_std::CustomQuery;
-use cosmwasm_std::Deps;
-use cosmwasm_std::Env;
-use cosmwasm_std::StdError;
-use cosmwasm_std::StdResult;
-use cosmwasm_std::Storage;
+use cosmwasm_std::{
+    from_json, to_json_vec, Binary, CustomQuery, Deps, Empty, Env, Order, StdError, StdResult,
+    Storage,
+};
 use cw721_base::state::TokenInfo;
 use cw_storage_plus::{Item, Map};
 use neutron_sdk::interchain_txs::helpers::get_port_id;
@@ -24,7 +17,7 @@ pub const TRANSFERS: Item<u64> = Item::new("nft-transfers");
 pub const CACHED_TOKEN_ID: Item<String> = Item::new("cached_token_id");
 pub const TOKEN_ID_QUERY_PAIRS: Map<String, u64> = Map::new("token_id_query_pairs");
 
-/// not working yet 
+/// not working yet
 pub const TOKEN_INFOS: Map<String, TokenInfo<Empty>> = Map::new("token_infos");
 
 // For each token_id, we need to be able to get the sender of that NFT in the contract
@@ -45,7 +38,6 @@ pub struct Config {
     pub update_period: u64,           // This is the update period in blocks
 }
 
-
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct NftTransfer {
     /// The address of the sender in the host chain
@@ -55,8 +47,6 @@ pub struct NftTransfer {
     /// The ID of the NFT
     pub token_id: String,
 }
-
-
 
 // ICA Related part
 
@@ -110,12 +100,12 @@ pub fn read_errors_from_queue(store: &dyn Storage) -> StdResult<Vec<(Vec<u8>, St
 }
 
 pub fn save_reply_payload(store: &mut dyn Storage, payload: SudoPayload) -> StdResult<()> {
-    REPLY_ID_STORAGE.save(store, &to_vec(&payload)?)
+    REPLY_ID_STORAGE.save(store, &to_json_vec(&payload)?)
 }
 
 pub fn read_reply_payload(store: &mut dyn Storage) -> StdResult<SudoPayload> {
     let data = REPLY_ID_STORAGE.load(store)?;
-    from_binary(&Binary(data))
+    from_json(&Binary(data))
 }
 
 pub fn read_sudo_payload(
@@ -124,7 +114,7 @@ pub fn read_sudo_payload(
     seq_id: u64,
 ) -> StdResult<SudoPayload> {
     let data = SUDO_PAYLOAD.load(store, (channel_id, seq_id))?;
-    from_binary(&Binary(data))
+    from_json(&Binary(data))
 }
 
 pub fn save_sudo_payload(
@@ -133,7 +123,7 @@ pub fn save_sudo_payload(
     seq_id: u64,
     payload: SudoPayload,
 ) -> StdResult<()> {
-    SUDO_PAYLOAD.save(store, (channel_id, seq_id), &to_vec(&payload)?)
+    SUDO_PAYLOAD.save(store, (channel_id, seq_id), &to_json_vec(&payload)?)
 }
 
 pub const INTERCHAIN_ACCOUNTS: Map<String, Option<(String, String)>> =
@@ -150,5 +140,3 @@ pub fn get_ica(
         .load(deps.storage, key)?
         .ok_or_else(|| StdError::generic_err("Interchain account is not created yet"))
 }
-
-

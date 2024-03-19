@@ -1,78 +1,42 @@
-use crate::query_helpers::new_register_nft_owned_query_msg;
-use crate::reply::SUDO_PAYLOAD_REPLY_ID;
-use crate::state::TOKEN_ID_SENDER;
-use crate::state::TOKEN_INFOS;
-use crate::sudo::prepare_sudo_payload;
-use crate::reply::QUERY_REGISTER_REPLY_ID;
-
-use crate::ibc::execute_register_ica;
-use crate::ibc::min_ntrn_ibc_fee;
-use crate::ibc::msg_with_sudo_callback;
-use crate::mint::any_addr_to_neutron;
-use crate::mint::format_token_denom;
-use crate::mint::mint_native_receipt;
-use crate::mint::THRESHOLD_BURN_AMOUNT;
-use crate::query_helpers::verify_query;
-
-use crate::state::get_ica;
-use crate::state::Config;
-use crate::state::SudoPayload;
-use crate::state::CACHED_TOKEN_ID;
-use crate::state::CONFIG;
-use crate::state::MINTED_TOKENS;
-use crate::state::SENDER_TXS;
-use crate::state::TOKEN_ID_QUERY_PAIRS;
-use crate::sudo::sudo_error;
-use crate::sudo::sudo_open_ack;
-use crate::sudo::sudo_response;
-use crate::sudo::sudo_timeout;
-
-use cosmos_sdk_proto::traits::MessageExt;
-
-use cosmwasm_std::Addr;
-use cosmwasm_std::BankMsg;
-use cosmwasm_std::Empty;
-use cosmwasm_std::Storage;
-use cosmwasm_std::SubMsg;
-use cosmwasm_std::coin;
-use cosmwasm_std::from_slice;
-use cosmwasm_std::{Reply};
-
-use cw0::must_pay;
-use cw721_base::state::TokenInfo;
-use cw_storage_plus::KeyDeserialize;
-use neutron_sdk::bindings::msg::MsgRegisterInterchainQueryResponse;
-use neutron_sdk::bindings::msg::MsgSubmitTxResponse;
-use neutron_sdk::bindings::types::ProtobufAny;
-use neutron_sdk::bindings::types::StorageValue;
-use neutron_sdk::interchain_queries::queries::get_raw_interchain_query_result;
-use neutron_sdk::interchain_queries::query_kv_result;
-use neutron_sdk::interchain_queries::types::KVReconstruct;
-use neutron_sdk::interchain_txs::helpers::get_port_id;
-use neutron_sdk::query::min_ibc_fee::query_min_ibc_fee;
-use neutron_sdk::NeutronError;
-
-
-use cosmos_sdk_proto::cosmos::tx::v1beta1::{TxBody, TxRaw};
+use crate::{
+    ibc::{execute_register_ica, min_ntrn_ibc_fee, msg_with_sudo_callback},
+    mint::{any_addr_to_neutron, format_token_denom, mint_native_receipt, THRESHOLD_BURN_AMOUNT},
+    msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, NftTransfersResponse, QueryMsg},
+    neutron_sdk::{get_raw_interchain_query_result, get_registered_query, query_min_ibc_fee},
+    query_helpers::{new_register_transfer_nft_query_msg, verify_query},
+    reply::{QUERY_REGISTER_REPLY_ID, SUDO_PAYLOAD_REPLY_ID},
+    state::{
+        get_ica, Config, NftTransfer, SudoPayload, CACHED_TOKEN_ID, CONFIG, MINTED_TOKENS,
+        SENDER_TXS, TOKEN_ID_QUERY_PAIRS, TOKEN_ID_SENDER, TOKEN_INFOS, TRANSFERS,
+    },
+    sudo::{prepare_sudo_payload, sudo_error, sudo_open_ack, sudo_response, sudo_timeout},
+};
 
 use cosmwasm_std::{
-    entry_point, from_binary, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response,
-    StdError, StdResult,
+    coin, entry_point, from_json, to_json_binary, Addr, BankMsg, Binary, Deps, DepsMut, Empty, Env,
+    MessageInfo, Reply, Response, StdError, StdResult, Storage, SubMsg,
 };
+
+use cw721_base::state::TokenInfo;
+use neutron_sdk::{
+    bindings::{
+        msg::{MsgRegisterInterchainQueryResponse, NeutronMsg},
+        query::QueryRegisteredQueryResponse,
+        types::{Height, ProtobufAny},
+    },
+    interchain_txs::helpers::get_port_id,
+    sudo::msg::SudoMsg,
+    NeutronError, NeutronResult,
+};
+
+use cosmos_sdk_proto::{
+    cosmos::tx::v1beta1::{TxBody, TxRaw},
+    cosmwasm::wasm::v1::MsgExecuteContract,
+};
+
 use cw2::set_contract_version;
 use prost::Message as ProstMessage;
-
-use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, NftTransfersResponse, QueryMsg};
-use crate::query_helpers::new_register_transfer_nft_query_msg;
-use crate::state::{NftTransfer, TRANSFERS};
-use neutron_sdk::bindings::msg::NeutronMsg;
-use neutron_sdk::bindings::query::{NeutronQuery, QueryRegisteredQueryResponse};
-use neutron_sdk::bindings::types::Height;
-use neutron_sdk::interchain_queries::get_registered_query;
-use neutron_sdk::sudo::msg::SudoMsg;
-use neutron_sdk::NeutronResult;
-
-use cosmos_sdk_proto::cosmwasm::wasm::v1::MsgExecuteContract;
+use prost_types::Any;
 
 use cw721::Cw721ExecuteMsg;
 use serde_json_wasm;
@@ -90,14 +54,13 @@ const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 pub const INTERCHAIN_ACCOUNT_ID: &str = "hub";
 
-#[cfg_attr(feature = "interface", cw_orch::interface_entry_point)]
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
-    deps: DepsMut<NeutronQuery>,
+    deps: DepsMut,
     _env: Env,
     _info: MessageInfo,
     msg: InstantiateMsg,
-) -> NeutronResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response> {
     deps.api.debug("WASMDEBUG: instantiate");
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
@@ -111,14 +74,13 @@ pub fn instantiate(
     Ok(Response::default())
 }
 
-#[cfg_attr(feature = "interface", cw_orch::interface_entry_point)]
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
-    deps: DepsMut<NeutronQuery>,
+    deps: DepsMut,
     env: Env,
     info: MessageInfo,
     msg: ExecuteMsg,
-) -> NeutronResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response> {
     match msg {
         ExecuteMsg::RegisterICA {} => {
             let connection_id = CONFIG.load(deps.storage)?.connection_id;
@@ -130,25 +92,28 @@ pub fn execute(
             token_id,
         } => register_transfer_nft_query(deps, env, min_height, sender, token_id),
         // todo: add NFT ownership query
-        ExecuteMsg::RemoveInterchainQuery { query_id } => remove_interchain_query(query_id, info.sender),
+        ExecuteMsg::RemoveInterchainQuery { query_id } => {
+            remove_interchain_query(query_id, info.sender)
+        }
         ExecuteMsg::UnlockNft {
             token_id,
             destination,
         } => execute_unlock_nft(deps, env, info, token_id, destination),
-        ExecuteMsg::MintNft { token_id } => execute_mint_nft(deps, env,info, token_id),
-        ExecuteMsg::UpdateConfig { update_period, nft_contract_address } => {
-            execute_update_config(deps, env, info, update_period, nft_contract_address)
-        }
+        ExecuteMsg::MintNft { token_id } => execute_mint_nft(deps, env, info, token_id),
+        ExecuteMsg::UpdateConfig {
+            update_period,
+            nft_contract_address,
+        } => execute_update_config(deps, env, info, update_period, nft_contract_address),
     }
 }
 
 fn execute_update_config(
-    deps: DepsMut<'_, NeutronQuery>,
+    deps: DepsMut,
     env: Env,
     info: MessageInfo,
     update_period: Option<u64>,
     nft_contract_address: Option<String>,
-) -> Result<Response<NeutronMsg>, NeutronError> {
+) -> Result<Response, NeutronError> {
     let mut config = CONFIG.load(deps.storage)?;
 
     if let Some(update_period) = update_period {
@@ -164,12 +129,12 @@ fn execute_update_config(
 }
 
 pub fn register_transfer_nft_query(
-    deps: DepsMut<NeutronQuery>,
+    deps: DepsMut,
     env: Env,
     min_height: u64,
     sender: String,
     token_id: String,
-) -> NeutronResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response> {
     let config = CONFIG.load(deps.storage)?;
 
     let (ica_account, connection_id) = get_ica(deps.as_ref(), &env, INTERCHAIN_ACCOUNT_ID)?;
@@ -188,36 +153,38 @@ pub fn register_transfer_nft_query(
     // let kv_query_msg = new_register_nft_owned_query_msg(connection_id, config.update_period, config.nft_contract_address, token_id)?;
 
     Ok(Response::new()
-       // .add_message(kv_query_msg)
-    .add_submessage(SubMsg::reply_on_success(tx_query_msg, QUERY_REGISTER_REPLY_ID)))
+        // .add_message(kv_query_msg)
+        .add_submessage(SubMsg::reply_on_success(
+            tx_query_msg,
+            QUERY_REGISTER_REPLY_ID,
+        )))
 }
 
-pub fn remove_interchain_query(query_id: u64, sender: Addr) -> NeutronResult<Response<NeutronMsg>> {
-
+pub fn remove_interchain_query(query_id: u64, sender: Addr) -> NeutronResult<Response> {
     let remove_msg = NeutronMsg::remove_interchain_query(query_id);
     let transfer_msg = BankMsg::Send {
         to_address: sender.into(),
         amount: vec![coin(100000u128, "untrn")],
     };
     Ok(Response::new()
-    .add_message(remove_msg)
-    .add_message(transfer_msg))
+        .add_message(remove_msg)
+        .add_message(transfer_msg))
 }
 
 fn execute_mint_nft(
-    deps: DepsMut<NeutronQuery>,
+    deps: DepsMut,
     env: Env,
     info: MessageInfo,
     token_id: String,
-) -> NeutronResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response> {
     // We need to verify the query
     let query_id = TOKEN_ID_QUERY_PAIRS.load(deps.storage, token_id.clone())?;
-    let sender_addr = verify_query(deps.as_ref(),&env, token_id.clone(), info.sender.clone())?;
+    let sender_addr = verify_query(deps.as_ref(), &env, token_id.clone(), info.sender.clone())?;
 
     // Now that we have the address, we can mint our token to the recipient which validates their ownership of the bad kid
-    let addr = any_addr_to_neutron(deps.as_ref(), sender_addr.clone())?; 
+    let addr = any_addr_to_neutron(deps.as_ref(), sender_addr.clone())?;
 
-    // clear the memory entries related to the token_id and the sender 
+    // clear the memory entries related to the token_id and the sender
     remove_token_from_storage(deps.storage, token_id.clone(), sender_addr);
 
     // close the query (gets back some funds)
@@ -226,7 +193,7 @@ fn execute_mint_nft(
     // Mint the new cw20 tokens (costs some funds - on testnet it's the same)
     let resp = resp.add_submessages(mint_native_receipt(deps, env, token_id, addr)?.messages);
 
-    Ok(resp) 
+    Ok(resp)
 }
 
 fn remove_token_from_storage(storage: &mut dyn Storage, token_id: String, sender_addr: String) {
@@ -236,20 +203,25 @@ fn remove_token_from_storage(storage: &mut dyn Storage, token_id: String, sender
 }
 
 fn execute_unlock_nft(
-    mut deps: DepsMut<NeutronQuery>,
+    mut deps: DepsMut,
     env: Env,
     info: MessageInfo,
     token_id: String,
     destination_addr: String,
-) -> NeutronResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response> {
     let config = CONFIG.load(deps.storage)?;
 
     let denom = get_token_denom(deps.as_ref(), env.clone(), token_id.clone())?;
 
-    let amount = info.funds.iter().find(|c| c.denom == denom).ok_or(StdError::generic_err(format!(
+    let amount = info
+        .funds
+        .iter()
+        .find(|c| c.denom == denom)
+        .ok_or(StdError::generic_err(format!(
             "You need to pay at least{} to unlock your token {}",
             THRESHOLD_BURN_AMOUNT, token_id
-        )))?.amount;
+        )))?
+        .amount;
 
     if amount < THRESHOLD_BURN_AMOUNT.into() {
         return Err(NeutronError::Std(StdError::generic_err(format!(
@@ -265,7 +237,7 @@ fn execute_unlock_nft(
 
     let unlock_message = MsgExecuteContract {
         contract: config.nft_contract_address,
-        msg: to_binary(&Cw721ExecuteMsg::TransferNft {
+        msg: to_json_binary(&Cw721ExecuteMsg::TransferNft {
             recipient: destination_addr,
             token_id,
         })?
@@ -284,8 +256,7 @@ fn execute_unlock_nft(
         ))));
     }
 
-    let any_msg = unlock_message
-        .to_any() // Using the to_any feature to not mess it up
+    let any_msg = Any::from_msg(&unlock_message) // Using the to_any feature to not mess it up
         .map_err(|e| NeutronError::Std(StdError::generic_err(e.to_string())))?;
 
     let cosmos_msg = NeutronMsg::submit_tx(
@@ -314,42 +285,34 @@ fn execute_unlock_nft(
     Ok(Response::default().add_submessages(vec![submsg]))
 }
 
-#[cfg_attr(feature = "interface", cw_orch::interface_entry_point)]
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn query(deps: Deps<NeutronQuery>, env: Env, msg: QueryMsg) -> NeutronResult<Binary> {
+pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> NeutronResult<Binary> {
     match msg {
         QueryMsg::IcaAccount {} => query_ica_account(deps, env),
         QueryMsg::TokenDenom { token_id } => query_token_denom(deps, env, token_id),
         QueryMsg::NftTransfers { sender } => {
-            Ok(to_binary(&query_nft_transfers(deps, env, sender)?)?)
+            Ok(to_json_binary(&query_nft_transfers(deps, env, sender)?)?)
         }
         QueryMsg::GetRegisteredQuery { query_id } => {
-            Ok(to_binary(&get_registered_query(deps, query_id)?)?)
-        },
-        QueryMsg::GetQueryId { token_id } => {
-            Ok(to_binary(&get_query_id(deps, token_id)?)?)
-        },
+            Ok(to_json_binary(&get_registered_query(deps, query_id)?)?)
+        }
+        QueryMsg::GetQueryId { token_id } => Ok(to_json_binary(&get_query_id(deps, token_id)?)?),
     }
 }
 
-fn query_ica_account(
-    deps: Deps<NeutronQuery>,
-    env: Env,
-) -> NeutronResult<Binary> {
-
+fn query_ica_account(deps: Deps, env: Env) -> NeutronResult<Binary> {
     let (account, _connection_id) = get_ica(deps, &env, INTERCHAIN_ACCOUNT_ID)?;
 
-    Ok(to_binary(&account)?)
+    Ok(to_json_binary(&account)?)
 }
 
-fn query_token_denom(deps: Deps<NeutronQuery>, env: Env, token_id: String) -> NeutronResult<Binary> {
+fn query_token_denom(deps: Deps, env: Env, token_id: String) -> NeutronResult<Binary> {
     let (account, connection_id) = get_ica(deps, &env, INTERCHAIN_ACCOUNT_ID)?;
 
-    Ok(to_binary(&get_token_denom(deps, env, token_id)?)?)
+    Ok(to_json_binary(&get_token_denom(deps, env, token_id)?)?)
 }
 
-fn get_token_denom(deps: Deps<NeutronQuery>, env: Env, token_id: String) -> NeutronResult<String>{
-
+fn get_token_denom(deps: Deps, env: Env, token_id: String) -> NeutronResult<String> {
     // We need to make sure, that the client pays enough tokens to unlock their tokens
     let denom_count = MINTED_TOKENS.load(deps.storage, token_id.clone())?;
     let denom = format_token_denom(env.clone(), token_id.clone(), denom_count);
@@ -357,9 +320,8 @@ fn get_token_denom(deps: Deps<NeutronQuery>, env: Env, token_id: String) -> Neut
     Ok(denom)
 }
 
-
 fn query_nft_transfers(
-    deps: Deps<NeutronQuery>,
+    deps: Deps,
     _env: Env,
     sender: String,
 ) -> NeutronResult<NftTransfersResponse> {
@@ -369,16 +331,14 @@ fn query_nft_transfers(
     });
 }
 
-#[cfg_attr(feature = "interface", cw_orch::interface_entry_point)]
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
     deps.api.debug("WASMDEBUG: migrate");
     Ok(Response::default())
 }
 
-#[cfg_attr(feature = "interface", cw_orch::interface_entry_point)]
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn sudo(deps: DepsMut<NeutronQuery>, env: Env, msg: SudoMsg) -> NeutronResult<Response> {
+pub fn sudo(deps: DepsMut, env: Env, msg: SudoMsg) -> NeutronResult<Response> {
     match msg {
         // For handling tx query result
         SudoMsg::TxQueryResult {
@@ -417,20 +377,23 @@ pub fn sudo(deps: DepsMut<NeutronQuery>, env: Env, msg: SudoMsg) -> NeutronResul
     }
 }
 
-
-fn get_query_id(deps: Deps<NeutronQuery>, token_id: String) -> NeutronResult<u64> {
+fn get_query_id(deps: Deps, token_id: String) -> NeutronResult<u64> {
     let query_id = TOKEN_ID_QUERY_PAIRS
         .may_load(deps.storage, token_id)?
-        .ok_or_else(|| NeutronError::Std(StdError::generic_err("No query id found for token id")))?;
+        .ok_or_else(|| {
+            NeutronError::Std(StdError::generic_err("No query id found for token id"))
+        })?;
     Ok(query_id)
 }
 
 /// sudo_kv_query_result is an example callback for key-value query results that stores the
-fn sudo_kv_query_result(deps: DepsMut<NeutronQuery>, _env: Env, query_id: u64) -> NeutronResult<Response> {
+fn sudo_kv_query_result(deps: DepsMut, _env: Env, query_id: u64) -> NeutronResult<Response> {
     let response = get_raw_interchain_query_result(deps.as_ref(), query_id)?;
     let store_value = response.result.kv_results[0].value.clone();
-    let token_info: TokenInfo<Empty> = from_binary(&store_value)?;
-    let (token_id, _ ) = TOKEN_ID_QUERY_PAIRS.range(deps.storage, None, None, cosmwasm_std::Order::Ascending).into_iter()
+    let token_info: TokenInfo<Empty> = from_json(&store_value)?;
+    let (token_id, _) = TOKEN_ID_QUERY_PAIRS
+        .range(deps.storage, None, None, cosmwasm_std::Order::Ascending)
+        .into_iter()
         .map(|r| r.unwrap())
         .find(|kv| kv.1 == query_id)
         .unwrap();
@@ -442,7 +405,7 @@ fn sudo_kv_query_result(deps: DepsMut<NeutronQuery>, _env: Env, query_id: u64) -
 /// sudo_check_tx_query_result is an example callback for transaction query results that stores the
 /// deposits received as a result on the registered query in the contract's state.
 pub fn sudo_tx_query_result(
-    deps: DepsMut<NeutronQuery>,
+    deps: DepsMut,
     _env: Env,
     query_id: u64,
     _height: Height,
@@ -468,7 +431,7 @@ pub fn sudo_tx_query_result(
             if let Some(msg) = body.messages.get(0) {
                 let contract_msg = MsgExecuteContract::decode(msg.value.as_slice()).unwrap();
 
-                let transfer_msg: Cw721ExecuteMsg = from_binary(&contract_msg.msg.into())?;
+                let transfer_msg: Cw721ExecuteMsg = from_json(&contract_msg.msg)?;
 
                 match transfer_msg {
                     Cw721ExecuteMsg::TransferNft {
@@ -483,8 +446,7 @@ pub fn sudo_tx_query_result(
                         if receiver_addr != ica_address {
                             return Err(NeutronError::Std(StdError::generic_err(format!(
                                 "Receiver is not the ica account: {}, should be '{}' ",
-                                receiver_addr,
-                                ica_address
+                                receiver_addr, ica_address
                             ))));
                         }
 
@@ -528,9 +490,8 @@ pub fn sudo_tx_query_result(
     }
 }
 
-#[cfg_attr(feature = "interface", cw_orch::interface_entry_point)]
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn reply(deps: DepsMut<NeutronQuery>, env: Env, reply: Reply) -> NeutronResult<Response> {
+pub fn reply(deps: DepsMut, env: Env, reply: Reply) -> NeutronResult<Response> {
     match reply.id {
         QUERY_REGISTER_REPLY_ID => {
             let resp: MsgRegisterInterchainQueryResponse = serde_json_wasm::from_slice(
@@ -541,7 +502,8 @@ pub fn reply(deps: DepsMut<NeutronQuery>, env: Env, reply: Reply) -> NeutronResu
                     .data
                     .ok_or_else(|| StdError::generic_err("no result"))?
                     .as_slice(),
-            )?;
+            )
+            .map_err(|e| StdError::generic_err(e.to_string()))?;
 
             let query_id = resp.id;
 

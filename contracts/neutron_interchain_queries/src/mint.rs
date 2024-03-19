@@ -1,15 +1,9 @@
-use crate::state::TOTAL_MINTED_TOKENS;
-use cosmwasm_std::Addr;
-use cosmwasm_std::Deps;
-use cosmwasm_std::DepsMut;
-use cosmwasm_std::Env;
-use cosmwasm_std::Response;
-use cosmwasm_std::StdError;
-use neutron_sdk::bindings::msg::NeutronMsg;
-use neutron_sdk::bindings::query::NeutronQuery;
+use crate::state::{MINTED_TOKENS, TOTAL_MINTED_TOKENS};
+use cosmos_anybuf::types::coin::Coin;
+use cosmos_anybuf::types::neutron::tokenfactory_tx::{MsgCreateDenom, MsgMint};
+use cosmos_anybuf::StargateMsg;
+use cosmwasm_std::{Addr, Deps, DepsMut, Env, Response, StdError};
 use neutron_sdk::NeutronResult;
-
-use crate::state::MINTED_TOKENS;
 
 const MINT_AMOUNT: u128 = 100;
 pub const THRESHOLD_BURN_AMOUNT: u128 = 50;
@@ -17,14 +11,14 @@ const NEUTRON_BECH32_PREFIX: &str = "neutron";
 const STARS_BECH32_PREFIX: &str = "stars";
 
 /// This function transfer the addr to a local neutron addr
-pub fn any_addr_to_neutron(deps: Deps<NeutronQuery>, addr: String) -> NeutronResult<Addr> {
+pub fn any_addr_to_neutron(deps: Deps, addr: String) -> NeutronResult<Addr> {
     // TODO, test this snippet
     let (_hrp, data, _variant) = bech32::decode(&addr)?;
     let neutron_addr = bech32::encode(NEUTRON_BECH32_PREFIX, data, bech32::Variant::Bech32)?;
     Ok(deps.api.addr_validate(&neutron_addr)?)
 }
 
-pub fn any_addr_to_stars(deps: Deps<NeutronQuery>, addr: Addr) -> NeutronResult<String> {
+pub fn any_addr_to_stars(deps: Deps, addr: Addr) -> NeutronResult<String> {
     // TODO, test this snippet
     let (_hrp, data, _variant) = bech32::decode(&addr.as_str())?;
     let stars_addr = bech32::encode(STARS_BECH32_PREFIX, data, bech32::Variant::Bech32)?;
@@ -46,11 +40,11 @@ pub fn format_token_denom(env: Env, token_id: String, token_count: u64) -> Strin
 }
 
 pub fn mint_native_receipt(
-    deps: DepsMut<NeutronQuery>,
+    deps: DepsMut,
     env: Env,
     token_id: String,
     addr: Addr,
-) -> NeutronResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response> {
     // First we see where we are at in terms of numbers of tokens
     let token_count = TOTAL_MINTED_TOKENS.load(deps.storage).unwrap_or(0);
     TOTAL_MINTED_TOKENS.save(deps.storage, &(token_count + 1))?;
@@ -66,13 +60,21 @@ pub fn mint_native_receipt(
 
     let subdenom = format_token_sub_denom(token_id.clone(), token_count);
 
+    let create_denom = MsgCreateDenom {
+        sender: env.contract.address.to_string(),
+        subdenom,
+    }
+    .to_msg();
+    let mint_msg = MsgMint {
+        sender: env.contract.address.to_string(),
+        amount: Coin::new(MINT_AMOUNT, format_token_denom(env, token_id, token_count)),
+        mint_to_address: addr.to_string(),
+    }
+    .to_msg();
+
     Ok(Response::new()
-        .add_message(NeutronMsg::CreateDenom { subdenom })
-        .add_message(NeutronMsg::MintTokens {
-            denom: format_token_denom(env, token_id, token_count),
-            amount: MINT_AMOUNT.into(),
-            mint_to_address: addr.to_string(),
-        }))
+        .add_message(create_denom)
+        .add_message(mint_msg))
 }
 
 #[cfg(test)]

@@ -4,6 +4,7 @@ pub mod contract;
 pub mod ibc;
 pub mod mint;
 pub mod msg;
+pub mod neutron_sdk;
 mod query_helpers;
 pub mod reply;
 pub mod state;
