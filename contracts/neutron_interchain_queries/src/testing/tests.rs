@@ -30,16 +30,16 @@ use neutron_sdk::interchain_queries::helpers::decode_and_convert;
 use neutron_sdk::interchain_queries::types::{
     QueryType, TransactionFilterItem, TransactionFilterOp, TransactionFilterValue,
 };
-use neutron_sdk::interchain_queries::v045::helpers::{
+use neutron_sdk::interchain_queries::v047::helpers::{
     create_account_denom_balance_key, create_fee_pool_key, create_gov_proposal_key,
     create_total_denom_key, create_validator_key,
 };
-use neutron_sdk::interchain_queries::v045::types::{
+use neutron_sdk::interchain_queries::v047::types::{
     Balances, FeePool, GovernmentProposal, Proposal, SigningInfo, StakingValidator, TallyResult,
-    TotalSupply, Validator, ValidatorSigningInfo, RECIPIENT_FIELD,
+    TotalSupply, Validator, ValidatorSigningInfo, RECIPIENT_FIELD, STAKING_PARAMS_KEY,
 };
 
-use neutron_sdk::interchain_queries::v045::queries::{
+use neutron_sdk::interchain_queries::v047::queries::{
     BalanceResponse, DelegatorDelegationsResponse, FeePoolResponse, ProposalResponse,
     TotalSupplyResponse, ValidatorResponse, ValidatorSigningInfoResponse,
 };
@@ -215,14 +215,12 @@ fn build_interchain_query_gov_proposal_value(proposal_id: u64) -> StorageValue {
 fn build_interchain_query_balance_response(addr: Addr, denom: String, amount: String) -> Binary {
     let converted_addr_bytes = decode_and_convert(addr.as_str()).unwrap();
 
-    let balance_key = create_account_denom_balance_key(converted_addr_bytes, &denom).unwrap();
-
-    let balance_amount = CosmosCoin { denom, amount };
+    let balance_key = create_account_denom_balance_key(converted_addr_bytes, denom).unwrap();
 
     let s = StorageValue {
         storage_prefix: "".to_string(),
         key: Binary(balance_key),
-        value: Binary(balance_amount.encode_to_vec()),
+        value: Binary(amount.into_bytes()),
     };
     Binary::from(
         to_string(&QueryRegisteredQueryResultResponse {
@@ -288,7 +286,7 @@ fn test_query_balance() {
             last_submitted_local_height: 987,
             balances: Balances {
                 coins: vec![Coin::new(8278104u128, "uosmo")]
-            }
+            },
         }
     )
 }
@@ -340,9 +338,9 @@ fn test_bank_total_supply_query() {
             supply: TotalSupply {
                 coins: vec![
                     Coin::new(8278104u128, "uosmo"),
-                    Coin::new(8278104u128, "uatom")
+                    Coin::new(8278104u128, "uatom"),
                 ]
-            }
+            },
         }
     );
 }
@@ -378,7 +376,7 @@ fn test_distribution_fee_pool_query() {
             last_submitted_local_height: 987,
             pool: FeePool {
                 coins: vec![Coin::new(8278104u128, "uosmo")]
-            }
+            },
         }
     )
 }
@@ -444,8 +442,8 @@ fn test_gov_proposals_query() {
                             abstain: "0".to_string(),
                             yes: "0".to_string(),
                             no: "0".to_string(),
-                            no_with_veto: "0".to_string()
-                        })
+                            no_with_veto: "0".to_string(),
+                        }),
                     },
                     Proposal {
                         proposal_id: 2,
@@ -463,8 +461,8 @@ fn test_gov_proposals_query() {
                             abstain: "0".to_string(),
                             yes: "0".to_string(),
                             no: "0".to_string(),
-                            no_with_veto: "0".to_string()
-                        })
+                            no_with_veto: "0".to_string(),
+                        }),
                     },
                     Proposal {
                         proposal_id: 3,
@@ -482,11 +480,11 @@ fn test_gov_proposals_query() {
                             abstain: "0".to_string(),
                             yes: "0".to_string(),
                             no: "0".to_string(),
-                            no_with_veto: "0".to_string()
-                        })
-                    }
+                            no_with_veto: "0".to_string(),
+                        }),
+                    },
                 ]
-            }
+            },
         }
     )
 }
@@ -578,9 +576,9 @@ fn test_staking_validators_query() {
                         max_rate: None,
                         max_change_rate: None,
                         update_time: None,
-                    }
+                    },
                 ]
-            }
+            },
         }
     )
 }
@@ -646,7 +644,7 @@ fn test_validators_signing_infos_query() {
                         index_offset: 20,
                         jailed_until: None,
                         tombstoned: false,
-                        missed_blocks_counter: 13
+                        missed_blocks_counter: 13,
                     },
                     ValidatorSigningInfo {
                         address: "cosmosvaloper1sjllsnramtg3ewxqwwrwjxfgc4n4ef9u2lcnj0".to_string(),
@@ -655,9 +653,9 @@ fn test_validators_signing_infos_query() {
                         jailed_until: Some(1203981203),
                         tombstoned: false,
                         missed_blocks_counter: 13,
-                    }
+                    },
                 ]
-            }
+            },
         }
     )
 }
@@ -684,12 +682,12 @@ fn test_query_delegator_delegations() {
             // response for `RegisterDelegatorDelegationsQuery` with necessary KV values to test reconstruction logic.
             // The values are taken from osmosis network
             kv_results: vec![
-                // params value of staking module for key 'staking/BondDenom'
-                // value: uosmo
+                // params value of staking module for key 'staking/params'
+                // value: Params
                 StorageValue {
-                    storage_prefix: "params".to_string(),
-                    key: Binary::from(BASE64_STANDARD.decode("c3Rha2luZy9Cb25kRGVub20=").unwrap()),
-                    value: Binary::from(BASE64_STANDARD.decode("InVvc21vIg==").unwrap()),
+                    storage_prefix: "staking".to_string(),
+                    key: Binary::from([STAKING_PARAMS_KEY]),
+                    value: Binary::from(BASE64_STANDARD.decode("CgQIgN9uEGQYByCQTioFdWF0b20yATA6FC0xMDAwMDAwMDAwMDAwMDAwMDAwQhMxMDAwMDAwMDAwMDAwMDAwMDAwShMxMDAwMDAwMDAwMDAwMDAwMDAw").unwrap()),
                 },
                 // delegation
                 // from: osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs
@@ -741,7 +739,7 @@ fn test_query_delegator_delegations() {
                     storage_prefix: "staking".to_string(),
                     key: Binary::from(decode_hex("2114f8aff987b760a6e4b2b2df48a5a3b7ed2db15006").unwrap()),
                     value: Binary::from(BASE64_STANDARD.decode("CjJvc21vdmFsb3BlcjFsemhsbnBhaHZ6bndmdjRqbWF5MnRnYWhhNWttejVxeHdtajl3ZRJDCh0vY29zbW9zLmNyeXB0by5lZDI1NTE5LlB1YktleRIiCiBPXCnkQvO+pU6oGbp4ZiJBBZ7RNoLYtXYFOEdpXGH+uSADKg0zMjAxNDM4ODk4NDc2Mh8zMjAxNDM4ODk4NDc2MDAwMDAwMDAwMDAwMDAwMDAwOp8CCgtDaXRhZGVsLm9uZRIQRUJCMDNFQjRCQjRDRkNBNxoTaHR0cHM6Ly9jaXRhZGVsLm9uZSroAUNpdGFkZWwub25lIGlzIGEgbXVsdGktYXNzZXQgbm9uLWN1c3RvZGlhbCBzdGFraW5nIHBsYXRmb3JtIHRoYXQgbGV0cyBhbnlvbmUgYmVjb21lIGEgcGFydCBvZiBkZWNlbnRyYWxpemVkIGluZnJhc3RydWN0dXJlIGFuZCBlYXJuIHBhc3NpdmUgaW5jb21lLiBTdGFrZSB3aXRoIG91ciBub2RlcyBvciBhbnkgb3RoZXIgdmFsaWRhdG9yIGFjcm9zcyBtdWx0aXBsZSBuZXR3b3JrcyBpbiBhIGZldyBjbGlja3NKAFJECjoKETUwMDAwMDAwMDAwMDAwMDAwEhIyMDAwMDAwMDAwMDAwMDAwMDAaETMwMDAwMDAwMDAwMDAwMDAwEgYIkKKzhgZaATE=").unwrap()),
-                }
+                },
             ],
             height: 0,
             revision: 0,
@@ -767,18 +765,18 @@ fn test_query_delegator_delegations() {
                 Delegation {
                     delegator: Addr::unchecked("osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs"),
                     validator: "osmovaloper1r2u5q6t6w0wssrk6l66n3t2q3dw2uqny4gj2e3".to_string(),
-                    amount: Coin::new(5177628u128, "uosmo".to_string())
+                    amount: Coin::new(5177628u128, "uatom".to_string()),
                 },
                 Delegation {
                     delegator: Addr::unchecked("osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs"),
                     validator: "osmovaloper1ej2es5fjztqjcd4pwa0zyvaevtjd2y5w37wr9t".to_string(),
-                    amount: Coin::new(29620221u128, "uosmo".to_string())
+                    amount: Coin::new(29620221u128, "uatom".to_string()),
                 },
                 Delegation {
                     delegator: Addr::unchecked("osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs"),
                     validator: "osmovaloper1lzhlnpahvznwfv4jmay2tgaha5kmz5qxwmj9we".to_string(),
-                    amount: Coin::new(219920u128, "uosmo".to_string())
-                }
+                    amount: Coin::new(219920u128, "uatom".to_string()),
+                },
             ],
         }
     )

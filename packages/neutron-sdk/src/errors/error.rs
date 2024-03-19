@@ -1,4 +1,4 @@
-use cosmwasm_std::{DecimalRangeExceeded, OverflowError, StdError};
+use cosmwasm_std::{Decimal256RangeExceeded, DecimalRangeExceeded, OverflowError, StdError};
 use serde_json_wasm;
 use thiserror::Error;
 
@@ -12,11 +12,14 @@ pub enum NeutronError {
     #[error("{0}")]
     Fmt(#[from] std::fmt::Error),
 
+    #[error("{0}")]
+    FromUTF8Error(#[from] std::string::FromUtf8Error),
+
     #[error("Bech32 error")]
     Bech32(#[from] bech32::Error),
 
     #[error("Prost protobuf error")]
-    ProstProtobuf(#[from] cosmos_sdk_proto::prost::DecodeError),
+    ProstProtobuf(#[from] prost::DecodeError),
 
     #[error("Serde JSON (Wasm) error")]
     SerdeJSONWasm(String),
@@ -33,6 +36,9 @@ pub enum NeutronError {
     #[error("Decimal range exceeded")]
     DecimalRangeExceeded(#[from] DecimalRangeExceeded),
 
+    #[error("Decimal256 range exceeded")]
+    Decimal256RangeExceeded(#[from] Decimal256RangeExceeded),
+
     #[error("Overflow error")]
     OverflowError(#[from] OverflowError),
 
@@ -44,6 +50,9 @@ pub enum NeutronError {
 
     #[error("Too many transaction filters, max allowed: {max:?}")]
     TooManyTransactionFilters { max: usize },
+
+    #[error("Can't deconstruct account denom balance key: {0}")]
+    AccountDenomBalanceKeyDeconstructionError(String),
 }
 
 impl From<serde_json_wasm::de::Error> for NeutronError {
