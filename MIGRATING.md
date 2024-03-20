@@ -4,6 +4,16 @@ This guide explains what is needed to upgrade contracts when migrating over rele
 also view the
 [complete CHANGELOG](./CHANGELOG.md) to understand the differences.
 
+## 0.9.0 -> 0.10.0
+
+* Update`neutron-sdk`dependencies in Cargo.toml:
+
+```
+[dependencies]
+neutron-sdk = "0.10.0"
+# ...
+```
+
 ## 0.8.0 -> 0.9.0
 
 * Update`neutron-sdk`dependencies in Cargo.toml:
