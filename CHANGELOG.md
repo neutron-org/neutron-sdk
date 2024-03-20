@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.10.0
+
+Bindings for [Neutron Dex module](https://docs.neutron.org/neutron/modules/dex/overview/) is added.
+
+### Added
+
+* feat: cw dex bindings by @swelf19 in https://github.com/neutron-org/neutron-sdk/pull/120
+
 ## 0.9.0
 
 Now Neutron-SDK supports ICQ and ICTX helpers for different version of Cosmos-SDK and specifically 0.9.0 release
