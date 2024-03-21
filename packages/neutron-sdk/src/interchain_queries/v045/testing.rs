@@ -1141,10 +1141,10 @@ fn test_government_proposals_reconstruct_from_hex() {
                 voting_start_time: Some(18446744011573954816u64), // 0001-01-01T00:00:00Z
                 voting_end_time: Some(18446744011573954816u64), // 0001-01-01T00:00:00Z
                 final_tally_result: Some(TallyResult {
-                    yes: String::from("0"),
-                    no: String::from("0"),
-                    abstain: String::from("0"),
-                    no_with_veto: String::from("0"),
+                    yes: Uint128::zero(),
+                    no: Uint128::zero(),
+                    abstain: Uint128::zero(),
+                    no_with_veto: Uint128::zero(),
                 }),
             }]
         }
