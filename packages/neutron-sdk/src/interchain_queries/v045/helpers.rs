@@ -1,5 +1,6 @@
+use crate::bindings::types::KVKey;
 use crate::errors::error::NeutronResult;
-use crate::interchain_queries::helpers::length_prefix;
+use crate::interchain_queries::helpers::{decode_and_convert, length_prefix};
 use crate::interchain_queries::types::AddressBytes;
 use crate::interchain_queries::v045::types::{
     BALANCES_PREFIX, DELEGATION_KEY, FEE_POOL_KEY, PARAMS_STORE_DELIMITER, PROPOSALS_KEY_PREFIX,
@@ -10,6 +11,8 @@ use crate::NeutronError;
 use cosmos_sdk_proto::cosmos::staking::v1beta1::Commission as ValidatorCommission;
 use cosmwasm_std::{Binary, Decimal, Uint128};
 use std::str::{from_utf8, FromStr};
+
+use super::types::{GOV_STORE_KEY, VOTES_KEY_PREFIX};
 
 /// Creates KV key to get **module** param by **key**
 pub fn create_params_store_key(module: &str, key: &str) -> Vec<u8> {
@@ -209,6 +212,69 @@ pub fn create_gov_proposal_key(proposal_id: u64) -> NeutronResult<Vec<u8>> {
     key.extend_from_slice(proposal_id.to_be_bytes().as_slice());
 
     Ok(key)
+}
+
+/// Creates Cosmos-SDK storage keys for list of proposals
+pub fn create_gov_proposal_keys(proposals_ids: Vec<u64>) -> NeutronResult<Vec<KVKey>> {
+    let mut kv_keys: Vec<KVKey> = Vec::with_capacity(proposals_ids.len());
+
+    for id in proposals_ids {
+        let kv_key = KVKey {
+            path: GOV_STORE_KEY.to_string(),
+            key: Binary(create_gov_proposal_key(id)?),
+        };
+
+        kv_keys.push(kv_key)
+    }
+
+    Ok(kv_keys)
+}
+
+/// Creates Cosmos-SDK governance key for votes for proposal with specific id
+/// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/gov/types/keys.go#L48>
+pub fn create_gov_proposal_votes_key(proposal_id: u64) -> NeutronResult<Vec<u8>> {
+    let mut key: Vec<u8> = vec![VOTES_KEY_PREFIX];
+    key.extend_from_slice(proposal_id.to_be_bytes().as_slice());
+
+    Ok(key)
+}
+
+/// Creates Cosmos-SDK storage key for specific voter on specific proposal
+/// <https://github.com/cosmos/cosmos-sdk/blob/35ae2c4c72d4aeb33447d5a7af23ca47f786606e/x/gov/types/keys.go#L106>
+pub fn create_gov_proposal_voter_votes_key<AddrBytes: AsRef<[u8]>>(
+    proposal_id: u64,
+    voter_address: AddrBytes,
+) -> NeutronResult<Vec<u8>> {
+    let mut votes_key: Vec<u8> = create_gov_proposal_votes_key(proposal_id)?;
+    votes_key.extend_from_slice(length_prefix(voter_address)?.as_slice());
+
+    Ok(votes_key)
+}
+
+/// Creates Cosmos-SDK storage keys for list of voters on list of proposals
+pub fn create_gov_proposals_voters_votes_keys(
+    proposals_ids: Vec<u64>,
+    voters: Vec<String>,
+) -> NeutronResult<Vec<KVKey>> {
+    let mut kv_keys: Vec<KVKey> = Vec::with_capacity(voters.len() * proposals_ids.len());
+
+    for voter in voters {
+        let voter_addr = decode_and_convert(&voter)?;
+
+        for proposal_id in proposals_ids.clone() {
+            let kv_key = KVKey {
+                path: GOV_STORE_KEY.to_string(),
+                key: Binary(create_gov_proposal_voter_votes_key(
+                    proposal_id,
+                    &voter_addr,
+                )?),
+            };
+
+            kv_keys.push(kv_key)
+        }
+    }
+
+    Ok(kv_keys)
 }
 
 /// Returns validator max change rate

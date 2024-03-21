@@ -4,8 +4,8 @@ use crate::{
         queries::{check_query_type, get_registered_query, query_kv_result},
         types::QueryType,
         v045::types::{
-            Balances, Delegations, FeePool, GovernmentProposal, SigningInfo, StakingValidator,
-            TotalSupply, UnbondingDelegations,
+            Balances, Delegations, FeePool, GovernmentProposal, GovernmentProposalVotes,
+            SigningInfo, StakingValidator, TotalSupply, UnbondingDelegations,
         },
     },
     NeutronResult,
@@ -53,6 +53,13 @@ pub struct ValidatorSigningInfoResponse {
 #[serde(rename_all = "snake_case")]
 pub struct ProposalResponse {
     pub proposals: GovernmentProposal,
+    pub last_submitted_local_height: u64,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct ProposalVotesResponse {
+    pub votes: GovernmentProposalVotes,
     pub last_submitted_local_height: u64,
 }
 
@@ -193,6 +200,27 @@ pub fn query_government_proposals(
             .registered_query
             .last_submitted_result_local_height,
         proposals,
+    })
+}
+
+/// Returns list of government proposal votes on the remote chain
+/// * ***registered_query_id*** is an identifier of the corresponding registered interchain query
+pub fn query_government_proposal_votes(
+    deps: Deps<NeutronQuery>,
+    _env: Env,
+    registered_query_id: u64,
+) -> NeutronResult<ProposalVotesResponse> {
+    let registered_query = get_registered_query(deps, registered_query_id)?;
+
+    check_query_type(registered_query.registered_query.query_type, QueryType::KV)?;
+
+    let votes: GovernmentProposalVotes = query_kv_result(deps, registered_query_id)?;
+
+    Ok(ProposalVotesResponse {
+        last_submitted_local_height: registered_query
+            .registered_query
+            .last_submitted_result_local_height,
+        votes,
     })
 }
 
