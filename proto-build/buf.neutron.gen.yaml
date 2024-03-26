@@ -1,0 +1,8 @@
+version: v1
+plugins:
+  - plugin: buf.build/community/neoeinstein-prost:v0.2.1
+    out: .
+    opt:
+      - extern_path=.cosmos=.cosmos_sdk_proto::cosmos
+      - extern_path=.ibc=.cosmos_sdk_proto::ibc
+      - extern_path=.tendermint=tendermint_proto::v0_37
