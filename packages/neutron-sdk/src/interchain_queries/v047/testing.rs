@@ -581,10 +581,10 @@ fn test_government_proposals_reconstruct() {
                     voting_start_time: Some(4444444),
                     voting_end_time: Some(555555555),
                     final_tally_result: Some(TallyResult {
-                        abstain: "1".to_string(),
-                        no: "2".to_string(),
-                        no_with_veto: "3".to_string(),
-                        yes: "4".to_string(),
+                        abstain: Uint128::from(1u128),
+                        no: Uint128::from(2u128),
+                        no_with_veto: Uint128::from(3u128),
+                        yes: Uint128::from(4u128),
                     }),
                 }],
             }),
@@ -1148,10 +1148,10 @@ fn test_government_proposals_reconstruct_from_hex() {
                 voting_start_time: Some(1553114639u64), // 0001-01-01T00:00:00Z
                 voting_end_time: Some(1554324239u64),   // 0001-01-01T00:00:00Z
                 final_tally_result: Some(TallyResult {
-                    yes: String::from("97118903526799"),
-                    no: String::from("320545400000"),
-                    abstain: String::from("402380577234"),
-                    no_with_veto: String::from("0"),
+                    yes: Uint128::from(97118903526799u128),
+                    no: Uint128::from(320545400000u128),
+                    abstain: Uint128::from(402380577234u128),
+                    no_with_veto: Uint128::zero(),
                 }),
             }]
         }
