@@ -22,6 +22,7 @@ const BUF_GEN_CONFIG_FILE: &str = "buf.neutron.gen.yaml";
 const PROTO_DIR: &str = "packages/neutron-sdk/src/proto_types";
 const TMP_BUILD_DIR: &str = "/tmp/tmp-protobuf/";
 const NEUTRON_DIR: &str = "neutron";
+const NEUTRON_REPO: &str = "https://github.com/neutron-org/neutron.git";
 
 macro_rules! info {
     ($msg:expr) => {
@@ -48,9 +49,12 @@ fn main() {
 
     let temp_neutron_dir = tmp_build_dir.join("neutron");
 
-    fs::create_dir_all(&temp_neutron_dir).unwrap();
+    let neutron_repo_dir: PathBuf = NEUTRON_DIR.parse().unwrap();
+    if neutron_repo_dir.exists() {
+        fs::remove_dir_all(neutron_repo_dir.clone()).unwrap();
+    }
 
-    update_submodules(revision);
+    clone_neutron(revision);
     compile_neutron_proto_and_services(&temp_neutron_dir);
     copy_generated_files(&temp_neutron_dir, &proto_dir);
     output_neutron_version(&proto_dir, revision);
@@ -62,6 +66,7 @@ fn main() {
         "Rebuild protos with proto-build (neutron revision: {})",
         revision
     );
+    fs::remove_dir_all(neutron_repo_dir.clone()).unwrap();
 }
 
 fn run_cmd(cmd: impl AsRef<OsStr>, args: impl IntoIterator<Item = impl AsRef<OsStr>>) {
@@ -127,9 +132,9 @@ fn run_rustfmt(dir: &Path) {
     run_cmd("rustfmt", args);
 }
 
-fn update_submodules(revision: &String) {
-    info!("Updating neutron submodule...");
-    run_git(["submodule", "update", "--init"]);
+fn clone_neutron(revision: &String) {
+    info!("Cloning neutron repo...");
+    run_git(["clone", NEUTRON_REPO]);
     run_git(["-C", NEUTRON_DIR, "fetch"]);
     run_git(["-C", NEUTRON_DIR, "reset", "--hard", revision]);
 }
