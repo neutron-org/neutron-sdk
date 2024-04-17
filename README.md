@@ -60,6 +60,15 @@ make test
 make schema
 ```
 
+### Generating proto files
+
+Neutron proto files represented as generated Rust code is a part of the Neutron SDK. In case Neutron
+proto files have changed there's a command for Rust generated code rebuild. To rebuild the files,
+run the following command using the respective Neutron revision (tag) as an argument, e.g.:
+```sh
+make build-proto revision=v3.0.3
+```
+
 ### Production
 
 For production builds, run the following:
