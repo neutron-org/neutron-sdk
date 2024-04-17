@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["contracts/*", "packages/*"]
+members = ["contracts/*", "packages/*", "proto-build"]
 
 [profile.release]
 opt-level = 3
