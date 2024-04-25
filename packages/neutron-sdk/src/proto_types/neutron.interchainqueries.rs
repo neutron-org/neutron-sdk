@@ -140,7 +140,7 @@ pub struct StorageValue {
     /// is the Merkle Proof which proves existence of key-value pair in IAVL
     /// storage
     #[prost(message, optional, tag = "4")]
-    pub proof: ::core::option::Option<tendermint_proto::v0_37::crypto::ProofOps>,
+    pub proof: ::core::option::Option<tendermint_proto::v0_38::crypto::ProofOps>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Block {
@@ -158,15 +158,15 @@ pub struct Block {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct TxValue {
     #[prost(message, optional, tag = "1")]
-    pub response: ::core::option::Option<tendermint_proto::v0_37::abci::ResponseDeliverTx>,
+    pub response: ::core::option::Option<tendermint_proto::v0_38::abci::ExecTxResult>,
     /// is the Merkle Proof which proves existence of response in block with height
     /// next_block_header.Height
     #[prost(message, optional, tag = "2")]
-    pub delivery_proof: ::core::option::Option<tendermint_proto::v0_37::crypto::Proof>,
+    pub delivery_proof: ::core::option::Option<tendermint_proto::v0_38::crypto::Proof>,
     /// is the Merkle Proof which proves existence of data in block with height
     /// header.Height
     #[prost(message, optional, tag = "3")]
-    pub inclusion_proof: ::core::option::Option<tendermint_proto::v0_37::crypto::Proof>,
+    pub inclusion_proof: ::core::option::Option<tendermint_proto::v0_38::crypto::Proof>,
     /// is body of the transaction
     #[prost(bytes = "vec", tag = "4")]
     pub data: ::prost::alloc::vec::Vec<u8>,

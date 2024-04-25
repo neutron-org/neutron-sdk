@@ -237,11 +237,13 @@ impl From<ParamsRequest> for QueryParamsRequest {
 pub struct LimitOrderTrancheUserRequest {
     pub address: String,
     pub tranche_key: String,
+    pub calc_withdrawable_shares: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct LimitOrderTrancheUserResponse {
     pub limit_order_tranche_user: Option<LimitOrderTrancheUser>,
+    pub withdrawable_shares: Option<String>,
 }
 
 impl From<LimitOrderTrancheUserRequest> for QueryGetLimitOrderTrancheUserRequest {
@@ -249,6 +251,7 @@ impl From<LimitOrderTrancheUserRequest> for QueryGetLimitOrderTrancheUserRequest
         QueryGetLimitOrderTrancheUserRequest {
             address: v.address,
             tranche_key: v.tranche_key,
+            calc_withdrawable_shares: v.calc_withdrawable_shares,
         }
     }
 }
@@ -619,7 +622,6 @@ pub struct GetPoolMetadataRequest {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct GetPoolMetadataResponse {
-    #[serde(rename(deserialize = "Pool_metadata"))]
     pub pool_metadata: PoolMetadata,
 }
 
