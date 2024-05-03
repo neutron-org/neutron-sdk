@@ -1,3 +1,10 @@
+pub mod gaia {
+    pub mod globalfee {
+        pub mod v1beta1 {
+            include!("gaia.globalfee.v1beta1.rs");
+        }
+    }
+}
 pub mod neutron {
     pub mod contractmanager {
         include!("neutron.contractmanager.rs");
