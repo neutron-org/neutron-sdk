@@ -1,3 +1,4 @@
+use cosmwasm_std::Int128;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -11,7 +12,7 @@ pub struct CurrencyPair {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct QuotePrice {
-    // price: cosmossdk_io_math.Int,
+    pub price: Int128,
     // // BlockTimestamp tracks the block height associated with this price update.
     // // We include block timestamp alongside the price to ensure that smart
     // // contracts and applications are not utilizing stale oracle prices

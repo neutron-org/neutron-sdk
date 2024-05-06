@@ -7,8 +7,8 @@ use serde::{Deserialize, Serialize};
 pub enum MarketmapQuery {
     /// Parameters queries the parameters of the module.
     Params {},
-    GetLastUpdatedRequest {},
-    GetMarketMapRequest {},
+    GetLastUpdated {},
+    GetMarketMap {},
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -28,7 +28,7 @@ pub struct GetLastUpdatedResponse {
 pub struct GetMarketMapResponse {
     // MarketMap defines the global set of market configurations for all providers
     // and markets.
-    market_map: MarketMap,
+    pub market_map: MarketMap,
     // LastUpdated is the last block height that the market map was updated.
     // This field can be used as an optimization for clients checking if there
     // is a new update to the map.

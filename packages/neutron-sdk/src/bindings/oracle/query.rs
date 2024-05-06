@@ -7,10 +7,10 @@ use serde::{Deserialize, Serialize};
 pub enum OracleQuery {
     /// Parameters queries the parameters of the module.
     GetAllCurrencyPairs {},
-    GetPriceRequest {
+    GetPrice {
         currency_pair: CurrencyPair,
     },
-    GetPricesRequest {
+    GetPrices {
         currency_pair_ids: Vec<String>,
     },
 }
