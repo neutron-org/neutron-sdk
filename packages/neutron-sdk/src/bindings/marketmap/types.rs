@@ -72,11 +72,13 @@ pub struct Operation {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
 pub struct CurrencyPair {
+    #[serde(rename(serialize = "Base", deserialize = "Base"))]
     pub base: String,
+    #[serde(rename(serialize = "Quote", deserialize = "Quote"))]
     pub quote: String,
 }
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct Ticker {

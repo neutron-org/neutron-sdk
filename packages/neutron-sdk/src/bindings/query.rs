@@ -76,7 +76,7 @@ pub enum NeutronQuery {
 
     Dex(DexQuery),
 
-    MarketMap(MarketmapQuery),
+    Marketmap(MarketmapQuery),
 
     Oracle(OracleQuery),
 }
@@ -160,7 +160,7 @@ impl From<DexQuery> for QueryRequest<NeutronQuery> {
 
 impl From<MarketmapQuery> for QueryRequest<NeutronQuery> {
     fn from(msg: MarketmapQuery) -> Self {
-        QueryRequest::Custom(NeutronQuery::MarketMap(msg))
+        QueryRequest::Custom(NeutronQuery::Marketmap(msg))
     }
 }
 
