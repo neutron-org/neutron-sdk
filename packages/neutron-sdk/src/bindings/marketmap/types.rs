@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct Params {
+    #[serde(default)]
     pub version: u64,
     pub market_authority: String,
 }
@@ -95,5 +96,6 @@ pub struct Ticker {
     pub enabled: bool,
     // MetadataJSON is a string of JSON that encodes any extra configuration
     // for the given ticker.
+    #[serde(default)]
     pub metadata_json: String,
 }
