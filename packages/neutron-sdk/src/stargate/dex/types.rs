@@ -622,6 +622,7 @@ pub struct GetPoolMetadataRequest {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct GetPoolMetadataResponse {
+    #[serde(rename(deserialize = "Pool_metadata"))]
     pub pool_metadata: PoolMetadata,
 }
 
