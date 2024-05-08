@@ -114,6 +114,9 @@ pub struct PlaceLimitOrderRequest {
     pub token_out: String,
     /// Limit tick for a limit order, specified in terms of token_in to token_out.
     pub tick_index_in_to_out: i64,
+    /// limit sell price when selling token_in.
+    /// Accepts standard decimals and decimals with scientific notation (ie. 1234.23E-7)
+    pub limit_sell_price: String,
     /// Amount of TokenIn to be traded.
     pub amount_in: String,
     /// Type of limit order to be used.
@@ -135,6 +138,7 @@ impl From<PlaceLimitOrderRequest> for MsgPlaceLimitOrder {
             order_type: v.order_type as i32,
             expiration_time: v.expiration_time.map(proto_timestamp_from_i64),
             max_amount_out: v.max_amount_out.unwrap_or_default(),
+            limit_sell_price: v.limit_sell_price,
         }
     }
 }
