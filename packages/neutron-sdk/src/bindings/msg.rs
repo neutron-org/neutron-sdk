@@ -536,6 +536,16 @@ pub struct MsgRegisterInterchainQueryResponse {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
+/// MsgRegisterInterchainAccountResponse defines the Msg/RegisterInterchainAccount response type.
+pub struct MsgRegisterInterchainAccountResponse {
+    /// **channel_id** is a ...
+    pub channel_id: String,
+    /// **port_id** is a ...
+    pub port_id: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 /// MsgSubmitTxResponse defines the response for Msg/SubmitTx.
 pub struct MsgSubmitTxResponse {
     /// **sequence_id** is a channel's sequence_id for outgoing ibc packet. Unique per a channel.
@@ -546,7 +556,7 @@ pub struct MsgSubmitTxResponse {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-/// MsgSubmitTxResponse defines the response for Msg/IbcTransfer.
+/// MsgIbcTransferResponse defines the response for Msg/IbcTransfer.
 pub struct MsgIbcTransferResponse {
     /// **sequence_id** is a channel's sequence_id for outgoing ibc packet. Unique per a channel.
     pub sequence_id: u64,
