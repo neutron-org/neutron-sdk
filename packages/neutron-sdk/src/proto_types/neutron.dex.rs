@@ -166,7 +166,7 @@ pub struct MsgPlaceLimitOrder {
     #[prost(string, tag = "4")]
     pub token_out: ::prost::alloc::string::String,
     /// DEPRECATED: tick_index_in_to_out will be removed in future release; limit_sell_price should be used instead.
-    #[deprecated]
+    #[allow(deprecated)]
     #[prost(int64, tag = "5")]
     pub tick_index_in_to_out: i64,
     #[prost(string, tag = "7")]
