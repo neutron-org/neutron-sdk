@@ -156,6 +156,7 @@ pub struct MsgWithdrawal {
 pub struct MsgWithdrawalResponse {}
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MsgPlaceLimitOrder {
+    /// TODO: fix wire numbers
     #[prost(string, tag = "1")]
     pub creator: ::prost::alloc::string::String,
     #[prost(string, tag = "2")]
@@ -164,6 +165,8 @@ pub struct MsgPlaceLimitOrder {
     pub token_in: ::prost::alloc::string::String,
     #[prost(string, tag = "4")]
     pub token_out: ::prost::alloc::string::String,
+    /// DEPRECATED: tick_index_in_to_out will be removed in future release; limit_sell_price should be used instead.
+    #[deprecated]
     #[prost(int64, tag = "5")]
     pub tick_index_in_to_out: i64,
     #[prost(string, tag = "7")]
@@ -175,6 +178,8 @@ pub struct MsgPlaceLimitOrder {
     pub expiration_time: ::core::option::Option<::prost_types::Timestamp>,
     #[prost(string, tag = "10")]
     pub max_amount_out: ::prost::alloc::string::String,
+    #[prost(string, tag = "11")]
+    pub limit_sell_price: ::prost::alloc::string::String,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MsgPlaceLimitOrderResponse {
