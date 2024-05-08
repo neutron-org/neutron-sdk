@@ -66,6 +66,7 @@ pub struct Operation {
     pub currency_pair: CurrencyPair,
     // Invert is a boolean that indicates whether the price of the ticker should
     // be inverted.
+    #[serde(default)]
     pub invert: bool,
     // Provider is the name of the provider that will be used to fetch the price
     // of the ticker.
@@ -93,9 +94,10 @@ pub struct Ticker {
     pub min_provider_count: u64,
     // Enabled is the flag that denotes if the Ticker is enabled for price
     // fetching by an oracle.
+    #[serde(default)]
     pub enabled: bool,
     // MetadataJSON is a string of JSON that encodes any extra configuration
-    // for the given ticker.
-    #[serde(default)]
+    // for the given ticker. ,
+    #[serde(rename(serialize = "metadata_JSON", deserialize = "metadata_JSON"))]
     pub metadata_json: String,
 }
