@@ -360,11 +360,15 @@ pub struct QueryGetLimitOrderTrancheUserRequest {
     pub address: ::prost::alloc::string::String,
     #[prost(string, tag = "2")]
     pub tranche_key: ::prost::alloc::string::String,
+    #[prost(bool, tag = "3")]
+    pub calc_withdrawable_shares: bool,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryGetLimitOrderTrancheUserResponse {
     #[prost(message, optional, tag = "1")]
     pub limit_order_tranche_user: ::core::option::Option<LimitOrderTrancheUser>,
+    #[prost(string, tag = "2")]
+    pub withdrawable_shares: ::prost::alloc::string::String,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryAllLimitOrderTrancheUserRequest {

@@ -5,4 +5,4 @@ plugins:
     opt:
       - extern_path=.cosmos=.cosmos_sdk_proto::cosmos
       - extern_path=.ibc=.cosmos_sdk_proto::ibc
-      - extern_path=.tendermint=tendermint_proto::v0_37
+      - extern_path=.tendermint=tendermint_proto::v0_38

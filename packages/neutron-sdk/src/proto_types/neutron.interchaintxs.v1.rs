@@ -62,7 +62,12 @@ pub struct MsgRegisterInterchainAccount {
 /// MsgRegisterInterchainAccountResponse is the response type for
 /// MsgRegisterInterchainAccount.
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct MsgRegisterInterchainAccountResponse {}
+pub struct MsgRegisterInterchainAccountResponse {
+    #[prost(string, tag = "1")]
+    pub channel_id: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub port_id: ::prost::alloc::string::String,
+}
 /// MsgSubmitTx defines the payload for Msg/SubmitTx
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MsgSubmitTx {
