@@ -33,9 +33,6 @@ pub struct GetMarketMapResponse {
     // This field can be used as an optimization for clients checking if there
     // is a new update to the map.
     pub last_updated: u64,
-    // Version is the schema version for the MarketMap data structure and query
-    // response.
-    pub version: u64,
     // ChainId is the chain identifier for the market map.
     pub chain_id: String,
 }

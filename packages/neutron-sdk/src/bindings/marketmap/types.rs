@@ -6,29 +6,22 @@ use serde::{Deserialize, Serialize};
 pub struct Params {
     #[serde(default)]
     pub version: u64,
-    pub market_authority: String,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-pub struct MarketMap {
-    // Tickers is the full list of tickers and their associated configurations
-    // to be stored on-chain.
-    pub tickers: Map<String, Ticker>,
-    // Paths is a map from CurrencyPair to all paths that resolve to that pair
-    pub paths: Map<String, Paths>,
-    // Providers is a map from CurrencyPair to each of to provider-specific
-    // configs associated with it.
-    pub providers: Map<String, Providers>,
-    // AggregationType is the type of aggregation that will be used to aggregate
-    // the prices of the tickers.
-    pub aggregation_type: i32,
+    pub market_authorities: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub struct Providers {
-    // Providers is the list of provider configurations for the given ticker.
-    pub providers: Vec<ProviderConfig>,
+pub struct MarketMap {
+    pub markets: Map<String, Market>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct Market {
+    // Tickers is the full list of tickers and their associated configurations
+    // to be stored on-chain.
+    pub ticker: Ticker,
+    pub provider_configs: Vec<ProviderConfig>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -41,36 +34,18 @@ pub struct ProviderConfig {
     // The off-chain ticker is unique to a given provider and is used to fetch the
     // price of the ticker from the provider.
     pub off_chain_ticker: String,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct Paths {
-    // Paths is the list of convertable markets that will be used to convert the
-    // prices of a set of tickers to a common ticker.
-    pub paths: Vec<Path>,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct Path {
-    // Operations is an ordered list of operations that will be taken. These must
-    // be topologically sorted to ensure that the conversion is possible i.e. DAG.
-    pub operations: Vec<Operation>,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct Operation {
-    // CurrencyPair is the on-chain currency pair for this ticker.
-    pub currency_pair: CurrencyPair,
-    // Invert is a boolean that indicates whether the price of the ticker should
-    // be inverted.
-    #[serde(default)]
+    // NormalizeByPair is the currency pair for this ticker to be normalized by.
+    // For example, if the desired Ticker is BTC/USD, this market could be reached
+    // using: OffChainTicker = BTC/USDT NormalizeByPair = USDT/USD This field is
+    // optional and nullable.
+    pub normalize_by_pair: CurrencyPair,
+    // Invert is a boolean indicating if the BASE and QUOTE of the market should
+    // be inverted. i.e. BASE -> QUOTE, QUOTE -> BASE
     pub invert: bool,
-    // Provider is the name of the provider that will be used to fetch the price
-    // of the ticker.
-    pub provider: String,
+    // MetadataJSON is a string of JSON that encodes any extra configuration
+    // for the given provider config.
+    #[serde(rename(serialize = "metadata_JSON", deserialize = "metadata_JSON"))]
+    pub metadata_json: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
