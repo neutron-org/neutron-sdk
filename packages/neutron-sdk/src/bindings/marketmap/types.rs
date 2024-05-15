@@ -41,6 +41,7 @@ pub struct ProviderConfig {
     pub normalize_by_pair: CurrencyPair,
     // Invert is a boolean indicating if the BASE and QUOTE of the market should
     // be inverted. i.e. BASE -> QUOTE, QUOTE -> BASE
+    #[serde(default)]
     pub invert: bool,
     // MetadataJSON is a string of JSON that encodes any extra configuration
     // for the given provider config.

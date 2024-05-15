@@ -7,8 +7,8 @@ use serde::{Deserialize, Serialize};
 pub enum MarketmapQuery {
     /// Parameters queries the parameters of the module.
     Params {},
-    GetLastUpdated {},
-    GetMarketMap {},
+    LastUpdated {},
+    MarketMap {},
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -19,13 +19,13 @@ pub struct ParamsResponse {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub struct GetLastUpdatedResponse {
+pub struct LastUpdatedResponse {
     pub last_updated: u64,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub struct GetMarketMapResponse {
+pub struct MarketMapResponse {
     // MarketMap defines the global set of market configurations for all providers
     // and markets.
     pub market_map: MarketMap,
