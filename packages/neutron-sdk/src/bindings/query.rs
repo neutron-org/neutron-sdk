@@ -1,4 +1,4 @@
-use crate::bindings::marketmap::query::MarketmapQuery;
+use crate::bindings::marketmap::query::MarketMapQuery;
 use crate::bindings::oracle::query::OracleQuery;
 use crate::bindings::types::{Failure, InterchainQueryResult, RegisteredQuery};
 use cosmwasm_std::{Binary, CustomQuery, QueryRequest};
@@ -76,7 +76,7 @@ pub enum NeutronQuery {
 
     Dex(DexQuery),
 
-    Marketmap(MarketmapQuery),
+    MarketMap(MarketMapQuery),
 
     Oracle(OracleQuery),
 }
@@ -158,9 +158,9 @@ impl From<DexQuery> for QueryRequest<NeutronQuery> {
     }
 }
 
-impl From<MarketmapQuery> for QueryRequest<NeutronQuery> {
-    fn from(msg: MarketmapQuery) -> Self {
-        QueryRequest::Custom(NeutronQuery::Marketmap(msg))
+impl From<MarketMapQuery> for QueryRequest<NeutronQuery> {
+    fn from(msg: MarketMapQuery) -> Self {
+        QueryRequest::Custom(NeutronQuery::MarketMap(msg))
     }
 }
 

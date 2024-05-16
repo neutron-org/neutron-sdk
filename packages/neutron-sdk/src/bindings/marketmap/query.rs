@@ -1,14 +1,18 @@
-use crate::bindings::marketmap::types::{MarketMap, Params};
+use crate::bindings::marketmap::types::{Market, MarketMap, Params};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use crate::bindings::oracle::types::CurrencyPair;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-pub enum MarketmapQuery {
+pub enum MarketMapQuery {
     /// Parameters queries the parameters of the module.
     Params {},
     LastUpdated {},
     MarketMap {},
+    Market {
+        currency_pair: CurrencyPair
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -35,4 +39,10 @@ pub struct MarketMapResponse {
     pub last_updated: u64,
     // ChainId is the chain identifier for the market map.
     pub chain_id: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct MarketResponse {
+    pub market: Market,
 }

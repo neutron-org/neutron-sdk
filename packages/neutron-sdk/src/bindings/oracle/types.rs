@@ -17,7 +17,7 @@ pub struct QuotePrice {
     // // BlockTimestamp tracks the block height associated with this price update.
     // // We include block timestamp alongside the price to ensure that smart
     // // contracts and applications are not utilizing stale oracle prices
-    // block_timestamp: time.Time,
+    block_timestamp: String,
     // BlockHeight is height of block mentioned above
     pub block_height: u64,
 }
