@@ -14,10 +14,10 @@ pub struct CurrencyPair {
 #[serde(rename_all = "snake_case")]
 pub struct QuotePrice {
     pub price: Int128,
-    // // BlockTimestamp tracks the block height associated with this price update.
-    // // We include block timestamp alongside the price to ensure that smart
-    // // contracts and applications are not utilizing stale oracle prices
+    /// **block_timestamp** tracks the block height associated with this price update.
+    /// We include block timestamp alongside the price to ensure that smart
+    /// contracts and applications are not utilizing stale oracle prices
     block_timestamp: String,
-    // BlockHeight is height of block mentioned above
+    /// **block_height** is height of block mentioned above
     pub block_height: u64,
 }

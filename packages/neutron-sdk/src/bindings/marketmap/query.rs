@@ -1,7 +1,7 @@
 use crate::bindings::marketmap::types::{Market, MarketMap, Params};
+use crate::bindings::oracle::types::CurrencyPair;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use crate::bindings::oracle::types::CurrencyPair;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -11,7 +11,7 @@ pub enum MarketMapQuery {
     LastUpdated {},
     MarketMap {},
     Market {
-        currency_pair: CurrencyPair
+        currency_pair: CurrencyPair,
     },
 }
 
@@ -30,14 +30,14 @@ pub struct LastUpdatedResponse {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct MarketMapResponse {
-    // MarketMap defines the global set of market configurations for all providers
-    // and markets.
+    /// **market_map** defines the global set of market configurations for all providers
+    /// and markets.
     pub market_map: MarketMap,
-    // LastUpdated is the last block height that the market map was updated.
-    // This field can be used as an optimization for clients checking if there
-    // is a new update to the map.
+    /// **last_updated** is the last block height that the market map was updated.
+    /// This field can be used as an optimization for clients checking if there
+    /// is a new update to the map.
     pub last_updated: u64,
-    // ChainId is the chain identifier for the market map.
+    /// **chain_id** is the chain identifier for the market map.
     pub chain_id: String,
 }
 
