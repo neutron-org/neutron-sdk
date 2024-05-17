@@ -18,7 +18,7 @@ pub struct MarketMap {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct Market {
-    /// **Tickers** is the full list of tickers and their associated configurations
+    /// **ticker** is the full list of tickers and their associated configurations
     /// to be stored on-chain.
     pub ticker: Ticker,
     pub provider_configs: Vec<ProviderConfig>,
