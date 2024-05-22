@@ -23,7 +23,8 @@ pub struct GetPriceResponse {
     /// otherwise it will be 8.
     pub decimals: u64,
     /// *id** represents the identifier for the CurrencyPair.
-    pub id: Option<u64>,
+    #[serde(default)]
+    pub id: u64,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]

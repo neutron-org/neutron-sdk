@@ -4,8 +4,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct Params {
-    #[serde(default)]
-    pub version: u64,
+    pub admin: String,
     pub market_authorities: Vec<String>,
 }
 
