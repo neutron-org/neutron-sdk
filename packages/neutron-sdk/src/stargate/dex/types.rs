@@ -138,18 +138,19 @@ fn serialize_prec_dec(decimal_str: String) -> String {
     } else {
         String::new()
     };
-    // Remove trailing zeros from the fractional part
-    while fractional_part.ends_with('0') {
-        fractional_part.pop();
-    }
+    // Remove trailing zeros from the fractional_part
+    fractional_part = fractional_part.trim_end_matches('0').to_string();
 
-    let zeros_to_add = PREC_DEC_PRECISION.checked_sub(fractional_part.len()).expect("Cannot retain precision when serializing PrecDec");
+    // Remove leading zeros from the integer_part
+    let mut result = integer_part.trim_start_matches('0').to_string();
 
     // combine integer part and fractional part
-    let mut result = String::from(integer_part);
     result.push_str(&fractional_part.to_owned());
 
     // Add zeros to the end. This is the equivalent of multiplying by 10^PREC_DEC_PRECISION
+    let zeros_to_add = PREC_DEC_PRECISION
+        .checked_sub(fractional_part.len())
+        .expect("Cannot retain precision when serializing PrecDec");
     for _ in 0..zeros_to_add {
         result.push('0');
     }
