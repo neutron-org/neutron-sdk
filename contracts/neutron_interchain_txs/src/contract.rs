@@ -19,9 +19,8 @@ use neutron_sdk::{
         query::{NeutronQuery, QueryInterchainAccountAddressResponse},
         types::ProtobufAny,
     },
-    interchain_txs::helpers::{
-        decode_acknowledgement_response, decode_message_response, get_port_id,
-    },
+    interchain_txs::helpers::{decode_message_response, get_port_id},
+    interchain_txs::v047::helpers::decode_acknowledgement_response,
     query::min_ibc_fee::query_min_ibc_fee,
     sudo::msg::{RequestPacket, SudoMsg},
     NeutronError, NeutronResult,
@@ -242,7 +241,7 @@ fn execute_delegate(
     }
 
     let any_msg = ProtobufAny {
-        type_url: "/cosmos.staking.v1beta1.MsgDelegate".to_string(),
+        type_url: "/cosmos.staking.v1beta1.MsgDelegateResponse".to_string(),
         value: Binary::from(buf),
     };
 
@@ -450,7 +449,7 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
 
     let mut item_types = vec![];
     for item in parsed_data {
-        let item_type = item.msg_type.as_str();
+        let item_type = item.type_url.as_str();
         item_types.push(item_type.to_string());
         match item_type {
             "/cosmos.staking.v1beta1.MsgUndelegate" => {
@@ -459,7 +458,7 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
                 // FOR LATER INSPECTION.
                 // In this particular case, a mismatch between the string message type and the
                 // serialised data layout looks like a fatal error that has to be investigated.
-                let out: MsgUndelegateResponse = decode_message_response(&item.data)?;
+                let out: MsgUndelegateResponse = decode_message_response(&item.value)?;
 
                 // NOTE: NO ERROR IS RETURNED HERE. THE CHANNEL LIVES ON.
                 // In this particular case, we demonstrate that minor errors should not
@@ -474,13 +473,13 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
                 deps.api
                     .debug(format!("Undelegation completion time: {:?}", completion_time).as_str());
             }
-            "/cosmos.staking.v1beta1.MsgDelegate" => {
+            "/cosmos.staking.v1beta1.MsgDelegateResponse" => {
                 // WARNING: RETURNING THIS ERROR CLOSES THE CHANNEL.
                 // AN ALTERNATIVE IS TO MAINTAIN AN ERRORS QUEUE AND PUT THE FAILED REQUEST THERE
                 // FOR LATER INSPECTION.
                 // In this particular case, a mismatch between the string message type and the
                 // serialised data layout looks like a fatal error that has to be investigated.
-                let _out: MsgDelegateResponse = decode_message_response(&item.data)?;
+                let _out: MsgDelegateResponse = decode_message_response(&item.value)?;
             }
             _ => {
                 deps.api.debug(

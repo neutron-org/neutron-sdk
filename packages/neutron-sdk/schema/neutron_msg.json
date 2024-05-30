@@ -596,6 +596,19 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "description": "Dex messages",
+      "type": "object",
+      "required": [
+        "dex"
+      ],
+      "properties": {
+        "dex": {
+          "$ref": "#/definitions/DexMsg"
+        }
+      },
+      "additionalProperties": false
     }
   ],
   "definitions": {
@@ -845,7 +858,7 @@
       }
     },
     "DenomUnit": {
-      "description": "**DenomUnit** represents a struct that describes a given denomination unit of the basic token.",
+      "description": "Replicates the cosmos-sdk bank module DenomUnit type",
       "type": "object",
       "required": [
         "aliases",
@@ -854,23 +867,342 @@
       ],
       "properties": {
         "aliases": {
-          "description": "*aliases** is a list of string aliases for the given denom",
           "type": "array",
           "items": {
             "type": "string"
           }
         },
         "denom": {
-          "description": "*denom** represents the string name of the given denom unit (e.g uatom).",
           "type": "string"
         },
         "exponent": {
-          "description": "**exponent** represents power of 10 exponent that one must raise the base_denom to in order to equal the given DenomUnit's denom 1 denom = 10^exponent base_denom (e.g. with a base_denom of uatom, one can create a DenomUnit of 'atom' with exponent = 6, thus: 1 atom = 10^6 uatom).",
           "type": "integer",
           "format": "uint32",
           "minimum": 0.0
         }
       }
+    },
+    "DepositOption": {
+      "type": "object",
+      "required": [
+        "disable_swap"
+      ],
+      "properties": {
+        "disable_swap": {
+          "type": "boolean"
+        }
+      }
+    },
+    "DexMsg": {
+      "oneOf": [
+        {
+          "description": "Deposit provides liquidity to a specific trading pair by depositing tokens at a specific price into one or both sides of the pair in “a liquidity pool”",
+          "type": "object",
+          "required": [
+            "deposit"
+          ],
+          "properties": {
+            "deposit": {
+              "type": "object",
+              "required": [
+                "amounts_a",
+                "amounts_b",
+                "fees",
+                "options",
+                "receiver",
+                "tick_indexes_a_to_b",
+                "token_a",
+                "token_b"
+              ],
+              "properties": {
+                "amounts_a": {
+                  "description": "Amounts of tokenA to deposit",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Uint128"
+                  }
+                },
+                "amounts_b": {
+                  "description": "Amounts of tokenB to deposit",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Uint128"
+                  }
+                },
+                "fees": {
+                  "description": "Fees to use for each deposit",
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "uint64",
+                    "minimum": 0.0
+                  }
+                },
+                "options": {
+                  "description": "Additional deposit options",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/DepositOption"
+                  }
+                },
+                "receiver": {
+                  "description": "The account to which PoolShares will be issued",
+                  "type": "string"
+                },
+                "tick_indexes_a_to_b": {
+                  "description": "Tick indexes to deposit at defined in terms of TokenA to TokenB (ie. TokenA is on the left)",
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "int64"
+                  }
+                },
+                "token_a": {
+                  "description": "Denom for one side of the deposit",
+                  "type": "string"
+                },
+                "token_b": {
+                  "description": "Denom for the opposing side of the deposit",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "description": "Withdraw is used to redeem PoolShares for the user’s pro-rata portion of tokens within a liquidity pool. Users can withdraw from a pool at any time",
+          "type": "object",
+          "required": [
+            "withdrawal"
+          ],
+          "properties": {
+            "withdrawal": {
+              "type": "object",
+              "required": [
+                "fees",
+                "receiver",
+                "shares_to_remove",
+                "tick_indexes_a_to_b",
+                "token_a",
+                "token_b"
+              ],
+              "properties": {
+                "fees": {
+                  "description": "Fee for the target LiquidityPools",
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "uint64",
+                    "minimum": 0.0
+                  }
+                },
+                "receiver": {
+                  "description": "The account to which the tokens are credited",
+                  "type": "string"
+                },
+                "shares_to_remove": {
+                  "description": "Amount of shares to remove from each pool",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/Uint128"
+                  }
+                },
+                "tick_indexes_a_to_b": {
+                  "description": "Tick indexes of the target LiquidityPools defined in terms of TokenA to TokenB (ie. TokenA is on the left)",
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "format": "int64"
+                  }
+                },
+                "token_a": {
+                  "description": "Denom for one side of the deposit",
+                  "type": "string"
+                },
+                "token_b": {
+                  "description": "Denom for the opposing side of the deposit",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "description": "PlaceLimitOrder provides the primary mechanism for trading on the Duality Dex. Limit orders can provide liquidity to the Dex (“Maker Limit Orders”) and/or can be used to trade against preexisting liquidity (“Taker Limit Orders”)",
+          "type": "object",
+          "required": [
+            "place_limit_order"
+          ],
+          "properties": {
+            "place_limit_order": {
+              "type": "object",
+              "required": [
+                "amount_in",
+                "order_type",
+                "receiver",
+                "tick_index_in_to_out",
+                "token_in",
+                "token_out"
+              ],
+              "properties": {
+                "amount_in": {
+                  "description": "Amount of TokenIn to be traded",
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/Uint128"
+                    }
+                  ]
+                },
+                "expiration_time": {
+                  "description": "Expiration time for order. Only valid for GOOD_TIL_TIME limit orders",
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "format": "uint64",
+                  "minimum": 0.0
+                },
+                "max_amount_out": {
+                  "description": "Maximum amount of TokenB can be bought. For everything except JUST_IN_TIME OrderType",
+                  "anyOf": [
+                    {
+                      "$ref": "#/definitions/Uint128"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "order_type": {
+                  "description": "Type of limit order to be used. Must be one of: GOOD_TIL_CANCELLED, FILL_OR_KILL, IMMEDIATE_OR_CANCEL, JUST_IN_TIME, or GOOD_TIL_TIME",
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/LimitOrderType"
+                    }
+                  ]
+                },
+                "receiver": {
+                  "description": "Account to which TokenOut is credited or that will be allowed to withdraw or cancel a maker order",
+                  "type": "string"
+                },
+                "tick_index_in_to_out": {
+                  "description": "Limit tick for a limit order, specified in terms of TokenIn to TokenOut",
+                  "type": "integer",
+                  "format": "int64"
+                },
+                "token_in": {
+                  "description": "Token being “sold”",
+                  "type": "string"
+                },
+                "token_out": {
+                  "description": "Token being “bought”",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "description": "WithdrawFilledLimitOrder. Once a limit order has been filled – either partially or in its entirety, it can be withdrawn at any time. Withdrawing from a limit order credits all available proceeds to the user. Withdraw can be called on a limit order multiple times as new proceeds become available",
+          "type": "object",
+          "required": [
+            "withdraw_filled_limit_order"
+          ],
+          "properties": {
+            "withdraw_filled_limit_order": {
+              "type": "object",
+              "required": [
+                "tranche_key"
+              ],
+              "properties": {
+                "tranche_key": {
+                  "description": "TrancheKey for the target limit order",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "description": "CancelLimitOrder. Standard Taker limit orders (Good-til-cancelled & Good-til-Time) can be canceled at any time if they have not been completely filled",
+          "type": "object",
+          "required": [
+            "cancel_limit_order"
+          ],
+          "properties": {
+            "cancel_limit_order": {
+              "type": "object",
+              "required": [
+                "tranche_key"
+              ],
+              "properties": {
+                "tranche_key": {
+                  "description": "TrancheKey for the target limit order",
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "description": "MultiHopSwap provides a swapping mechanism to achieve better prices by routing through a series of pools",
+          "type": "object",
+          "required": [
+            "multi_hop_swap"
+          ],
+          "properties": {
+            "multi_hop_swap": {
+              "type": "object",
+              "required": [
+                "amount_in",
+                "exit_limit_price",
+                "pick_best_route",
+                "receiver",
+                "routes"
+              ],
+              "properties": {
+                "amount_in": {
+                  "description": "Amount of TokenIn to swap",
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/Uint128"
+                    }
+                  ]
+                },
+                "exit_limit_price": {
+                  "description": "Minimum price that that must be satisfied for a route to succeed",
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/PrecDec"
+                    }
+                  ]
+                },
+                "pick_best_route": {
+                  "description": "If true all routes are run and the route with the best price is used",
+                  "type": "boolean"
+                },
+                "receiver": {
+                  "description": "Account to which TokenOut is credited",
+                  "type": "string"
+                },
+                "routes": {
+                  "description": "Array of possible routes",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/MultiHopRoute"
+                  }
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
     },
     "IbcFee": {
       "description": "IbcFee defines struct for fees that refund the relayer for `SudoMsg` messages submission. Unused fee kind will be returned back to message sender. Please refer to these links for more information: IBC transaction structure - <https://docs.neutron.org/neutron/interchain-txs/messages/#msgsubmittx> General mechanics of fee payments - <https://docs.neutron.org/neutron/feerefunder/overview/#general-mechanics>",
@@ -926,6 +1258,45 @@
         }
       }
     },
+    "LimitOrderType": {
+      "oneOf": [
+        {
+          "description": "Good-til-Cancelled limit orders are hybrid maker and taker limit orders. They will attempt to trade the supplied AmountIn at the TickIndex or better. However, if they total AmountIn cannot be traded at the limit price they are remaining amount will be placed as a maker limit order. The proceeds from the taker portion are deposited into the user’s account immediately, however, the proceeds from the maker portion must be explicitly withdrawn via WithdrawLimitOrder.",
+          "type": "string",
+          "enum": [
+            "GOOD_TIL_CANCELLED"
+          ]
+        },
+        {
+          "description": "Fill-or-Kill limit orders are taker limit orders that either successfully swap 100% of the supplied AmountIn or return an error. If there is insufficient liquidity to complete the trade at or above the supplied TickIndex a Fill-or-Kill order will return an error `codespace: dex, code: 1134` (https://github.com/neutron-org/neutron/blob/main/x/dex/types/errors.go#L107 ErrGoodTilOrderWithoutExpiration).",
+          "type": "string",
+          "enum": [
+            "FILL_OR_KILL"
+          ]
+        },
+        {
+          "description": "Immediate-or-Cancel limit orders are taker orders that will swap as much as of the AmountIn as possible given available liquidity above the supplied TickIndex. Unlike Fill-or-Kill orders they will still successfully complete even if they are only able to partially trade through the AmountIn at the TickIndex or better.",
+          "type": "string",
+          "enum": [
+            "IMMEDIATE_OR_CANCEL"
+          ]
+        },
+        {
+          "description": "Just-in-Time limit orders are an advanced maker limit order that provides tradeable liquidity for exactly one block. At the end of the same block in which the Just-in-Time order was submitted the order is canceled and any untraded portion will no longer be usable as active liquidity.",
+          "type": "string",
+          "enum": [
+            "JUST_IN_TIME"
+          ]
+        },
+        {
+          "description": "Good-til-Time limit order function exactly the same as Good-til-Cancelled limit orders first trying to trade as a taker limit order and then placing any remaining amount as a maker limit order. However, the maker portion of the limit order has a specified ExpirationTime. After the ExpirationTime the order will be cancelled and can no longer be traded against. When withdrawing a Good-til-Time limit order the user will receive both the successfully traded portion of the limit order (TokenOut) as well as any remaining untraded amount (TokenIn).",
+          "type": "string",
+          "enum": [
+            "GOOD_TIL_TIME"
+          ]
+        }
+      ]
+    },
     "MsgExecuteContract": {
       "description": "MsgExecuteContract defines a call to the contract execution",
       "type": "object",
@@ -941,6 +1312,20 @@
         "msg": {
           "description": "*msg** is a contract call message",
           "type": "string"
+        }
+      }
+    },
+    "MultiHopRoute": {
+      "type": "object",
+      "required": [
+        "hops"
+      ],
+      "properties": {
+        "hops": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -1042,6 +1427,17 @@
         },
         "name": {
           "description": "*name** is a name for the upgrade",
+          "type": "string"
+        }
+      }
+    },
+    "PrecDec": {
+      "type": "object",
+      "required": [
+        "i"
+      ],
+      "properties": {
+        "i": {
           "type": "string"
         }
       }

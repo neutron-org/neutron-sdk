@@ -1,7 +1,9 @@
 use crate::bindings::types::{Failure, InterchainQueryResult, RegisteredQuery};
-use cosmwasm_std::{Binary, CustomQuery, Uint64};
+use cosmwasm_std::{Binary, CustomQuery, QueryRequest};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+
+use super::dex::query::DexQuery;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -55,16 +57,22 @@ pub enum NeutronQuery {
     },
 
     /// TokenFactory query. Returns the admin of a denom, if the denom is a TokenFactory denom.
-    DenomAdmin { subdenom: String },
+    DenomAdmin {
+        subdenom: String,
+    },
 
     /// TokenFactory query. Returns the before send hook address of a denom, if the denom is a TokenFactory denom.
-    BeforeSendHook { denom: String },
+    BeforeSendHook {
+        denom: String,
+    },
 
     /// Contractmanager query. Returns the failures for a particular contract address.
     Failures {
         address: String,
         pagination: PageRequest,
     },
+
+    Dex(DexQuery),
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -99,7 +107,7 @@ pub struct PageResponse {
     pub next_key: Option<Binary>,
     /// **total** is total number of results available if PageRequest.count_total
     /// was set, its value is undefined otherwise
-    pub total: Option<Uint64>,
+    pub total: Option<u64>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -137,3 +145,9 @@ pub struct QueryFailuresResponse {
 }
 
 impl CustomQuery for NeutronQuery {}
+
+impl From<DexQuery> for QueryRequest<NeutronQuery> {
+    fn from(msg: DexQuery) -> Self {
+        QueryRequest::Custom(NeutronQuery::Dex(msg))
+    }
+}

@@ -5,6 +5,7 @@ use crate::{
     NeutronError, NeutronResult,
 };
 
+use crate::bindings::dex::msg::DexMsg;
 use cosmwasm_std::{Binary, Coin, CosmosMsg, CustomMsg, DenomUnit, StdError, Uint128};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -227,6 +228,9 @@ pub enum NeutronMsg {
     /// Acknowledgement failure is created when contract returns error or acknowledgement is out of gas.
     /// [Permissioned - only from contract that is initial caller of IBC transaction]
     ResubmitFailure { failure_id: u64 },
+
+    /// Dex messages
+    Dex(DexMsg),
 }
 
 impl NeutronMsg {
