@@ -69,12 +69,12 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> NeutronResult<Response<NeutronMsg>> {
     match msg {
-        ExecuteMsg::RegisterBalanceQuery {
+        ExecuteMsg::RegisterBalancesQuery {
             connection_id,
             addr,
-            denom,
+            denoms,
             update_period,
-        } => register_balance_query(connection_id, addr, denom, update_period),
+        } => register_balances_query(connection_id, addr, denoms, update_period),
         ExecuteMsg::RegisterBankTotalSupplyQuery {
             connection_id,
             denoms,
@@ -143,13 +143,13 @@ pub fn execute(
     }
 }
 
-pub fn register_balance_query(
+pub fn register_balances_query(
     connection_id: String,
     addr: String,
-    denom: String,
+    denoms: Vec<String>,
     update_period: u64,
 ) -> NeutronResult<Response<NeutronMsg>> {
-    let msg = new_register_balances_query_msg(connection_id, addr, vec![denom], update_period)?;
+    let msg = new_register_balances_query_msg(connection_id, addr, denoms, update_period)?;
 
     Ok(Response::new().add_message(msg))
 }

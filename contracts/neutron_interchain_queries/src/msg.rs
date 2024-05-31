@@ -10,11 +10,11 @@ pub struct InstantiateMsg {}
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
-    RegisterBalanceQuery {
+    RegisterBalancesQuery {
         connection_id: String,
         update_period: u64,
         addr: String,
-        denom: String,
+        denoms: Vec<String>,
     },
     RegisterBankTotalSupplyQuery {
         connection_id: String,
