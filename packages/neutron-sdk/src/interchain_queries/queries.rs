@@ -36,6 +36,11 @@ pub fn query_kv_result<T: KVReconstruct>(
 ) -> NeutronResult<T> {
     let registered_query_result = get_raw_interchain_query_result(deps, query_id)?;
 
+    deps.api.debug(&format!(
+        "WASMDEBUG: got KV results to reconstruct: {:?}",
+        registered_query_result.result.kv_results
+    ));
+
     KVReconstruct::reconstruct(&registered_query_result.result.kv_results)
 }
 
