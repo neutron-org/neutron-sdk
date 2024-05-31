@@ -10,7 +10,7 @@ use crate::{
     errors::error::NeutronResult,
     interchain_queries::helpers::decode_and_convert,
     interchain_queries::v045::helpers::{
-        create_account_denom_balance_key, create_delegation_key, create_fee_pool_key,
+        create_balances_query_keys, create_delegation_key, create_fee_pool_key,
         create_gov_proposal_keys, create_gov_proposals_voters_votes_keys, create_params_store_key,
         create_total_denom_key, create_unbonding_delegation_key, create_validator_key,
         create_validator_signing_info_key, create_wasm_contract_store_key,
@@ -30,29 +30,8 @@ pub fn new_register_balances_query_msg(
     denoms: Vec<String>,
     update_period: u64,
 ) -> NeutronResult<NeutronMsg> {
-    let kv_keys = get_balances_query_keys(addr, denoms)?;
+    let kv_keys = create_balances_query_keys(addr, denoms)?;
     NeutronMsg::register_interchain_query(QueryPayload::KV(kv_keys), connection_id, update_period)
-}
-
-/// Creates a keys for an Interchain Query to get balance of account on remote chain for list of denoms
-///
-/// * **addr** address of an account on remote chain for which you want to get balances;
-/// * **denoms** denominations of the coins for which you want to get balance;
-pub fn get_balances_query_keys(addr: String, denoms: Vec<String>) -> NeutronResult<Vec<KVKey>> {
-    let converted_addr_bytes = decode_and_convert(addr.as_str())?;
-    let mut kv_keys: Vec<KVKey> = Vec::with_capacity(denoms.len());
-
-    for denom in denoms {
-        let balance_key = create_account_denom_balance_key(converted_addr_bytes.clone(), denom)?;
-
-        let kv_key = KVKey {
-            path: BANK_STORE_KEY.to_string(),
-            key: Binary(balance_key),
-        };
-
-        kv_keys.push(kv_key)
-    }
-    Ok(kv_keys)
 }
 
 /// Creates a message to register an Interchain Query to get balance of account on remote chain for a particular denom

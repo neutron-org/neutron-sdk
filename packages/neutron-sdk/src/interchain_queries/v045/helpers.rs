@@ -3,9 +3,9 @@ use crate::errors::error::NeutronResult;
 use crate::interchain_queries::helpers::{decode_and_convert, length_prefix};
 use crate::interchain_queries::types::AddressBytes;
 use crate::interchain_queries::v045::types::{
-    BALANCES_PREFIX, DELEGATION_KEY, FEE_POOL_KEY, PARAMS_STORE_DELIMITER, PROPOSALS_KEY_PREFIX,
-    SUPPLY_PREFIX, UNBONDING_DELEGATION_KEY, VALIDATORS_KEY, VALIDATOR_SIGNING_INFO_KEY,
-    WASM_CONTRACT_STORE_PREFIX,
+    BALANCES_PREFIX, BANK_STORE_KEY, DELEGATION_KEY, FEE_POOL_KEY, PARAMS_STORE_DELIMITER,
+    PROPOSALS_KEY_PREFIX, SUPPLY_PREFIX, UNBONDING_DELEGATION_KEY, VALIDATORS_KEY,
+    VALIDATOR_SIGNING_INFO_KEY, WASM_CONTRACT_STORE_PREFIX,
 };
 use crate::NeutronError;
 use cosmos_sdk_proto::cosmos::staking::v1beta1::Commission as ValidatorCommission;
@@ -44,6 +44,27 @@ pub fn create_account_denom_balance_key<AddrBytes: AsRef<[u8]>, S: AsRef<str>>(
     account_balance_key.extend_from_slice(denom.as_ref().as_bytes());
 
     Ok(account_balance_key)
+}
+
+/// Creates keys for an Interchain Query to get balance of account on remote chain for list of denoms
+///
+/// * **addr** address of an account on remote chain for which you want to get balances;
+/// * **denoms** denominations of the coins for which you want to get balance;
+pub fn create_balances_query_keys(addr: String, denoms: Vec<String>) -> NeutronResult<Vec<KVKey>> {
+    let converted_addr_bytes = decode_and_convert(addr.as_str())?;
+    let mut kv_keys: Vec<KVKey> = Vec::with_capacity(denoms.len());
+
+    for denom in denoms {
+        let balance_key = create_account_denom_balance_key(converted_addr_bytes.clone(), denom)?;
+
+        let kv_key = KVKey {
+            path: BANK_STORE_KEY.to_string(),
+            key: Binary(balance_key),
+        };
+
+        kv_keys.push(kv_key)
+    }
+    Ok(kv_keys)
 }
 
 /// Deconstructs a storage key for an **account** balance of a particular **denom**.
