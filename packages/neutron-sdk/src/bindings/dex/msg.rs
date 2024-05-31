@@ -68,6 +68,8 @@ pub enum DexMsg {
         expiration_time: Option<u64>,
         /// Maximum amount of TokenB can be bought. For everything except JUST_IN_TIME OrderType
         max_amount_out: Option<Uint128>,
+        /// Accepts standard decimals and decimals with scientific notation (ie. 1234.23E-7)
+        limit_sell_price: String,
     },
     /// WithdrawFilledLimitOrder. Once a limit order has been filled – either partially or in
     /// its entirety, it can be withdrawn at any time. Withdrawing from a limit order credits

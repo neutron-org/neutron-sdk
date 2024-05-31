@@ -114,6 +114,9 @@ pub struct PlaceLimitOrderRequest {
     pub token_out: String,
     /// Limit tick for a limit order, specified in terms of token_in to token_out.
     pub tick_index_in_to_out: i64,
+    /// limit sell price when selling token_in.
+    /// Accepts standard decimals and decimals with scientific notation (ie. 1234.23E-7)
+    pub limit_sell_price: String,
     /// Amount of TokenIn to be traded.
     pub amount_in: String,
     /// Type of limit order to be used.
@@ -123,8 +126,41 @@ pub struct PlaceLimitOrderRequest {
     pub max_amount_out: Option<String>,
 }
 
+const PREC_DEC_PRECISION: usize = 27;
+
+fn serialize_prec_dec(decimal_str: String) -> String {
+    // The proto marshaller expects the decimal to come as an integer that will be divided by 10^PREC_DEC_PRECISION to produce a PrecDec
+    // There is no available decimal type that can hold 27 decimals of precision. So instead we use string manipulation to serialize the PrecDec into an integer
+    let parts: Vec<&str> = decimal_str.split('.').collect();
+    let integer_part = parts[0];
+    let mut fractional_part = if parts.len() > 1 {
+        String::from(parts[1])
+    } else {
+        String::new()
+    };
+    // Remove trailing zeros from the fractional_part
+    fractional_part = fractional_part.trim_end_matches('0').to_string();
+
+    // Remove leading zeros from the integer_part
+    let mut result = integer_part.trim_start_matches('0').to_string();
+
+    // combine integer part and fractional part
+    result.push_str(&fractional_part.to_owned());
+
+    // Add zeros to the end. This is the equivalent of multiplying by 10^PREC_DEC_PRECISION
+    let zeros_to_add = PREC_DEC_PRECISION
+        .checked_sub(fractional_part.len())
+        .expect("Cannot retain precision when serializing PrecDec");
+    for _ in 0..zeros_to_add {
+        result.push('0');
+    }
+
+    result
+}
+
 impl From<PlaceLimitOrderRequest> for MsgPlaceLimitOrder {
     fn from(v: PlaceLimitOrderRequest) -> MsgPlaceLimitOrder {
+        #[allow(deprecated)] // tick_index_in_to_out will be removed in the next release
         MsgPlaceLimitOrder {
             creator: v.sender,
             receiver: v.receiver,
@@ -135,6 +171,7 @@ impl From<PlaceLimitOrderRequest> for MsgPlaceLimitOrder {
             order_type: v.order_type as i32,
             expiration_time: v.expiration_time.map(proto_timestamp_from_i64),
             max_amount_out: v.max_amount_out.unwrap_or_default(),
+            limit_sell_price: serialize_prec_dec(v.limit_sell_price),
         }
     }
 }
