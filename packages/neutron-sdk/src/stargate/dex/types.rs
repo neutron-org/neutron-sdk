@@ -160,6 +160,7 @@ fn serialize_prec_dec(decimal_str: String) -> String {
 
 impl From<PlaceLimitOrderRequest> for MsgPlaceLimitOrder {
     fn from(v: PlaceLimitOrderRequest) -> MsgPlaceLimitOrder {
+        #[allow(deprecated)] // tick_index_in_to_out will be removed in the next release
         MsgPlaceLimitOrder {
             creator: v.sender,
             receiver: v.receiver,
