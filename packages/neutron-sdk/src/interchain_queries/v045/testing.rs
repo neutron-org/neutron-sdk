@@ -1005,10 +1005,15 @@ fn test_delegations_reconstruct() {
 fn test_balance_reconstruct_from_hex() {
     let bytes = hex::decode(BALANCES_HEX_RESPONSE).unwrap(); // decode hex string to bytes
     let base64_input = BASE64_STANDARD.encode(bytes); // encode bytes to base64 string
+    let balance_key = create_account_denom_balance_key(
+        decode_and_convert("osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs").unwrap(),
+        "uosmo",
+    )
+    .unwrap();
 
     let s = StorageValue {
         storage_prefix: String::default(), // not used in reconstruct
-        key: Binary::default(),            // not used in reconstruct
+        key: Binary::from(balance_key),
         value: Binary::from_base64(base64_input.as_str()).unwrap(),
     };
     let bank_balances = Balances::reconstruct(&[s]).unwrap();
@@ -1016,7 +1021,7 @@ fn test_balance_reconstruct_from_hex() {
         bank_balances,
         Balances {
             coins: vec![StdCoin {
-                denom: String::from("stake"),
+                denom: String::from("uosmo"),
                 amount: Uint128::from(99999000u64),
             }]
         }
@@ -1025,13 +1030,23 @@ fn test_balance_reconstruct_from_hex() {
 
 #[test]
 fn test_balance_reconstruct_from_empty_value() {
+    let balance_key = create_account_denom_balance_key(
+        decode_and_convert("osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs").unwrap(),
+        "uosmo",
+    )
+    .unwrap();
     let s = StorageValue {
         storage_prefix: String::default(), // not used in reconstruct
-        key: Binary::default(),            // not used in reconstruct
+        key: Binary::from(balance_key),
         value: Binary::from(vec![]),
     };
     let bank_balances = Balances::reconstruct(&[s]).unwrap();
-    assert_eq!(bank_balances, Balances { coins: vec![] });
+    assert_eq!(
+        bank_balances,
+        Balances {
+            coins: vec![StdCoin::new(0u128, "uosmo")]
+        }
+    );
 }
 
 #[test]

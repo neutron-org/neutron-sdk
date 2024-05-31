@@ -1,5 +1,6 @@
 use crate::interchain_queries::helpers::uint256_to_u128;
 use crate::interchain_queries::types::KVReconstruct;
+use crate::interchain_queries::v045::helpers::deconstruct_account_denom_balance_key;
 use crate::{
     bindings::types::StorageValue,
     errors::error::{NeutronError, NeutronResult},
@@ -112,11 +113,15 @@ impl KVReconstruct for Balances {
         let mut coins: Vec<Coin> = Vec::with_capacity(storage_values.len());
 
         for kv in storage_values {
-            if kv.value.len() > 0 {
+            let (_, denom) = deconstruct_account_denom_balance_key(kv.key.to_vec())?;
+            let amount = if kv.value.len() > 0 {
                 let balance: CosmosCoin = CosmosCoin::decode(kv.value.as_slice())?;
-                let amount = Uint128::from_str(balance.amount.as_str())?;
-                coins.push(Coin::new(amount.u128(), balance.denom));
-            }
+                Uint128::from_str(balance.amount.as_str())?.u128()
+            } else {
+                0u128
+            };
+
+            coins.push(Coin::new(amount, denom))
         }
 
         Ok(Balances { coins })
