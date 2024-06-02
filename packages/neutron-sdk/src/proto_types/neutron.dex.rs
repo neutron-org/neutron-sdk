@@ -99,8 +99,12 @@ pub struct LimitOrderTranche {
 pub struct Params {
     #[prost(uint64, repeated, tag = "1")]
     pub fee_tiers: ::prost::alloc::vec::Vec<u64>,
-    #[prost(string, tag = "2")]
-    pub max_true_taker_spread: ::prost::alloc::string::String,
+    #[prost(bool, tag = "3")]
+    pub paused: bool,
+    #[prost(uint64, tag = "4")]
+    pub max_jits_per_block: u64,
+    #[prost(uint64, tag = "5")]
+    pub good_til_purge_allowance: u64,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct DepositOptions {
