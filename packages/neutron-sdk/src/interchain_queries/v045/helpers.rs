@@ -55,7 +55,7 @@ pub fn create_balances_query_keys(addr: String, denoms: Vec<String>) -> NeutronR
     let mut kv_keys: Vec<KVKey> = Vec::with_capacity(denoms.len());
 
     for denom in denoms {
-        let balance_key = create_account_denom_balance_key(converted_addr_bytes.clone(), denom)?;
+        let balance_key = create_account_denom_balance_key(&converted_addr_bytes, denom)?;
 
         let kv_key = KVKey {
             path: BANK_STORE_KEY.to_string(),
