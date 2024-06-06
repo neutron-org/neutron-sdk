@@ -116,7 +116,9 @@ pub struct MultiHopRoute {
 #[serde(rename_all = "snake_case")]
 pub struct Params {
     pub fee_tiers: Vec<u64>,
-    pub max_true_taker_spread: Option<PrecDec>,
+    pub paused: bool,
+    pub max_jits_per_block: u64,
+    pub good_til_purge_allowance: u64,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema, Default)]

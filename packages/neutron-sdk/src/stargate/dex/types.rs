@@ -710,7 +710,9 @@ impl From<DepositOptions> for DepositOptionsGen {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct Params {
     pub fee_tiers: Vec<Uint64>,
-    pub max_true_taker_spread: String,
+    pub paused: bool,
+    pub max_jits_per_block: Uint64,
+    pub good_til_purge_allowance: Uint64,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
