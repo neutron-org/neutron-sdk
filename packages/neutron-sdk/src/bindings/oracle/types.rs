@@ -19,5 +19,5 @@ pub struct QuotePrice {
     /// contracts and applications are not utilizing stale oracle prices
     pub block_timestamp: String,
     /// **block_height** is height of block mentioned above
-    pub block_height: u64,
+    pub block_height: Option<u64>,
 }
