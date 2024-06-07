@@ -3,8 +3,8 @@ use std::marker::PhantomData;
 
 use cosmwasm_std::testing::{MockApi, MockQuerier, MockStorage};
 use cosmwasm_std::{
-    from_json, Binary, Coin, ContractResult, CustomQuery, OwnedDeps, Querier, QuerierResult,
-    QueryRequest, SystemError, SystemResult, Uint128,
+    from_json, Binary, Coin, ContractResult, CustomQuery, FullDelegation, OwnedDeps, Querier,
+    QuerierResult, QueryRequest, SystemError, SystemResult, Uint128, Validator,
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -81,6 +81,15 @@ impl WasmMockQuerier {
             }
             _ => self.base.handle_query(request),
         }
+    }
+
+    pub fn _update_staking(
+        &mut self,
+        denom: &str,
+        validators: &[Validator],
+        delegations: &[FullDelegation],
+    ) {
+        self.base.staking.update(denom, validators, delegations);
     }
 
     pub fn add_query_response(&mut self, query_id: u64, response: Binary) {
