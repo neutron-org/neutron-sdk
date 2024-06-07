@@ -221,7 +221,7 @@ pub fn create_gov_proposal_keys(proposals_ids: Vec<u64>) -> NeutronResult<Vec<KV
     for id in proposals_ids {
         let kv_key = KVKey {
             path: GOV_STORE_KEY.to_string(),
-            key: Binary(create_gov_proposal_key(id)?),
+            key: Binary::new(create_gov_proposal_key(id)?),
         };
 
         kv_keys.push(kv_key)
@@ -264,7 +264,7 @@ pub fn create_gov_proposals_voters_votes_keys(
         for proposal_id in proposals_ids.clone() {
             let kv_key = KVKey {
                 path: GOV_STORE_KEY.to_string(),
-                key: Binary(create_gov_proposal_voter_votes_key(
+                key: Binary::new(create_gov_proposal_voter_votes_key(
                     proposal_id,
                     &voter_addr,
                 )?),

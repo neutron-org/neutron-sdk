@@ -433,18 +433,29 @@ impl KVReconstruct for GovernmentProposalVotes {
     }
 }
 
+/// Delegation is basic (cheap to query) data about a delegation.
+///
+/// Instances are created in the querier.
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+pub struct StdDelegation {
+    pub delegator: Addr,
+    /// A validator address (e.g. cosmosvaloper1...)
+    pub validator: String,
+    /// How much we have locked in the delegation
+    pub amount: Coin,
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 /// A structure that can be reconstructed from **StorageValues**'s for the **Delegator Delegation Interchain Query**.
 /// Contains delegations which some delegator has on remote chain.
 pub struct Delegations {
-    pub delegations: Vec<cosmwasm_std::Delegation>,
+    pub delegations: Vec<StdDelegation>,
 }
 
 impl KVReconstruct for Delegations {
     fn reconstruct(storage_values: &[StorageValue]) -> NeutronResult<Delegations> {
         // We are taking 2 items chunks from starage_value to calculate one delegation
-        let mut delegations: Vec<cosmwasm_std::Delegation> =
-            Vec::with_capacity(storage_values.len() / 2);
+        let mut delegations: Vec<StdDelegation> = Vec::with_capacity(storage_values.len() / 2);
 
         if storage_values.is_empty() {
             return Err(NeutronError::InvalidQueryResultFormat(
@@ -472,7 +483,7 @@ impl KVReconstruct for Delegations {
             }
             let delegation_sdk: Delegation = Delegation::decode(chunk[0].value.as_slice())?;
 
-            let mut delegation_std = cosmwasm_std::Delegation {
+            let mut delegation_std = StdDelegation {
                 delegator: Addr::unchecked(delegation_sdk.delegator_address.as_str()),
                 validator: delegation_sdk.validator_address,
                 amount: Default::default(),
