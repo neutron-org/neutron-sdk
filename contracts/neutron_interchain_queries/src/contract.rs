@@ -24,7 +24,7 @@ use neutron_sdk::interchain_queries::{
     check_query_type, get_registered_query, query_kv_result,
     v047::{
         register_queries::{
-            new_register_balance_query_msg, new_register_bank_total_supply_query_msg,
+            new_register_balances_query_msg, new_register_bank_total_supply_query_msg,
             new_register_delegator_delegations_query_msg,
             new_register_delegator_unbonding_delegations_query_msg,
             new_register_distribution_fee_pool_query_msg, new_register_gov_proposals_query_msg,
@@ -69,12 +69,12 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> NeutronResult<Response<NeutronMsg>> {
     match msg {
-        ExecuteMsg::RegisterBalanceQuery {
+        ExecuteMsg::RegisterBalancesQuery {
             connection_id,
             addr,
-            denom,
+            denoms,
             update_period,
-        } => register_balance_query(connection_id, addr, denom, update_period),
+        } => register_balances_query(connection_id, addr, denoms, update_period),
         ExecuteMsg::RegisterBankTotalSupplyQuery {
             connection_id,
             denoms,
@@ -143,13 +143,13 @@ pub fn execute(
     }
 }
 
-pub fn register_balance_query(
+pub fn register_balances_query(
     connection_id: String,
     addr: String,
-    denom: String,
+    denoms: Vec<String>,
     update_period: u64,
 ) -> NeutronResult<Response<NeutronMsg>> {
-    let msg = new_register_balance_query_msg(connection_id, addr, denom, update_period)?;
+    let msg = new_register_balances_query_msg(connection_id, addr, denoms, update_period)?;
 
     Ok(Response::new().add_message(msg))
 }

@@ -212,20 +212,27 @@ fn build_interchain_query_gov_proposal_value(proposal_id: u64) -> StorageValue {
     }
 }
 
-fn build_interchain_query_balance_response(addr: Addr, denom: String, amount: String) -> Binary {
+fn build_interchain_query_balances_response(addr: Addr, balances: Vec<Coin>) -> Binary {
     let converted_addr_bytes = decode_and_convert(addr.as_str()).unwrap();
 
-    let balance_key = create_account_denom_balance_key(converted_addr_bytes, denom).unwrap();
+    let s: Vec<StorageValue> = balances
+        .iter()
+        .map(|c| {
+            let balance_key =
+                create_account_denom_balance_key(converted_addr_bytes.clone(), c.denom.clone())
+                    .unwrap();
+            StorageValue {
+                storage_prefix: "".to_string(),
+                key: Binary(balance_key),
+                value: Binary(c.amount.to_string().into_bytes()),
+            }
+        })
+        .collect();
 
-    let s = StorageValue {
-        storage_prefix: "".to_string(),
-        key: Binary(balance_key),
-        value: Binary(amount.into_bytes()),
-    };
     Binary::from(
         to_string(&QueryRegisteredQueryResultResponse {
             result: InterchainQueryResult {
-                kv_results: vec![s],
+                kv_results: s,
                 height: 123456,
                 revision: 2,
             },
@@ -256,11 +263,11 @@ fn register_query(
 fn test_query_balance() {
     let mut deps = dependencies(&[]);
 
-    let msg = ExecuteMsg::RegisterBalanceQuery {
+    let msg = ExecuteMsg::RegisterBalancesQuery {
         connection_id: "connection".to_string(),
         update_period: 10,
         addr: "osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs".to_string(),
-        denom: "uosmo".to_string(),
+        denoms: vec!["uosmo".to_string()],
     };
 
     let keys = register_query(&mut deps, mock_env(), mock_info("", &[]), msg);
@@ -271,10 +278,9 @@ fn test_query_balance() {
     deps.querier.add_registered_queries(1, registered_query);
     deps.querier.add_query_response(
         1,
-        build_interchain_query_balance_response(
+        build_interchain_query_balances_response(
             Addr::unchecked("osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs"),
-            "uosmo".to_string(),
-            "8278104".to_string(),
+            vec![Coin::new(8278104u128, "uosmo")],
         ),
     );
     let query_balance = QueryMsg::Balance { query_id: 1 };
@@ -286,6 +292,50 @@ fn test_query_balance() {
             last_submitted_local_height: 987,
             balances: Balances {
                 coins: vec![Coin::new(8278104u128, "uosmo")]
+            },
+        }
+    )
+}
+
+#[test]
+fn test_query_balances() {
+    let mut deps = dependencies(&[]);
+
+    let msg = ExecuteMsg::RegisterBalancesQuery {
+        connection_id: "connection".to_string(),
+        update_period: 10,
+        addr: "osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs".to_string(),
+        denoms: vec!["uosmo".to_string(), "uatom".to_string()],
+    };
+
+    let keys = register_query(&mut deps, mock_env(), mock_info("", &[]), msg);
+
+    let registered_query =
+        build_registered_query_response(1, QueryParam::Keys(keys.0), QueryType::KV, 987);
+
+    deps.querier.add_registered_queries(1, registered_query);
+    deps.querier.add_query_response(
+        1,
+        build_interchain_query_balances_response(
+            Addr::unchecked("osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs"),
+            vec![
+                Coin::new(8278104u128, "uosmo"),
+                Coin::new(1234567u128, "uatom"),
+            ],
+        ),
+    );
+    let query_balance = QueryMsg::Balance { query_id: 1 };
+    let resp: BalanceResponse =
+        from_json(query(deps.as_ref(), mock_env(), query_balance).unwrap()).unwrap();
+    assert_eq!(
+        resp,
+        BalanceResponse {
+            last_submitted_local_height: 987,
+            balances: Balances {
+                coins: vec![
+                    Coin::new(8278104u128, "uosmo"),
+                    Coin::new(1234567u128, "uatom")
+                ]
             },
         }
     )
