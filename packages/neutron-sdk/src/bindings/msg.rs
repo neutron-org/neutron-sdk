@@ -360,6 +360,10 @@ impl NeutronMsg {
         }
     }
 
+    #[deprecated(
+        since = "0.11.0",
+        note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use submit_proposal_execute_message instead"
+    )]
     /// Basic helper to define an  ibc upgrade proposal passed to AdminModule:
     /// * **proposal** is struct which contains proposal that upgrades network.
     pub fn submit_upgrade_proposal(proposal: UpgradeProposal) -> Self {
@@ -368,6 +372,10 @@ impl NeutronMsg {
         }
     }
 
+    #[deprecated(
+        since = "0.11.0",
+        note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use submit_proposal_execute_message instead"
+    )]
     /// Basic helper to define an ibc update client change proposal passed to AdminModule:
     /// * **proposal** is struct which contains proposal updates cliient.
     pub fn submit_client_update_proposal(proposal: ClientUpdateProposal) -> Self {
@@ -536,6 +544,16 @@ pub struct MsgRegisterInterchainQueryResponse {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
+/// MsgRegisterInterchainAccountResponse defines the Msg/RegisterInterchainAccount response type.
+pub struct MsgRegisterInterchainAccountResponse {
+    /// **channel_id** is a ...
+    pub channel_id: String,
+    /// **port_id** is a ...
+    pub port_id: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 /// MsgSubmitTxResponse defines the response for Msg/SubmitTx.
 pub struct MsgSubmitTxResponse {
     /// **sequence_id** is a channel's sequence_id for outgoing ibc packet. Unique per a channel.
@@ -546,7 +564,7 @@ pub struct MsgSubmitTxResponse {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-/// MsgSubmitTxResponse defines the response for Msg/IbcTransfer.
+/// MsgIbcTransferResponse defines the response for Msg/IbcTransfer.
 pub struct MsgIbcTransferResponse {
     /// **sequence_id** is a channel's sequence_id for outgoing ibc packet. Unique per a channel.
     pub sequence_id: u64,
@@ -562,10 +580,18 @@ pub enum AdminProposal {
     /// New params has their own `MsgUpdateParams` msgs that can be supplied to `ProposalExecuteMessage`
     ParamChangeProposal(ParamChangeProposal),
 
-    /// Proposal to upgrade IBC client
+    #[deprecated(
+        since = "0.11.0",
+        note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
+    )]
+    /// Depreacteed Proposal to upgrade IBC client
     UpgradeProposal(UpgradeProposal),
 
-    /// Proposal to update IBC client
+    #[deprecated(
+        since = "0.11.0",
+        note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
+    )]
+    /// Deprecated. Proposal to update IBC client
     ClientUpdateProposal(ClientUpdateProposal),
 
     /// Proposal to execute CosmosMsg.
@@ -660,6 +686,10 @@ pub struct Plan {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
+#[deprecated(
+    since = "0.11.0",
+    note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
+)]
 /// UpgradeProposal defines the struct for IBC upgrade proposal.
 pub struct UpgradeProposal {
     /// **title** is a text title of proposal.
@@ -674,6 +704,10 @@ pub struct UpgradeProposal {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
+#[deprecated(
+    since = "0.11.0",
+    note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
+)]
 /// ClientUpdateProposal defines the struct for client update proposal.
 pub struct ClientUpdateProposal {
     /// **title** is a text title of proposal.

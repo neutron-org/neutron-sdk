@@ -99,8 +99,12 @@ pub struct LimitOrderTranche {
 pub struct Params {
     #[prost(uint64, repeated, tag = "1")]
     pub fee_tiers: ::prost::alloc::vec::Vec<u64>,
-    #[prost(string, tag = "2")]
-    pub max_true_taker_spread: ::prost::alloc::string::String,
+    #[prost(bool, tag = "3")]
+    pub paused: bool,
+    #[prost(uint64, tag = "4")]
+    pub max_jits_per_block: u64,
+    #[prost(uint64, tag = "5")]
+    pub good_til_purge_allowance: u64,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct DepositOptions {
@@ -164,6 +168,8 @@ pub struct MsgPlaceLimitOrder {
     pub token_in: ::prost::alloc::string::String,
     #[prost(string, tag = "4")]
     pub token_out: ::prost::alloc::string::String,
+    /// DEPRECATED: tick_index_in_to_out will be removed in future release; limit_sell_price should be used instead.
+    #[deprecated]
     #[prost(int64, tag = "5")]
     pub tick_index_in_to_out: i64,
     #[prost(string, tag = "7")]
@@ -175,6 +181,8 @@ pub struct MsgPlaceLimitOrder {
     pub expiration_time: ::core::option::Option<::prost_types::Timestamp>,
     #[prost(string, tag = "10")]
     pub max_amount_out: ::prost::alloc::string::String,
+    #[prost(string, tag = "11")]
+    pub limit_sell_price: ::prost::alloc::string::String,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MsgPlaceLimitOrderResponse {
@@ -360,11 +368,15 @@ pub struct QueryGetLimitOrderTrancheUserRequest {
     pub address: ::prost::alloc::string::String,
     #[prost(string, tag = "2")]
     pub tranche_key: ::prost::alloc::string::String,
+    #[prost(bool, tag = "3")]
+    pub calc_withdrawable_shares: bool,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryGetLimitOrderTrancheUserResponse {
     #[prost(message, optional, tag = "1")]
     pub limit_order_tranche_user: ::core::option::Option<LimitOrderTrancheUser>,
+    #[prost(string, tag = "2")]
+    pub withdrawable_shares: ::prost::alloc::string::String,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryAllLimitOrderTrancheUserRequest {

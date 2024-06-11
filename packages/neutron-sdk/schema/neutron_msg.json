@@ -1040,6 +1040,7 @@
               "type": "object",
               "required": [
                 "amount_in",
+                "limit_sell_price",
                 "order_type",
                 "receiver",
                 "tick_index_in_to_out",
@@ -1063,6 +1064,10 @@
                   ],
                   "format": "uint64",
                   "minimum": 0.0
+                },
+                "limit_sell_price": {
+                  "description": "Accepts standard decimals and decimals with scientific notation (ie. 1234.23E-7)",
+                  "type": "string"
                 },
                 "max_amount_out": {
                   "description": "Maximum amount of TokenB can be bought. For everything except JUST_IN_TIME OrderType",
