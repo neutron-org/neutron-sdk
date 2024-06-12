@@ -1,11 +1,13 @@
 use cosmwasm_std::{
-    coin, entry_point, from_json, Binary, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Reply,
-    Response, StdError, StdResult, SubMsg,
+    coin, entry_point, Binary, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Reply, Response,
+    StdError, StdResult, SubMsg,
 };
 use cw2::set_contract_version;
+use neutron_sdk::interchain_txs::helpers::decode_message_response;
+use neutron_sdk::proto_types::neutron::transfer::MsgTransferResponse;
 use neutron_sdk::{
     bindings::{
-        msg::{IbcFee, MsgIbcTransferResponse, NeutronMsg},
+        msg::{IbcFee, NeutronMsg},
         query::NeutronQuery,
     },
     query::min_ibc_fee::query_min_ibc_fee,
@@ -112,14 +114,18 @@ fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
 // and process this payload when an acknowledgement for the SubmitTx message is received in Sudo handler
 fn prepare_sudo_payload(mut deps: DepsMut, _env: Env, msg: Reply) -> StdResult<Response> {
     let payload = read_reply_payload(deps.storage, msg.id)?;
-    let resp: MsgIbcTransferResponse = from_json(
-        msg.result
+    let resp: MsgTransferResponse = decode_message_response(
+        &msg.result
             .into_result()
             .map_err(StdError::generic_err)?
-            .data
-            .ok_or_else(|| StdError::generic_err("no result"))?,
+            .msg_responses[0]
+            .clone()
+            .value
+            .to_vec(),
     )
     .map_err(|e| StdError::generic_err(format!("failed to parse response: {:?}", e)))?;
+    deps.api
+        .debug(format!("WASMDEBUG: reply msg: {:?}", resp).as_str());
     let seq_id = resp.sequence_id;
     let channel_id = resp.channel;
     save_sudo_payload(deps.branch().storage, channel_id, seq_id, payload)?;
