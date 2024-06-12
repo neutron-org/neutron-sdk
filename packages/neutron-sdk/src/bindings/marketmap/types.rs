@@ -37,7 +37,7 @@ pub struct ProviderConfig {
     /// For example, if the desired Ticker is BTC/USD, this market could be reached
     /// using: OffChainTicker = BTC/USDT NormalizeByPair = USDT/USD This field is
     /// optional and nullable.
-    pub normalize_by_pair: CurrencyPair,
+    pub normalize_by_pair: Option<CurrencyPair>,
     /// **invert** is a boolean indicating if the BASE and QUOTE of the market should
     /// be inverted. i.e. BASE -> QUOTE, QUOTE -> BASE
     #[serde(default)]

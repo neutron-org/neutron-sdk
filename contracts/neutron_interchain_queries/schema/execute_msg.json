@@ -5,15 +5,15 @@
     {
       "type": "object",
       "required": [
-        "register_balance_query"
+        "register_balances_query"
       ],
       "properties": {
-        "register_balance_query": {
+        "register_balances_query": {
           "type": "object",
           "required": [
             "addr",
             "connection_id",
-            "denom",
+            "denoms",
             "update_period"
           ],
           "properties": {
@@ -23,8 +23,11 @@
             "connection_id": {
               "type": "string"
             },
-            "denom": {
-              "type": "string"
+            "denoms": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             },
             "update_period": {
               "type": "integer",
