@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OracleQuery",
+  "oneOf": [
+    {
+      "description": "Parameters queries the parameters of the module.",
+      "type": "object",
+      "required": [
+        "get_all_currency_pairs"
+      ],
+      "properties": {
+        "get_all_currency_pairs": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "get_price_request"
+      ],
+      "properties": {
+        "get_price_request": {
+          "type": "object",
+          "required": [
+            "currency_pair"
+          ],
+          "properties": {
+            "currency_pair": {
+              "$ref": "#/definitions/CurrencyPair"
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "get_prices_request"
+      ],
+      "properties": {
+        "get_prices_request": {
+          "type": "object",
+          "required": [
+            "currency_pair_ids"
+          ],
+          "properties": {
+            "currency_pair_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  ],
+  "definitions": {
+    "CurrencyPair": {
+      "type": "object",
+      "required": [
+        "base",
+        "quote"
+      ],
+      "properties": {
+        "base": {
+          "type": "string"
+        },
+        "quote": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

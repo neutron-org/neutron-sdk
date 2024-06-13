@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MarketmapQuery",
+  "oneOf": [
+    {
+      "description": "Parameters queries the parameters of the module.",
+      "type": "object",
+      "required": [
+        "params"
+      ],
+      "properties": {
+        "params": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "get_last_updated_request"
+      ],
+      "properties": {
+        "get_last_updated_request": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "get_market_map_request"
+      ],
+      "properties": {
+        "get_market_map_request": {
+          "type": "object"
+        }
+      },
+      "additionalProperties": false
+    }
+  ]
+}
