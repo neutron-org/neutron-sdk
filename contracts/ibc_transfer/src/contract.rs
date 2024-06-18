@@ -118,14 +118,12 @@ fn prepare_sudo_payload(mut deps: DepsMut, _env: Env, msg: Reply) -> StdResult<R
         &msg.result
             .into_result()
             .map_err(StdError::generic_err)?
-            .msg_responses[0]
+            .msg_responses[0] // msg_responses must have exactly one Msg response: https://github.com/neutron-org/neutron/blob/28b1d2ce968aaf1866e92d5286487f079eba3370/wasmbinding/message_plugin.go#L307
             .clone()
             .value
             .to_vec(),
     )
     .map_err(|e| StdError::generic_err(format!("failed to parse response: {:?}", e)))?;
-    deps.api
-        .debug(format!("WASMDEBUG: reply msg: {:?}", resp).as_str());
     let seq_id = resp.sequence_id;
     let channel_id = resp.channel;
     save_sudo_payload(deps.branch().storage, channel_id, seq_id, payload)?;

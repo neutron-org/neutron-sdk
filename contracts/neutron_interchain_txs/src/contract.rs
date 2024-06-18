@@ -620,7 +620,7 @@ fn prepare_sudo_payload(mut deps: DepsMut, _env: Env, msg: Reply) -> StdResult<R
         &msg.result
             .into_result()
             .map_err(StdError::generic_err)?
-            .msg_responses[0]
+            .msg_responses[0] // msg_responses must have exactly one Msg response: https://github.com/neutron-org/neutron/blob/28b1d2ce968aaf1866e92d5286487f079eba3370/wasmbinding/message_plugin.go#L443
             .clone()
             .value
             .to_vec(),
