@@ -30,7 +30,7 @@ pub struct Params {
 /// GenesisState defines the tokenfactory module's genesis state.
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GenesisState {
-    /// params defines the paramaters of the module.
+    /// params defines the parameters of the module.
     #[prost(message, optional, tag = "1")]
     pub params: ::core::option::Option<Params>,
     #[prost(message, repeated, tag = "2")]

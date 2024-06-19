@@ -3,12 +3,13 @@ use crate::proto_types::neutron::dex::{
     DepositOptions as DepositOptionsGen, MsgCancelLimitOrder, MsgDeposit, MsgMultiHopSwap,
     MsgPlaceLimitOrder, MsgWithdrawFilledLimitOrder, MsgWithdrawal, MultiHopRoute,
     QueryAllInactiveLimitOrderTrancheRequest, QueryAllLimitOrderTrancheRequest,
-    QueryAllLimitOrderTrancheUserRequest, QueryAllPoolMetadataRequest, QueryAllPoolReservesRequest,
-    QueryAllTickLiquidityRequest, QueryAllUserDepositsRequest, QueryAllUserLimitOrdersRequest,
-    QueryEstimateMultiHopSwapRequest, QueryEstimatePlaceLimitOrderRequest,
-    QueryGetInactiveLimitOrderTrancheRequest, QueryGetLimitOrderTrancheRequest,
-    QueryGetLimitOrderTrancheUserRequest, QueryGetPoolMetadataRequest, QueryGetPoolReservesRequest,
-    QueryParamsRequest, QueryPoolByIdRequest, QueryPoolRequest,
+    QueryAllLimitOrderTrancheUserByAddressRequest, QueryAllLimitOrderTrancheUserRequest,
+    QueryAllPoolMetadataRequest, QueryAllPoolReservesRequest, QueryAllTickLiquidityRequest,
+    QueryAllUserDepositsRequest, QueryEstimateMultiHopSwapRequest,
+    QueryEstimatePlaceLimitOrderRequest, QueryGetInactiveLimitOrderTrancheRequest,
+    QueryGetLimitOrderTrancheRequest, QueryGetLimitOrderTrancheUserRequest,
+    QueryGetPoolMetadataRequest, QueryGetPoolReservesRequest, QueryParamsRequest,
+    QueryPoolByIdRequest, QueryPoolRequest,
 };
 use crate::stargate::aux::proto_timestamp_from_i64;
 use cosmos_sdk_proto::cosmos::base::query::v1beta1::PageRequest as PageRequestGen;
@@ -328,9 +329,9 @@ pub struct AllUserLimitOrdersResponse {
     pub pagination: Option<PageResponse>,
 }
 
-impl From<AllUserLimitOrdersRequest> for QueryAllUserLimitOrdersRequest {
-    fn from(v: AllUserLimitOrdersRequest) -> QueryAllUserLimitOrdersRequest {
-        QueryAllUserLimitOrdersRequest {
+impl From<AllUserLimitOrdersRequest> for QueryAllLimitOrderTrancheUserByAddressRequest {
+    fn from(v: AllUserLimitOrdersRequest) -> QueryAllLimitOrderTrancheUserByAddressRequest {
+        QueryAllLimitOrderTrancheUserByAddressRequest {
             address: v.address,
             pagination: convert_page_request(v.pagination),
         }
@@ -540,8 +541,6 @@ impl From<GetPoolReservesRequest> for QueryGetPoolReservesRequest {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct EstimateMultiHopSwapRequest {
-    pub creator: String,
-    pub receiver: String,
     pub routes: Vec<Vec<String>>,
     pub amount_in: String,
     pub exit_limit_price: String,
@@ -556,8 +555,6 @@ pub struct EstimateMultiHopSwapResponse {
 impl From<EstimateMultiHopSwapRequest> for QueryEstimateMultiHopSwapRequest {
     fn from(v: EstimateMultiHopSwapRequest) -> QueryEstimateMultiHopSwapRequest {
         QueryEstimateMultiHopSwapRequest {
-            creator: v.creator,
-            receiver: v.receiver,
             routes: v
                 .routes
                 .into_iter()
@@ -574,8 +571,6 @@ impl From<EstimateMultiHopSwapRequest> for QueryEstimateMultiHopSwapRequest {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct EstimatePlaceLimitOrderRequest {
-    pub creator: String,
-    pub receiver: String,
     pub token_in: String,
     pub token_out: String,
     pub tick_index_in_to_out: i64,
@@ -601,8 +596,6 @@ pub struct EstimatePlaceLimitOrderResponse {
 impl From<EstimatePlaceLimitOrderRequest> for QueryEstimatePlaceLimitOrderRequest {
     fn from(v: EstimatePlaceLimitOrderRequest) -> QueryEstimatePlaceLimitOrderRequest {
         QueryEstimatePlaceLimitOrderRequest {
-            creator: v.creator,
-            receiver: v.receiver,
             token_in: v.token_in,
             token_out: v.token_out,
             tick_index_in_to_out: v.tick_index_in_to_out,
@@ -697,12 +690,14 @@ pub struct DepositOptions {
     /// Autoswap provides a mechanism for users to deposit the entirety of their specified deposit
     /// amounts by paying a small fee. By default the `autoswap` option is enabled.
     pub disable_autoswap: bool,
+    pub fail_tx_on_bel: bool,
 }
 
 impl From<DepositOptions> for DepositOptionsGen {
     fn from(o: DepositOptions) -> DepositOptionsGen {
         DepositOptionsGen {
             disable_autoswap: o.disable_autoswap,
+            fail_tx_on_bel: o.fail_tx_on_bel,
         }
     }
 }

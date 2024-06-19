@@ -36,8 +36,24 @@ pub struct MsgTransferResponse {
     /// channel's sequence_id for outgoing ibc packet. Unique per a channel.
     #[prost(uint64, tag = "1")]
     pub sequence_id: u64,
-    /// channel src channel on neutron side trasaction was submitted from
+    /// channel src channel on neutron side transaction was submitted from
     #[prost(string, tag = "2")]
     pub channel: ::prost::alloc::string::String,
 }
+/// MsgUpdateParams is the Msg/UpdateParams request type.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct MsgUpdateParams {
+    /// signer address
+    #[prost(string, tag = "1")]
+    pub signer: ::prost::alloc::string::String,
+    /// params defines the transfer parameters to update.
+    ///
+    /// NOTE: All parameters must be supplied.
+    #[prost(message, optional, tag = "2")]
+    pub params: ::core::option::Option<cosmos_sdk_proto::ibc::applications::transfer::v1::Params>,
+}
+/// MsgUpdateParamsResponse defines the response structure for executing a
+/// MsgUpdateParams message.
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct MsgUpdateParamsResponse {}
 // @@protoc_insertion_point(module)

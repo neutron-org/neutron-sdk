@@ -110,6 +110,8 @@ pub struct Params {
 pub struct DepositOptions {
     #[prost(bool, tag = "1")]
     pub disable_autoswap: bool,
+    #[prost(bool, tag = "2")]
+    pub fail_tx_on_bel: bool,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MsgDeposit {
@@ -133,11 +135,20 @@ pub struct MsgDeposit {
     pub options: ::prost::alloc::vec::Vec<DepositOptions>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
+pub struct FailedDeposit {
+    #[prost(uint64, tag = "1")]
+    pub deposit_idx: u64,
+    #[prost(string, tag = "2")]
+    pub error: ::prost::alloc::string::String,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MsgDepositResponse {
     #[prost(string, repeated, tag = "1")]
     pub reserve0_deposited: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
     #[prost(string, repeated, tag = "2")]
     pub reserve1_deposited: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+    #[prost(message, repeated, tag = "3")]
+    pub failed_deposits: ::prost::alloc::vec::Vec<FailedDeposit>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MsgWithdrawal {
@@ -445,7 +456,7 @@ pub struct QueryAllUserDepositsResponse {
         ::core::option::Option<cosmos_sdk_proto::cosmos::base::query::v1beta1::PageResponse>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct QueryAllUserLimitOrdersRequest {
+pub struct QueryAllLimitOrderTrancheUserByAddressRequest {
     #[prost(string, tag = "1")]
     pub address: ::prost::alloc::string::String,
     #[prost(message, optional, tag = "2")]
@@ -453,7 +464,7 @@ pub struct QueryAllUserLimitOrdersRequest {
         ::core::option::Option<cosmos_sdk_proto::cosmos::base::query::v1beta1::PageRequest>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct QueryAllUserLimitOrdersResponse {
+pub struct QueryAllLimitOrderTrancheUserByAddressResponse {
     #[prost(message, repeated, tag = "1")]
     pub limit_orders: ::prost::alloc::vec::Vec<LimitOrderTrancheUser>,
     #[prost(message, optional, tag = "2")]
@@ -544,10 +555,6 @@ pub struct QueryGetPoolReservesResponse {
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryEstimateMultiHopSwapRequest {
-    #[prost(string, tag = "1")]
-    pub creator: ::prost::alloc::string::String,
-    #[prost(string, tag = "2")]
-    pub receiver: ::prost::alloc::string::String,
     #[prost(message, repeated, tag = "3")]
     pub routes: ::prost::alloc::vec::Vec<MultiHopRoute>,
     #[prost(string, tag = "4")]
@@ -566,10 +573,6 @@ pub struct QueryEstimateMultiHopSwapResponse {
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryEstimatePlaceLimitOrderRequest {
-    #[prost(string, tag = "1")]
-    pub creator: ::prost::alloc::string::String,
-    #[prost(string, tag = "2")]
-    pub receiver: ::prost::alloc::string::String,
     #[prost(string, tag = "3")]
     pub token_in: ::prost::alloc::string::String,
     #[prost(string, tag = "4")]

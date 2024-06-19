@@ -1,11 +1,12 @@
 use crate::proto_types::neutron::dex::{
     QueryAllInactiveLimitOrderTrancheRequest, QueryAllLimitOrderTrancheRequest,
-    QueryAllLimitOrderTrancheUserRequest, QueryAllPoolMetadataRequest, QueryAllPoolReservesRequest,
-    QueryAllTickLiquidityRequest, QueryAllUserDepositsRequest, QueryAllUserLimitOrdersRequest,
-    QueryEstimateMultiHopSwapRequest, QueryEstimatePlaceLimitOrderRequest,
-    QueryGetInactiveLimitOrderTrancheRequest, QueryGetLimitOrderTrancheRequest,
-    QueryGetLimitOrderTrancheUserRequest, QueryGetPoolMetadataRequest, QueryGetPoolReservesRequest,
-    QueryParamsRequest, QueryPoolByIdRequest, QueryPoolRequest,
+    QueryAllLimitOrderTrancheUserByAddressRequest, QueryAllLimitOrderTrancheUserRequest,
+    QueryAllPoolMetadataRequest, QueryAllPoolReservesRequest, QueryAllTickLiquidityRequest,
+    QueryAllUserDepositsRequest, QueryEstimateMultiHopSwapRequest,
+    QueryEstimatePlaceLimitOrderRequest, QueryGetInactiveLimitOrderTrancheRequest,
+    QueryGetLimitOrderTrancheRequest, QueryGetLimitOrderTrancheUserRequest,
+    QueryGetPoolMetadataRequest, QueryGetPoolReservesRequest, QueryParamsRequest,
+    QueryPoolByIdRequest, QueryPoolRequest,
 };
 use crate::stargate::aux::make_stargate_query;
 use crate::stargate::dex::types::{
@@ -83,7 +84,7 @@ pub fn get_limit_order_tranche_user_all_by_address(
     make_stargate_query(
         deps,
         LIMIT_ORDER_TRANCHE_USER_ALL_BY_ADDRESS_QUERY_PATH,
-        QueryAllUserLimitOrdersRequest::from(req),
+        QueryAllLimitOrderTrancheUserByAddressRequest::from(req),
     )
 }
 
