@@ -689,27 +689,19 @@
               "type": "object",
               "required": [
                 "amount_in",
-                "creator",
                 "exit_limit_price",
                 "pick_best_route",
-                "receiver",
                 "routes"
               ],
               "properties": {
                 "amount_in": {
                   "$ref": "#/definitions/Int128"
                 },
-                "creator": {
-                  "type": "string"
-                },
                 "exit_limit_price": {
                   "$ref": "#/definitions/PrecDec"
                 },
                 "pick_best_route": {
                   "type": "boolean"
-                },
-                "receiver": {
-                  "type": "string"
                 },
                 "routes": {
                   "type": "array",
@@ -734,9 +726,7 @@
               "type": "object",
               "required": [
                 "amount_in",
-                "creator",
                 "order_type",
-                "receiver",
                 "tick_index_in_to_out",
                 "token_in",
                 "token_out"
@@ -744,9 +734,6 @@
               "properties": {
                 "amount_in": {
                   "$ref": "#/definitions/Int128"
-                },
-                "creator": {
-                  "type": "string"
                 },
                 "expiration_time": {
                   "type": [
@@ -768,9 +755,6 @@
                 },
                 "order_type": {
                   "$ref": "#/definitions/LimitOrderType"
-                },
-                "receiver": {
-                  "type": "string"
                 },
                 "tick_index_in_to_out": {
                   "type": "integer",
@@ -1076,6 +1060,65 @@
                 }
               },
               "additionalProperties": false
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "OracleQuery": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "get_all_currency_pairs"
+          ],
+          "properties": {
+            "get_all_currency_pairs": {
+              "type": "object"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "get_price"
+          ],
+          "properties": {
+            "get_price": {
+              "type": "object",
+              "required": [
+                "currency_pair"
+              ],
+              "properties": {
+                "currency_pair": {
+                  "$ref": "#/definitions/CurrencyPair"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "get_prices"
+          ],
+          "properties": {
+            "get_prices": {
+              "type": "object",
+              "required": [
+                "currency_pair_ids"
+              ],
+              "properties": {
+                "currency_pair_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
             }
           },
           "additionalProperties": false

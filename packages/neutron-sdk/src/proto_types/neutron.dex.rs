@@ -559,10 +559,6 @@ pub struct QueryGetPoolReservesResponse {
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryEstimateMultiHopSwapRequest {
-    #[prost(string, tag = "1")]
-    pub creator: ::prost::alloc::string::String,
-    #[prost(string, tag = "2")]
-    pub receiver: ::prost::alloc::string::String,
     #[prost(message, repeated, tag = "3")]
     pub routes: ::prost::alloc::vec::Vec<MultiHopRoute>,
     #[prost(string, tag = "4")]
@@ -581,10 +577,6 @@ pub struct QueryEstimateMultiHopSwapResponse {
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QueryEstimatePlaceLimitOrderRequest {
-    #[prost(string, tag = "1")]
-    pub creator: ::prost::alloc::string::String,
-    #[prost(string, tag = "2")]
-    pub receiver: ::prost::alloc::string::String,
     #[prost(string, tag = "3")]
     pub token_in: ::prost::alloc::string::String,
     #[prost(string, tag = "4")]
