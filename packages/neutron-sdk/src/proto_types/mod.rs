@@ -38,6 +38,7 @@ pub mod neutron {
 }
 pub mod osmosis {
     pub mod tokenfactory {
+        include!("osmosis.tokenfactory.rs");
         pub mod v1beta1 {
             include!("osmosis.tokenfactory.v1beta1.rs");
         }
