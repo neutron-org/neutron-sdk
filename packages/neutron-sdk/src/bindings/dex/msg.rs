@@ -1,9 +1,18 @@
 use crate::bindings::dex::types::LimitOrderType;
-use cosmwasm_std::Uint128;
+use cosmwasm_std::{Uint128, CustomMsg, CosmosMsg};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use super::types::{DepositOption, MultiHopRoute, PrecDec};
+
+impl CustomMsg for DexMsg {}
+
+impl From<DexMsg> for CosmosMsg<DexMsg> {
+    fn from(msg: DexMsg) -> CosmosMsg<DexMsg> {
+        CosmosMsg::Custom(msg)
+    }
+}
+
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
