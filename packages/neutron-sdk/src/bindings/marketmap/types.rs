@@ -44,7 +44,10 @@ pub struct ProviderConfig {
     pub invert: bool,
     /// **metadata_json** is a string of JSON that encodes any extra configuration
     /// for the given provider config.
-    #[serde(rename(serialize = "metadata_JSON", deserialize = "metadata_JSON"))]
+    #[serde(
+        default,
+        rename(serialize = "metadata_JSON", deserialize = "metadata_JSON")
+    )]
     pub metadata_json: String,
 }
 
@@ -73,6 +76,9 @@ pub struct Ticker {
     pub enabled: bool,
     /// **metadata_json** is a string of JSON that encodes any extra configuration
     /// for the given ticker. ,
-    #[serde(rename(serialize = "metadata_JSON", deserialize = "metadata_JSON"))]
+    #[serde(
+        default,
+        rename(serialize = "metadata_JSON", deserialize = "metadata_JSON")
+    )]
     pub metadata_json: String,
 }
