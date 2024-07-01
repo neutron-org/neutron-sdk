@@ -16,6 +16,7 @@ where
     Req: prost::Message,
     Res: DeserializeOwned,
 {
+    #[allow(deprecated)]
     deps.querier.query(&QueryRequest::Stargate {
         path: path.to_string(),
         data: req.encode_to_vec().into(),
@@ -28,6 +29,7 @@ where
 /// * **path** is an RPC request path. See Msg service definitions in neutron modules' proto files
 /// for additional info.
 pub fn create_stargate_msg<Req: prost::Message, T>(path: &str, req: Req) -> CosmosMsg<T> {
+    #[allow(deprecated)]
     CosmosMsg::Stargate::<T> {
         type_url: path.to_string(),
         value: Binary::from(req.encode_to_vec()),

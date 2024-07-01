@@ -34,7 +34,7 @@ pub fn save_reply_payload(store: &mut dyn Storage, payload: SudoPayload) -> StdR
 
 pub fn read_reply_payload(store: &dyn Storage, id: u64) -> StdResult<SudoPayload> {
     let data = REPLY_QUEUE_ID.load(store, id)?;
-    from_json(Binary(data))
+    from_json(Binary::new(data))
 }
 
 /// SUDO_PAYLOAD - tmp storage for sudo handler payloads
@@ -59,5 +59,5 @@ pub fn read_sudo_payload(
     seq_id: u64,
 ) -> StdResult<SudoPayload> {
     let data = SUDO_PAYLOAD.load(store, (channel_id, seq_id))?;
-    from_json(Binary(data))
+    from_json(Binary::new(data))
 }

@@ -11,7 +11,7 @@ use crate::{
     interchain_queries::{
         queries::{check_query_type, get_registered_query, query_kv_result},
         types::QueryType,
-        v047::types::Balances,
+        v047::types::{Balances, StdDelegation},
     },
     NeutronResult,
 };
@@ -50,7 +50,7 @@ pub fn query_balance(
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct DelegatorDelegationsResponse {
-    pub delegations: Vec<cosmwasm_std::Delegation>,
+    pub delegations: Vec<StdDelegation>,
     pub last_submitted_local_height: u64,
 }
 

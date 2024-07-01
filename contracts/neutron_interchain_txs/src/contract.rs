@@ -13,9 +13,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use neutron_sdk::bindings::msg::IbcFee;
+use neutron_sdk::proto_types::neutron::interchaintxs::v1::MsgSubmitTxResponse;
 use neutron_sdk::{
     bindings::{
-        msg::{MsgSubmitTxResponse, NeutronMsg},
+        msg::NeutronMsg,
         query::{NeutronQuery, QueryInterchainAccountAddressResponse},
         types::ProtobufAny,
     },
@@ -615,13 +616,14 @@ fn sudo_error(deps: DepsMut, request: RequestPacket, details: String) -> StdResu
 // and process this payload when an acknowledgement for the SubmitTx message is received in Sudo handler
 fn prepare_sudo_payload(mut deps: DepsMut, _env: Env, msg: Reply) -> StdResult<Response> {
     let payload = read_reply_payload(deps.storage)?;
-    let resp: MsgSubmitTxResponse = serde_json_wasm::from_slice(
-        msg.result
+    let resp: MsgSubmitTxResponse = decode_message_response(
+        &msg.result
             .into_result()
             .map_err(StdError::generic_err)?
-            .data
-            .ok_or_else(|| StdError::generic_err("no result"))?
-            .as_slice(),
+            .msg_responses[0] // msg_responses must have exactly one Msg response: https://github.com/neutron-org/neutron/blob/28b1d2ce968aaf1866e92d5286487f079eba3370/wasmbinding/message_plugin.go#L443
+            .clone()
+            .value
+            .to_vec(),
     )
     .map_err(|e| StdError::generic_err(format!("failed to parse response: {:?}", e)))?;
     deps.api

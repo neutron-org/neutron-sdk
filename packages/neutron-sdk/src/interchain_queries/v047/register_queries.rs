@@ -35,7 +35,7 @@ pub fn new_register_delegator_delegations_query_msg(
     // create KV key to get Staking Params from staking module
     keys.push(KVKey {
         path: STAKING_STORE_KEY.to_string(),
-        key: Binary(vec![STAKING_PARAMS_KEY]),
+        key: Binary::new(vec![STAKING_PARAMS_KEY]),
     });
 
     for v in validators {
@@ -44,13 +44,13 @@ pub fn new_register_delegator_delegations_query_msg(
         // create delegation key to get delegation structure
         keys.push(KVKey {
             path: STAKING_STORE_KEY.to_string(),
-            key: Binary(create_delegation_key(&delegator_addr, &val_addr)?),
+            key: Binary::new(create_delegation_key(&delegator_addr, &val_addr)?),
         });
 
         // create validator key to get validator structure
         keys.push(KVKey {
             path: STAKING_STORE_KEY.to_string(),
-            key: Binary(create_validator_key(&val_addr)?),
+            key: Binary::new(create_validator_key(&val_addr)?),
         })
     }
 
