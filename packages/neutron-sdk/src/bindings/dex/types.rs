@@ -17,7 +17,7 @@ pub enum LimitOrderType {
     /// of the supplied AmountIn or return an error. If there is insufficient liquidity to
     /// complete the trade at or above the supplied TickIndex a Fill-or-Kill order will
     /// return an error `codespace: dex, code: 1134`
-    /// (https://github.com/neutron-org/neutron/blob/main/x/dex/types/errors.go#L107 ErrGoodTilOrderWithoutExpiration).
+    /// (<https://github.com/neutron-org/neutron/blob/main/x/dex/types/errors.go#L107> ErrGoodTilOrderWithoutExpiration).
     FillOrKill,
     /// Immediate-or-Cancel limit orders are taker orders that will swap as much as of the
     /// AmountIn as possible given available liquidity above the supplied TickIndex.
