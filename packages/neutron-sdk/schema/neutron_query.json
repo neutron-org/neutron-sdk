@@ -244,12 +244,51 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "market_map"
+      ],
+      "properties": {
+        "market_map": {
+          "$ref": "#/definitions/MarketMapQuery"
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "oracle"
+      ],
+      "properties": {
+        "oracle": {
+          "$ref": "#/definitions/OracleQuery"
+        }
+      },
+      "additionalProperties": false
     }
   ],
   "definitions": {
     "Binary": {
       "description": "Binary is a wrapper around Vec<u8> to add base64 de/serialization with serde. It also adds some helper methods to help encode inline.\n\nThis is only needed as serde-json-{core,wasm} has a horrible encoding for Vec<u8>. See also <https://github.com/CosmWasm/cosmwasm/blob/main/docs/MESSAGE_TYPES.md>.",
       "type": "string"
+    },
+    "CurrencyPair": {
+      "type": "object",
+      "required": [
+        "Base",
+        "Quote"
+      ],
+      "properties": {
+        "Base": {
+          "type": "string"
+        },
+        "Quote": {
+          "type": "string"
+        }
+      }
     },
     "DexQuery": {
       "oneOf": [
@@ -872,6 +911,67 @@
         }
       ]
     },
+    "MarketMapQuery": {
+      "oneOf": [
+        {
+          "description": "Parameters queries the parameters of the module.",
+          "type": "object",
+          "required": [
+            "params"
+          ],
+          "properties": {
+            "params": {
+              "type": "object"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "last_updated"
+          ],
+          "properties": {
+            "last_updated": {
+              "type": "object"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "market_map"
+          ],
+          "properties": {
+            "market_map": {
+              "type": "object"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "market"
+          ],
+          "properties": {
+            "market": {
+              "type": "object",
+              "required": [
+                "currency_pair"
+              ],
+              "properties": {
+                "currency_pair": {
+                  "$ref": "#/definitions/CurrencyPair"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
     "MultiHopRoute": {
       "type": "object",
       "required": [
@@ -885,6 +985,65 @@
           }
         }
       }
+    },
+    "OracleQuery": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "get_all_currency_pairs"
+          ],
+          "properties": {
+            "get_all_currency_pairs": {
+              "type": "object"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "get_price"
+          ],
+          "properties": {
+            "get_price": {
+              "type": "object",
+              "required": [
+                "currency_pair"
+              ],
+              "properties": {
+                "currency_pair": {
+                  "$ref": "#/definitions/CurrencyPair"
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "get_prices"
+          ],
+          "properties": {
+            "get_prices": {
+              "type": "object",
+              "required": [
+                "currency_pair_ids"
+              ],
+              "properties": {
+                "currency_pair_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
     },
     "PageRequest": {
       "type": "object",
