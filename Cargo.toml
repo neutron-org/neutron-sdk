@@ -14,14 +14,14 @@ incremental = false
 overflow-checks = true
 
 [workspace.dependencies]
-cosmwasm-std = "1.4.0"
-cw2 = "1.1.1"
+cosmwasm-std = "2.0.4"
+cw2 = "2.0.0"
 schemars = "0.8.15"
 serde = { version = "1.0.188", default-features = false }
 serde-json-wasm = "1.0.0"
-cw-storage-plus = "1.1.0"
-cosmwasm-schema = { version = "1.4.0", default-features = false }
-base64 = "0.21.4"
+cw-storage-plus = "2.0.0"
+cosmwasm-schema = { version = "2.0.4", default-features = false }
+base64 = "0.21.7"
 prost = "0.12.3"
 prost-types = "0.12.1"
 cosmos-sdk-proto = { version = "0.20.0", default-features = false }
@@ -30,5 +30,5 @@ thiserror = "1.0.49"
 protobuf = "~3.3.0"
 hex = "0.4.3"
 serde_json = { version = "1.0.87" }
-tendermint-proto = "0.34"
+tendermint-proto = "0.34.1"
 speedate = "0.13.0"
