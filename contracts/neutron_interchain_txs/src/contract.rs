@@ -231,8 +231,7 @@ fn execute_delegate(
             amount: amount.to_string(),
         }),
     };
-    let mut buf = Vec::new();
-    buf.reserve(delegate_msg.encoded_len());
+    let mut buf = Vec::with_capacity(delegate_msg.encoded_len());
 
     if let Err(e) = delegate_msg.encode(&mut buf) {
         return Err(NeutronError::Std(StdError::generic_err(format!(
@@ -290,8 +289,7 @@ fn execute_undelegate(
             amount: amount.to_string(),
         }),
     };
-    let mut buf = Vec::new();
-    buf.reserve(delegate_msg.encoded_len());
+    let mut buf = Vec::with_capacity(delegate_msg.encoded_len());
 
     if let Err(e) = delegate_msg.encode(&mut buf) {
         return Err(NeutronError::Std(StdError::generic_err(format!(

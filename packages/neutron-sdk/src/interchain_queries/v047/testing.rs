@@ -139,7 +139,7 @@ fn test_bank_total_supply_reconstruct() {
             let s = StorageValue {
                 storage_prefix: "".to_string(),
                 key: Binary::new(denom_key),
-                value: Binary::new(case.amount.as_str().as_bytes().to_vec()),
+                value: Binary::new(case.amount.as_bytes().to_vec()),
             };
             st_values.push(s);
         }
