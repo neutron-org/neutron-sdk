@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.11.0
+
+### Improvements
+* Rust 1.78;
+* Cosmwasm optimizer 0.16;
+* [CosmWasm STD is upgraded to v2.0](https://github.com/neutron-org/neutron-sdk/pull/147);
+* ICQ balances query is [improved](https://github.com/neutron-org/neutron-sdk/pull/130) to support a list of denoms to query balances of;
+
+### Added
+* [Proto types generation](https://github.com/neutron-org/neutron-sdk/pull/125); for Stargate queries and messages;
+* [ICQ for proposal voters](https://github.com/neutron-org/neutron-sdk/pull/129);
+* `MsgRegisterInterchainAccountResponse` binding response [is added](https://github.com/neutron-org/neutron-sdk/pull/138), so now contracts are able to catch `channel_id` and `port_id` directly in a reply handler of `MsgRegisterInterchainAccount`;
+* [Bindings](https://github.com/neutron-org/neutron-sdk/pull/141) for Slinky Oracle and MarketMap;
+* `limit_sell_price` [is added](https://github.com/neutron-org/neutron-sdk/pull/143) to `PlaceLimitOrder` DEX message;
+
 ## 0.10.0
 
 Bindings for [Neutron Dex module](https://docs.neutron.org/neutron/modules/dex/overview/) is added.
