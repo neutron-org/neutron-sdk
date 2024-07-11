@@ -10,5 +10,6 @@
       "description": "*interchain_account_address** is a interchain account address on the remote chain",
       "type": "string"
     }
-  }
+  },
+  "additionalProperties": false
 }
