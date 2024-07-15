@@ -584,7 +584,7 @@ pub enum AdminProposal {
         since = "0.11.0",
         note = "Used only for querying old proposals. Will fail if executed in a new proposal. Use ProposalExecuteMessage instead"
     )]
-    /// Depreacteed Proposal to upgrade IBC client
+    /// Deprecated. Proposal to upgrade IBC client
     UpgradeProposal(UpgradeProposal),
 
     #[deprecated(
