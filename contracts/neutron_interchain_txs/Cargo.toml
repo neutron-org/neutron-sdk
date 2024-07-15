@@ -25,5 +25,6 @@ serde-json-wasm = { workspace = true }
 cw-storage-plus = { workspace = true }
 cosmos-sdk-proto = { workspace = true }
 neutron-sdk = { path = "../../packages/neutron-sdk", default-features = false }
+neutron-std = { path = "../../packages/neutron-std", default-features = false }
 prost-types = { workspace = true }
 cosmwasm-schema = { workspace = true }
