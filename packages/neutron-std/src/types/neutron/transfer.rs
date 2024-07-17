@@ -109,6 +109,7 @@ pub struct MsgUpdateParams {
 )]
 #[proto_message(type_url = "/neutron.transfer.MsgUpdateParamsResponse")]
 pub struct MsgUpdateParamsResponse {}
+#[allow(dead_code)]
 pub struct TransferQuerier<'a, Q: cosmwasm_std::CustomQuery> {
     querier: &'a cosmwasm_std::QuerierWrapper<'a, Q>,
 }

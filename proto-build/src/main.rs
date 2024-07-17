@@ -1,5 +1,5 @@
-//! Build Osmosis proto files. This build script clones the CosmosSDK and Osmosis version
-//! specified in the COSMOS_SDK_REV and OSMOSIS_REV constant respectively and then
+//! Build Neutron proto files. This build script clones the CosmosSDK and Neutron version
+//! specified in the COSMOS_SDK_REV and NEUTRON_REV constant respectively and then
 //! uses that to build the required proto files for further compilation.
 //! This is based on the proto-compiler code in github.com/informalsystems/ibc-rs
 
@@ -43,8 +43,6 @@ const ICS23_REV: &str = "rust/v0.10.0";
 // All paths must end with a / and either be absolute or include a ./ to reference the current
 // working directory.
 
-/// The directory generated cosmos-sdk proto files go into in this repo
-const OUT_DIR: &str = "../packages/neutron-std/src/types/";
 /// Directory where the cosmos-sdk repo is located
 const COSMOS_SDK_DIR: &str = "../dependencies/cosmos-sdk/";
 /// Directory where the neutron repo is located
@@ -62,6 +60,8 @@ const ICS23_DIR: &str = "../dependencies/ics23/";
 const TMP_REPOS_DIR: &str = "./dependencies/";
 /// A temporary directory for proto building
 const TMP_BUILD_DIR: &str = "/tmp/tmp-protobuf/";
+/// The directory generated cosmos-sdk proto files go into in this repo
+const OUT_DIR: &str = "../packages/neutron-std/src/types/";
 
 pub fn generate() {
     let tmp_repos_dir: PathBuf = TMP_REPOS_DIR.parse().unwrap();
@@ -78,6 +78,13 @@ pub fn generate() {
 
     let tmp_build_dir: PathBuf = TMP_BUILD_DIR.parse().unwrap();
     let out_dir: PathBuf = OUT_DIR.parse().unwrap();
+
+    let cosmos_project = CosmosProject {
+        name: "cosmos".to_string(),
+        version: COSMOS_SDK_REV.to_string(),
+        project_dir: COSMOS_SDK_DIR.to_string(),
+        exclude_mods: vec!["reflection".to_string(), "autocli".to_string()],
+    };
 
     let neutron_project = CosmosProject {
         name: "neutron".to_string(),
@@ -107,13 +114,6 @@ pub fn generate() {
         exclude_mods: vec![],
     };
 
-    let cosmos_project = CosmosProject {
-        name: "cosmos".to_string(),
-        version: COSMOS_SDK_REV.to_string(),
-        project_dir: COSMOS_SDK_DIR.to_string(),
-        exclude_mods: vec!["reflection".to_string(), "autocli".to_string()],
-    };
-
     let ics23_project = CosmosProject {
         name: "ics23".to_string(),
         version: ICS23_REV.to_string(),
@@ -121,20 +121,20 @@ pub fn generate() {
         exclude_mods: vec![],
     };
 
-    let osmosis_code_generator = CodeGenerator::new(
+    let neutron_code_generator = CodeGenerator::new(
         out_dir,
         tmp_build_dir,
         neutron_project,
         vec![
-            ibc_project,
-            cometbft_project,
             cosmos_project,
             wasmd_project,
+            cometbft_project,
+            ibc_project,
             ics23_project,
         ],
     );
 
-    osmosis_code_generator.generate();
+    neutron_code_generator.generate();
 
     fs::remove_dir_all(tmp_repos_dir.clone()).unwrap();
 }

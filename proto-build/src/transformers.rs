@@ -13,6 +13,14 @@ use syn::ItemEnum;
 use syn::ItemMod;
 use syn::{parse_quote, Attribute, Fields, Ident, Item, ItemStruct, Type};
 
+const TOO_MANY_ARGUMENTS_FUNCS: &[&str] = &["estimate_place_limit_order"];
+
+pub const LARGE_SIZE_ENUM_REPLACEMENTS: &[(&str, &str, &str)] = &[(
+    "tendermint.blocksync.rs",
+    "super::BlockResponse",
+    "Box<super::BlockResponse>",
+)];
+
 /// Regex substitutions to apply to the prost-generated output
 pub const REPLACEMENTS: &[(&str, &str)] = &[
     // Feature-gate gRPC client modules
@@ -337,20 +345,16 @@ pub fn allow_serde_option_vec_u8_as_base64_encoded_string(s: syn::ItemStruct) ->
                 if let Some(segment) = type_path.path.segments.last() {
                     if segment.ident == "Option" {
                         if let syn::PathArguments::AngleBracketed(args) = &segment.arguments {
-                            if let Some(arg) = args.args.first() {
-                                if let syn::GenericArgument::Type(inner_ty) = arg {
-                                    if let syn::Type::Path(inner_path) = inner_ty {
-                                        if let Some(inner_segment) = inner_path.path.segments.last() {
-                                            if inner_segment.ident == "Vec" {
-                                                let from_str: syn::Attribute = parse_quote! {
-                                                    #[serde(
-                                                        serialize_with = "crate::serde::as_option_base64_encoded_string::serialize",
-                                                        deserialize_with = "crate::serde::as_option_base64_encoded_string::deserialize"
-                                                    )]
-                                                };
-                                                field.attrs.push(from_str);
-                                            }
-                                        }
+                            if let Some(syn::GenericArgument::Type(syn::Type::Path(inner_path))) = args.args.first() {
+                                if let Some(inner_segment) = inner_path.path.segments.last() {
+                                    if inner_segment.ident == "Vec" {
+                                        let from_str: syn::Attribute = parse_quote! {
+                                            #[serde(
+                                                serialize_with = "crate::serde::as_option_base64_encoded_string::serialize",
+                                                deserialize_with = "crate::serde::as_option_base64_encoded_string::deserialize"
+                                            )]
+                                        };
+                                        field.attrs.push(from_str);
                                     }
                                 }
                             }
@@ -560,8 +564,8 @@ pub fn append_querier(
             return quote! {};
         }
 
-        let deprecated = method_desc.clone().options.map(|opt| opt.deprecated.unwrap_or(false) ).unwrap_or(false);
-        let deprecated_macro = if deprecated {
+        let deprecated = method_desc.clone().options.map(|opt| opt.deprecated.unwrap_or(false)).unwrap_or(false);
+        let deprecated_attr = if deprecated {
             quote!(#[deprecated])
         } else {
             quote!()
@@ -579,6 +583,12 @@ pub fn append_querier(
         let name = format_ident!("{}", method_desc.name.unwrap().as_str().to_snake_case());
         let req_type = format_ident!("{}", method_desc.input_type.unwrap().split('.').last().unwrap().to_string().to_upper_camel_case());
         let res_type = format_ident!("{}", method_desc.output_type.unwrap().split('.').last().unwrap().to_string().to_upper_camel_case());
+
+        let allow_too_many_arguments_attr = if TOO_MANY_ARGUMENTS_FUNCS.iter().any(|&i| name == i) {
+            quote!(#[allow(clippy::too_many_arguments)])
+        } else {
+            quote!()
+        };
 
         let req_args = items.clone().into_iter()
             .find_map(|item| match item {
@@ -601,28 +611,36 @@ pub fn append_querier(
         let arg_ty = req_args.unwrap().into_iter().map(|arg| arg.ty).collect::<Vec<Type>>();
 
         quote! {
-          #deprecated_macro
-          pub fn #name( &self, #(#arg_idents : #arg_ty),* ) -> Result<#res_type, cosmwasm_std::StdError> {
-            #req_type { #(#arg_idents),* }.query(self.querier)
-          }
+            #deprecated_attr
+            #allow_too_many_arguments_attr
+            pub fn #name( &self, #(#arg_idents : #arg_ty),* ) -> Result<#res_type, cosmwasm_std::StdError> {
+                #req_type { #(#arg_idents),* }.query(self.querier)
+            }
         }
     }).collect::<Vec<TokenStream2>>());
 
     let querier = if let Some(query_fns) = query_fns {
         if !nested_mod {
+            let allow_dead_code_attr = if query_fns.iter().any(|i| !i.is_empty()) {
+                quote!()
+            } else {
+                quote!(#[allow(dead_code)])
+            };
+
             vec![
                 parse_quote! {
-                  pub struct #querier_wrapper_ident<'a, Q: cosmwasm_std::CustomQuery> {
-                      querier: &'a cosmwasm_std::QuerierWrapper<'a, Q>,
-                  }
+                    #allow_dead_code_attr
+                    pub struct #querier_wrapper_ident<'a, Q: cosmwasm_std::CustomQuery> {
+                        querier: &'a cosmwasm_std::QuerierWrapper<'a, Q>,
+                    }
                 },
                 parse_quote! {
-                  impl<'a, Q: cosmwasm_std::CustomQuery> #querier_wrapper_ident<'a, Q> {
-                      pub fn new(querier: &'a cosmwasm_std::QuerierWrapper<'a, Q>) -> Self {
-                    Self { querier }
+                    impl<'a, Q: cosmwasm_std::CustomQuery> #querier_wrapper_ident<'a, Q> {
+                        pub fn new(querier: &'a cosmwasm_std::QuerierWrapper<'a, Q>) -> Self {
+                            Self { querier }
+                        }
+                        #(#query_fns)*
                     }
-                    #(#query_fns)*
-                  }
                 },
             ]
         } else {
@@ -632,7 +650,7 @@ pub fn append_querier(
         vec![]
     };
 
-    vec![items, querier].concat()
+    [items, querier].concat()
 }
 
 /// This is a hack to fix a clashing name in the stake_authorization module

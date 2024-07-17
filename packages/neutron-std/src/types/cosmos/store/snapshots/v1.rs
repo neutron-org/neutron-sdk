@@ -80,7 +80,6 @@ pub struct SnapshotItem {
 }
 /// Nested message and enum types in `SnapshotItem`.
 pub mod snapshot_item {
-    use neutron_std_derive::CosmwasmExt;
     /// item is the specific type of snapshot item.
     #[allow(clippy::derive_partial_eq_without_eq)]
     #[derive(

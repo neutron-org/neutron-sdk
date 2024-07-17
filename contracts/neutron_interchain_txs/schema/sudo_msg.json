@@ -21,8 +21,7 @@
             "request": {
               "$ref": "#/definitions/RequestPacket"
             }
-          },
-          "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false
@@ -46,8 +45,7 @@
             "request": {
               "$ref": "#/definitions/RequestPacket"
             }
-          },
-          "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false
@@ -67,8 +65,7 @@
             "request": {
               "$ref": "#/definitions/RequestPacket"
             }
-          },
-          "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false
@@ -100,8 +97,7 @@
             "port_id": {
               "type": "string"
             }
-          },
-          "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false
@@ -131,8 +127,7 @@
               "format": "uint64",
               "minimum": 0.0
             }
-          },
-          "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false
@@ -154,8 +149,7 @@
               "format": "uint64",
               "minimum": 0.0
             }
-          },
-          "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false
@@ -183,8 +177,7 @@
           "format": "uint64",
           "minimum": 0.0
         }
-      },
-      "additionalProperties": false
+      }
     },
     "RequestPacket": {
       "type": "object",
@@ -249,8 +242,7 @@
           "format": "uint64",
           "minimum": 0.0
         }
-      },
-      "additionalProperties": false
+      }
     },
     "RequestPacketTimeoutHeight": {
       "type": "object",
@@ -271,8 +263,7 @@
           "format": "uint64",
           "minimum": 0.0
         }
-      },
-      "additionalProperties": false
+      }
     }
   }
 }

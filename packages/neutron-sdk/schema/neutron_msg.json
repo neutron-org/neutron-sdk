@@ -35,8 +35,7 @@
                 "$ref": "#/definitions/Coin"
               }
             }
-          },
-          "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false
@@ -92,8 +91,7 @@
               "format": "uint64",
               "minimum": 0.0
             }
-          },
-          "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false
@@ -140,8 +138,7 @@
               "format": "uint64",
               "minimum": 0.0
             }
-          },
-          "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false
@@ -191,8 +188,7 @@
               "format": "uint64",
               "minimum": 0.0
             }
-          },
-          "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false
@@ -216,8 +212,7 @@
               "format": "uint64",
               "minimum": 0.0
             }
-          },
-          "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false
@@ -272,8 +267,7 @@
             "token": {
               "$ref": "#/definitions/Coin"
             }
-          },
-          "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false
@@ -294,8 +288,7 @@
             "admin_proposal": {
               "$ref": "#/definitions/AdminProposal"
             }
-          },
-          "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false
@@ -316,8 +309,7 @@
             "subdenom": {
               "type": "string"
             }
-          },
-          "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false
@@ -342,8 +334,7 @@
             "new_admin_address": {
               "type": "string"
             }
-          },
-          "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false
@@ -372,8 +363,7 @@
             "mint_to_address": {
               "type": "string"
             }
-          },
-          "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false
@@ -403,8 +393,7 @@
             "denom": {
               "type": "string"
             }
-          },
-          "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false
@@ -429,8 +418,7 @@
             "denom": {
               "type": "string"
             }
-          },
-          "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false
@@ -463,8 +451,7 @@
             "transfer_to_address": {
               "type": "string"
             }
-          },
-          "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false
@@ -524,8 +511,7 @@
               "description": "**uri_hash** is a sha256 hash of a document pointed by URI. It's used to verify that the document didn't change. Optional.",
               "type": "string"
             }
-          },
-          "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false
@@ -562,8 +548,7 @@
               "format": "uint64",
               "minimum": 0.0
             }
-          },
-          "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false
@@ -584,8 +569,7 @@
             "name": {
               "type": "string"
             }
-          },
-          "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false
@@ -608,8 +592,7 @@
               "format": "uint64",
               "minimum": 0.0
             }
-          },
-          "additionalProperties": false
+          }
         }
       },
       "additionalProperties": false
@@ -807,8 +790,7 @@
           "description": "*title** is a text title of proposal. Non unique.",
           "type": "string"
         }
-      },
-      "additionalProperties": false
+      }
     },
     "ClearAdminProposal": {
       "description": "Deprecated. SudoContractProposal defines the struct for clear admin proposal.",
@@ -832,8 +814,7 @@
           "description": "*title** is a text title of proposal.",
           "type": "string"
         }
-      },
-      "additionalProperties": false
+      }
     },
     "ClientUpdateProposal": {
       "description": "ClientUpdateProposal defines the struct for client update proposal.",
@@ -862,8 +843,7 @@
           "description": "*title** is a text title of proposal.",
           "type": "string"
         }
-      },
-      "additionalProperties": false
+      }
     },
     "Coin": {
       "type": "object",
@@ -878,8 +858,7 @@
         "denom": {
           "type": "string"
         }
-      },
-      "additionalProperties": false
+      }
     },
     "DenomUnit": {
       "description": "Replicates the cosmos-sdk bank module DenomUnit type",
@@ -904,8 +883,7 @@
           "format": "uint32",
           "minimum": 0.0
         }
-      },
-      "additionalProperties": false
+      }
     },
     "DepositOption": {
       "type": "object",
@@ -916,8 +894,7 @@
         "disable_swap": {
           "type": "boolean"
         }
-      },
-      "additionalProperties": false
+      }
     },
     "DexMsg": {
       "oneOf": [
@@ -991,8 +968,7 @@
                   "description": "Denom for the opposing side of the deposit",
                   "type": "string"
                 }
-              },
-              "additionalProperties": false
+              }
             }
           },
           "additionalProperties": false
@@ -1051,8 +1027,7 @@
                   "description": "Denom for the opposing side of the deposit",
                   "type": "string"
                 }
-              },
-              "additionalProperties": false
+              }
             }
           },
           "additionalProperties": false
@@ -1133,8 +1108,7 @@
                   "description": "Token being “bought”",
                   "type": "string"
                 }
-              },
-              "additionalProperties": false
+              }
             }
           },
           "additionalProperties": false
@@ -1156,8 +1130,7 @@
                   "description": "TrancheKey for the target limit order",
                   "type": "string"
                 }
-              },
-              "additionalProperties": false
+              }
             }
           },
           "additionalProperties": false
@@ -1179,8 +1152,7 @@
                   "description": "TrancheKey for the target limit order",
                   "type": "string"
                 }
-              },
-              "additionalProperties": false
+              }
             }
           },
           "additionalProperties": false
@@ -1233,8 +1205,7 @@
                     "$ref": "#/definitions/MultiHopRoute"
                   }
                 }
-              },
-              "additionalProperties": false
+              }
             }
           },
           "additionalProperties": false
@@ -1271,8 +1242,7 @@
             "$ref": "#/definitions/Coin"
           }
         }
-      },
-      "additionalProperties": false
+      }
     },
     "KVKey": {
       "description": "Describes a KV key for which you want to get value from the storage on remote chain",
@@ -1294,8 +1264,7 @@
           "description": "*path** is a path to the storage (storage prefix) where you want to read value by key (usually name of cosmos-packages module: 'staking', 'bank', etc.)",
           "type": "string"
         }
-      },
-      "additionalProperties": false
+      }
     },
     "LimitOrderType": {
       "oneOf": [
@@ -1352,8 +1321,7 @@
           "description": "*msg** is a contract call message",
           "type": "string"
         }
-      },
-      "additionalProperties": false
+      }
     },
     "MultiHopRoute": {
       "type": "object",
@@ -1367,8 +1335,7 @@
             "type": "string"
           }
         }
-      },
-      "additionalProperties": false
+      }
     },
     "ParamChange": {
       "description": "ParamChange defines the struct for parameter change request.",
@@ -1391,8 +1358,7 @@
           "description": "*value** is a new value for given parameter. Non unique.",
           "type": "string"
         }
-      },
-      "additionalProperties": false
+      }
     },
     "ParamChangeProposal": {
       "description": "ParamChangeProposal defines the struct for single parameter change proposal.",
@@ -1418,8 +1384,7 @@
           "description": "*title** is a text title of proposal. Non unique.",
           "type": "string"
         }
-      },
-      "additionalProperties": false
+      }
     },
     "PinCodesProposal": {
       "description": "Deprecated. PinCodesProposal defines the struct for pin contract codes proposal.",
@@ -1448,8 +1413,7 @@
           "description": "*title** is a text title of proposal.",
           "type": "string"
         }
-      },
-      "additionalProperties": false
+      }
     },
     "Plan": {
       "description": "Plan defines the struct for planned upgrade.",
@@ -1473,8 +1437,7 @@
           "description": "*name** is a name for the upgrade",
           "type": "string"
         }
-      },
-      "additionalProperties": false
+      }
     },
     "PrecDec": {
       "type": "object",
@@ -1485,8 +1448,7 @@
         "i": {
           "type": "string"
         }
-      },
-      "additionalProperties": false
+      }
     },
     "ProposalExecuteMessage": {
       "description": "ProposalExecuteMessage defines the struct for sdk47 compatible admin proposal.",
@@ -1499,8 +1461,7 @@
           "description": "*message** is a json representing an sdk message passed to admin module to execute.",
           "type": "string"
         }
-      },
-      "additionalProperties": false
+      }
     },
     "ProtobufAny": {
       "description": "Type for wrapping any protobuf message",
@@ -1522,8 +1483,7 @@
             }
           ]
         }
-      },
-      "additionalProperties": false
+      }
     },
     "RequestPacketTimeoutHeight": {
       "type": "object",
@@ -1544,8 +1504,7 @@
           "format": "uint64",
           "minimum": 0.0
         }
-      },
-      "additionalProperties": false
+      }
     },
     "SoftwareUpgradeProposal": {
       "description": "Deprecated. SoftwareUpgradeProposal defines the struct for software upgrade proposal.",
@@ -1573,8 +1532,7 @@
           "description": "*title** is a text title of proposal. Non unique.",
           "type": "string"
         }
-      },
-      "additionalProperties": false
+      }
     },
     "SudoContractProposal": {
       "description": "Deprecated. SudoContractProposal defines the struct for sudo execution proposal.",
@@ -1607,8 +1565,7 @@
           "description": "*title** is a text title of proposal.",
           "type": "string"
         }
-      },
-      "additionalProperties": false
+      }
     },
     "Uint128": {
       "description": "A thin wrapper around u128 that is using strings for JSON encoding/decoding, such that the full u128 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `u128` to get the value out:\n\n``` # use cosmwasm_std::Uint128; let a = Uint128::from(123u128); assert_eq!(a.u128(), 123);\n\nlet b = Uint128::from(42u64); assert_eq!(b.u128(), 42);\n\nlet c = Uint128::from(70u32); assert_eq!(c.u128(), 70); ```",
@@ -1641,8 +1598,7 @@
           "description": "*title** is a text title of proposal.",
           "type": "string"
         }
-      },
-      "additionalProperties": false
+      }
     },
     "UpdateAdminProposal": {
       "description": "Deprecated. UpdateAdminProposal defines the struct for update admin proposal.",
@@ -1671,8 +1627,7 @@
           "description": "*title** is a text title of proposal.",
           "type": "string"
         }
-      },
-      "additionalProperties": false
+      }
     },
     "UpgradeProposal": {
       "description": "UpgradeProposal defines the struct for IBC upgrade proposal.",
@@ -1709,8 +1664,7 @@
             }
           ]
         }
-      },
-      "additionalProperties": false
+      }
     }
   }
 }

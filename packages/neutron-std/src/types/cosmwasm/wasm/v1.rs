@@ -1510,7 +1510,6 @@ pub mod genesis_state {
     }
     /// Nested message and enum types in `GenMsgs`.
     pub mod gen_msgs {
-        use neutron_std_derive::CosmwasmExt;
         /// sum is a single message
         #[allow(clippy::derive_partial_eq_without_eq)]
         #[derive(

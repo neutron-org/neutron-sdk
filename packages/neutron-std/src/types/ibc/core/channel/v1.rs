@@ -278,7 +278,6 @@ pub struct Acknowledgement {
 }
 /// Nested message and enum types in `Acknowledgement`.
 pub mod acknowledgement {
-    use neutron_std_derive::CosmwasmExt;
     /// response contains either a result or an error and must be non-empty
     #[allow(clippy::derive_partial_eq_without_eq)]
     #[derive(

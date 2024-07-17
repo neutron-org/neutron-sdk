@@ -759,7 +759,6 @@ pub struct TickLiquidity {
 }
 /// Nested message and enum types in `TickLiquidity`.
 pub mod tick_liquidity {
-    use neutron_std_derive::CosmwasmExt;
     #[allow(clippy::derive_partial_eq_without_eq)]
     #[derive(
         Clone,
@@ -1777,6 +1776,7 @@ impl<'a, Q: cosmwasm_std::CustomQuery> DexQuerier<'a, Q> {
         }
         .query(self.querier)
     }
+    #[allow(clippy::too_many_arguments)]
     pub fn estimate_place_limit_order(
         &self,
         creator: ::prost::alloc::string::String,

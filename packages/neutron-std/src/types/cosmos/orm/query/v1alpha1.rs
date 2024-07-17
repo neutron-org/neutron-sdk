@@ -195,7 +195,6 @@ pub struct IndexValue {
 }
 /// Nested message and enum types in `IndexValue`.
 pub mod index_value {
-    use neutron_std_derive::CosmwasmExt;
     /// value specifies the index value
     #[allow(clippy::derive_partial_eq_without_eq)]
     #[derive(

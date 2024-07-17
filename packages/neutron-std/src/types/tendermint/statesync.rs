@@ -17,7 +17,6 @@ pub struct Message {
 }
 /// Nested message and enum types in `Message`.
 pub mod message {
-    use neutron_std_derive::CosmwasmExt;
     #[allow(clippy::derive_partial_eq_without_eq)]
     #[derive(
         Clone,

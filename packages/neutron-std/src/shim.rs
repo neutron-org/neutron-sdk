@@ -1,5 +1,5 @@
 use ::serde::{Deserialize, Deserializer, Serialize, Serializer};
-use chrono::{DateTime, NaiveDateTime, Utc};
+use chrono::{DateTime, Utc};
 use cosmwasm_std::StdResult;
 use serde::de;
 use serde::de::Visitor;
@@ -32,9 +32,8 @@ impl Serialize for Timestamp {
             nanos: self.nanos,
         };
         ts.normalize();
-        let dt = NaiveDateTime::from_timestamp_opt(ts.seconds, ts.nanos as u32)
+        let dt = DateTime::from_timestamp(ts.seconds, ts.nanos as u32)
             .expect("invalid or out-of-range datetime");
-        let dt: DateTime<Utc> = DateTime::from_naive_utc_and_offset(dt, Utc);
         serializer.serialize_str(format!("{:?}", dt).as_str())
     }
 }
@@ -180,7 +179,7 @@ macro_rules! expand_as_any {
         impl Serialize for Any {
             fn serialize<S>(
                 &self,
-                serializer: S,
+                _serializer: S,
             ) -> Result<<S as ::serde::Serializer>::Ok, <S as ::serde::Serializer>::Error>
             where
                 S: ::serde::Serializer,
@@ -228,7 +227,7 @@ macro_rules! expand_as_any {
 
                 match type_url {
                     // @type found
-                    Some(t) => {
+                    Some(_) => {
                         $(
                             if t == <$ty>::TYPE_URL {
                                 return <$ty>::deserialize(

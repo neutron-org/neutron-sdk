@@ -37,7 +37,7 @@ pub fn copy_and_transform_all(from_dir: &Path, to_dir: &Path, descriptor: &FileD
             filenames.push(filename.clone());
             copy_and_transform(
                 e.path(),
-                format!("{}/{}", to_dir.display(), &filename),
+                format!("{}{}", to_dir.display(), &filename),
                 descriptor,
             )
         })
@@ -76,6 +76,15 @@ fn copy_and_transform(
         }
     };
 
+    for &(filename, regex, replacement) in transformers::LARGE_SIZE_ENUM_REPLACEMENTS {
+        if src.file_name().and_then(OsStr::to_str).unwrap() == filename {
+            contents = Regex::new(regex)
+                .unwrap_or_else(|_| panic!("invalid regex: {}", regex))
+                .replace_all(&contents, replacement)
+                .to_string();
+        }
+    }
+
     for &(regex, replacement) in transformers::REPLACEMENTS {
         contents = Regex::new(regex)
             .unwrap_or_else(|_| panic!("invalid regex: {}", regex))
@@ -100,8 +109,11 @@ fn transform_module(
     descriptor: &FileDescriptorSet,
     nested_mod: bool,
 ) -> Vec<Item> {
-    let items = transform_items(items, src, ancestors, descriptor);
-    let items = prepend(items);
+    let mut items = transform_items(items, src, ancestors, descriptor);
+
+    if items.iter().any(|i| matches!(i, Item::Struct(_))) {
+        items = prepend(items);
+    }
 
     append(items, src, descriptor, nested_mod)
 }

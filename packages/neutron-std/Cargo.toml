@@ -9,7 +9,7 @@ version = "4.0.1"
 
 [dependencies]
 chrono = { version = "0.4.22", default-features = false }
-cosmwasm-std = { workspace = true }
+cosmwasm-std = { workspace = true, features = ["cosmwasm_2_0"] }
 neutron-std-derive = { version = "0.20.1", path = "../neutron-std-derive" }
 prost = { workspace = true }
 prost-types = { workspace = true }

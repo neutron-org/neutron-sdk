@@ -119,7 +119,6 @@ pub struct Message {
 }
 /// Nested message and enum types in `Message`.
 pub mod message {
-    use neutron_std_derive::CosmwasmExt;
     #[allow(clippy::derive_partial_eq_without_eq)]
     #[derive(
         Clone,
@@ -136,7 +135,7 @@ pub mod message {
         #[prost(message, tag = "2")]
         NoBlockResponse(super::NoBlockResponse),
         #[prost(message, tag = "3")]
-        BlockResponse(super::BlockResponse),
+        BlockResponse(Box<super::BlockResponse>),
         #[prost(message, tag = "4")]
         StatusRequest(super::StatusRequest),
         #[prost(message, tag = "5")]

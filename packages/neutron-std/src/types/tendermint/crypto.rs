@@ -144,7 +144,6 @@ pub struct PublicKey {
 }
 /// Nested message and enum types in `PublicKey`.
 pub mod public_key {
-    use neutron_std_derive::CosmwasmExt;
     #[allow(clippy::derive_partial_eq_without_eq)]
     #[derive(
         Clone,

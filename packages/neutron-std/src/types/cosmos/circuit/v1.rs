@@ -29,7 +29,6 @@ pub struct Permissions {
 }
 /// Nested message and enum types in `Permissions`.
 pub mod permissions {
-    use neutron_std_derive::CosmwasmExt;
     /// Level is the permission level.
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
     #[repr(i32)]

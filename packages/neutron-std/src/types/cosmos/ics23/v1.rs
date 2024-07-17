@@ -98,7 +98,6 @@ pub struct CommitmentProof {
 }
 /// Nested message and enum types in `CommitmentProof`.
 pub mod commitment_proof {
-    use neutron_std_derive::CosmwasmExt;
     #[allow(clippy::derive_partial_eq_without_eq)]
     #[derive(
         Clone,
@@ -380,7 +379,6 @@ pub struct BatchEntry {
 }
 /// Nested message and enum types in `BatchEntry`.
 pub mod batch_entry {
-    use neutron_std_derive::CosmwasmExt;
     #[allow(clippy::derive_partial_eq_without_eq)]
     #[derive(
         Clone,
@@ -435,7 +433,6 @@ pub struct CompressedBatchEntry {
 }
 /// Nested message and enum types in `CompressedBatchEntry`.
 pub mod compressed_batch_entry {
-    use neutron_std_derive::CosmwasmExt;
     #[allow(clippy::derive_partial_eq_without_eq)]
     #[derive(
         Clone,

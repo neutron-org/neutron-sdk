@@ -20,7 +20,6 @@ pub struct Request {
 }
 /// Nested message and enum types in `Request`.
 pub mod request {
-    use neutron_std_derive::CosmwasmExt;
     #[allow(clippy::derive_partial_eq_without_eq)]
     #[derive(
         Clone,
@@ -589,7 +588,6 @@ pub struct Response {
 }
 /// Nested message and enum types in `Response`.
 pub mod response {
-    use neutron_std_derive::CosmwasmExt;
     #[allow(clippy::derive_partial_eq_without_eq)]
     #[derive(
         Clone,
@@ -905,7 +903,6 @@ pub struct ResponseOfferSnapshot {
 }
 /// Nested message and enum types in `ResponseOfferSnapshot`.
 pub mod response_offer_snapshot {
-    use neutron_std_derive::CosmwasmExt;
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
     #[repr(i32)]
     #[derive(::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
@@ -1004,7 +1001,6 @@ pub struct ResponseApplySnapshotChunk {
 }
 /// Nested message and enum types in `ResponseApplySnapshotChunk`.
 pub mod response_apply_snapshot_chunk {
-    use neutron_std_derive::CosmwasmExt;
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
     #[repr(i32)]
     #[derive(::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
@@ -1089,7 +1085,6 @@ pub struct ResponseProcessProposal {
 }
 /// Nested message and enum types in `ResponseProcessProposal`.
 pub mod response_process_proposal {
-    use neutron_std_derive::CosmwasmExt;
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
     #[repr(i32)]
     #[derive(::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
@@ -1166,7 +1161,6 @@ pub struct ResponseVerifyVoteExtension {
 }
 /// Nested message and enum types in `ResponseVerifyVoteExtension`.
 pub mod response_verify_vote_extension {
-    use neutron_std_derive::CosmwasmExt;
     #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
     #[repr(i32)]
     #[derive(::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
@@ -1229,8 +1223,7 @@ pub struct ResponseFinalizeBlock {
     /// updates to the consensus params, if any.
     #[prost(message, optional, tag = "4")]
     pub consensus_param_updates: ::core::option::Option<super::types::ConsensusParams>,
-    /// app_hash is the hash of the applications' state which is used to confirm that execution of the transactions was
-    /// deterministic. It is up to the application to decide which algorithm to use.
+    /// app_hash is the hash of the applications' state which is used to confirm that execution of the transactions was deterministic. It is up to the application to decide which algorithm to use.
     #[prost(bytes = "vec", tag = "5")]
     #[serde(
         serialize_with = "crate::serde::as_base64_encoded_string::serialize",
