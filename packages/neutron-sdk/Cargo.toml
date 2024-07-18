@@ -31,4 +31,3 @@ neutron-std-derive = { version = "0.20.1", path = "../neutron-std-derive" }
 base64 = { workspace = true }
 prost-types = { workspace = true }
 hex = { workspace = true }
-trybuild = {version = "1.0.63", features = ["diff"]}
