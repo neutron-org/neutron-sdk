@@ -13,6 +13,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use neutron_sdk::bindings::msg::IbcFee;
+use neutron_sdk::proto_types::neutron::interchaintxs::v1::MsgSubmitTxResponse;
 use neutron_sdk::{
     bindings::{
         msg::NeutronMsg,
@@ -25,7 +26,6 @@ use neutron_sdk::{
     sudo::msg::{RequestPacket, SudoMsg},
     NeutronError, NeutronResult,
 };
-use neutron_std::types::neutron::interchaintxs::v1::MsgSubmitTxResponse;
 
 use crate::storage::{
     add_error_to_queue, read_errors_from_queue, read_reply_payload, read_sudo_payload,

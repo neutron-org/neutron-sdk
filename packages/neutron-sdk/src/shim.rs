@@ -312,20 +312,20 @@ impl_prost_types_exact_conversion! { Timestamp | seconds, nanos }
 impl_prost_types_exact_conversion! { Duration | seconds, nanos }
 impl_prost_types_exact_conversion! { Any | type_url, value }
 
-impl From<cosmwasm_std::Coin> for crate::types::cosmos::base::v1beta1::Coin {
+impl From<cosmwasm_std::Coin> for crate::proto_types::cosmos::base::v1beta1::Coin {
     fn from(cosmwasm_std::Coin { denom, amount }: cosmwasm_std::Coin) -> Self {
-        crate::types::cosmos::base::v1beta1::Coin {
+        crate::proto_types::cosmos::base::v1beta1::Coin {
             denom,
             amount: amount.into(),
         }
     }
 }
 
-impl TryFrom<crate::types::cosmos::base::v1beta1::Coin> for cosmwasm_std::Coin {
+impl TryFrom<crate::proto_types::cosmos::base::v1beta1::Coin> for cosmwasm_std::Coin {
     type Error = cosmwasm_std::StdError;
 
     fn try_from(
-        crate::types::cosmos::base::v1beta1::Coin { denom, amount }: crate::types::cosmos::base::v1beta1::Coin,
+        crate::proto_types::cosmos::base::v1beta1::Coin { denom, amount }: crate::proto_types::cosmos::base::v1beta1::Coin,
     ) -> cosmwasm_std::StdResult<Self> {
         Ok(cosmwasm_std::Coin {
             denom,
@@ -336,7 +336,7 @@ impl TryFrom<crate::types::cosmos::base::v1beta1::Coin> for cosmwasm_std::Coin {
 
 /// Convert a list of `Coin` from generated proto `Coin` type to cosmwasm `Coin` type
 pub fn try_proto_to_cosmwasm_coins(
-    coins: impl IntoIterator<Item = crate::types::cosmos::base::v1beta1::Coin>,
+    coins: impl IntoIterator<Item = crate::proto_types::cosmos::base::v1beta1::Coin>,
 ) -> StdResult<Vec<cosmwasm_std::Coin>> {
     coins.into_iter().map(|c| c.try_into()).collect()
 }
@@ -344,7 +344,7 @@ pub fn try_proto_to_cosmwasm_coins(
 /// Convert a list of `Coin` from cosmwasm `Coin` type to generated proto `Coin` type
 pub fn cosmwasm_to_proto_coins(
     coins: impl IntoIterator<Item = cosmwasm_std::Coin>,
-) -> Vec<crate::types::cosmos::base::v1beta1::Coin> {
+) -> Vec<crate::proto_types::cosmos::base::v1beta1::Coin> {
     coins.into_iter().map(|c| c.into()).collect()
 }
 

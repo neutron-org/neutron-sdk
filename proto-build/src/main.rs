@@ -61,7 +61,7 @@ const TMP_REPOS_DIR: &str = "./dependencies/";
 /// A temporary directory for proto building
 const TMP_BUILD_DIR: &str = "/tmp/tmp-protobuf/";
 /// The directory generated cosmos-sdk proto files go into in this repo
-const OUT_DIR: &str = "../packages/neutron-std/src/types/";
+const OUT_DIR: &str = "../packages/neutron-sdk/src/proto_types/";
 
 pub fn generate() {
     let tmp_repos_dir: PathBuf = TMP_REPOS_DIR.parse().unwrap();
