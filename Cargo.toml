@@ -22,8 +22,8 @@ serde-json-wasm = "1.0.0"
 cw-storage-plus = "2.0.0"
 cosmwasm-schema = { version = "2.0.4", default-features = false }
 base64 = "0.21.7"
-prost = "0.12.3"
-prost-types = "0.12.1"
+prost = "0.12.6"
+prost-types = "0.12.6"
 cosmos-sdk-proto = { version = "0.20.0", default-features = false }
 bech32 = "0.9.1"
 thiserror = "1.0.49"
