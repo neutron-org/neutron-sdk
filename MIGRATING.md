@@ -4,6 +4,18 @@ This guide explains what is needed to upgrade contracts when migrating over rele
 also view the
 [complete CHANGELOG](./CHANGELOG.md) to understand the differences.
 
+## 0.10.0 -> 0.11.0
+
+* Update`neutron-sdk`dependencies in Cargo.toml:
+
+```
+[dependencies]
+neutron-sdk = "0.11.0"
+# ...
+```
+
+* Follow [CosmWasm MIGRATING.md instructions ](https://github.com/CosmWasm/cosmwasm/blob/main/MIGRATING.md#15x---20x) to update to v2.0 version of `cosmwasm-std`
+
 ## 0.9.0 -> 0.10.0
 
 * Update`neutron-sdk`dependencies in Cargo.toml:

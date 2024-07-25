@@ -13,9 +13,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use neutron_sdk::bindings::msg::IbcFee;
+use neutron_sdk::proto_types::neutron::interchaintxs::v1::MsgSubmitTxResponse;
 use neutron_sdk::{
     bindings::{
-        msg::{MsgSubmitTxResponse, NeutronMsg},
+        msg::NeutronMsg,
         query::{NeutronQuery, QueryInterchainAccountAddressResponse},
         types::ProtobufAny,
     },
@@ -230,8 +231,7 @@ fn execute_delegate(
             amount: amount.to_string(),
         }),
     };
-    let mut buf = Vec::new();
-    buf.reserve(delegate_msg.encoded_len());
+    let mut buf = Vec::with_capacity(delegate_msg.encoded_len());
 
     if let Err(e) = delegate_msg.encode(&mut buf) {
         return Err(NeutronError::Std(StdError::generic_err(format!(
@@ -289,8 +289,7 @@ fn execute_undelegate(
             amount: amount.to_string(),
         }),
     };
-    let mut buf = Vec::new();
-    buf.reserve(delegate_msg.encoded_len());
+    let mut buf = Vec::with_capacity(delegate_msg.encoded_len());
 
     if let Err(e) = delegate_msg.encode(&mut buf) {
         return Err(NeutronError::Std(StdError::generic_err(format!(
@@ -404,25 +403,18 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
         .as_str(),
     );
 
-    // WARNING: RETURNING THIS ERROR CLOSES THE CHANNEL.
-    // AN ALTERNATIVE IS TO MAINTAIN AN ERRORS QUEUE AND PUT THE FAILED REQUEST THERE
-    // FOR LATER INSPECTION.
     // In this particular case, we return an error because not having the sequence id
     // in the request value implies that a fatal error occurred on Neutron side.
     let seq_id = request
         .sequence
         .ok_or_else(|| StdError::generic_err("sequence not found"))?;
 
-    // WARNING: RETURNING THIS ERROR CLOSES THE CHANNEL.
-    // AN ALTERNATIVE IS TO MAINTAIN AN ERRORS QUEUE AND PUT THE FAILED REQUEST THERE
-    // FOR LATER INSPECTION.
     // In this particular case, we return an error because not having the sequence id
     // in the request value implies that a fatal error occurred on Neutron side.
     let channel_id = request
         .source_channel
         .ok_or_else(|| StdError::generic_err("channel_id not found"))?;
 
-    // NOTE: NO ERROR IS RETURNED HERE. THE CHANNEL LIVES ON.
     // In this particular example, this is a matter of developer's choice. Not being able to read
     // the payload here means that there was a problem with the contract while submitting an
     // interchain transaction. You can decide that this is not worth killing the channel,
@@ -439,9 +431,6 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
     deps.api
         .debug(format!("WASMDEBUG: sudo_response: sudo payload: {:?}", payload).as_str());
 
-    // WARNING: RETURNING THIS ERROR CLOSES THE CHANNEL.
-    // AN ALTERNATIVE IS TO MAINTAIN AN ERRORS QUEUE AND PUT THE FAILED REQUEST THERE
-    // FOR LATER INSPECTION.
     // In this particular case, we return an error because not being able to parse this data
     // that a fatal error occurred on Neutron side, or that the remote chain sent us unexpected data.
     // Both cases require immediate attention.
@@ -453,14 +442,10 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
         item_types.push(item_type.to_string());
         match item_type {
             "/cosmos.staking.v1beta1.MsgUndelegate" => {
-                // WARNING: RETURNING THIS ERROR CLOSES THE CHANNEL.
-                // AN ALTERNATIVE IS TO MAINTAIN AN ERRORS QUEUE AND PUT THE FAILED REQUEST THERE
-                // FOR LATER INSPECTION.
                 // In this particular case, a mismatch between the string message type and the
                 // serialised data layout looks like a fatal error that has to be investigated.
                 let out: MsgUndelegateResponse = decode_message_response(&item.value)?;
 
-                // NOTE: NO ERROR IS RETURNED HERE. THE CHANNEL LIVES ON.
                 // In this particular case, we demonstrate that minor errors should not
                 // close the channel, and should be treated in a forgiving manner.
                 let completion_time = out.completion_time.or_else(|| {
@@ -474,9 +459,6 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
                     .debug(format!("Undelegation completion time: {:?}", completion_time).as_str());
             }
             "/cosmos.staking.v1beta1.MsgDelegateResponse" => {
-                // WARNING: RETURNING THIS ERROR CLOSES THE CHANNEL.
-                // AN ALTERNATIVE IS TO MAINTAIN AN ERRORS QUEUE AND PUT THE FAILED REQUEST THERE
-                // FOR LATER INSPECTION.
                 // In this particular case, a mismatch between the string message type and the
                 // serialised data layout looks like a fatal error that has to be investigated.
                 let _out: MsgDelegateResponse = decode_message_response(&item.value)?;
@@ -514,18 +496,12 @@ fn sudo_timeout(deps: DepsMut, _env: Env, request: RequestPacket) -> StdResult<R
     deps.api
         .debug(format!("WASMDEBUG: sudo timeout request: {:?}", request).as_str());
 
-    // WARNING: RETURNING THIS ERROR CLOSES THE CHANNEL.
-    // AN ALTERNATIVE IS TO MAINTAIN AN ERRORS QUEUE AND PUT THE FAILED REQUEST THERE
-    // FOR LATER INSPECTION.
     // In this particular case, we return an error because not having the sequence id
     // in the request value implies that a fatal error occurred on Neutron side.
     let seq_id = request
         .sequence
         .ok_or_else(|| StdError::generic_err("sequence not found"))?;
 
-    // WARNING: RETURNING THIS ERROR CLOSES THE CHANNEL.
-    // AN ALTERNATIVE IS TO MAINTAIN AN ERRORS QUEUE AND PUT THE FAILED REQUEST THERE
-    // FOR LATER INSPECTION.
     // In this particular case, we return an error because not having the sequence id
     // in the request value implies that a fatal error occurred on Neutron side.
     let channel_id = request
@@ -533,7 +509,6 @@ fn sudo_timeout(deps: DepsMut, _env: Env, request: RequestPacket) -> StdResult<R
         .ok_or_else(|| StdError::generic_err("channel_id not found"))?;
 
     // update but also check that we don't update same seq_id twice
-    // NOTE: NO ERROR IS RETURNED HERE. THE CHANNEL LIVES ON.
     // In this particular example, this is a matter of developer's choice. Not being able to read
     // the payload here means that there was a problem with the contract while submitting an
     // interchain transaction. You can decide that this is not worth killing the channel,
@@ -569,18 +544,12 @@ fn sudo_error(deps: DepsMut, request: RequestPacket, details: String) -> StdResu
     deps.api
         .debug(format!("WASMDEBUG: request packet: {:?}", request).as_str());
 
-    // WARNING: RETURNING THIS ERROR CLOSES THE CHANNEL.
-    // AN ALTERNATIVE IS TO MAINTAIN AN ERRORS QUEUE AND PUT THE FAILED REQUEST THERE
-    // FOR LATER INSPECTION.
     // In this particular case, we return an error because not having the sequence id
     // in the request value implies that a fatal error occurred on Neutron side.
     let seq_id = request
         .sequence
         .ok_or_else(|| StdError::generic_err("sequence not found"))?;
 
-    // WARNING: RETURNING THIS ERROR CLOSES THE CHANNEL.
-    // AN ALTERNATIVE IS TO MAINTAIN AN ERRORS QUEUE AND PUT THE FAILED REQUEST THERE
-    // FOR LATER INSPECTION.
     // In this particular case, we return an error because not having the sequence id
     // in the request value implies that a fatal error occurred on Neutron side.
     let channel_id = request
@@ -615,13 +584,14 @@ fn sudo_error(deps: DepsMut, request: RequestPacket, details: String) -> StdResu
 // and process this payload when an acknowledgement for the SubmitTx message is received in Sudo handler
 fn prepare_sudo_payload(mut deps: DepsMut, _env: Env, msg: Reply) -> StdResult<Response> {
     let payload = read_reply_payload(deps.storage)?;
-    let resp: MsgSubmitTxResponse = serde_json_wasm::from_slice(
-        msg.result
+    let resp: MsgSubmitTxResponse = decode_message_response(
+        &msg.result
             .into_result()
             .map_err(StdError::generic_err)?
-            .data
-            .ok_or_else(|| StdError::generic_err("no result"))?
-            .as_slice(),
+            .msg_responses[0] // msg_responses must have exactly one Msg response: https://github.com/neutron-org/neutron/blob/28b1d2ce968aaf1866e92d5286487f079eba3370/wasmbinding/message_plugin.go#L443
+            .clone()
+            .value
+            .to_vec(),
     )
     .map_err(|e| StdError::generic_err(format!("failed to parse response: {:?}", e)))?;
     deps.api

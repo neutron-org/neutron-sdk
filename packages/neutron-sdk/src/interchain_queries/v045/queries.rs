@@ -5,7 +5,7 @@ use crate::{
         types::QueryType,
         v045::types::{
             Balances, Delegations, FeePool, GovernmentProposal, GovernmentProposalVotes,
-            SigningInfo, StakingValidator, TotalSupply, UnbondingDelegations,
+            SigningInfo, StakingValidator, StdDelegation, TotalSupply, UnbondingDelegations,
         },
     },
     NeutronResult,
@@ -66,7 +66,7 @@ pub struct ProposalVotesResponse {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct DelegatorDelegationsResponse {
-    pub delegations: Vec<cosmwasm_std::Delegation>,
+    pub delegations: Vec<StdDelegation>,
     pub last_submitted_local_height: u64,
 }
 

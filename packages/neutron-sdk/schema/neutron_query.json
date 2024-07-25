@@ -22,7 +22,8 @@
               "format": "uint64",
               "minimum": 0.0
             }
-          }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
@@ -54,7 +55,8 @@
               "description": "*owner_address** is an address of contract which registered interchain account",
               "type": "string"
             }
-          }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
@@ -86,7 +88,8 @@
             "pagination": {
               "$ref": "#/definitions/PageRequest"
             }
-          }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
@@ -110,7 +113,8 @@
               "format": "uint64",
               "minimum": 0.0
             }
-          }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
@@ -123,7 +127,8 @@
       ],
       "properties": {
         "total_burned_neutrons_amount": {
-          "type": "object"
+          "type": "object",
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
@@ -136,7 +141,8 @@
       ],
       "properties": {
         "min_ibc_fee": {
-          "type": "object"
+          "type": "object",
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
@@ -161,7 +167,8 @@
             "subdenom": {
               "type": "string"
             }
-          }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
@@ -182,7 +189,8 @@
             "subdenom": {
               "type": "string"
             }
-          }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
@@ -203,7 +211,8 @@
             "denom": {
               "type": "string"
             }
-          }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
@@ -228,7 +237,8 @@
             "pagination": {
               "$ref": "#/definitions/PageRequest"
             }
-          }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false
@@ -288,7 +298,8 @@
         "Quote": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "DexQuery": {
       "oneOf": [
@@ -300,7 +311,8 @@
           ],
           "properties": {
             "params": {
-              "type": "object"
+              "type": "object",
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -325,7 +337,8 @@
                 "tranche_key": {
                   "type": "string"
                 }
-              }
+              },
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -350,7 +363,8 @@
                     }
                   ]
                 }
-              }
+              },
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -381,7 +395,8 @@
                     }
                   ]
                 }
-              }
+              },
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -415,7 +430,8 @@
                 "tranche_key": {
                   "type": "string"
                 }
-              }
+              },
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -450,7 +466,8 @@
                 "token_in": {
                   "type": "string"
                 }
-              }
+              },
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -485,7 +502,8 @@
                     }
                   ]
                 }
-              }
+              },
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -520,7 +538,8 @@
                 "token_in": {
                   "type": "string"
                 }
-              }
+              },
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -554,7 +573,8 @@
                 "tranche_key": {
                   "type": "string"
                 }
-              }
+              },
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -579,7 +599,8 @@
                     }
                   ]
                 }
-              }
+              },
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -614,7 +635,8 @@
                 "token_in": {
                   "type": "string"
                 }
-              }
+              },
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -650,7 +672,8 @@
                 "token_in": {
                   "type": "string"
                 }
-              }
+              },
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -686,7 +709,8 @@
                     "$ref": "#/definitions/MultiHopRoute"
                   }
                 }
-              }
+              },
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -742,7 +766,8 @@
                 "token_out": {
                   "type": "string"
                 }
-              }
+              },
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -774,7 +799,8 @@
                   "type": "integer",
                   "format": "int64"
                 }
-              }
+              },
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -797,7 +823,8 @@
                   "format": "uint64",
                   "minimum": 0.0
                 }
-              }
+              },
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -820,7 +847,8 @@
                   "format": "uint64",
                   "minimum": 0.0
                 }
-              }
+              },
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -845,7 +873,8 @@
                     }
                   ]
                 }
-              }
+              },
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -866,7 +895,7 @@
           ]
         },
         {
-          "description": "Fill-or-Kill limit orders are taker limit orders that either successfully swap 100% of the supplied AmountIn or return an error. If there is insufficient liquidity to complete the trade at or above the supplied TickIndex a Fill-or-Kill order will return an error `codespace: dex, code: 1134` (https://github.com/neutron-org/neutron/blob/main/x/dex/types/errors.go#L107 ErrGoodTilOrderWithoutExpiration).",
+          "description": "Fill-or-Kill limit orders are taker limit orders that either successfully swap 100% of the supplied AmountIn or return an error. If there is insufficient liquidity to complete the trade at or above the supplied TickIndex a Fill-or-Kill order will return an error `codespace: dex, code: 1134` (<https://github.com/neutron-org/neutron/blob/main/x/dex/types/errors.go#L107> ErrGoodTilOrderWithoutExpiration).",
           "type": "string",
           "enum": [
             "FILL_OR_KILL"
@@ -905,7 +934,8 @@
           ],
           "properties": {
             "params": {
-              "type": "object"
+              "type": "object",
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -917,7 +947,8 @@
           ],
           "properties": {
             "last_updated": {
-              "type": "object"
+              "type": "object",
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -929,7 +960,8 @@
           ],
           "properties": {
             "market_map": {
-              "type": "object"
+              "type": "object",
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -949,7 +981,8 @@
                 "currency_pair": {
                   "$ref": "#/definitions/CurrencyPair"
                 }
-              }
+              },
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -968,7 +1001,8 @@
             "type": "string"
           }
         }
-      }
+      },
+      "additionalProperties": false
     },
     "OracleQuery": {
       "oneOf": [
@@ -979,7 +1013,8 @@
           ],
           "properties": {
             "get_all_currency_pairs": {
-              "type": "object"
+              "type": "object",
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -999,7 +1034,8 @@
                 "currency_pair": {
                   "$ref": "#/definitions/CurrencyPair"
                 }
-              }
+              },
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -1022,7 +1058,8 @@
                     "type": "string"
                   }
                 }
-              }
+              },
+              "additionalProperties": false
             }
           },
           "additionalProperties": false
@@ -1067,7 +1104,8 @@
           "description": "reverse is set to true if results are to be returned in the descending order.",
           "type": "boolean"
         }
-      }
+      },
+      "additionalProperties": false
     },
     "PrecDec": {
       "type": "object",
@@ -1078,7 +1116,8 @@
         "i": {
           "type": "string"
         }
-      }
+      },
+      "additionalProperties": false
     }
   }
 }

@@ -89,7 +89,7 @@ impl WasmMockQuerier {
         validators: &[Validator],
         delegations: &[FullDelegation],
     ) {
-        self.base.update_staking(denom, validators, delegations);
+        self.base.staking.update(denom, validators, delegations);
     }
 
     pub fn add_query_response(&mut self, query_id: u64, response: Binary) {
