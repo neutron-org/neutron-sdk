@@ -26,6 +26,8 @@ pub struct GenesisDenom {
     pub denom: ::prost::alloc::string::String,
     #[prost(message, optional, tag = "2")]
     pub authority_metadata: ::core::option::Option<DenomAuthorityMetadata>,
+    #[prost(string, tag = "3")]
+    pub hook_contract_address: ::prost::alloc::string::String,
 }
 /// Params defines the parameters for the tokenfactory module.
 #[derive(Clone, PartialEq, ::prost::Message)]

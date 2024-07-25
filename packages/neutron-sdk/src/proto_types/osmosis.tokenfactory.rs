@@ -1,4 +1,7 @@
 // @generated
+/// WhitelistedHook describes a beforeSendHook which is allowed to be added and executed
+/// SetBeforeSendHook can only be called on denoms where the denom creator and
+/// code_id for the `contract_addr` match a WhitelistedHook
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct WhitelistedHook {
     #[prost(uint64, tag = "1")]
@@ -24,7 +27,7 @@ pub struct Params {
     /// are sent to
     #[prost(string, tag = "3")]
     pub fee_collector_address: ::prost::alloc::string::String,
-    /// HookWhitelist is the list of hooks which are allowed to be added and executed
+    /// whitelisted_hooks is the list of hooks which are allowed to be added and executed
     #[prost(message, repeated, tag = "4")]
     pub whitelisted_hooks: ::prost::alloc::vec::Vec<WhitelistedHook>,
 }

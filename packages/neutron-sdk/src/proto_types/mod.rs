@@ -17,6 +17,14 @@ pub mod neutron {
     }
     pub mod dex {
         include!("neutron.dex.rs");
+        pub mod v2 {
+            include!("neutron.dex.v2.rs");
+        }
+    }
+    pub mod dynamicfees {
+        pub mod v1 {
+            include!("neutron.dynamicfees.v1.rs");
+        }
     }
     pub mod feeburner {
         include!("neutron.feeburner.rs");

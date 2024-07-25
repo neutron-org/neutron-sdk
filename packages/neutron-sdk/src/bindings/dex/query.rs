@@ -73,8 +73,6 @@ pub enum DexQuery {
     },
     /// Queries the simulated result of a multihop swap
     EstimateMultiHopSwap {
-        creator: String,
-        receiver: String,
         routes: Vec<MultiHopRoute>,
         amount_in: Int128,
         exit_limit_price: PrecDec,
@@ -82,8 +80,6 @@ pub enum DexQuery {
     },
     /// Queries the simulated result of a PlaceLimit order
     EstimatePlaceLimitOrder {
-        creator: String,
-        receiver: String,
         token_in: String,
         token_out: String,
         tick_index_in_to_out: i64,
