@@ -52,7 +52,56 @@ pub fn derive_cosmwasm_ext(input: TokenStream) -> TokenStream {
 
         let cosmwasm_query = quote! {
             pub fn query(self, querier: &cosmwasm_std::QuerierWrapper<impl cosmwasm_std::CustomQuery>) -> cosmwasm_std::StdResult<#res> {
-                querier.query::<#res>(&self.into())
+                use prost::Message;
+                let resp = #res::decode(
+                    // Should be replaced with querier.query_grpc() after updating cosmwasm-std to v2.1.0
+                    self.query_grpc(
+                        querier,
+                    )
+                    .unwrap()
+                    .as_slice(),
+                );
+                match resp {
+                    Err(e) => Err(cosmwasm_std::StdError::generic_err(format!(
+                        "Can't decode item: {}",
+                        e
+                    ))),
+                    Ok(data) => Ok(data),
+                }
+            }
+
+            // Should be removed after updating cosmwasm-std to v2.1.0
+            fn query_grpc(
+                &self,
+                querier: &cosmwasm_std::QuerierWrapper<impl cosmwasm_std::CustomQuery>,
+            ) -> cosmwasm_std::StdResult<cosmwasm_std::Binary> {
+                self.query_raw(
+                    querier,
+                    &cosmwasm_std::QueryRequest::Grpc(cosmwasm_std::GrpcQuery {
+                        path: #path.to_string(),
+                        data: self.to_proto_bytes().into(),
+                    }),
+                )
+            }
+
+            // Should be removed after updating cosmwasm-std to v2.1.0
+            fn query_raw(
+                &self,
+                querier: &cosmwasm_std::QuerierWrapper<impl cosmwasm_std::CustomQuery>,
+                request: &cosmwasm_std::QueryRequest,
+            ) -> cosmwasm_std::StdResult<cosmwasm_std::Binary> {
+                let raw = cosmwasm_std::to_json_vec(request).map_err(|serialize_err| {
+                    cosmwasm_std::StdError::generic_err(format!("Serializing QueryRequest: {serialize_err}"))
+                })?;
+                match querier.raw_query(&raw) {
+                    cosmwasm_std::SystemResult::Err(system_err) => Err(cosmwasm_std::StdError::generic_err(
+                        format!("Querier system error: {system_err}"),
+                    )),
+                    cosmwasm_std::SystemResult::Ok(cosmwasm_std::ContractResult::Err(contract_err)) => Err(
+                        cosmwasm_std::StdError::generic_err(format!("Querier contract error: {contract_err}")),
+                    ),
+                    cosmwasm_std::SystemResult::Ok(cosmwasm_std::ContractResult::Ok(value)) => Ok(value),
+                }
             }
         };
 
