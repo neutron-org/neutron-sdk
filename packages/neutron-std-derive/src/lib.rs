@@ -57,6 +57,7 @@ pub fn derive_cosmwasm_ext(input: TokenStream) -> TokenStream {
                     // Should be replaced with querier.query_grpc() after updating cosmwasm-std to v2.1.0
                     self.query_grpc(
                         querier,
+                        &self.into(),
                     )
                     .unwrap()
                     .as_slice(),
@@ -71,24 +72,10 @@ pub fn derive_cosmwasm_ext(input: TokenStream) -> TokenStream {
             }
 
             // Should be removed after updating cosmwasm-std to v2.1.0
-            fn query_grpc(
+            fn query_grpc<Q: cosmwasm_std::CustomQuery>(
                 &self,
                 querier: &cosmwasm_std::QuerierWrapper<impl cosmwasm_std::CustomQuery>,
-            ) -> cosmwasm_std::StdResult<cosmwasm_std::Binary> {
-                self.query_raw(
-                    querier,
-                    &cosmwasm_std::QueryRequest::Grpc(cosmwasm_std::GrpcQuery {
-                        path: #path.to_string(),
-                        data: self.to_proto_bytes().into(),
-                    }),
-                )
-            }
-
-            // Should be removed after updating cosmwasm-std to v2.1.0
-            fn query_raw(
-                &self,
-                querier: &cosmwasm_std::QuerierWrapper<impl cosmwasm_std::CustomQuery>,
-                request: &cosmwasm_std::QueryRequest,
+                request: &cosmwasm_std::QueryRequest<Q>,
             ) -> cosmwasm_std::StdResult<cosmwasm_std::Binary> {
                 let raw = cosmwasm_std::to_json_vec(request).map_err(|serialize_err| {
                     cosmwasm_std::StdError::generic_err(format!("Serializing QueryRequest: {serialize_err}"))
@@ -111,6 +98,8 @@ pub fn derive_cosmwasm_ext(input: TokenStream) -> TokenStream {
     };
 
     (quote! {
+        #query_request_conversion
+        
         impl #ident {
             pub const TYPE_URL: &'static str = #type_url;
             #cosmwasm_query
@@ -128,8 +117,6 @@ pub fn derive_cosmwasm_ext(input: TokenStream) -> TokenStream {
                 }
             }
         }
-
-        #query_request_conversion
 
         impl From<#ident> for cosmwasm_std::Binary {
             fn from(msg: #ident) -> Self {
