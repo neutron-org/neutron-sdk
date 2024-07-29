@@ -10,7 +10,7 @@ pub mod bindings;
 mod errors;
 pub mod interchain_queries;
 pub mod interchain_txs;
-#[allow(deprecated)]
+#[allow(deprecated, clippy::module_inception)]
 pub mod proto_types;
 pub mod query;
 mod serde;
