@@ -54,10 +54,9 @@ pub fn derive_cosmwasm_ext(input: TokenStream) -> TokenStream {
             pub fn query(self, querier: &cosmwasm_std::QuerierWrapper<impl cosmwasm_std::CustomQuery>) -> cosmwasm_std::StdResult<#res> {
                 use prost::Message;
                 let resp = #res::decode(
-                    // Should be replaced with querier.query_grpc() after updating cosmwasm-std to v2.1.0
-                    self.query_grpc(
-                        querier,
-                        &self.into(),
+                    querier.query_grpc(
+                        #path.to_string(),
+                        self.to_proto_bytes().into(),
                     )
                     .unwrap()
                     .as_slice(),
@@ -70,26 +69,6 @@ pub fn derive_cosmwasm_ext(input: TokenStream) -> TokenStream {
                     Ok(data) => Ok(data),
                 }
             }
-
-            // Should be removed after updating cosmwasm-std to v2.1.0
-            fn query_grpc<Q: cosmwasm_std::CustomQuery>(
-                &self,
-                querier: &cosmwasm_std::QuerierWrapper<impl cosmwasm_std::CustomQuery>,
-                request: &cosmwasm_std::QueryRequest<Q>,
-            ) -> cosmwasm_std::StdResult<cosmwasm_std::Binary> {
-                let raw = cosmwasm_std::to_json_vec(request).map_err(|serialize_err| {
-                    cosmwasm_std::StdError::generic_err(format!("Serializing QueryRequest: {serialize_err}"))
-                })?;
-                match querier.raw_query(&raw) {
-                    cosmwasm_std::SystemResult::Err(system_err) => Err(cosmwasm_std::StdError::generic_err(
-                        format!("Querier system error: {system_err}"),
-                    )),
-                    cosmwasm_std::SystemResult::Ok(cosmwasm_std::ContractResult::Err(contract_err)) => Err(
-                        cosmwasm_std::StdError::generic_err(format!("Querier contract error: {contract_err}")),
-                    ),
-                    cosmwasm_std::SystemResult::Ok(cosmwasm_std::ContractResult::Ok(value)) => Ok(value),
-                }
-            }
         };
 
         (query_request_conversion, cosmwasm_query)
@@ -98,8 +77,6 @@ pub fn derive_cosmwasm_ext(input: TokenStream) -> TokenStream {
     };
 
     (quote! {
-        #query_request_conversion
-        
         impl #ident {
             pub const TYPE_URL: &'static str = #type_url;
             #cosmwasm_query
@@ -117,6 +94,8 @@ pub fn derive_cosmwasm_ext(input: TokenStream) -> TokenStream {
                 }
             }
         }
+
+        #query_request_conversion
 
         impl From<#ident> for cosmwasm_std::Binary {
             fn from(msg: #ident) -> Self {
