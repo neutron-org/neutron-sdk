@@ -57,8 +57,7 @@ pub fn derive_cosmwasm_ext(input: TokenStream) -> TokenStream {
                     querier.query_grpc(
                         #path.to_string(),
                         self.to_proto_bytes().into(),
-                    )
-                    .unwrap()
+                    )?
                     .as_slice(),
                 );
                 match resp {
