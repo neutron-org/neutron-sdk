@@ -20,10 +20,10 @@ const FEEMARKET_REPO: &str = "https://github.com/skip-mev/feemarket.git";
 const SLINKY_REPO: &str = "https://github.com/skip-mev/slinky.git";
 
 /// The Cosmos SDK commit or tag to be cloned and used to build the proto files
-const COSMOS_SDK_REV: &str = "v0.50.7-neutron";
+const COSMOS_SDK_REV: &str = "v0.50.8-neutron";
 
 /// The Neutron commit or tag to be cloned and used to build the proto files
-const NEUTRON_REV: &str = "v4.0.2-rc";
+const NEUTRON_REV: &str = "v4.1.0";
 
 /// The wasmd commit or tag to be cloned and used to build the proto files
 const WASMD_REV: &str = "v0.51.0";

@@ -696,6 +696,7 @@ pub struct LimitOrderTrancheUser {
     pub shares_owned: ::prost::alloc::string::String,
     #[prost(string, tag = "6")]
     pub shares_withdrawn: ::prost::alloc::string::String,
+    /// TODO: remove this in next release. It is no longer used
     #[prost(string, tag = "7")]
     pub shares_cancelled: ::prost::alloc::string::String,
     #[prost(enumeration = "LimitOrderType", tag = "8")]
