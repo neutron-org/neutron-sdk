@@ -59,7 +59,6 @@ impl Serialize for TransactionFilterValue {
     }
 }
 
-
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TransactionFilterItem {
     pub field: String,
