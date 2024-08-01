@@ -59,8 +59,6 @@ impl Serialize for TransactionFilterValue {
     }
 }
 
-pub const MAX_TX_FILTERS: usize = 32;
-
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TransactionFilterItem {
     pub field: String,
