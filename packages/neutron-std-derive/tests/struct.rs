@@ -17,7 +17,7 @@ fn main() {
         "/osmosis.tokenfactory.v1beta1.MsgCreateDenom"
     );
     let msg = MsgCreateDenom {
-        sender: "osmo1sr9zm2pq3xrru7l7gz632t2rqs9caet9xulwvapcqagq9pytkcgqwfc3nk".to_string(),
+        sender: "neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2".to_string(),
         subdenom: "uxxx".to_string(),
     };
 

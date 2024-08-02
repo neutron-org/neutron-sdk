@@ -35,12 +35,7 @@ const COMETBFT_REV: &str = "v0.38.10";
 const IBC_GO_REV: &str = "v8.2.1";
 
 /// The ics23 commit or tag to be cloned and used to build the proto files
-///
-/// cosmos-sdk deps for `osmo/v0.47` is `v0.9.0` but that has no buf.yml,
-/// so we are using this version instead which will work but
-/// [prehash_key_before_comparison](https://github.com/cosmos/ics23/commit/cea74ba58ffbf87154701cd5959184acedf09cd6#diff-fe43695465b668ae6b79cc97ff2103fbb665f8440c42bc4f85a1942380a3fae4)
-/// will be missing
-const ICS23_REV: &str = "rust/v0.10.0";
+const ICS23_REV: &str = "go/v0.10.0";
 
 const FEEMARKET_REV: &str = "v1.0.3";
 

@@ -140,30 +140,6 @@ impl CodeGenerator {
                     .map(|e| e.path().parent().unwrap().to_path_buf())
                     .unwrap()
             };
-            // let buf_root = WalkDir::new(&self.root.join(&project.project_dir))
-            //     .contents_first(true)
-            //     .sort_by(|a, b| {
-            //         // sort by files first, then directories, then by name.
-            //         // this is needed to ensure that the buf file is found as high as possible in
-            //         // the directory tree
-            //         if a.file_type().is_dir() && b.file_type().is_file() {
-            //             return std::cmp::Ordering::Greater;
-            //         } else if a.file_type().is_file() && b.file_type().is_dir() {
-            //             return std::cmp::Ordering::Less;
-            //         } else {
-            //             return a.file_name().cmp(b.file_name());
-            //         }
-            //     })
-            //     .into_iter()
-            //     .filter_map(|e| e.ok())
-            //     .find(|e| {
-            //         e.file_name()
-            //             .to_str()
-            //             .map(|s| s == "buf.yaml" || s == "buf.yml" || s == "buf.work.yaml")
-            //             .unwrap_or(false)
-            //     })
-            //     .map(|e| e.path().parent().unwrap().to_path_buf())
-            //     .unwrap();
 
             debug!("buf_root for project {:?}: {:?}", project.name, buf_root);
 

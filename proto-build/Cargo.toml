@@ -1,4 +1,5 @@
 [package]
+description = "This package is a modified copy of the osmosis package - https://github.com/osmosis-labs/osmosis-rust/tree/main/packages/proto-build"
 authors = ["Supanat Potiwarakorn <boss@osmosis.team>", "Justin Kilpatrick <justin@althea.net>", "Tony Arcieri <tony@iqlusion.io>"]
 edition = "2021"
 name = "proto-build"

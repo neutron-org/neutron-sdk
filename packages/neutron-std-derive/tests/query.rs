@@ -24,7 +24,7 @@ pub struct QueryDenomsFromCreatorResponse {
 
 fn main() {
     let _: QueryRequest<Empty> = QueryDenomsFromCreatorRequest {
-        creator: "osmo1sr9zm2pq3xrru7l7gz632t2rqs9caet9xulwvapcqagq9pytkcgqwfc3nk".to_string(),
+        creator: "neutron1m9l358xunhhwds0568za49mzhvuxx9ux8xafx2".to_string(),
     }
     .into();
 }

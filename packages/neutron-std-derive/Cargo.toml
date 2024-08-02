@@ -1,5 +1,5 @@
 [package]
-description = "Procedural macro for neutron-std"
+description = "Procedural macro for `neutron-std`. This package is a modified copy of the osmosis package - https://github.com/osmosis-labs/osmosis-rust/tree/main/packages/osmosis-std-derive"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 name = "neutron-std-derive"
