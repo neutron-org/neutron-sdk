@@ -432,11 +432,16 @@ impl NeutronMsg {
     /// Basic helper to define burn tokens passed to TokenFactory module:
     /// * **denom** is a name of the denom;
     /// * **amount** is an amount of tokens to burn.
-    pub fn submit_burn_tokens(denom: impl Into<String>, amount: Uint128) -> Self {
+    /// * **burn_from_address** is an address tokens will be burned from
+    pub fn submit_burn_tokens(
+        denom: impl Into<String>,
+        amount: Uint128,
+        burn_from_address: Option<String>,
+    ) -> Self {
         NeutronMsg::BurnTokens {
             denom: denom.into(),
             amount,
-            burn_from_address: String::new(),
+            burn_from_address: burn_from_address.unwrap_or_default(),
         }
     }
 
