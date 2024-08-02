@@ -10,12 +10,12 @@ The Neutron SDK is contained inside `packages` folder and consists of the follow
 
 | Package                         | Reference                                                                                        | Description                                                                                      |
 |---------------------------------|--------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|
-| Neutron Interchain Queries      | https://github.com/neutron-org/neutron-sdk/tree/main/packages/neutron-sdk/src/interchain_queries | Queries, messages and helper methods for interacting with Neutron Interchain Queries Module      |
-| Neutron Interchain Transactions | https://github.com/neutron-org/neutron-sdk/tree/main/packages/neutron-sdk/src/interchain_txs     | Queries, messages and helper methods for interacting with Neutron Interchain Transactions Module |
-| Neutron Bindings                | https://github.com/neutron-org/neutron-sdk/tree/main/packages/neutron-sdk/src/bindings           | Structures and helper methods for interacting with Neutron blockchain                            |
-| Neutron Sudo                    | https://github.com/neutron-org/neutron-sdk/tree/main/packages/neutron-sdk/src/sudo               | Structures for Sudo Contract callbacks from Neutron blockchain                                   |
-| Neutron Errors                  | https://github.com/neutron-org/neutron-sdk/tree/main/packages/neutron-sdk/src/errors             | Structures and helpers for Neutron specific error and result types                               |
-| Neutron Stargate                | https://github.com/neutron-org/neutron-sdk/tree/main/packages/neutron-sdk/src/stargate           | Structures and helpers for interacting with Neutron via Stargate                                 |
+| Neutron Interchain Queries      | <https://github.com/neutron-org/neutron-sdk/tree/main/packages/neutron-sdk/src/interchain_queries> | Queries, messages and helper methods for interacting with Neutron Interchain Queries Module      |
+| Neutron Interchain Transactions | <https://github.com/neutron-org/neutron-sdk/tree/main/packages/neutron-sdk/src/interchain_txs>     | Queries, messages and helper methods for interacting with Neutron Interchain Transactions Module |
+| Neutron Bindings                | <https://github.com/neutron-org/neutron-sdk/tree/main/packages/neutron-sdk/src/bindings>           | Structures and helper methods for interacting with Neutron blockchain                            |
+| Neutron Sudo                    | <https://github.com/neutron-org/neutron-sdk/tree/main/packages/neutron-sdk/src/sudo>               | Structures for Sudo Contract callbacks from Neutron blockchain                                   |
+| Neutron Errors                  | <https://github.com/neutron-org/neutron-sdk/tree/main/packages/neutron-sdk/src/errors>             | Structures and helpers for Neutron specific error and result types                               |
+| Neutron Stargate                | <https://github.com/neutron-org/neutron-sdk/tree/main/packages/neutron-sdk/src/stargate>           | Structures and helpers for interacting with Neutron via Stargate                                 |
 
 ### Example Contracts
 
@@ -23,9 +23,9 @@ We provide sample contracts that either implement or consume these specification
 
 | Contract                                         | Reference                                                                                 | Description                                                                                                                                                                                                                                                                                                                            |
 |--------------------------------------------------|-------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Neutron Interchain Queries Example Contract      | https://github.com/neutron-org/neutron-sdk/tree/main/contracts/neutron_interchain_queries | The contract shows how to properly work with [Interchain Queries Module](https://github.com/neutron-org/neutron/tree/master/x/interchainqueries) using [Interchain Queries SDK package](https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron-sdk/src/interchain_queries) via CosmWasm smart-contract.           |
-| Neutron Interchain Transactions Example Contract | https://github.com/neutron-org/neutron-sdk/tree/main/contracts/neutron_interchain_txs     | The contract shows how to properly work with [Neutron Interchain Transactions Module](https://github.com/neutron-org/neutron/tree/master/x/interchaintxs) using [Interchain Transactions SDK package](https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron-sdk/src/interchain_txs) via CosmWasm smart-contract. |
-| Neutron IBC Transfer Example Contract            | https://github.com/neutron-org/neutron-sdk/tree/main/contracts/ibc_transfer               | The contract shows how to properly work with [Neutron Sudo Package](https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron_sudo) to handle a callback from IBC transfer.                                                                                                                                          |
+| Neutron Interchain Queries Example Contract      | <https://github.com/neutron-org/neutron-sdk/tree/main/contracts/neutron_interchain_queries> | The contract shows how to properly work with [Interchain Queries Module](https://github.com/neutron-org/neutron/tree/master/x/interchainqueries) using [Interchain Queries SDK package](https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron-sdk/src/interchain_queries) via CosmWasm smart-contract.           |
+| Neutron Interchain Transactions Example Contract | <https://github.com/neutron-org/neutron-sdk/tree/main/contracts/neutron_interchain_txs>     | The contract shows how to properly work with [Neutron Interchain Transactions Module](https://github.com/neutron-org/neutron/tree/master/x/interchaintxs) using [Interchain Transactions SDK package](https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron-sdk/src/interchain_txs) via CosmWasm smart-contract. |
+| Neutron IBC Transfer Example Contract            | <https://github.com/neutron-org/neutron-sdk/tree/main/contracts/ibc_transfer>               | The contract shows how to properly work with [Neutron Sudo Package](https://github.com/neutron-org/neutron-contracts/tree/main/packages/neutron_sudo) to handle a callback from IBC transfer.                                                                                                                                          |
 
 ## Development
 
@@ -35,7 +35,7 @@ We provide sample contracts that either implement or consume these specification
 - `wasm32-unknown-unknown` target
 - Docker
 
-1. Install `rustup` via https://rustup.rs/
+1. Install `rustup` via <https://rustup.rs/>
 
 2. Run the following:
 
@@ -64,9 +64,10 @@ make schema
 
 Neutron proto files represented as generated Rust code is a part of the Neutron SDK. In case Neutron
 proto files have changed there's a command for Rust generated code rebuild. To rebuild the files,
-run the following command using the respective Neutron revision (tag) as an argument, e.g.:
+run the following command:
+
 ```sh
-make build-proto revision=v3.0.3
+make build-proto
 ```
 
 ### Production
@@ -81,7 +82,7 @@ This performs several optimizations which can significantly reduce the final siz
 
 ## Documentation
 
-Check out our documentation at https://docs.neutron.org.
+Check out our documentation at <https://docs.neutron.org>.
 
 ## License
 

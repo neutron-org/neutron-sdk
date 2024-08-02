@@ -30,4 +30,4 @@ check_contracts:
 build: schema clippy test fmt doc compile check_contracts
 
 build-proto:
-	@cargo run --bin proto-build $(revision)
+	@cargo run --bin proto-build
