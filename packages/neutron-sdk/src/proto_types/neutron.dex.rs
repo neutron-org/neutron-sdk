@@ -30,8 +30,9 @@ pub struct PoolReserves {
     pub reserves_maker_denom: ::prost::alloc::string::String,
     #[prost(string, tag = "3")]
     pub price_taker_to_maker: ::prost::alloc::string::String,
-    #[prost(string, tag = "4")]
-    pub price_opposite_taker_to_maker: ::prost::alloc::string::String,
+    /// This is the price of the PoolReserves denominated in the opposite token. (ie. 1 TokenA with a maker_price of 10 is worth 10 TokenB )
+    #[prost(string, tag = "5")]
+    pub maker_price: ::prost::alloc::string::String,
 }
 // NOTE: This struct is never actually stored in the KV store. It is merely a
 // convenience wrapper for holding both sides of a pool.
@@ -93,6 +94,9 @@ pub struct LimitOrderTranche {
     pub expiration_time: ::core::option::Option<::prost_types::Timestamp>,
     #[prost(string, tag = "7")]
     pub price_taker_to_maker: ::prost::alloc::string::String,
+    /// This is the price of the LimitOrder denominated in the opposite token. (ie. 1 TokenA with a maker_price of 10 is worth 10 TokenB )
+    #[prost(string, tag = "8")]
+    pub maker_price: ::prost::alloc::string::String,
 }
 /// Params defines the parameters for the module.
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -110,6 +114,8 @@ pub struct Params {
 pub struct DepositOptions {
     #[prost(bool, tag = "1")]
     pub disable_autoswap: bool,
+    #[prost(bool, tag = "2")]
+    pub fail_tx_on_bel: bool,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MsgDeposit {
@@ -133,11 +139,20 @@ pub struct MsgDeposit {
     pub options: ::prost::alloc::vec::Vec<DepositOptions>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
+pub struct FailedDeposit {
+    #[prost(uint64, tag = "1")]
+    pub deposit_idx: u64,
+    #[prost(string, tag = "2")]
+    pub error: ::prost::alloc::string::String,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MsgDepositResponse {
     #[prost(string, repeated, tag = "1")]
     pub reserve0_deposited: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
     #[prost(string, repeated, tag = "2")]
     pub reserve1_deposited: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
+    #[prost(message, repeated, tag = "3")]
+    pub failed_deposits: ::prost::alloc::vec::Vec<FailedDeposit>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MsgWithdrawal {
@@ -445,7 +460,7 @@ pub struct QueryAllUserDepositsResponse {
         ::core::option::Option<cosmos_sdk_proto::cosmos::base::query::v1beta1::PageResponse>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct QueryAllUserLimitOrdersRequest {
+pub struct QueryAllLimitOrderTrancheUserByAddressRequest {
     #[prost(string, tag = "1")]
     pub address: ::prost::alloc::string::String,
     #[prost(message, optional, tag = "2")]
@@ -453,7 +468,7 @@ pub struct QueryAllUserLimitOrdersRequest {
         ::core::option::Option<cosmos_sdk_proto::cosmos::base::query::v1beta1::PageRequest>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
-pub struct QueryAllUserLimitOrdersResponse {
+pub struct QueryAllLimitOrderTrancheUserByAddressResponse {
     #[prost(message, repeated, tag = "1")]
     pub limit_orders: ::prost::alloc::vec::Vec<LimitOrderTrancheUser>,
     #[prost(message, optional, tag = "2")]
