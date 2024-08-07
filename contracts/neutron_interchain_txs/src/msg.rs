@@ -1,4 +1,5 @@
 use cosmwasm_std::Coin;
+use neutron_sdk::bindings::msg::ChannelOrdering;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -36,6 +37,7 @@ pub enum ExecuteMsg {
         connection_id: String,
         interchain_account_id: String,
         register_fee: Vec<Coin>,
+        ordering: Option<ChannelOrdering>,
     },
     Delegate {
         interchain_account_id: String,
