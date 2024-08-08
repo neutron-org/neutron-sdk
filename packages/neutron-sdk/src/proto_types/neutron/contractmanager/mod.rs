@@ -132,10 +132,34 @@ pub struct QueryParamsResponse {
 )]
 #[proto_message(type_url = "/neutron.contractmanager.QueryFailuresRequest")]
 #[proto_query(
-    path = "/neutron.contractmanager.Query/AddressFailure",
+    path = "/neutron.contractmanager.Query/AddressFailures",
     response_type = QueryFailuresResponse
 )]
 pub struct QueryFailuresRequest {
+    /// address of the contract which Sudo call failed.
+    #[prost(string, tag = "1")]
+    pub address: ::prost::alloc::string::String,
+    #[prost(message, optional, tag = "3")]
+    pub pagination: ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageRequest>,
+}
+/// QueryFailureRequest is request type for the Query/Failures RPC method.
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(
+    Clone,
+    PartialEq,
+    Eq,
+    ::prost::Message,
+    ::serde::Serialize,
+    ::serde::Deserialize,
+    ::schemars::JsonSchema,
+    CosmwasmExt,
+)]
+#[proto_message(type_url = "/neutron.contractmanager.QueryFailureRequest")]
+#[proto_query(
+    path = "/neutron.contractmanager.Query/AddressFailure",
+    response_type = QueryFailuresResponse
+)]
+pub struct QueryFailureRequest {
     /// address of the contract which Sudo call failed.
     #[prost(string, tag = "1")]
     pub address: ::prost::alloc::string::String,
@@ -228,7 +252,7 @@ impl<'a, Q: cosmwasm_std::CustomQuery> ContractmanagerQuerier<'a, Q> {
         failure_id: u64,
         pagination: ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageRequest>,
     ) -> Result<QueryFailuresResponse, cosmwasm_std::StdError> {
-        QueryFailuresRequest {
+        QueryFailureRequest {
             address,
             failure_id,
             pagination,
@@ -238,12 +262,10 @@ impl<'a, Q: cosmwasm_std::CustomQuery> ContractmanagerQuerier<'a, Q> {
     pub fn address_failures(
         &self,
         address: ::prost::alloc::string::String,
-        failure_id: u64,
         pagination: ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageRequest>,
     ) -> Result<QueryFailuresResponse, cosmwasm_std::StdError> {
         QueryFailuresRequest {
             address,
-            failure_id,
             pagination,
         }
         .query(self.querier)
@@ -251,12 +273,10 @@ impl<'a, Q: cosmwasm_std::CustomQuery> ContractmanagerQuerier<'a, Q> {
     pub fn failures(
         &self,
         address: ::prost::alloc::string::String,
-        failure_id: u64,
         pagination: ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageRequest>,
     ) -> Result<QueryFailuresResponse, cosmwasm_std::StdError> {
         QueryFailuresRequest {
             address,
-            failure_id,
             pagination,
         }
         .query(self.querier)
