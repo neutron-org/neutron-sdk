@@ -1,0 +1,24 @@
+[package]
+description = "Procedural macro for `neutron-std`. This package is a modified copy of the osmosis package - https://github.com/osmosis-labs/osmosis-rust/tree/main/packages/osmosis-std-derive"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+name = "neutron-std-derive"
+version = "0.20.1"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+proc-macro = true
+
+[dependencies]
+itertools = "0.10.3"
+proc-macro2 = "1.0.40"
+prost-types = { workspace = true }
+quote = "1.0.20"
+syn = "1.0.98"
+
+[dev-dependencies]
+cosmwasm-std = { workspace = true, features = ["cosmwasm_2_0"] }
+prost = { workspace = true }
+serde = "1.0.142"
+trybuild = {version = "1.0.63", features = ["diff"]}
