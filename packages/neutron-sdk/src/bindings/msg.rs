@@ -217,6 +217,8 @@ pub enum NeutronMsg {
         period: u64,
         /// list of cosmwasm messages to be executed
         msgs: Vec<MsgExecuteContract>,
+        /// blocker where schedule should be executed
+        blocker: u64,
     },
 
     /// RemoveSchedule removes the schedule with a given `name`.
@@ -509,8 +511,19 @@ impl NeutronMsg {
     /// * **name** is a name of the schedule;
     /// * **period** is a period of schedule execution in blocks;
     /// * **msgs** is the messages that will be executed.
-    pub fn submit_add_schedule(name: String, period: u64, msgs: Vec<MsgExecuteContract>) -> Self {
-        NeutronMsg::AddSchedule { name, period, msgs }
+    /// * **blocker** is a blocker where schedule will be executed.
+    pub fn submit_add_schedule(
+        name: String,
+        period: u64,
+        msgs: Vec<MsgExecuteContract>,
+        blocker: u64,
+    ) -> Self {
+        NeutronMsg::AddSchedule {
+            name,
+            period,
+            msgs,
+            blocker,
+        }
     }
 
     /// Basic helper to define remove schedule passed to Cron module:
