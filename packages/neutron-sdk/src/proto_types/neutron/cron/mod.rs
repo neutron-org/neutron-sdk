@@ -1,3 +1,4 @@
+pub mod v1;
 use neutron_std_derive::CosmwasmExt;
 /// Params defines the parameters for the module.
 #[allow(clippy::derive_partial_eq_without_eq)]
@@ -57,13 +58,13 @@ pub struct Schedule {
         deserialize_with = "crate::serde::as_str::deserialize"
     )]
     pub last_execute_height: u64,
-    /// Blocker where the messages will be executed
-    #[prost(enumeration = "BlockerType", tag = "5")]
+    /// Execution stage when messages will be executed
+    #[prost(enumeration = "ExecutionStage", tag = "5")]
     #[serde(
         serialize_with = "crate::serde::as_str::serialize",
         deserialize_with = "crate::serde::as_str::deserialize"
     )]
-    pub blocker: i32,
+    pub execution_stage: i32,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
@@ -106,33 +107,33 @@ pub struct ScheduleCount {
     )]
     pub count: i32,
 }
-/// BlockerType defines when messages will be executed in the block
+/// ExecutionStage defines when messages will be executed in the block
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
 #[repr(i32)]
 #[derive(::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
-pub enum BlockerType {
-    Begin = 0,
-    End = 1,
-    Both = 2,
+pub enum ExecutionStage {
+    BeginBlocker = 0,
+    EndBlocker = 1,
+    BothBlockers = 2,
 }
-impl BlockerType {
+impl ExecutionStage {
     /// String value of the enum field names used in the ProtoBuf definition.
     ///
     /// The values are not transformed in any way and thus are considered stable
     /// (if the ProtoBuf definition does not change) and safe for programmatic use.
     pub fn as_str_name(&self) -> &'static str {
         match self {
-            BlockerType::Begin => "BEGIN",
-            BlockerType::End => "END",
-            BlockerType::Both => "BOTH",
+            ExecutionStage::BeginBlocker => "BEGIN_BLOCKER",
+            ExecutionStage::EndBlocker => "END_BLOCKER",
+            ExecutionStage::BothBlockers => "BOTH_BLOCKERS",
         }
     }
     /// Creates an enum from field names used in the ProtoBuf definition.
     pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
         match value {
-            "BEGIN" => Some(Self::Begin),
-            "END" => Some(Self::End),
-            "BOTH" => Some(Self::Both),
+            "BEGIN_BLOCKER" => Some(Self::BeginBlocker),
+            "END_BLOCKER" => Some(Self::EndBlocker),
+            "BOTH_BLOCKERS" => Some(Self::BothBlockers),
             _ => None,
         }
     }
@@ -263,6 +264,90 @@ pub struct QuerySchedulesResponse {
     pub pagination:
         ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageResponse>,
 }
+/// MsgAddSchedule is the MsgAddSchedule request type.
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(
+    Clone,
+    PartialEq,
+    Eq,
+    ::prost::Message,
+    ::serde::Serialize,
+    ::serde::Deserialize,
+    ::schemars::JsonSchema,
+    CosmwasmExt,
+)]
+#[proto_message(type_url = "/neutron.cron.MsgAddSchedule")]
+pub struct MsgAddSchedule {
+    /// Authority is the address of the governance account.
+    #[prost(string, tag = "1")]
+    pub authority: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub name: ::prost::alloc::string::String,
+    #[prost(uint64, tag = "3")]
+    #[serde(
+        serialize_with = "crate::serde::as_str::serialize",
+        deserialize_with = "crate::serde::as_str::deserialize"
+    )]
+    pub period: u64,
+    #[prost(message, repeated, tag = "4")]
+    pub msgs: ::prost::alloc::vec::Vec<MsgExecuteContract>,
+    #[prost(enumeration = "ExecutionStage", tag = "5")]
+    #[serde(
+        serialize_with = "crate::serde::as_str::serialize",
+        deserialize_with = "crate::serde::as_str::deserialize"
+    )]
+    pub execution_stage: i32,
+}
+/// MsgAddScheduleResponse defines the response structure for executing a
+/// MsgAddSchedule message.
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(
+    Clone,
+    PartialEq,
+    Eq,
+    ::prost::Message,
+    ::serde::Serialize,
+    ::serde::Deserialize,
+    ::schemars::JsonSchema,
+    CosmwasmExt,
+)]
+#[proto_message(type_url = "/neutron.cron.MsgAddScheduleResponse")]
+pub struct MsgAddScheduleResponse {}
+/// MsgRemoveSchedule is the MsgRemoveSchedule request type.
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(
+    Clone,
+    PartialEq,
+    Eq,
+    ::prost::Message,
+    ::serde::Serialize,
+    ::serde::Deserialize,
+    ::schemars::JsonSchema,
+    CosmwasmExt,
+)]
+#[proto_message(type_url = "/neutron.cron.MsgRemoveSchedule")]
+pub struct MsgRemoveSchedule {
+    /// Authority is the address of the governance account.
+    #[prost(string, tag = "1")]
+    pub authority: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub name: ::prost::alloc::string::String,
+}
+/// MsgRemoveScheduleResponse defines the response structure for executing a
+/// MsgRemoveSchedule message.
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(
+    Clone,
+    PartialEq,
+    Eq,
+    ::prost::Message,
+    ::serde::Serialize,
+    ::serde::Deserialize,
+    ::schemars::JsonSchema,
+    CosmwasmExt,
+)]
+#[proto_message(type_url = "/neutron.cron.MsgRemoveScheduleResponse")]
+pub struct MsgRemoveScheduleResponse {}
 /// MsgUpdateParams is the MsgUpdateParams request type.
 ///
 /// Since: 0.47
