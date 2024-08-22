@@ -9,9 +9,10 @@ homepage = "https://neutron.org"
 readme = "README.md"
 
 [dependencies]
-cosmwasm-std = { workspace = true, features = ["stargate"] }
+cosmwasm-std = { workspace = true, features = ["cosmwasm_2_0"] }
 cosmos-sdk-proto = { workspace = true }
-serde = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde-cw-value = "0.7.0"
 schemars = { workspace = true }
 serde-json-wasm = { workspace = true }
 bech32 = { workspace = true }
@@ -23,6 +24,8 @@ prost = { workspace = true }
 prost-types = { workspace = true }
 tendermint-proto = { workspace = true }
 speedate = { workspace = true }
+chrono = { version = "0.4.22", default-features = false }
+neutron-std-derive = { version = "0.20.1", path = "../neutron-std-derive" }
 
 [dev-dependencies]
 base64 = { workspace = true }
