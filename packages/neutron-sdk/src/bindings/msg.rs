@@ -218,8 +218,8 @@ pub enum NeutronMsg {
         period: u64,
         /// list of cosmwasm messages to be executed
         msgs: Vec<MsgExecuteContract>,
-        /// execution stage where schedule will be executed
-        execution_stage: String,
+        /// execution stages where schedule will be executed
+        execution_stages: Vec<String>,
     },
 
     /// RemoveSchedule removes the schedule with a given `name`.
@@ -512,18 +512,21 @@ impl NeutronMsg {
     /// * **name** is a name of the schedule;
     /// * **period** is a period of schedule execution in blocks;
     /// * **msgs** is the messages that will be executed.
-    /// * **execution_stage** is a stage where schedule will be executed.
+    /// * **execution_stages** is the stages where schedule will be executed.
     pub fn submit_add_schedule(
         name: String,
         period: u64,
         msgs: Vec<MsgExecuteContract>,
-        execution_stage: ExecutionStage,
+        execution_stages: Vec<ExecutionStage>,
     ) -> Self {
         NeutronMsg::AddSchedule {
             name,
             period,
             msgs,
-            execution_stage: execution_stage.as_str_name().to_string(),
+            execution_stages: execution_stages
+                .into_iter()
+                .map(|x| x.as_str_name().to_string())
+                .collect(),
         }
     }
 

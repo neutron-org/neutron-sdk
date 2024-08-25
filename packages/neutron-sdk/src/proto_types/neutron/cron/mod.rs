@@ -25,6 +25,7 @@ pub struct Params {
     )]
     pub limit: u64,
 }
+/// Schedule defines the schedule for execution
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -48,7 +49,7 @@ pub struct Schedule {
         deserialize_with = "crate::serde::as_str::deserialize"
     )]
     pub period: u64,
-    /// Msgs that will be executed every period amount of time
+    /// Msgs that will be executed every certain number of blocks, specified in the `period` field
     #[prost(message, repeated, tag = "3")]
     pub msgs: ::prost::alloc::vec::Vec<MsgExecuteContract>,
     /// Last execution's block height
@@ -58,14 +59,15 @@ pub struct Schedule {
         deserialize_with = "crate::serde::as_str::deserialize"
     )]
     pub last_execute_height: u64,
-    /// Execution stage when messages will be executed
-    #[prost(enumeration = "ExecutionStage", tag = "5")]
+    /// Execution stages when messages will be executed
+    #[prost(enumeration = "ExecutionStage", repeated, packed = "false", tag = "5")]
     #[serde(
-        serialize_with = "crate::serde::as_str::serialize",
-        deserialize_with = "crate::serde::as_str::deserialize"
+        serialize_with = "crate::serde::as_str_vec::serialize",
+        deserialize_with = "crate::serde::as_str_vec::deserialize"
     )]
-    pub execution_stage: i32,
+    pub execution_stages: ::prost::alloc::vec::Vec<i32>,
 }
+/// MsgExecuteContract defines the contract and the message to pass
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -86,6 +88,7 @@ pub struct MsgExecuteContract {
     #[prost(string, tag = "2")]
     pub msg: ::prost::alloc::string::String,
 }
+/// ScheduleCount defines the number of current schedules
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -112,9 +115,10 @@ pub struct ScheduleCount {
 #[repr(i32)]
 #[derive(::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
 pub enum ExecutionStage {
-    BeginBlocker = 0,
-    EndBlocker = 1,
-    BothBlockers = 2,
+    /// Execution at the end of the block
+    EndBlocker = 0,
+    /// Execution at the beginning of the block
+    BeginBlocker = 1,
 }
 impl ExecutionStage {
     /// String value of the enum field names used in the ProtoBuf definition.
@@ -123,17 +127,15 @@ impl ExecutionStage {
     /// (if the ProtoBuf definition does not change) and safe for programmatic use.
     pub fn as_str_name(&self) -> &'static str {
         match self {
-            ExecutionStage::BeginBlocker => "BEGIN_BLOCKER",
-            ExecutionStage::EndBlocker => "END_BLOCKER",
-            ExecutionStage::BothBlockers => "BOTH_BLOCKERS",
+            ExecutionStage::EndBlocker => "EXECUTION_STAGE_END_BLOCKER",
+            ExecutionStage::BeginBlocker => "EXECUTION_STAGE_BEGIN_BLOCKER",
         }
     }
     /// Creates an enum from field names used in the ProtoBuf definition.
     pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
         match value {
-            "BEGIN_BLOCKER" => Some(Self::BeginBlocker),
-            "END_BLOCKER" => Some(Self::EndBlocker),
-            "BOTH_BLOCKERS" => Some(Self::BothBlockers),
+            "EXECUTION_STAGE_END_BLOCKER" => Some(Self::EndBlocker),
+            "EXECUTION_STAGE_BEGIN_BLOCKER" => Some(Self::BeginBlocker),
             _ => None,
         }
     }
@@ -158,6 +160,7 @@ pub struct GenesisState {
     #[prost(message, optional, tag = "1")]
     pub params: ::core::option::Option<Params>,
 }
+/// QueryParamsRequest is the request type for the Query/Params RPC method.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -172,6 +175,7 @@ pub struct GenesisState {
 #[proto_message(type_url = "/neutron.cron.QueryParamsRequest")]
 #[proto_query(path = "/neutron.cron.Query/Params", response_type = QueryParamsResponse)]
 pub struct QueryParamsRequest {}
+/// QueryParamsResponse is the response type for the Query/Params RPC method.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -189,6 +193,7 @@ pub struct QueryParamsResponse {
     #[prost(message, optional, tag = "1")]
     pub params: ::core::option::Option<Params>,
 }
+/// QueryGetScheduleRequest is the request type for the Query/Schedule RPC method.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -209,6 +214,7 @@ pub struct QueryGetScheduleRequest {
     #[prost(string, tag = "1")]
     pub name: ::prost::alloc::string::String,
 }
+/// QueryGetScheduleResponse is the response type for the Query/Params RPC method.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -225,6 +231,7 @@ pub struct QueryGetScheduleResponse {
     #[prost(message, optional, tag = "1")]
     pub schedule: ::core::option::Option<Schedule>,
 }
+/// QuerySchedulesRequest is the request type for the Query/Schedules RPC method.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -245,6 +252,7 @@ pub struct QuerySchedulesRequest {
     #[prost(message, optional, tag = "1")]
     pub pagination: ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageRequest>,
 }
+/// QuerySchedulesResponse is the response type for the Query/Params RPC method.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -281,22 +289,26 @@ pub struct MsgAddSchedule {
     /// Authority is the address of the governance account.
     #[prost(string, tag = "1")]
     pub authority: ::prost::alloc::string::String,
+    /// Name of the schedule
     #[prost(string, tag = "2")]
     pub name: ::prost::alloc::string::String,
+    /// Period in blocks
     #[prost(uint64, tag = "3")]
     #[serde(
         serialize_with = "crate::serde::as_str::serialize",
         deserialize_with = "crate::serde::as_str::deserialize"
     )]
     pub period: u64,
+    /// Msgs that will be executed every certain number of blocks, specified in the `period` field
     #[prost(message, repeated, tag = "4")]
     pub msgs: ::prost::alloc::vec::Vec<MsgExecuteContract>,
-    #[prost(enumeration = "ExecutionStage", tag = "5")]
+    /// Execution stages when messages will be executed
+    #[prost(enumeration = "ExecutionStage", repeated, packed = "false", tag = "5")]
     #[serde(
-        serialize_with = "crate::serde::as_str::serialize",
-        deserialize_with = "crate::serde::as_str::deserialize"
+        serialize_with = "crate::serde::as_str_vec::serialize",
+        deserialize_with = "crate::serde::as_str_vec::deserialize"
     )]
-    pub execution_stage: i32,
+    pub execution_stages: ::prost::alloc::vec::Vec<i32>,
 }
 /// MsgAddScheduleResponse defines the response structure for executing a
 /// MsgAddSchedule message.
@@ -330,6 +342,7 @@ pub struct MsgRemoveSchedule {
     /// Authority is the address of the governance account.
     #[prost(string, tag = "1")]
     pub authority: ::prost::alloc::string::String,
+    /// Name of the schedule
     #[prost(string, tag = "2")]
     pub name: ::prost::alloc::string::String,
 }

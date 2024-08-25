@@ -1,4 +1,5 @@
 use neutron_std_derive::CosmwasmExt;
+/// Schedule defines the schedule for execution
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -22,7 +23,7 @@ pub struct Schedule {
         deserialize_with = "crate::serde::as_str::deserialize"
     )]
     pub period: u64,
-    /// Msgs that will be executed every period amount of time
+    /// Msgs that will be executed every certain number of blocks, specified in the `period` field
     #[prost(message, repeated, tag = "3")]
     pub msgs: ::prost::alloc::vec::Vec<MsgExecuteContract>,
     /// Last execution's block height
@@ -33,6 +34,7 @@ pub struct Schedule {
     )]
     pub last_execute_height: u64,
 }
+/// MsgExecuteContract defines the contract and the message to pass
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -53,6 +55,7 @@ pub struct MsgExecuteContract {
     #[prost(string, tag = "2")]
     pub msg: ::prost::alloc::string::String,
 }
+/// ScheduleCount defines the number of current schedules
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
