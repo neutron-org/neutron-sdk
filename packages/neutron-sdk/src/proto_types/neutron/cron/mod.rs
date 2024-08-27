@@ -59,13 +59,13 @@ pub struct Schedule {
         deserialize_with = "crate::serde::as_str::deserialize"
     )]
     pub last_execute_height: u64,
-    /// Execution stages when messages will be executed
-    #[prost(enumeration = "ExecutionStage", repeated, packed = "false", tag = "5")]
+    /// Execution stage when messages will be executed
+    #[prost(enumeration = "ExecutionStage", tag = "5")]
     #[serde(
-        serialize_with = "crate::serde::as_str_vec::serialize",
-        deserialize_with = "crate::serde::as_str_vec::deserialize"
+        serialize_with = "crate::serde::as_str::serialize",
+        deserialize_with = "crate::serde::as_str::deserialize"
     )]
-    pub execution_stages: ::prost::alloc::vec::Vec<i32>,
+    pub execution_stage: i32,
 }
 /// MsgExecuteContract defines the contract and the message to pass
 #[allow(clippy::derive_partial_eq_without_eq)]
@@ -160,7 +160,7 @@ pub struct GenesisState {
     #[prost(message, optional, tag = "1")]
     pub params: ::core::option::Option<Params>,
 }
-/// QueryParamsRequest is the request type for the Query/Params RPC method.
+/// The request type for the Query/Params RPC method.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -175,7 +175,7 @@ pub struct GenesisState {
 #[proto_message(type_url = "/neutron.cron.QueryParamsRequest")]
 #[proto_query(path = "/neutron.cron.Query/Params", response_type = QueryParamsResponse)]
 pub struct QueryParamsRequest {}
-/// QueryParamsResponse is the response type for the Query/Params RPC method.
+/// The response type for the Query/Params RPC method.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -193,7 +193,7 @@ pub struct QueryParamsResponse {
     #[prost(message, optional, tag = "1")]
     pub params: ::core::option::Option<Params>,
 }
-/// QueryGetScheduleRequest is the request type for the Query/Schedule RPC method.
+/// The request type for the Query/Schedule RPC method.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -214,7 +214,7 @@ pub struct QueryGetScheduleRequest {
     #[prost(string, tag = "1")]
     pub name: ::prost::alloc::string::String,
 }
-/// QueryGetScheduleResponse is the response type for the Query/Params RPC method.
+/// The response type for the Query/Params RPC method.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -231,7 +231,7 @@ pub struct QueryGetScheduleResponse {
     #[prost(message, optional, tag = "1")]
     pub schedule: ::core::option::Option<Schedule>,
 }
-/// QuerySchedulesRequest is the request type for the Query/Schedules RPC method.
+/// The request type for the Query/Schedules RPC method.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -252,7 +252,7 @@ pub struct QuerySchedulesRequest {
     #[prost(message, optional, tag = "1")]
     pub pagination: ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageRequest>,
 }
-/// QuerySchedulesResponse is the response type for the Query/Params RPC method.
+/// The response type for the Query/Params RPC method.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -302,13 +302,13 @@ pub struct MsgAddSchedule {
     /// Msgs that will be executed every certain number of blocks, specified in the `period` field
     #[prost(message, repeated, tag = "4")]
     pub msgs: ::prost::alloc::vec::Vec<MsgExecuteContract>,
-    /// Execution stages when messages will be executed
-    #[prost(enumeration = "ExecutionStage", repeated, packed = "false", tag = "5")]
+    /// Execution stage when messages will be executed
+    #[prost(enumeration = "ExecutionStage", tag = "5")]
     #[serde(
-        serialize_with = "crate::serde::as_str_vec::serialize",
-        deserialize_with = "crate::serde::as_str_vec::deserialize"
+        serialize_with = "crate::serde::as_str::serialize",
+        deserialize_with = "crate::serde::as_str::deserialize"
     )]
-    pub execution_stages: ::prost::alloc::vec::Vec<i32>,
+    pub execution_stage: i32,
 }
 /// MsgAddScheduleResponse defines the response structure for executing a
 /// MsgAddSchedule message.
