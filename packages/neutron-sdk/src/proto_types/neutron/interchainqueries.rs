@@ -234,6 +234,8 @@ pub struct MsgSubmitQueryResult {
     pub sender: ::prost::alloc::string::String,
     /// is the IBC client ID for an IBC connection between Neutron chain and target
     /// chain (where the result was obtained from)
+    /// Deprecated: populating this field does not make any affect
+    #[deprecated]
     #[prost(string, tag = "3")]
     #[serde(alias = "clientID")]
     pub client_id: ::prost::alloc::string::String,

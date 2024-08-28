@@ -351,6 +351,8 @@ pub struct MsgDepositResponse {
     pub reserve1_deposited: ::prost::alloc::vec::Vec<::prost::alloc::string::String>,
     #[prost(message, repeated, tag = "3")]
     pub failed_deposits: ::prost::alloc::vec::Vec<FailedDeposit>,
+    #[prost(message, repeated, tag = "4")]
+    pub shares_issued: ::prost::alloc::vec::Vec<super::super::cosmos::base::v1beta1::Coin>,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
@@ -400,7 +402,14 @@ pub struct MsgWithdrawal {
     CosmwasmExt,
 )]
 #[proto_message(type_url = "/neutron.dex.MsgWithdrawalResponse")]
-pub struct MsgWithdrawalResponse {}
+pub struct MsgWithdrawalResponse {
+    #[prost(string, tag = "1")]
+    pub reserve0_withdrawn: ::prost::alloc::string::String,
+    #[prost(string, tag = "2")]
+    pub reserve1_withdrawn: ::prost::alloc::string::String,
+    #[prost(message, repeated, tag = "3")]
+    pub shares_burned: ::prost::alloc::vec::Vec<super::super::cosmos::base::v1beta1::Coin>,
+}
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -470,6 +479,9 @@ pub struct MsgPlaceLimitOrderResponse {
     /// maker portion which will have withdrawn in the future
     #[prost(message, optional, tag = "3")]
     pub taker_coin_out: ::core::option::Option<super::super::cosmos::base::v1beta1::Coin>,
+    /// Total amount of the token in that was immediately swapped for takerOutCoin
+    #[prost(message, optional, tag = "4")]
+    pub taker_coin_in: ::core::option::Option<super::super::cosmos::base::v1beta1::Coin>,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
@@ -501,7 +513,14 @@ pub struct MsgWithdrawFilledLimitOrder {
     CosmwasmExt,
 )]
 #[proto_message(type_url = "/neutron.dex.MsgWithdrawFilledLimitOrderResponse")]
-pub struct MsgWithdrawFilledLimitOrderResponse {}
+pub struct MsgWithdrawFilledLimitOrderResponse {
+    /// Total amount of taker reserves that were withdrawn
+    #[prost(message, optional, tag = "1")]
+    pub taker_coin_out: ::core::option::Option<super::super::cosmos::base::v1beta1::Coin>,
+    /// Total amount of maker reserves that were withdrawn --only applies to inactive LimitOrders
+    #[prost(message, optional, tag = "2")]
+    pub maker_coin_out: ::core::option::Option<super::super::cosmos::base::v1beta1::Coin>,
+}
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -532,7 +551,14 @@ pub struct MsgCancelLimitOrder {
     CosmwasmExt,
 )]
 #[proto_message(type_url = "/neutron.dex.MsgCancelLimitOrderResponse")]
-pub struct MsgCancelLimitOrderResponse {}
+pub struct MsgCancelLimitOrderResponse {
+    /// Total amount of taker reserves that were withdrawn
+    #[prost(message, optional, tag = "1")]
+    pub taker_coin_out: ::core::option::Option<super::super::cosmos::base::v1beta1::Coin>,
+    /// Total amount of maker reserves that were canceled
+    #[prost(message, optional, tag = "2")]
+    pub maker_coin_out: ::core::option::Option<super::super::cosmos::base::v1beta1::Coin>,
+}
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -592,6 +618,10 @@ pub struct MsgMultiHopSwap {
 pub struct MsgMultiHopSwapResponse {
     #[prost(message, optional, tag = "1")]
     pub coin_out: ::core::option::Option<super::super::cosmos::base::v1beta1::Coin>,
+    #[prost(message, optional, tag = "2")]
+    pub route: ::core::option::Option<MultiHopRoute>,
+    #[prost(message, repeated, tag = "3")]
+    pub dust: ::prost::alloc::vec::Vec<super::super::cosmos::base::v1beta1::Coin>,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
@@ -1363,6 +1393,7 @@ pub struct QueryGetPoolReservesResponse {
     response_type = QueryEstimateMultiHopSwapResponse
 )]
 pub struct QueryEstimateMultiHopSwapRequest {
+    /// DEPRECATED: Use QuerySimulateMultiHopSwap
     #[prost(string, tag = "1")]
     pub creator: ::prost::alloc::string::String,
     #[prost(string, tag = "2")]
@@ -1411,6 +1442,7 @@ pub struct QueryEstimateMultiHopSwapResponse {
     response_type = QueryEstimatePlaceLimitOrderResponse
 )]
 pub struct QueryEstimatePlaceLimitOrderRequest {
+    /// DEPRECATED: Use QuerySimulatePlaceLimitOrder
     #[prost(string, tag = "1")]
     pub creator: ::prost::alloc::string::String,
     #[prost(string, tag = "2")]
@@ -1615,6 +1647,222 @@ pub struct QueryAllPoolMetadataResponse {
     pub pagination:
         ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageResponse>,
 }
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(
+    Clone,
+    PartialEq,
+    Eq,
+    ::prost::Message,
+    ::serde::Serialize,
+    ::serde::Deserialize,
+    ::schemars::JsonSchema,
+    CosmwasmExt,
+)]
+#[proto_message(type_url = "/neutron.dex.QuerySimulateDepositRequest")]
+#[proto_query(
+    path = "/neutron.dex.Query/SimulateDeposit",
+    response_type = QuerySimulateDepositResponse
+)]
+pub struct QuerySimulateDepositRequest {
+    #[prost(message, optional, tag = "1")]
+    pub msg: ::core::option::Option<MsgDeposit>,
+}
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(
+    Clone,
+    PartialEq,
+    Eq,
+    ::prost::Message,
+    ::serde::Serialize,
+    ::serde::Deserialize,
+    ::schemars::JsonSchema,
+    CosmwasmExt,
+)]
+#[proto_message(type_url = "/neutron.dex.QuerySimulateDepositResponse")]
+pub struct QuerySimulateDepositResponse {
+    #[prost(message, optional, tag = "1")]
+    pub resp: ::core::option::Option<MsgDepositResponse>,
+}
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(
+    Clone,
+    PartialEq,
+    Eq,
+    ::prost::Message,
+    ::serde::Serialize,
+    ::serde::Deserialize,
+    ::schemars::JsonSchema,
+    CosmwasmExt,
+)]
+#[proto_message(type_url = "/neutron.dex.QuerySimulateWithdrawalRequest")]
+#[proto_query(
+    path = "/neutron.dex.Query/SimulateWithdrawal",
+    response_type = QuerySimulateWithdrawalResponse
+)]
+pub struct QuerySimulateWithdrawalRequest {
+    #[prost(message, optional, tag = "1")]
+    pub msg: ::core::option::Option<MsgWithdrawal>,
+}
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(
+    Clone,
+    PartialEq,
+    Eq,
+    ::prost::Message,
+    ::serde::Serialize,
+    ::serde::Deserialize,
+    ::schemars::JsonSchema,
+    CosmwasmExt,
+)]
+#[proto_message(type_url = "/neutron.dex.QuerySimulateWithdrawalResponse")]
+pub struct QuerySimulateWithdrawalResponse {
+    #[prost(message, optional, tag = "1")]
+    pub resp: ::core::option::Option<MsgWithdrawalResponse>,
+}
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(
+    Clone,
+    PartialEq,
+    Eq,
+    ::prost::Message,
+    ::serde::Serialize,
+    ::serde::Deserialize,
+    ::schemars::JsonSchema,
+    CosmwasmExt,
+)]
+#[proto_message(type_url = "/neutron.dex.QuerySimulatePlaceLimitOrderRequest")]
+#[proto_query(
+    path = "/neutron.dex.Query/SimulatePlaceLimitOrder",
+    response_type = QuerySimulatePlaceLimitOrderResponse
+)]
+pub struct QuerySimulatePlaceLimitOrderRequest {
+    #[prost(message, optional, tag = "1")]
+    pub msg: ::core::option::Option<MsgPlaceLimitOrder>,
+}
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(
+    Clone,
+    PartialEq,
+    Eq,
+    ::prost::Message,
+    ::serde::Serialize,
+    ::serde::Deserialize,
+    ::schemars::JsonSchema,
+    CosmwasmExt,
+)]
+#[proto_message(type_url = "/neutron.dex.QuerySimulatePlaceLimitOrderResponse")]
+pub struct QuerySimulatePlaceLimitOrderResponse {
+    #[prost(message, optional, tag = "1")]
+    pub resp: ::core::option::Option<MsgPlaceLimitOrderResponse>,
+}
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(
+    Clone,
+    PartialEq,
+    Eq,
+    ::prost::Message,
+    ::serde::Serialize,
+    ::serde::Deserialize,
+    ::schemars::JsonSchema,
+    CosmwasmExt,
+)]
+#[proto_message(type_url = "/neutron.dex.QuerySimulateWithdrawFilledLimitOrderRequest")]
+#[proto_query(
+    path = "/neutron.dex.Query/SimulateWithdrawFilledLimitOrder",
+    response_type = QuerySimulateWithdrawFilledLimitOrderResponse
+)]
+pub struct QuerySimulateWithdrawFilledLimitOrderRequest {
+    #[prost(message, optional, tag = "1")]
+    pub msg: ::core::option::Option<MsgWithdrawFilledLimitOrder>,
+}
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(
+    Clone,
+    PartialEq,
+    Eq,
+    ::prost::Message,
+    ::serde::Serialize,
+    ::serde::Deserialize,
+    ::schemars::JsonSchema,
+    CosmwasmExt,
+)]
+#[proto_message(type_url = "/neutron.dex.QuerySimulateWithdrawFilledLimitOrderResponse")]
+pub struct QuerySimulateWithdrawFilledLimitOrderResponse {
+    #[prost(message, optional, tag = "1")]
+    pub resp: ::core::option::Option<MsgWithdrawFilledLimitOrderResponse>,
+}
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(
+    Clone,
+    PartialEq,
+    Eq,
+    ::prost::Message,
+    ::serde::Serialize,
+    ::serde::Deserialize,
+    ::schemars::JsonSchema,
+    CosmwasmExt,
+)]
+#[proto_message(type_url = "/neutron.dex.QuerySimulateCancelLimitOrderRequest")]
+#[proto_query(
+    path = "/neutron.dex.Query/SimulateCancelLimitOrder",
+    response_type = QuerySimulateCancelLimitOrderResponse
+)]
+pub struct QuerySimulateCancelLimitOrderRequest {
+    #[prost(message, optional, tag = "1")]
+    pub msg: ::core::option::Option<MsgCancelLimitOrder>,
+}
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(
+    Clone,
+    PartialEq,
+    Eq,
+    ::prost::Message,
+    ::serde::Serialize,
+    ::serde::Deserialize,
+    ::schemars::JsonSchema,
+    CosmwasmExt,
+)]
+#[proto_message(type_url = "/neutron.dex.QuerySimulateCancelLimitOrderResponse")]
+pub struct QuerySimulateCancelLimitOrderResponse {
+    #[prost(message, optional, tag = "1")]
+    pub resp: ::core::option::Option<MsgCancelLimitOrderResponse>,
+}
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(
+    Clone,
+    PartialEq,
+    Eq,
+    ::prost::Message,
+    ::serde::Serialize,
+    ::serde::Deserialize,
+    ::schemars::JsonSchema,
+    CosmwasmExt,
+)]
+#[proto_message(type_url = "/neutron.dex.QuerySimulateMultiHopSwapRequest")]
+#[proto_query(
+    path = "/neutron.dex.Query/SimulateMultiHopSwap",
+    response_type = QuerySimulateMultiHopSwapResponse
+)]
+pub struct QuerySimulateMultiHopSwapRequest {
+    #[prost(message, optional, tag = "1")]
+    pub msg: ::core::option::Option<MsgMultiHopSwap>,
+}
+#[allow(clippy::derive_partial_eq_without_eq)]
+#[derive(
+    Clone,
+    PartialEq,
+    Eq,
+    ::prost::Message,
+    ::serde::Serialize,
+    ::serde::Deserialize,
+    ::schemars::JsonSchema,
+    CosmwasmExt,
+)]
+#[proto_message(type_url = "/neutron.dex.QuerySimulateMultiHopSwapResponse")]
+pub struct QuerySimulateMultiHopSwapResponse {
+    #[prost(message, optional, tag = "1")]
+    pub resp: ::core::option::Option<MsgMultiHopSwapResponse>,
+}
 pub struct DexQuerier<'a, Q: cosmwasm_std::CustomQuery> {
     querier: &'a cosmwasm_std::QuerierWrapper<'a, Q>,
 }
@@ -1758,6 +2006,7 @@ impl<'a, Q: cosmwasm_std::CustomQuery> DexQuerier<'a, Q> {
         }
         .query(self.querier)
     }
+    #[deprecated]
     pub fn estimate_multi_hop_swap(
         &self,
         creator: ::prost::alloc::string::String,
@@ -1777,6 +2026,7 @@ impl<'a, Q: cosmwasm_std::CustomQuery> DexQuerier<'a, Q> {
         }
         .query(self.querier)
     }
+    #[deprecated]
     #[allow(clippy::too_many_arguments)]
     pub fn estimate_place_limit_order(
         &self,
@@ -1830,5 +2080,41 @@ impl<'a, Q: cosmwasm_std::CustomQuery> DexQuerier<'a, Q> {
         pagination: ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageRequest>,
     ) -> Result<QueryAllPoolMetadataResponse, cosmwasm_std::StdError> {
         QueryAllPoolMetadataRequest { pagination }.query(self.querier)
+    }
+    pub fn simulate_deposit(
+        &self,
+        msg: ::core::option::Option<MsgDeposit>,
+    ) -> Result<QuerySimulateDepositResponse, cosmwasm_std::StdError> {
+        QuerySimulateDepositRequest { msg }.query(self.querier)
+    }
+    pub fn simulate_withdrawal(
+        &self,
+        msg: ::core::option::Option<MsgWithdrawal>,
+    ) -> Result<QuerySimulateWithdrawalResponse, cosmwasm_std::StdError> {
+        QuerySimulateWithdrawalRequest { msg }.query(self.querier)
+    }
+    pub fn simulate_place_limit_order(
+        &self,
+        msg: ::core::option::Option<MsgPlaceLimitOrder>,
+    ) -> Result<QuerySimulatePlaceLimitOrderResponse, cosmwasm_std::StdError> {
+        QuerySimulatePlaceLimitOrderRequest { msg }.query(self.querier)
+    }
+    pub fn simulate_withdraw_filled_limit_order(
+        &self,
+        msg: ::core::option::Option<MsgWithdrawFilledLimitOrder>,
+    ) -> Result<QuerySimulateWithdrawFilledLimitOrderResponse, cosmwasm_std::StdError> {
+        QuerySimulateWithdrawFilledLimitOrderRequest { msg }.query(self.querier)
+    }
+    pub fn simulate_cancel_limit_order(
+        &self,
+        msg: ::core::option::Option<MsgCancelLimitOrder>,
+    ) -> Result<QuerySimulateCancelLimitOrderResponse, cosmwasm_std::StdError> {
+        QuerySimulateCancelLimitOrderRequest { msg }.query(self.querier)
+    }
+    pub fn simulate_multi_hop_swap(
+        &self,
+        msg: ::core::option::Option<MsgMultiHopSwap>,
+    ) -> Result<QuerySimulateMultiHopSwapResponse, cosmwasm_std::StdError> {
+        QuerySimulateMultiHopSwapRequest { msg }.query(self.querier)
     }
 }

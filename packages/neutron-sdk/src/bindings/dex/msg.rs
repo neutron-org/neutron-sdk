@@ -3,7 +3,7 @@ use cosmwasm_std::Uint128;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use super::types::{DepositOption, MultiHopRoute, PrecDec};
+use super::types::{DepositOptions, MultiHopRoute, PrecDec};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -26,7 +26,7 @@ pub enum DexMsg {
         /// Fees to use for each deposit
         fees: Vec<u64>,
         /// Additional deposit options
-        options: Vec<DepositOption>,
+        options: Vec<DepositOptions>,
     },
     /// Withdraw is used to redeem PoolShares for the user’s pro-rata
     /// portion of tokens within a liquidity pool. Users can withdraw from a pool at any time
