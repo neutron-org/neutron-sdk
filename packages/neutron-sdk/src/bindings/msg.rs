@@ -30,7 +30,6 @@ pub struct IbcFee {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ChannelOrdering {
-    None,
     OrderOrdered,
     OrderUnordered,
 }
