@@ -1,6 +1,6 @@
 pub mod v1;
 use neutron_std_derive::CosmwasmExt;
-/// Params defines the parameters for the module.
+/// Defines the parameters for the module.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -25,7 +25,7 @@ pub struct Params {
     )]
     pub limit: u64,
 }
-/// Schedule defines the schedule for execution
+/// Defines the schedule for execution
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -59,7 +59,7 @@ pub struct Schedule {
         deserialize_with = "crate::serde::as_str::deserialize"
     )]
     pub last_execute_height: u64,
-    /// Execution stage when messages will be executed
+    /// Stage when messages will be executed
     #[prost(enumeration = "ExecutionStage", tag = "5")]
     #[serde(
         serialize_with = "crate::serde::as_str::serialize",
@@ -67,7 +67,7 @@ pub struct Schedule {
     )]
     pub execution_stage: i32,
 }
-/// MsgExecuteContract defines the contract and the message to pass
+/// Defines the contract and the message to pass
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -81,14 +81,14 @@ pub struct Schedule {
 )]
 #[proto_message(type_url = "/neutron.cron.MsgExecuteContract")]
 pub struct MsgExecuteContract {
-    /// Contract is the address of the smart contract
+    /// The address of the smart contract
     #[prost(string, tag = "1")]
     pub contract: ::prost::alloc::string::String,
-    /// Msg is json encoded message to be passed to the contract
+    /// JSON encoded message to be passed to the contract
     #[prost(string, tag = "2")]
     pub msg: ::prost::alloc::string::String,
 }
-/// ScheduleCount defines the number of current schedules
+/// Defines the number of current schedules
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -102,7 +102,7 @@ pub struct MsgExecuteContract {
 )]
 #[proto_message(type_url = "/neutron.cron.ScheduleCount")]
 pub struct ScheduleCount {
-    /// Count is the number of current schedules
+    /// The number of current schedules
     #[prost(int32, tag = "1")]
     #[serde(
         serialize_with = "crate::serde::as_str::serialize",
@@ -110,7 +110,7 @@ pub struct ScheduleCount {
     )]
     pub count: i32,
 }
-/// ExecutionStage defines when messages will be executed in the block
+/// Defines when messages will be executed in the block
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
 #[repr(i32)]
 #[derive(::serde::Serialize, ::serde::Deserialize, ::schemars::JsonSchema)]
@@ -140,7 +140,7 @@ impl ExecutionStage {
         }
     }
 }
-/// GenesisState defines the cron module's genesis state.
+/// Defines the cron module's genesis state.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -272,7 +272,7 @@ pub struct QuerySchedulesResponse {
     pub pagination:
         ::core::option::Option<super::super::cosmos::base::query::v1beta1::PageResponse>,
 }
-/// MsgAddSchedule is the MsgAddSchedule request type.
+/// The MsgAddSchedule request type.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -286,7 +286,7 @@ pub struct QuerySchedulesResponse {
 )]
 #[proto_message(type_url = "/neutron.cron.MsgAddSchedule")]
 pub struct MsgAddSchedule {
-    /// Authority is the address of the governance account.
+    /// The address of the governance account.
     #[prost(string, tag = "1")]
     pub authority: ::prost::alloc::string::String,
     /// Name of the schedule
@@ -302,7 +302,7 @@ pub struct MsgAddSchedule {
     /// Msgs that will be executed every certain number of blocks, specified in the `period` field
     #[prost(message, repeated, tag = "4")]
     pub msgs: ::prost::alloc::vec::Vec<MsgExecuteContract>,
-    /// Execution stage when messages will be executed
+    /// Stage when messages will be executed
     #[prost(enumeration = "ExecutionStage", tag = "5")]
     #[serde(
         serialize_with = "crate::serde::as_str::serialize",
@@ -310,8 +310,7 @@ pub struct MsgAddSchedule {
     )]
     pub execution_stage: i32,
 }
-/// MsgAddScheduleResponse defines the response structure for executing a
-/// MsgAddSchedule message.
+/// Defines the response structure for executing a MsgAddSchedule message.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -325,7 +324,7 @@ pub struct MsgAddSchedule {
 )]
 #[proto_message(type_url = "/neutron.cron.MsgAddScheduleResponse")]
 pub struct MsgAddScheduleResponse {}
-/// MsgRemoveSchedule is the MsgRemoveSchedule request type.
+/// The MsgRemoveSchedule request type.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -339,15 +338,14 @@ pub struct MsgAddScheduleResponse {}
 )]
 #[proto_message(type_url = "/neutron.cron.MsgRemoveSchedule")]
 pub struct MsgRemoveSchedule {
-    /// Authority is the address of the governance account.
+    /// The address of the governance account.
     #[prost(string, tag = "1")]
     pub authority: ::prost::alloc::string::String,
     /// Name of the schedule
     #[prost(string, tag = "2")]
     pub name: ::prost::alloc::string::String,
 }
-/// MsgRemoveScheduleResponse defines the response structure for executing a
-/// MsgRemoveSchedule message.
+/// Defines the response structure for executing a MsgRemoveSchedule message.
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -361,7 +359,7 @@ pub struct MsgRemoveSchedule {
 )]
 #[proto_message(type_url = "/neutron.cron.MsgRemoveScheduleResponse")]
 pub struct MsgRemoveScheduleResponse {}
-/// MsgUpdateParams is the MsgUpdateParams request type.
+/// The MsgUpdateParams request type.
 ///
 /// Since: 0.47
 #[allow(clippy::derive_partial_eq_without_eq)]
@@ -377,17 +375,16 @@ pub struct MsgRemoveScheduleResponse {}
 )]
 #[proto_message(type_url = "/neutron.cron.MsgUpdateParams")]
 pub struct MsgUpdateParams {
-    /// Authority is the address of the governance account.
+    /// The address of the governance account.
     #[prost(string, tag = "1")]
     pub authority: ::prost::alloc::string::String,
-    /// params defines the x/cron parameters to update.
+    /// Defines the x/cron parameters to update.
     ///
     /// NOTE: All parameters must be supplied.
     #[prost(message, optional, tag = "2")]
     pub params: ::core::option::Option<Params>,
 }
-/// MsgUpdateParamsResponse defines the response structure for executing a
-/// MsgUpdateParams message.
+/// Defines the response structure for executing a MsgUpdateParams message.
 ///
 /// Since: 0.47
 #[allow(clippy::derive_partial_eq_without_eq)]

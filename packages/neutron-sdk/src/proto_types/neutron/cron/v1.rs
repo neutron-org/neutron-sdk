@@ -1,5 +1,5 @@
 use neutron_std_derive::CosmwasmExt;
-/// Schedule defines the schedule for execution
+/// Defines the schedule for execution
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -34,7 +34,7 @@ pub struct Schedule {
     )]
     pub last_execute_height: u64,
 }
-/// MsgExecuteContract defines the contract and the message to pass
+/// Defines the contract and the message to pass
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -48,14 +48,14 @@ pub struct Schedule {
 )]
 #[proto_message(type_url = "/neutron.cron.v1.MsgExecuteContract")]
 pub struct MsgExecuteContract {
-    /// Contract is the address of the smart contract
+    /// The address of the smart contract
     #[prost(string, tag = "1")]
     pub contract: ::prost::alloc::string::String,
-    /// Msg is json encoded message to be passed to the contract
+    /// JSON encoded message to be passed to the contract
     #[prost(string, tag = "2")]
     pub msg: ::prost::alloc::string::String,
 }
-/// ScheduleCount defines the number of current schedules
+/// Defines the number of current schedules
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
     Clone,
@@ -69,7 +69,7 @@ pub struct MsgExecuteContract {
 )]
 #[proto_message(type_url = "/neutron.cron.v1.ScheduleCount")]
 pub struct ScheduleCount {
-    /// Count is the number of current schedules
+    /// The number of current schedules
     #[prost(int32, tag = "1")]
     #[serde(
         serialize_with = "crate::serde::as_str::serialize",
