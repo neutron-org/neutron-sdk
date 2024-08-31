@@ -234,8 +234,8 @@ pub struct MsgWithdrawal {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct MsgWithdrawalResponse {
-    pub reserve0_withdrawn: Uint128,
-    pub reserve1_withdrawn: Uint128,
+    pub reserve0_withdrawn: Option<Uint128>,
+    pub reserve1_withdrawn: Option<Uint128>,
     pub shares_burned: Vec<Coin>,
 }
 
