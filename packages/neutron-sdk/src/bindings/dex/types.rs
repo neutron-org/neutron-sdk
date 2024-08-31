@@ -81,8 +81,8 @@ pub struct TradePairID {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema, Default)]
 #[serde(rename_all = "snake_case")]
 pub struct FailedDeposit {
-    pub deposit_idx: u64,
-    pub error: String,
+    pub deposit_idx: Option<u64>,
+    pub error: Option<String>,
 }
 
 // TODO implement math for PrecDec
@@ -110,8 +110,8 @@ impl From<String> for PrecDec {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct DepositOptions {
-    pub disable_autoswap: bool,
-    pub fail_tx_on_bel: bool,
+    pub disable_autoswap: Option<bool>,
+    pub fail_tx_on_bel: Option<bool>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
