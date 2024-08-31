@@ -215,7 +215,7 @@ pub struct MsgDeposit {
 pub struct MsgDepositResponse {
     pub reserve0_deposited: Vec<Uint128>,
     pub reserve1_deposited: Vec<Uint128>,
-    pub failed_deposits: Vec<FailedDeposit>,
+    pub failed_deposits: Option<Vec<FailedDeposit>>,
     pub shares_issued: Vec<Coin>,
 }
 
@@ -257,8 +257,8 @@ pub struct MsgPlaceLimitOrder {
 pub struct MsgPlaceLimitOrderResponse {
     pub tranche_key: String,
     pub coin_in: Coin,
-    pub taker_coin_out: Coin,
-    pub taker_coin_in: Coin,
+    pub taker_coin_out: Option<Coin>,
+    pub taker_coin_in: Option<Coin>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -271,8 +271,8 @@ pub struct MsgWithdrawFilledLimitOrder {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct MsgWithdrawFilledLimitOrderResponse {
-    pub taker_coin_out: Coin,
-    pub maker_coin_out: Coin,
+    pub taker_coin_out: Option<Coin>,
+    pub maker_coin_out: Option<Coin>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -285,8 +285,8 @@ pub struct MsgCancelLimitOrder {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct MsgCancelLimitOrderResponse {
-    pub taker_coin_out: Coin,
-    pub maker_coin_out: Coin,
+    pub taker_coin_out: Option<Coin>,
+    pub maker_coin_out: Option<Coin>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -303,5 +303,5 @@ pub struct MsgMultiHopSwap {
 pub struct MsgMultiHopSwapResponse {
     pub coin_out: Coin,
     pub route: MultiHopRoute,
-    pub dust: Vec<Coin>,
+    pub dust: Option<Vec<Coin>>,
 }
