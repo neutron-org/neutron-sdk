@@ -1,9 +1,9 @@
 use crate::{
     bindings::types::{KVKey, ProtobufAny},
-    interchain_queries::types::{QueryPayload, QueryType, TransactionFilterItem, MAX_TX_FILTERS},
+    interchain_queries::types::{QueryPayload, QueryType, TransactionFilterItem},
     proto_types::neutron::cron::ExecutionStage,
     sudo::msg::RequestPacketTimeoutHeight,
-    NeutronError, NeutronResult,
+    NeutronResult,
 };
 
 use crate::bindings::dex::msg::DexMsg;
@@ -298,22 +298,14 @@ impl NeutronMsg {
                 connection_id,
                 update_period,
             },
-            QueryPayload::TX(transactions_filters) => {
-                if transactions_filters.len() > MAX_TX_FILTERS {
-                    return Err(NeutronError::TooManyTransactionFilters {
-                        max: MAX_TX_FILTERS,
-                    });
-                } else {
-                    NeutronMsg::RegisterInterchainQuery {
-                        query_type: QueryType::TX.into(),
-                        keys: vec![],
-                        transactions_filter: to_string(&transactions_filters)
-                            .map_err(|e| StdError::generic_err(e.to_string()))?,
-                        connection_id,
-                        update_period,
-                    }
-                }
-            }
+            QueryPayload::TX(transactions_filters) => NeutronMsg::RegisterInterchainQuery {
+                query_type: QueryType::TX.into(),
+                keys: vec![],
+                transactions_filter: to_string(&transactions_filters)
+                    .map_err(|e| StdError::generic_err(e.to_string()))?,
+                connection_id,
+                update_period,
+            },
         })
     }
 
@@ -333,16 +325,7 @@ impl NeutronMsg {
             new_update_period,
             new_transactions_filter: match new_transactions_filter {
                 Some(filters) => {
-                    if filters.len() > MAX_TX_FILTERS {
-                        return Err(NeutronError::TooManyTransactionFilters {
-                            max: MAX_TX_FILTERS,
-                        });
-                    } else {
-                        Some(
-                            to_string(&filters)
-                                .map_err(|e| StdError::generic_err(e.to_string()))?,
-                        )
-                    }
+                    Some(to_string(&filters).map_err(|e| StdError::generic_err(e.to_string()))?)
                 }
                 None => None,
             },
@@ -435,11 +418,16 @@ impl NeutronMsg {
     /// Basic helper to define burn tokens passed to TokenFactory module:
     /// * **denom** is a name of the denom;
     /// * **amount** is an amount of tokens to burn.
-    pub fn submit_burn_tokens(denom: impl Into<String>, amount: Uint128) -> Self {
+    /// * **burn_from_address** is an address tokens will be burned from
+    pub fn submit_burn_tokens(
+        denom: impl Into<String>,
+        amount: Uint128,
+        burn_from_address: Option<String>,
+    ) -> Self {
         NeutronMsg::BurnTokens {
             denom: denom.into(),
             amount,
-            burn_from_address: String::new(),
+            burn_from_address: burn_from_address.unwrap_or_default(),
         }
     }
 
