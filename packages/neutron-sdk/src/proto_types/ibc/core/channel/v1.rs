@@ -415,16 +415,16 @@ impl Order {
     pub fn as_str_name(&self) -> &'static str {
         match self {
             Order::NoneUnspecified => "ORDER_NONE_UNSPECIFIED",
-            Order::Unordered => "OrderUnordered",
-            Order::Ordered => "OrderOrdered",
+            Order::Unordered => "ORDER_UNORDERED",
+            Order::Ordered => "ORDER_ORDERED",
         }
     }
     /// Creates an enum from field names used in the ProtoBuf definition.
     pub fn from_str_name(value: &str) -> ::core::option::Option<Self> {
         match value {
             "ORDER_NONE_UNSPECIFIED" => Some(Self::NoneUnspecified),
-            "OrderUnordered" => Some(Self::Unordered),
-            "OrderOrdered" => Some(Self::Ordered),
+            "ORDER_UNORDERED" => Some(Self::Unordered),
+            "ORDER_ORDERED" => Some(Self::Ordered),
             _ => None,
         }
     }
