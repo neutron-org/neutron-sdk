@@ -1,8 +1,8 @@
 use crate::{
     bindings::types::{KVKey, ProtobufAny},
-    interchain_queries::types::{QueryPayload, QueryType, TransactionFilterItem, MAX_TX_FILTERS},
+    interchain_queries::types::{QueryPayload, QueryType, TransactionFilterItem},
     sudo::msg::RequestPacketTimeoutHeight,
-    NeutronError, NeutronResult,
+    NeutronResult,
 };
 
 use crate::bindings::dex::msg::DexMsg;
@@ -309,22 +309,14 @@ impl NeutronMsg {
                 connection_id,
                 update_period,
             },
-            QueryPayload::TX(transactions_filters) => {
-                if transactions_filters.len() > MAX_TX_FILTERS {
-                    return Err(NeutronError::TooManyTransactionFilters {
-                        max: MAX_TX_FILTERS,
-                    });
-                } else {
-                    NeutronMsg::RegisterInterchainQuery {
-                        query_type: QueryType::TX.into(),
-                        keys: vec![],
-                        transactions_filter: to_string(&transactions_filters)
-                            .map_err(|e| StdError::generic_err(e.to_string()))?,
-                        connection_id,
-                        update_period,
-                    }
-                }
-            }
+            QueryPayload::TX(transactions_filters) => NeutronMsg::RegisterInterchainQuery {
+                query_type: QueryType::TX.into(),
+                keys: vec![],
+                transactions_filter: to_string(&transactions_filters)
+                    .map_err(|e| StdError::generic_err(e.to_string()))?,
+                connection_id,
+                update_period,
+            },
         })
     }
 
@@ -344,16 +336,7 @@ impl NeutronMsg {
             new_update_period,
             new_transactions_filter: match new_transactions_filter {
                 Some(filters) => {
-                    if filters.len() > MAX_TX_FILTERS {
-                        return Err(NeutronError::TooManyTransactionFilters {
-                            max: MAX_TX_FILTERS,
-                        });
-                    } else {
-                        Some(
-                            to_string(&filters)
-                                .map_err(|e| StdError::generic_err(e.to_string()))?,
-                        )
-                    }
+                    Some(to_string(&filters).map_err(|e| StdError::generic_err(e.to_string()))?)
                 }
                 None => None,
             },
