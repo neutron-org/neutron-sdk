@@ -5,9 +5,9 @@ authors = ["pr0n00gler <misha.m@p2p.org>"]
 edition = "2021"
 
 exclude = [
-  # Those files are rust-optimizer artifacts. You might want to commit them for convenience but they should not be part of the source code publication.
-  "contract.wasm",
-  "hash.txt",
+    # Those files are rust-optimizer artifacts. You might want to commit them for convenience but they should not be part of the source code publication.
+    "contract.wasm",
+    "hash.txt",
 ]
 
 [lib]
@@ -22,6 +22,7 @@ cw2 = { workspace = true }
 schemars = { workspace = true }
 serde = { workspace = true }
 neutron-sdk = { path = "../../packages/neutron-sdk", default-features = false }
+neutron-std = { workspace = true }
 cosmos-sdk-proto = { workspace = true }
 cw-storage-plus = { workspace = true }
 serde-json-wasm = { workspace = true }

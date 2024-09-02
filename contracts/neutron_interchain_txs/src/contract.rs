@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use neutron_sdk::bindings::msg::IbcFee;
-use neutron_sdk::proto_types::neutron::interchaintxs::v1::MsgSubmitTxResponse;
+use neutron_std::types::neutron::interchaintxs::v1::MsgSubmitTxResponse;
 use neutron_sdk::{
     bindings::{
         msg::NeutronMsg,

@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["contracts/*", "packages/*", "proto-build"]
+members = ["contracts/*", "packages/*"]
 
 [profile.release]
 opt-level = 3
@@ -32,3 +32,4 @@ hex = "0.4.3"
 serde_json = { version = "1.0.87" }
 tendermint-proto = "0.34.1"
 speedate = "0.13.0"
+neutron-std = { package = "neutron-std", git = "https://github.com/neutron-org/neutron-std", branch = "main" }
