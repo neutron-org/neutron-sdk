@@ -255,7 +255,7 @@ pub struct MsgPlaceLimitOrder {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct MsgPlaceLimitOrderResponse {
-    pub tranche_key: String,
+    pub tranche_key: Option<String>,
     pub coin_in: Coin,
     pub taker_coin_out: Option<Coin>,
     pub taker_coin_in: Option<Coin>,
