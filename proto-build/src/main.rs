@@ -23,13 +23,13 @@ const SLINKY_REPO: &str = "https://github.com/skip-mev/slinky.git";
 const COSMOS_SDK_REV: &str = "v0.50.8-neutron";
 
 /// The Neutron commit or tag to be cloned and used to build the proto files
-const NEUTRON_REV: &str = "v4.1.0";
+const NEUTRON_REV: &str = "v4.2.2";
 
 /// The wasmd commit or tag to be cloned and used to build the proto files
 const WASMD_REV: &str = "v0.51.0";
 
 /// The cometbft commit or tag to be cloned and used to build the proto files
-const COMETBFT_REV: &str = "v0.38.10";
+const COMETBFT_REV: &str = "v0.38.11";
 
 /// The ibc-go commit or tag to be cloned and used to build the proto files
 const IBC_GO_REV: &str = "v8.2.1";
@@ -37,7 +37,7 @@ const IBC_GO_REV: &str = "v8.2.1";
 /// The ics23 commit or tag to be cloned and used to build the proto files
 const ICS23_REV: &str = "go/v0.10.0";
 
-const FEEMARKET_REV: &str = "v1.0.3";
+const FEEMARKET_REV: &str = "v1.1.1";
 
 const SLINKY_REV: &str = "v1.0.3";
 

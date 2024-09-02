@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.0-rc0
+
+### Added
+* [Auto-generated](https://github.com/neutron-org/neutron-sdk/pull/156) `gRPC` and `Any` types and helpers;
+
+### Removed
+* [Stargate queries/messages helpers](https://github.com/neutron-org/neutron-sdk/pull/156);
+
+
 ## 0.11.0
 
 ### Improvements

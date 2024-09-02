@@ -4,6 +4,33 @@ This guide explains what is needed to upgrade contracts when migrating over rele
 also view the
 [complete CHANGELOG](./CHANGELOG.md) to understand the differences.
 
+## 0.11.0 -> 1.0.0
+
+* Update`neutron-sdk`dependencies in Cargo.toml:
+
+```
+[dependencies]
+neutron-sdk = "1.0.0-rc0"
+# ...
+```
+
+* If you use Stargate queries and messages, now you need to move to a usage of gRPC queries and Any message correspondingly, using auto-generated types and helpers, e.g.:
+
+```diff
+-let msg = bank::v1beta1::QueryBalanceRequest { address, denom };
+-let resp = make_stargate_query(
+-    deps,
+-    "/cosmos.bank.v1beta1.Query/Balance".to_string(),
+-    msg.encode_to_vec(),
+-)?;
+
++use neutron_sdk::proto_types::{cosmos::{auth, bank}};
++let bank_querier = bank::v1beta1::BankQuerier::new(&deps.querier);
++let resp = &bank_querier.balance(address, denom)?;
+```
+
+You can find more usages example of different queries [here](https://github.com/neutron-org/neutron-dev-contracts/blob/c819eff7696c2feb0501f02ba48d2b4aa5250419/contracts/grpc_querier/src/contract.rs#L43).
+
 ## 0.10.0 -> 0.11.0
 
 * Update`neutron-sdk`dependencies in Cargo.toml:
