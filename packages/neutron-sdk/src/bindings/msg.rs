@@ -1,8 +1,8 @@
 use crate::{
     bindings::types::{KVKey, ProtobufAny},
-    interchain_queries::types::{QueryPayload, QueryType, TransactionFilterItem, MAX_TX_FILTERS},
+    interchain_queries::types::{QueryPayload, QueryType, TransactionFilterItem},
     sudo::msg::RequestPacketTimeoutHeight,
-    NeutronError, NeutronResult,
+    NeutronResult,
 };
 
 use crate::bindings::dex::msg::DexMsg;
@@ -28,6 +28,13 @@ pub struct IbcFee {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum ChannelOrdering {
+    OrderOrdered,
+    OrderUnordered,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 /// A number of Custom messages that can call into the Neutron bindings.
 pub enum NeutronMsg {
@@ -42,6 +49,10 @@ pub enum NeutronMsg {
 
         /// **register_fee** is a fees required to be payed to register interchain account
         register_fee: Option<Vec<Coin>>,
+
+        /// **ordering** is an order of channel. Can be ordered or unordered.
+        /// Set to ordered if not specified.
+        ordering: Option<ChannelOrdering>,
     },
 
     /// SubmitTx starts the process of executing any Cosmos-SDK *msgs* on remote chain.
@@ -88,7 +99,7 @@ pub enum NeutronMsg {
         /// **query_id** is the ID of the query we want to update.
         query_id: u64,
 
-        /// **new_keys** is the new query keys to retrive.
+        /// **new_keys** is the new query keys to retrieve.
         new_keys: Option<Vec<KVKey>>,
 
         /// **new_update_period** is a new update period of the query.
@@ -237,15 +248,18 @@ impl NeutronMsg {
     /// Basic helper to define a register interchain account message:
     /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
     /// * **interchain_account_id** is an identifier of your new interchain account. Can be any string.
+    /// * **ordering** is an ordering of ICA channel. Set to ORDERED if not specified
     pub fn register_interchain_account(
         connection_id: String,
         interchain_account_id: String,
         register_fee: Option<Vec<Coin>>,
+        ordering: Option<ChannelOrdering>,
     ) -> Self {
         NeutronMsg::RegisterInterchainAccount {
             connection_id,
             interchain_account_id,
             register_fee,
+            ordering,
         }
     }
 
@@ -295,22 +309,14 @@ impl NeutronMsg {
                 connection_id,
                 update_period,
             },
-            QueryPayload::TX(transactions_filters) => {
-                if transactions_filters.len() > MAX_TX_FILTERS {
-                    return Err(NeutronError::TooManyTransactionFilters {
-                        max: MAX_TX_FILTERS,
-                    });
-                } else {
-                    NeutronMsg::RegisterInterchainQuery {
-                        query_type: QueryType::TX.into(),
-                        keys: vec![],
-                        transactions_filter: to_string(&transactions_filters)
-                            .map_err(|e| StdError::generic_err(e.to_string()))?,
-                        connection_id,
-                        update_period,
-                    }
-                }
-            }
+            QueryPayload::TX(transactions_filters) => NeutronMsg::RegisterInterchainQuery {
+                query_type: QueryType::TX.into(),
+                keys: vec![],
+                transactions_filter: to_string(&transactions_filters)
+                    .map_err(|e| StdError::generic_err(e.to_string()))?,
+                connection_id,
+                update_period,
+            },
         })
     }
 
@@ -330,16 +336,7 @@ impl NeutronMsg {
             new_update_period,
             new_transactions_filter: match new_transactions_filter {
                 Some(filters) => {
-                    if filters.len() > MAX_TX_FILTERS {
-                        return Err(NeutronError::TooManyTransactionFilters {
-                            max: MAX_TX_FILTERS,
-                        });
-                    } else {
-                        Some(
-                            to_string(&filters)
-                                .map_err(|e| StdError::generic_err(e.to_string()))?,
-                        )
-                    }
+                    Some(to_string(&filters).map_err(|e| StdError::generic_err(e.to_string()))?)
                 }
                 None => None,
             },
