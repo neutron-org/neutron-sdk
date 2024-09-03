@@ -1,7 +1,6 @@
 use crate::{
     bindings::types::{KVKey, ProtobufAny},
     interchain_queries::types::{QueryPayload, QueryType, TransactionFilterItem},
-    proto_types::neutron::cron::ExecutionStage,
     sudo::msg::RequestPacketTimeoutHeight,
     NeutronResult,
 };
