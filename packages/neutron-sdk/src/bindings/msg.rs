@@ -206,26 +206,6 @@ pub enum NeutronMsg {
         uri_hash: String,
     },
 
-    /// AddSchedule adds new schedule with a given `name`.
-    /// Until schedule is removed it will execute all `msgs` every `period` blocks.
-    /// First execution is at least on `current_block + period` block.
-    /// [Permissioned - DAO Only]
-    AddSchedule {
-        /// Name of a new schedule.
-        /// Needed to be able to `RemoveSchedule` and to log information about it
-        name: String,
-        /// period in blocks with which `msgs` will be executed
-        period: u64,
-        /// list of cosmwasm messages to be executed
-        msgs: Vec<MsgExecuteContract>,
-        /// execution stage where schedule will be executed
-        execution_stage: String,
-    },
-
-    /// RemoveSchedule removes the schedule with a given `name`.
-    /// [Permissioned - DAO or Security DAO only]
-    RemoveSchedule { name: String },
-
     /// Contractmanager message
     /// Resubmits failed acknowledgement.
     /// Acknowledgement failure is created when contract returns error or acknowledgement is out of gas.
@@ -494,31 +474,6 @@ impl NeutronMsg {
             uri,
             uri_hash,
         }
-    }
-
-    /// Basic helper to define add schedule passed to Cron module:
-    /// * **name** is a name of the schedule;
-    /// * **period** is a period of schedule execution in blocks;
-    /// * **msgs** is the messages that will be executed.
-    /// * **execution_stage** is the stage where schedule will be executed.
-    pub fn submit_add_schedule(
-        name: String,
-        period: u64,
-        msgs: Vec<MsgExecuteContract>,
-        execution_stage: ExecutionStage,
-    ) -> Self {
-        NeutronMsg::AddSchedule {
-            name,
-            period,
-            msgs,
-            execution_stage: execution_stage.as_str_name().to_string(),
-        }
-    }
-
-    /// Basic helper to define remove schedule passed to Cron module:
-    /// * **name** is a name of the schedule to be removed.
-    pub fn submit_remove_schedule(name: String) -> Self {
-        NeutronMsg::RemoveSchedule { name }
     }
 
     /// Basic helper to define resubmit failure passed to Contractmanager module:
