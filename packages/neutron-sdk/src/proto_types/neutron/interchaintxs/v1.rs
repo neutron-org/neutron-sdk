@@ -151,6 +151,15 @@ pub struct MsgRegisterInterchainAccount {
     pub interchain_account_id: ::prost::alloc::string::String,
     #[prost(message, repeated, tag = "4")]
     pub register_fee: ::prost::alloc::vec::Vec<super::super::super::cosmos::base::v1beta1::Coin>,
+    #[prost(
+        enumeration = "super::super::super::ibc::core::channel::v1::Order",
+        tag = "5"
+    )]
+    #[serde(
+        serialize_with = "crate::serde::as_str::serialize",
+        deserialize_with = "crate::serde::as_str::deserialize"
+    )]
+    pub ordering: i32,
 }
 /// MsgRegisterInterchainAccountResponse is the response type for
 /// MsgRegisterInterchainAccount.
