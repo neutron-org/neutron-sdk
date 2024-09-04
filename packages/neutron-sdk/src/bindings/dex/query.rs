@@ -1,10 +1,6 @@
 use crate::bindings::dex::types::{
-    DepositRecord, LimitOrderTranche, LimitOrderTrancheUser, LimitOrderType,
-    MsgCancelLimitOrderResponse,  MsgDepositResponse,
-    MsgMultiHopSwapResponse, MsgPlaceLimitOrderResponse,
-     MsgWithdrawFilledLimitOrderResponse,
-    MsgWithdrawalResponse, MultiHopRoute, Params, Pool, PoolMetadata, PoolReserves, PrecDec,
-    TickLiquidity,
+    DepositRecord, LimitOrderTranche, LimitOrderTrancheUser, LimitOrderType, MultiHopRoute, Params,
+    Pool, PoolMetadata, PoolReserves, PrecDec, TickLiquidity,
 };
 use crate::bindings::query::{PageRequest, PageResponse};
 use cosmwasm_std::{Coin, Int128};

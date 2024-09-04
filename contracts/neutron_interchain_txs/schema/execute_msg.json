@@ -22,6 +22,16 @@
             "interchain_account_id": {
               "type": "string"
             },
+            "ordering": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/ChannelOrdering"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
             "register_fee": {
               "type": "array",
               "items": {
@@ -122,6 +132,13 @@
     }
   ],
   "definitions": {
+    "ChannelOrdering": {
+      "type": "string",
+      "enum": [
+        "ORDER_ORDERED",
+        "ORDER_UNORDERED"
+      ]
+    },
     "Coin": {
       "type": "object",
       "required": [
