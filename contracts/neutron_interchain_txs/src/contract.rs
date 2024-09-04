@@ -12,7 +12,12 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
-use neutron_sdk::bindings::msg::IbcFee;
+use crate::storage::{
+    add_error_to_queue, read_errors_from_queue, read_reply_payload, read_sudo_payload,
+    save_reply_payload, save_sudo_payload, AcknowledgementResult, SudoPayload,
+    ACKNOWLEDGEMENT_RESULTS, INTERCHAIN_ACCOUNTS, SUDO_PAYLOAD_REPLY_ID,
+};
+use neutron_sdk::bindings::msg::{ChannelOrdering, IbcFee};
 use neutron_sdk::proto_types::neutron::interchaintxs::v1::MsgSubmitTxResponse;
 use neutron_sdk::{
     bindings::{
@@ -25,12 +30,6 @@ use neutron_sdk::{
     query::min_ibc_fee::query_min_ibc_fee,
     sudo::msg::{RequestPacket, SudoMsg},
     NeutronError, NeutronResult,
-};
-
-use crate::storage::{
-    add_error_to_queue, read_errors_from_queue, read_reply_payload, read_sudo_payload,
-    save_reply_payload, save_sudo_payload, AcknowledgementResult, SudoPayload,
-    ACKNOWLEDGEMENT_RESULTS, INTERCHAIN_ACCOUNTS, SUDO_PAYLOAD_REPLY_ID,
 };
 
 // Default timeout for SubmitTX is two weeks
@@ -77,12 +76,14 @@ pub fn execute(
             connection_id,
             interchain_account_id,
             register_fee,
+            ordering,
         } => execute_register_ica(
             deps,
             env,
             connection_id,
             interchain_account_id,
             register_fee,
+            ordering,
         ),
         ExecuteMsg::Delegate {
             validator,
@@ -198,11 +199,13 @@ fn execute_register_ica(
     connection_id: String,
     interchain_account_id: String,
     register_fee: Vec<CoinSDK>,
+    ordering: Option<ChannelOrdering>,
 ) -> NeutronResult<Response<NeutronMsg>> {
     let register = NeutronMsg::register_interchain_account(
         connection_id,
         interchain_account_id.clone(),
         Some(register_fee),
+        ordering,
     );
     let key = get_port_id(env.contract.address.as_str(), &interchain_account_id);
     // we are saving empty data here because we handle response of registering ICA in sudo_open_ack method
