@@ -1,8 +1,8 @@
 use crate::bindings::dex::types::{
-    DepositRecord, LimitOrderTranche, LimitOrderTrancheUser, LimitOrderType, MsgCancelLimitOrder,
-    MsgCancelLimitOrderResponse, MsgDeposit, MsgDepositResponse, MsgMultiHopSwap,
-    MsgMultiHopSwapResponse, MsgPlaceLimitOrder, MsgPlaceLimitOrderResponse,
-    MsgWithdrawFilledLimitOrder, MsgWithdrawFilledLimitOrderResponse, MsgWithdrawal,
+    DepositRecord, LimitOrderTranche, LimitOrderTrancheUser, LimitOrderType,
+    MsgCancelLimitOrderResponse,  MsgDepositResponse,
+    MsgMultiHopSwapResponse, MsgPlaceLimitOrderResponse,
+     MsgWithdrawFilledLimitOrderResponse,
     MsgWithdrawalResponse, MultiHopRoute, Params, Pool, PoolMetadata, PoolReserves, PrecDec,
     TickLiquidity,
 };
@@ -110,18 +110,6 @@ pub enum DexQuery {
     PoolMetadata { id: u64 },
     /// Queries a list of PoolMetadata items.
     PoolMetadataAll { pagination: Option<PageRequest> },
-    /// Simulates MsgDeposit
-    SimulateDeposit { msg: MsgDeposit },
-    /// Simulates MsgWithdrawal
-    SimulateWithdrawal { msg: MsgWithdrawal },
-    /// Simulates MsgPlaceLimitOrder
-    SimulatePlaceLimitOrder { msg: MsgPlaceLimitOrder },
-    /// Simulates MsgWithdrawFilledLimitOrder
-    SimulateWithdrawFilledLimitOrder { msg: MsgWithdrawFilledLimitOrder },
-    /// Simulates MsgCancelLimitOrder
-    SimulateCancelLimitOrder { msg: MsgCancelLimitOrder },
-    /// Simulates MsgMultiHopSwap
-    SimulateMultiHopSwap { msg: MsgMultiHopSwap },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -244,40 +232,4 @@ pub struct PoolMetadataResponse {
 pub struct AllPoolMetadataResponse {
     pub pool_metadata: Vec<PoolMetadata>,
     pub pagination: Option<PageResponse>,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct SimulateDepositResponse {
-    resp: MsgDepositResponse,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct SimulateWithdrawalResponse {
-    resp: MsgWithdrawalResponse,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct SimulatePlaceLimitOrderResponse {
-    resp: MsgPlaceLimitOrderResponse,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct SimulateWithdrawFilledLimitOrderResponse {
-    resp: MsgWithdrawFilledLimitOrderResponse,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct SimulateCancelLimitOrderResponse {
-    resp: MsgCancelLimitOrderResponse,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct SimulateMultiHopSwapResponse {
-    resp: MsgMultiHopSwapResponse,
 }
