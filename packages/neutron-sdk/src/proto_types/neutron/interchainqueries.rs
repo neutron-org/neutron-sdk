@@ -33,6 +33,20 @@ pub struct Params {
         deserialize_with = "crate::serde::as_str::deserialize"
     )]
     pub tx_query_removal_limit: u64,
+    /// Maximum amount of keys in a registered key value query
+    #[prost(uint64, tag = "4")]
+    #[serde(
+        serialize_with = "crate::serde::as_str::serialize",
+        deserialize_with = "crate::serde::as_str::deserialize"
+    )]
+    pub max_kv_query_keys_count: u64,
+    /// max_transactions_filters defines maximum allowed amount of tx filters in msgRegisterInterchainQuery
+    #[prost(uint64, tag = "5")]
+    #[serde(
+        serialize_with = "crate::serde::as_str::serialize",
+        deserialize_with = "crate::serde::as_str::deserialize"
+    )]
+    pub max_transactions_filters: u64,
 }
 #[allow(clippy::derive_partial_eq_without_eq)]
 #[derive(
@@ -234,6 +248,8 @@ pub struct MsgSubmitQueryResult {
     pub sender: ::prost::alloc::string::String,
     /// is the IBC client ID for an IBC connection between Neutron chain and target
     /// chain (where the result was obtained from)
+    /// Deprecated: populating this field does not make any affect
+    #[deprecated]
     #[prost(string, tag = "3")]
     #[serde(alias = "clientID")]
     pub client_id: ::prost::alloc::string::String,
