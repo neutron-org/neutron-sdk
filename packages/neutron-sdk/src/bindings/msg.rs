@@ -1,7 +1,6 @@
 use crate::{
     bindings::types::{KVKey, ProtobufAny},
     interchain_queries::types::{QueryPayload, QueryType, TransactionFilterItem},
-    proto_types::neutron::cron::ExecutionStage,
     sudo::msg::RequestPacketTimeoutHeight,
     NeutronResult,
 };
@@ -229,8 +228,6 @@ pub enum NeutronMsg {
         period: u64,
         /// list of cosmwasm messages to be executed
         msgs: Vec<MsgExecuteContract>,
-        /// execution stage where schedule will be executed
-        execution_stage: String,
     },
 
     /// RemoveSchedule removes the schedule with a given `name`.
@@ -514,19 +511,8 @@ impl NeutronMsg {
     /// * **name** is a name of the schedule;
     /// * **period** is a period of schedule execution in blocks;
     /// * **msgs** is the messages that will be executed.
-    /// * **execution_stage** is the stage where schedule will be executed.
-    pub fn submit_add_schedule(
-        name: String,
-        period: u64,
-        msgs: Vec<MsgExecuteContract>,
-        execution_stage: ExecutionStage,
-    ) -> Self {
-        NeutronMsg::AddSchedule {
-            name,
-            period,
-            msgs,
-            execution_stage: execution_stage.as_str_name().to_string(),
-        }
+    pub fn submit_add_schedule(name: String, period: u64, msgs: Vec<MsgExecuteContract>) -> Self {
+        NeutronMsg::AddSchedule { name, period, msgs }
     }
 
     /// Basic helper to define remove schedule passed to Cron module:
