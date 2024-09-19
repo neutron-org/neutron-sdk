@@ -23,7 +23,7 @@ const SLINKY_REPO: &str = "https://github.com/skip-mev/slinky.git";
 const COSMOS_SDK_REV: &str = "v0.50.8-neutron";
 
 /// The Neutron commit or tag to be cloned and used to build the proto files
-const NEUTRON_REV: &str = "d557574271951b6e0fd3c7467e0a2981e068b826";
+const NEUTRON_REV: &str = "6bef62c6d9182b51fd5facc41088689c809b96d5";
 
 /// The wasmd commit or tag to be cloned and used to build the proto files
 const WASMD_REV: &str = "v0.51.0";
