@@ -63,11 +63,11 @@ pub fn instantiate(
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
-    _deps: DepsMut<NeutronQuery>,
+    _deps: DepsMut,
     _env: Env,
     _: MessageInfo,
     msg: ExecuteMsg,
-) -> NeutronResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response> {
     match msg {
         ExecuteMsg::RegisterBalancesQuery {
             connection_id,
@@ -148,7 +148,7 @@ pub fn register_balances_query(
     addr: String,
     denoms: Vec<String>,
     update_period: u64,
-) -> NeutronResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response> {
     let msg = new_register_balances_query_msg(connection_id, addr, denoms, update_period)?;
 
     Ok(Response::new().add_message(msg))
@@ -158,7 +158,7 @@ pub fn register_bank_total_supply_query(
     connection_id: String,
     denoms: Vec<String>,
     update_period: u64,
-) -> NeutronResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response> {
     let msg = new_register_bank_total_supply_query_msg(connection_id, denoms, update_period)?;
 
     Ok(Response::new().add_message(msg))
@@ -167,7 +167,7 @@ pub fn register_bank_total_supply_query(
 pub fn register_distribution_fee_pool_query(
     connection_id: String,
     update_period: u64,
-) -> NeutronResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response> {
     let msg = new_register_distribution_fee_pool_query_msg(connection_id, update_period)?;
 
     Ok(Response::new().add_message(msg))
@@ -177,7 +177,7 @@ pub fn register_gov_proposal_query(
     connection_id: String,
     proposals_ids: Vec<u64>,
     update_period: u64,
-) -> NeutronResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response> {
     let msg = new_register_gov_proposals_query_msg(connection_id, proposals_ids, update_period)?;
 
     Ok(Response::new().add_message(msg))
@@ -187,7 +187,7 @@ pub fn register_staking_validators_query(
     connection_id: String,
     validators: Vec<String>,
     update_period: u64,
-) -> NeutronResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response> {
     let msg = new_register_staking_validators_query_msg(connection_id, validators, update_period)?;
 
     Ok(Response::new().add_message(msg))
@@ -197,7 +197,7 @@ pub fn register_validators_signing_infos_query(
     connection_id: String,
     validators: Vec<String>,
     update_period: u64,
-) -> NeutronResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response> {
     let msg =
         new_register_validators_signing_infos_query_msg(connection_id, validators, update_period)?;
 
@@ -209,7 +209,7 @@ pub fn register_delegations_query(
     delegator: String,
     validators: Vec<String>,
     update_period: u64,
-) -> NeutronResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response> {
     let msg = new_register_delegator_delegations_query_msg(
         connection_id,
         delegator,
@@ -225,7 +225,7 @@ pub fn register_unbonding_delegations_query(
     delegator: String,
     validators: Vec<String>,
     update_period: u64,
-) -> NeutronResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response> {
     let msg = new_register_delegator_unbonding_delegations_query_msg(
         connection_id,
         delegator,
@@ -241,7 +241,7 @@ pub fn register_transfers_query(
     recipient: String,
     update_period: u64,
     min_height: Option<u64>,
-) -> NeutronResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response> {
     let msg =
         new_register_transfers_query_msg(connection_id, recipient, update_period, min_height)?;
 
@@ -253,7 +253,7 @@ pub fn register_cw20_balance_query(
     update_period: u64,
     cw20_contract_address: String,
     account_address: String,
-) -> NeutronResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response> {
     // cw_storage_plus uses this prefix for maps
     let mut storage_key = vec![0u8, 7u8];
 
@@ -275,7 +275,7 @@ pub fn update_interchain_query(
     new_keys: Option<Vec<KVKey>>,
     new_update_period: Option<u64>,
     new_recipient: Option<String>,
-) -> NeutronResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response> {
     let new_filter = new_recipient.map(|recipient| {
         vec![TransactionFilterItem {
             field: RECIPIENT_FIELD.to_string(),
@@ -289,13 +289,13 @@ pub fn update_interchain_query(
     Ok(Response::new().add_message(update_msg))
 }
 
-pub fn remove_interchain_query(query_id: u64) -> NeutronResult<Response<NeutronMsg>> {
+pub fn remove_interchain_query(query_id: u64) -> NeutronResult<Response> {
     let remove_msg = NeutronMsg::remove_interchain_query(query_id);
     Ok(Response::new().add_message(remove_msg))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn query(deps: Deps<NeutronQuery>, env: Env, msg: QueryMsg) -> NeutronResult<Binary> {
+pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> NeutronResult<Binary> {
     match msg {
         //TODO: check if query.result.height is too old (for all interchain queries)
         QueryMsg::Balance { query_id } => Ok(to_json_binary(&query_balance(deps, env, query_id)?)?),
