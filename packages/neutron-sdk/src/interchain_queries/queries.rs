@@ -2,7 +2,7 @@ use crate::errors::error::NeutronResult;
 use crate::interchain_queries::types::{KVReconstruct, QueryType};
 use crate::NeutronError;
 use cosmwasm_std::{Deps, StdError};
-use neutron_std::types::neutron::interchainqueries::{InterchainqueriesQuerier, QueryRegisteredQueryResultResponse, QueryRegisteredQueryResponse, RegisteredQuery, QueryResult};
+use neutron_std::types::neutron::interchainqueries::{InterchainqueriesQuerier, RegisteredQuery, QueryResult};
 
 /// Checks **actual** query type is **expected** query type
 pub fn check_query_type(actual: String, expected: QueryType) -> NeutronResult<()> {

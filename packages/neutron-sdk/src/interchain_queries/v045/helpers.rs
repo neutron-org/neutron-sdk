@@ -1,4 +1,3 @@
-use crate::bindings::types::KVKey;
 use crate::errors::error::NeutronResult;
 use crate::interchain_queries::helpers::{decode_and_convert, length_prefix};
 use crate::interchain_queries::types::AddressBytes;
@@ -11,7 +10,7 @@ use crate::NeutronError;
 use cosmos_sdk_proto::cosmos::staking::v1beta1::Commission as ValidatorCommission;
 use cosmwasm_std::{Binary, Decimal, Uint128};
 use std::str::{from_utf8, FromStr};
-
+use neutron_std::types::neutron::interchainqueries::KvKey;
 use super::types::{GOV_STORE_KEY, VOTES_KEY_PREFIX};
 
 /// Creates KV key to get **module** param by **key**
@@ -50,16 +49,16 @@ pub fn create_account_denom_balance_key<AddrBytes: AsRef<[u8]>, S: AsRef<str>>(
 ///
 /// * **addr** address of an account on remote chain for which you want to get balances;
 /// * **denoms** denominations of the coins for which you want to get balance;
-pub fn create_balances_query_keys(addr: String, denoms: Vec<String>) -> NeutronResult<Vec<KVKey>> {
+pub fn create_balances_query_keys(addr: String, denoms: Vec<String>) -> NeutronResult<Vec<KvKey>> {
     let converted_addr_bytes = decode_and_convert(addr.as_str())?;
-    let mut kv_keys: Vec<KVKey> = Vec::with_capacity(denoms.len());
+    let mut kv_keys: Vec<KvKey> = Vec::with_capacity(denoms.len());
 
     for denom in denoms {
         let balance_key = create_account_denom_balance_key(&converted_addr_bytes, denom)?;
 
-        let kv_key = KVKey {
+        let kv_key = KvKey {
             path: BANK_STORE_KEY.to_string(),
-            key: Binary::new(balance_key),
+            key: balance_key,
         };
 
         kv_keys.push(kv_key)
@@ -236,13 +235,13 @@ pub fn create_gov_proposal_key(proposal_id: u64) -> NeutronResult<Vec<u8>> {
 }
 
 /// Creates Cosmos-SDK storage keys for list of proposals
-pub fn create_gov_proposal_keys(proposals_ids: Vec<u64>) -> NeutronResult<Vec<KVKey>> {
-    let mut kv_keys: Vec<KVKey> = Vec::with_capacity(proposals_ids.len());
+pub fn create_gov_proposal_keys(proposals_ids: Vec<u64>) -> NeutronResult<Vec<KvKey>> {
+    let mut kv_keys: Vec<KvKey> = Vec::with_capacity(proposals_ids.len());
 
     for id in proposals_ids {
-        let kv_key = KVKey {
+        let kv_key = KvKey {
             path: GOV_STORE_KEY.to_string(),
-            key: Binary::new(create_gov_proposal_key(id)?),
+            key: create_gov_proposal_key(id)?,
         };
 
         kv_keys.push(kv_key)
@@ -276,19 +275,19 @@ pub fn create_gov_proposal_voter_votes_key<AddrBytes: AsRef<[u8]>>(
 pub fn create_gov_proposals_voters_votes_keys(
     proposals_ids: Vec<u64>,
     voters: Vec<String>,
-) -> NeutronResult<Vec<KVKey>> {
-    let mut kv_keys: Vec<KVKey> = Vec::with_capacity(voters.len() * proposals_ids.len());
+) -> NeutronResult<Vec<KvKey>> {
+    let mut kv_keys: Vec<KvKey> = Vec::with_capacity(voters.len() * proposals_ids.len());
 
     for voter in voters {
         let voter_addr = decode_and_convert(&voter)?;
 
         for proposal_id in proposals_ids.clone() {
-            let kv_key = KVKey {
+            let kv_key = KvKey {
                 path: GOV_STORE_KEY.to_string(),
-                key: Binary::new(create_gov_proposal_voter_votes_key(
+                key: create_gov_proposal_voter_votes_key(
                     proposal_id,
                     &voter_addr,
-                )?),
+                )?,
             };
 
             kv_keys.push(kv_key)
