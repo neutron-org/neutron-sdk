@@ -25,6 +25,7 @@ prost-types = { workspace = true }
 tendermint-proto = { workspace = true }
 speedate = { workspace = true }
 chrono = { version = "0.4.22", default-features = false }
+neutron-std = { version = "4.2.2-rc" }
 neutron-std-derive = { version = "0.20.1", path = "../neutron-std-derive" }
 
 [dev-dependencies]

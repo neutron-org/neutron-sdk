@@ -22,12 +22,10 @@ use neutron_sdk::proto_types::neutron::interchaintxs::v1::MsgSubmitTxResponse;
 use neutron_sdk::{
     bindings::{
         msg::NeutronMsg,
-        query::{NeutronQuery, QueryInterchainAccountAddressResponse},
         types::ProtobufAny,
     },
     interchain_txs::helpers::{decode_message_response, get_port_id},
     interchain_txs::v047::helpers::decode_acknowledgement_response,
-    query::min_ibc_fee::query_min_ibc_fee,
     sudo::msg::{RequestPacket, SudoMsg},
     NeutronError, NeutronResult,
 };

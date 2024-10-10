@@ -1,20 +1,16 @@
 use cosmos_sdk_proto::cosmos::bank::v1beta1::MsgSend;
 use cosmos_sdk_proto::cosmos::tx::v1beta1::{TxBody, TxRaw};
 use cosmos_sdk_proto::traits::Message;
-use cosmwasm_std::{
-    entry_point, to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError,
-    StdResult, Uint128,
-};
+use cosmwasm_std::{entry_point, to_json_binary, Addr, Binary, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult, Uint128};
 use cw2::set_contract_version;
 use neutron_sdk::interchain_queries::v047::register_queries::new_register_validators_signing_infos_query_msg;
+use neutron_std::types::neutron::interchainqueries::{InterchainqueriesQuerier, RegisteredQuery, QueryResult, KvKey};
 
 use crate::msg::{
     Cw20BalanceResponse, ExecuteMsg, GetRecipientTxsResponse, InstantiateMsg, MigrateMsg, QueryMsg,
 };
 use crate::state::{Transfer, RECIPIENT_TXS, TRANSFERS};
-use neutron_sdk::bindings::msg::NeutronMsg;
-use neutron_sdk::bindings::query::{NeutronQuery, QueryRegisteredQueryResponse};
-use neutron_sdk::bindings::types::{Height, KVKey};
+use neutron_sdk::bindings::types::Height;
 use neutron_sdk::interchain_queries::v047::queries::{
     query_balance, query_bank_total, query_delegations, query_distribution_fee_pool,
     query_government_proposals, query_staking_validators, query_unbonding_delegations,
@@ -63,54 +59,55 @@ pub fn instantiate(
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
-    _deps: DepsMut<NeutronQuery>,
-    _env: Env,
+    _deps: DepsMut,
+    env: Env,
     _: MessageInfo,
     msg: ExecuteMsg,
-) -> NeutronResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response> {
     match msg {
         ExecuteMsg::RegisterBalancesQuery {
             connection_id,
             addr,
             denoms,
             update_period,
-        } => register_balances_query(connection_id, addr, denoms, update_period),
+        } => register_balances_query(env.contract.address, connection_id, addr, denoms, update_period),
         ExecuteMsg::RegisterBankTotalSupplyQuery {
             connection_id,
             denoms,
             update_period,
-        } => register_bank_total_supply_query(connection_id, denoms, update_period),
+        } => register_bank_total_supply_query(env.contract.address, connection_id, denoms, update_period),
         ExecuteMsg::RegisterDistributionFeePoolQuery {
             connection_id,
             update_period,
-        } => register_distribution_fee_pool_query(connection_id, update_period),
+        } => register_distribution_fee_pool_query(env.contract.address, connection_id, update_period),
         ExecuteMsg::RegisterGovernmentProposalsQuery {
             connection_id,
             proposals_ids,
             update_period,
-        } => register_gov_proposal_query(connection_id, proposals_ids, update_period),
+        } => register_gov_proposal_query(env.contract.address, connection_id, proposals_ids, update_period),
         ExecuteMsg::RegisterStakingValidatorsQuery {
             connection_id,
             validators,
             update_period,
-        } => register_staking_validators_query(connection_id, validators, update_period),
+        } => register_staking_validators_query(env.contract.address, connection_id, validators, update_period),
         ExecuteMsg::RegisterValidatorsSigningInfosQuery {
             connection_id,
             validators,
             update_period,
-        } => register_validators_signing_infos_query(connection_id, validators, update_period),
+        } => register_validators_signing_infos_query(env.contract.address, connection_id, validators, update_period),
         ExecuteMsg::RegisterDelegatorDelegationsQuery {
             connection_id,
             delegator,
             validators,
             update_period,
-        } => register_delegations_query(connection_id, delegator, validators, update_period),
+        } => register_delegations_query(env.contract.address, connection_id, delegator, validators, update_period),
         ExecuteMsg::RegisterDelegatorUnbondingDelegationsQuery {
             connection_id,
             delegator,
             validators,
             update_period,
         } => register_unbonding_delegations_query(
+            env.contract.address,
             connection_id,
             delegator,
             validators,
@@ -121,13 +118,14 @@ pub fn execute(
             recipient,
             update_period,
             min_height,
-        } => register_transfers_query(connection_id, recipient, update_period, min_height),
+        } => register_transfers_query(env.contract.address, connection_id, recipient, update_period, min_height),
         ExecuteMsg::RegisterCw20BalanceQuery {
             connection_id,
             update_period,
             cw20_contract_address,
             account_address,
         } => register_cw20_balance_query(
+            env.contract.address,
             connection_id,
             update_period,
             cw20_contract_address,
@@ -138,79 +136,87 @@ pub fn execute(
             new_keys,
             new_update_period,
             new_recipient,
-        } => update_interchain_query(query_id, new_keys, new_update_period, new_recipient),
-        ExecuteMsg::RemoveInterchainQuery { query_id } => remove_interchain_query(query_id),
+        } => update_interchain_query(env.contract.address, query_id, new_keys, new_update_period, new_recipient),
+        ExecuteMsg::RemoveInterchainQuery { query_id } => remove_interchain_query(env.contract.address, query_id),
     }
 }
 
 pub fn register_balances_query(
+    contract: Addr,
     connection_id: String,
     addr: String,
     denoms: Vec<String>,
     update_period: u64,
-) -> NeutronResult<Response<NeutronMsg>> {
-    let msg = new_register_balances_query_msg(connection_id, addr, denoms, update_period)?;
+) -> NeutronResult<Response> {
+    let msg = new_register_balances_query_msg(contract, connection_id, addr, denoms, update_period)?;
 
     Ok(Response::new().add_message(msg))
 }
 
 pub fn register_bank_total_supply_query(
+    contract: Addr,
     connection_id: String,
     denoms: Vec<String>,
     update_period: u64,
-) -> NeutronResult<Response<NeutronMsg>> {
-    let msg = new_register_bank_total_supply_query_msg(connection_id, denoms, update_period)?;
+) -> NeutronResult<Response> {
+    let msg = new_register_bank_total_supply_query_msg(contract, connection_id, denoms, update_period)?;
 
     Ok(Response::new().add_message(msg))
 }
 
 pub fn register_distribution_fee_pool_query(
+    contract: Addr,
     connection_id: String,
     update_period: u64,
-) -> NeutronResult<Response<NeutronMsg>> {
-    let msg = new_register_distribution_fee_pool_query_msg(connection_id, update_period)?;
+) -> NeutronResult<Response> {
+    let msg = new_register_distribution_fee_pool_query_msg(contract, connection_id, update_period)?;
 
     Ok(Response::new().add_message(msg))
 }
 
 pub fn register_gov_proposal_query(
+    contract: Addr,
     connection_id: String,
     proposals_ids: Vec<u64>,
     update_period: u64,
-) -> NeutronResult<Response<NeutronMsg>> {
-    let msg = new_register_gov_proposals_query_msg(connection_id, proposals_ids, update_period)?;
+) -> NeutronResult<Response> {
+    let msg = new_register_gov_proposals_query_msg(contract, connection_id, proposals_ids, update_period)?;
 
     Ok(Response::new().add_message(msg))
 }
 
 pub fn register_staking_validators_query(
+    contract: Addr,
     connection_id: String,
     validators: Vec<String>,
     update_period: u64,
-) -> NeutronResult<Response<NeutronMsg>> {
-    let msg = new_register_staking_validators_query_msg(connection_id, validators, update_period)?;
+) -> NeutronResult<Response> {
+    let msg = new_register_staking_validators_query_msg(contract, connection_id, validators, update_period)?;
 
     Ok(Response::new().add_message(msg))
 }
 
 pub fn register_validators_signing_infos_query(
+    contract: Addr,
     connection_id: String,
     validators: Vec<String>,
     update_period: u64,
-) -> NeutronResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response> {
     let msg =
-        new_register_validators_signing_infos_query_msg(connection_id, validators, update_period)?;
+        new_register_validators_signing_infos_query_msg(contract, connection_id, validators, update_period)?;
 
     Ok(Response::new().add_message(msg))
 }
 
 pub fn register_delegations_query(
+    contract: Addr,
     connection_id: String,
     delegator: String,
     validators: Vec<String>,
     update_period: u64,
-) -> NeutronResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response> {
     let msg = new_register_delegator_delegations_query_msg(
+        contract,
         connection_id,
         delegator,
         validators,
@@ -221,12 +227,14 @@ pub fn register_delegations_query(
 }
 
 pub fn register_unbonding_delegations_query(
+    contract: Addr,
     connection_id: String,
     delegator: String,
     validators: Vec<String>,
     update_period: u64,
-) -> NeutronResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response> {
     let msg = new_register_delegator_unbonding_delegations_query_msg(
+        contract,
         connection_id,
         delegator,
         validators,
@@ -237,23 +245,25 @@ pub fn register_unbonding_delegations_query(
 }
 
 pub fn register_transfers_query(
+    contract: Addr,
     connection_id: String,
     recipient: String,
     update_period: u64,
     min_height: Option<u64>,
-) -> NeutronResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response> {
     let msg =
-        new_register_transfers_query_msg(connection_id, recipient, update_period, min_height)?;
+        new_register_transfers_query_msg(contract, connection_id, recipient, update_period, min_height)?;
 
     Ok(Response::new().add_message(msg))
 }
 
 pub fn register_cw20_balance_query(
+    contract: Addr,
     connection_id: String,
     update_period: u64,
     cw20_contract_address: String,
     account_address: String,
-) -> NeutronResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response> {
     // cw_storage_plus uses this prefix for maps
     let mut storage_key = vec![0u8, 7u8];
 
@@ -261,6 +271,7 @@ pub fn register_cw20_balance_query(
     storage_key.extend_from_slice(account_address.as_bytes());
 
     let msg = new_register_wasm_contract_store_query_msg(
+        contract,
         connection_id,
         cw20_contract_address,
         &storage_key,
@@ -271,11 +282,12 @@ pub fn register_cw20_balance_query(
 }
 
 pub fn update_interchain_query(
+    contract: Addr,
     query_id: u64,
-    new_keys: Option<Vec<KVKey>>,
+    new_keys: Option<Vec<KvKey>>,
     new_update_period: Option<u64>,
     new_recipient: Option<String>,
-) -> NeutronResult<Response<NeutronMsg>> {
+) -> NeutronResult<dyn Into<CosmosMsg>> {
     let new_filter = new_recipient.map(|recipient| {
         vec![TransactionFilterItem {
             field: RECIPIENT_FIELD.to_string(),
@@ -285,17 +297,17 @@ pub fn update_interchain_query(
     });
 
     let update_msg =
-        NeutronMsg::update_interchain_query(query_id, new_keys, new_update_period, new_filter)?;
+        todo_update_interchain_query(contract, query_id, new_keys, new_update_period, new_filter)?;
     Ok(Response::new().add_message(update_msg))
 }
 
-pub fn remove_interchain_query(query_id: u64) -> NeutronResult<Response<NeutronMsg>> {
-    let remove_msg = NeutronMsg::remove_interchain_query(query_id);
+pub fn remove_interchain_query(contract: Addr, query_id: u64) -> NeutronResult<dyn Into<CosmosMsg>> {
+    let remove_msg = todo_remove_interchain_query(contract, query_id);
     Ok(Response::new().add_message(remove_msg))
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn query(deps: Deps<NeutronQuery>, env: Env, msg: QueryMsg) -> NeutronResult<Binary> {
+pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> NeutronResult<Binary> {
     match msg {
         //TODO: check if query.result.height is too old (for all interchain queries)
         QueryMsg::Balance { query_id } => Ok(to_json_binary(&query_balance(deps, env, query_id)?)?),
@@ -330,7 +342,7 @@ pub fn query(deps: Deps<NeutronQuery>, env: Env, msg: QueryMsg) -> NeutronResult
     }
 }
 
-fn query_recipient_txs(deps: Deps<NeutronQuery>, recipient: String) -> NeutronResult<Binary> {
+fn query_recipient_txs(deps: Deps, recipient: String) -> NeutronResult<Binary> {
     let txs = RECIPIENT_TXS
         .load(deps.storage, &recipient)
         .unwrap_or_default();
@@ -338,13 +350,13 @@ fn query_recipient_txs(deps: Deps<NeutronQuery>, recipient: String) -> NeutronRe
 }
 
 pub fn query_cw20_balance(
-    deps: Deps<NeutronQuery>,
+    deps: Deps,
     _env: Env,
     registered_query_id: u64,
 ) -> NeutronResult<Cw20BalanceResponse> {
     let registered_query = get_registered_query(deps, registered_query_id)?;
 
-    check_query_type(registered_query.registered_query.query_type, QueryType::KV)?;
+    check_query_type(registered_query.query_type, QueryType::KV)?;
 
     let balance: Uint128 = query_kv_result(deps, registered_query_id)?;
     Ok(Cw20BalanceResponse { balance })
@@ -357,7 +369,7 @@ pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response
 }
 
 #[entry_point]
-pub fn sudo(deps: DepsMut<NeutronQuery>, env: Env, msg: SudoMsg) -> NeutronResult<Response> {
+pub fn sudo(deps: DepsMut, env: Env, msg: SudoMsg) -> NeutronResult<Response> {
     match msg {
         // For handling tx query result
         SudoMsg::TxQueryResult {
@@ -375,7 +387,7 @@ pub fn sudo(deps: DepsMut<NeutronQuery>, env: Env, msg: SudoMsg) -> NeutronResul
 /// sudo_check_tx_query_result is an example callback for transaction query results that stores the
 /// deposits received as a result on the registered query in the contract's state.
 pub fn sudo_tx_query_result(
-    deps: DepsMut<NeutronQuery>,
+    deps: DepsMut,
     _env: Env,
     query_id: u64,
     _height: Height,
@@ -386,9 +398,9 @@ pub fn sudo_tx_query_result(
     let body: TxBody = TxBody::decode(tx.body_bytes.as_slice())?;
 
     // Get the registered query by ID and retrieve the raw query string
-    let registered_query: QueryRegisteredQueryResponse =
+    let registered_query: RegisteredQuery =
         get_registered_query(deps.as_ref(), query_id)?;
-    let transactions_filter = registered_query.registered_query.transactions_filter;
+    let transactions_filter = registered_query.transactions_filter;
 
     #[allow(clippy::match_single_binding)]
     // Depending of the query type, check the transaction data to see whether is satisfies
@@ -396,7 +408,8 @@ pub fn sudo_tx_query_result(
     // all submitted results will be treated as valid.
     //
     // TODO: come up with solution to determine transactions filter type
-    match registered_query.registered_query.query_type {
+    // TODO: fix this?
+    match registered_query.query_type {
         _ => {
             // For transfer queries, query data looks like `[{"field:"transfer.recipient", "op":"eq", "value":"some_address"}]`
             let query_data: Vec<TransactionFilterItem> =
@@ -493,7 +506,7 @@ fn check_deposits_size(deposits: &Vec<Transfer>) -> StdResult<()> {
 /// sudo_kv_query_result is the contract's callback for KV query results. Note that only the query
 /// id is provided, so you need to read the query result from the state.
 pub fn sudo_kv_query_result(
-    deps: DepsMut<NeutronQuery>,
+    deps: DepsMut,
     _env: Env,
     query_id: u64,
 ) -> NeutronResult<Response> {

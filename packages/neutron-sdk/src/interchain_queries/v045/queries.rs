@@ -80,7 +80,7 @@ pub struct DelegatorUnbondingDelegationsResponse {
 /// Returns balance of account on remote chain for particular denom
 /// * ***registered_query_id*** is an identifier of the corresponding registered interchain query
 pub fn query_balance(
-    deps: Deps<NeutronQuery>,
+    deps: Deps,
     _env: Env,
     registered_query_id: u64,
 ) -> NeutronResult<BalanceResponse> {
