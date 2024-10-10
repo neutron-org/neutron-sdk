@@ -1,10 +1,7 @@
 use cosmos_sdk_proto::cosmos::bank::v1beta1::MsgSend;
 use cosmos_sdk_proto::cosmos::tx::v1beta1::{TxBody, TxRaw};
 use cosmos_sdk_proto::traits::Message;
-use cosmwasm_std::{
-    entry_point, to_json_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError,
-    StdResult, Uint128,
-};
+use cosmwasm_std::{entry_point, to_json_binary, Addr, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult, Uint128};
 use cw2::set_contract_version;
 use neutron_sdk::interchain_queries::v047::register_queries::new_register_validators_signing_infos_query_msg;
 
@@ -13,7 +10,6 @@ use crate::msg::{
 };
 use crate::state::{Transfer, RECIPIENT_TXS, TRANSFERS};
 use neutron_sdk::bindings::msg::NeutronMsg;
-use neutron_sdk::bindings::query::{NeutronQuery, QueryRegisteredQueryResponse};
 use neutron_sdk::bindings::types::{Height, KVKey};
 use neutron_sdk::interchain_queries::v047::queries::{
     query_balance, query_bank_total, query_delegations, query_distribution_fee_pool,
@@ -64,7 +60,7 @@ pub fn instantiate(
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     _deps: DepsMut,
-    _env: Env,
+    env: Env,
     _: MessageInfo,
     msg: ExecuteMsg,
 ) -> NeutronResult<Response> {
@@ -104,7 +100,7 @@ pub fn execute(
             delegator,
             validators,
             update_period,
-        } => register_delegations_query(connection_id, delegator, validators, update_period),
+        } => register_delegations_query(env.contract.address, connection_id, delegator, validators, update_period),
         ExecuteMsg::RegisterDelegatorUnbondingDelegationsQuery {
             connection_id,
             delegator,
@@ -205,12 +201,14 @@ pub fn register_validators_signing_infos_query(
 }
 
 pub fn register_delegations_query(
+    contract: Addr,
     connection_id: String,
     delegator: String,
     validators: Vec<String>,
     update_period: u64,
 ) -> NeutronResult<Response> {
     let msg = new_register_delegator_delegations_query_msg(
+        contract,
         connection_id,
         delegator,
         validators,
