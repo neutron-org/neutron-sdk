@@ -205,8 +205,7 @@ pub fn register_balances_query(
     update_period: u64,
 ) -> NeutronResult<Response> {
     let msg: CosmosMsg =
-        new_register_balances_query_msg(contract, connection_id, addr, denoms, update_period)?
-            .into();
+        new_register_balances_query_msg(contract, connection_id, addr, denoms, update_period)?;
 
     Ok(Response::new().add_message(msg))
 }

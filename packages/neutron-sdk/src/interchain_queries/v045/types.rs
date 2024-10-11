@@ -111,11 +111,11 @@ impl KVReconstruct for Balances {
 
         for kv in storage_values {
             let (_, denom) = deconstruct_account_denom_balance_key(kv.key.to_vec())?;
-            let amount = if kv.value.len() > 0 {
+            let amount = if kv.value.is_empty() {
+                0u128
+            } else {
                 let balance: CosmosCoin = CosmosCoin::decode(kv.value.as_slice())?;
                 Uint128::from_str(balance.amount.as_str())?.u128()
-            } else {
-                0u128
             };
 
             coins.push(Coin::new(amount, denom))

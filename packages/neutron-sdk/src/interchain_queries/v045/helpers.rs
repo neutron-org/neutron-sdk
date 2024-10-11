@@ -321,7 +321,7 @@ pub fn get_update_time(commission: &Option<ValidatorCommission>) -> Option<u64> 
 }
 
 /// Returns denom for total supply from StorageValue key
-pub fn get_total_supply_denom(denom: &Vec<u8>) -> Option<String> {
+pub fn get_total_supply_denom(denom: &[u8]) -> Option<String> {
     if denom.len() < 2 {
         return None;
     }

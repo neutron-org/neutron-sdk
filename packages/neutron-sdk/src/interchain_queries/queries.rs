@@ -11,7 +11,7 @@ pub fn check_query_type(actual: String, expected: QueryType) -> NeutronResult<()
     let expected_str: String = expected.into();
     if actual != expected_str {
         return Err(NeutronError::InvalidQueryType {
-            query_type: actual.into(),
+            query_type: actual,
         });
     }
     Ok(())
@@ -45,7 +45,7 @@ pub fn get_raw_interchain_query_result(
     interchain_query_id: u64,
 ) -> NeutronResult<QueryResult> {
     let querier = InterchainqueriesQuerier::new(&deps.querier);
-    let query_res = querier.query_result(interchain_query_id.into())?;
+    let query_res = querier.query_result(interchain_query_id)?;
     let res = query_res
         .result
         .ok_or_else(|| StdError::generic_err("no result in registered query"))?;

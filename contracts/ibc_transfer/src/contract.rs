@@ -155,7 +155,7 @@ fn execute_send(
         }),
         timeout_height: Some(neutron_std::types::ibc::core::client::v1::Height {
             revision_number: 2,
-            revision_height: timeout_height.unwrap_or_else(|| DEFAULT_TIMEOUT_HEIGHT),
+            revision_height: timeout_height.unwrap_or(DEFAULT_TIMEOUT_HEIGHT),
         }),
         timeout_timestamp: 0,
         memo: "".to_string(),
@@ -172,7 +172,7 @@ fn execute_send(
         }),
         timeout_height: Some(neutron_std::types::ibc::core::client::v1::Height {
             revision_number: 2,
-            revision_height: timeout_height.unwrap_or_else(|| DEFAULT_TIMEOUT_HEIGHT),
+            revision_height: timeout_height.unwrap_or(DEFAULT_TIMEOUT_HEIGHT),
         }),
         timeout_timestamp: 0,
         memo: "".to_string(),

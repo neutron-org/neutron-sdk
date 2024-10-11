@@ -503,9 +503,7 @@ pub fn register_interchain_account(
         connection_id,
         interchain_account_id,
         register_fee,
-        ordering: ordering
-            .unwrap_or_else(|| ChannelOrdering::OrderOrdered)
-            .into(),
+        ordering: ordering.unwrap_or(ChannelOrdering::OrderOrdered).into(),
     }
     .into())
 }
