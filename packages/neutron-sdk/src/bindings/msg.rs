@@ -25,9 +25,9 @@ pub enum ChannelOrdering {
     OrderOrdered,
 }
 
-impl Into<i32> for ChannelOrdering {
-    fn into(self) -> i32 {
-        match self {
+impl From<ChannelOrdering> for i32 {
+    fn from(ordering: ChannelOrdering) -> Self {
+        match ordering {
             ChannelOrdering::OrderUnordered => 1,
             ChannelOrdering::OrderOrdered => 2,
         }
