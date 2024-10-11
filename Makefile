@@ -28,6 +28,3 @@ check_contracts:
 	@cosmwasm-check --available-capabilities iterator,staking,stargate,neutron artifacts/*.wasm
 
 build: schema clippy test fmt doc compile check_contracts
-
-build-proto:
-	@cargo run --bin proto-build
