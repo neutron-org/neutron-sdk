@@ -9,7 +9,7 @@ use crate::interchain_queries::v045::types::STAKING_STORE_KEY;
 use crate::interchain_queries::v047::types::STAKING_PARAMS_KEY;
 use crate::NeutronResult;
 use cosmwasm_std::{Addr, CosmosMsg};
-use neutron_std::types::neutron::interchainqueries::{MsgRegisterInterchainQuery, KvKey};
+use neutron_std::types::neutron::interchainqueries::{KvKey, MsgRegisterInterchainQuery};
 
 /// Creates a message to register an Interchain Query to get delegations of particular delegator on remote chain.
 ///
@@ -23,7 +23,7 @@ pub fn new_register_delegator_delegations_query_msg(
     delegator: String,
     validators: Vec<String>,
     update_period: u64,
-) -> NeutronResult<Box<impl Into<CosmosMsg>>> {
+) -> NeutronResult<CosmosMsg> {
     let delegator_addr = decode_and_convert(&delegator)?;
 
     // Allocate memory for such KV keys as:
@@ -54,12 +54,13 @@ pub fn new_register_delegator_delegations_query_msg(
         })
     }
 
-    Ok(Box::new(MsgRegisterInterchainQuery{
+    Ok(MsgRegisterInterchainQuery {
         query_type: QueryType::KV.into(),
         keys,
         transactions_filter: "".to_string(),
         connection_id,
         update_period,
         sender: contract.to_string(),
-    }))
+    }
+    .into())
 }

@@ -16,10 +16,10 @@ use cosmos_sdk_proto::cosmos::staking::v1beta1::{
 };
 use cosmos_sdk_proto::traits::Message;
 use cosmwasm_std::{Addr, Coin, Decimal256, Uint128, Uint256};
+use neutron_std::types::neutron::interchainqueries::StorageValue;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
-use neutron_std::types::neutron::interchainqueries::StorageValue;
 
 /// Key for Staking Params in the **staking** module's storage
 /// <https://github.com/cosmos/cosmos-sdk/blob/54120626e9994b2f1cc7a2bebc60cfb99703028f/x/staking/types/keys.go#L56>

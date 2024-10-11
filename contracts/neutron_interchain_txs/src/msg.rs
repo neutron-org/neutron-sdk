@@ -1,5 +1,5 @@
-use neutron_std::types::cosmos::base::v1beta1::Coin;
 use neutron_sdk::bindings::msg::ChannelOrdering;
+use neutron_std::types::cosmos::base::v1beta1::Coin;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 

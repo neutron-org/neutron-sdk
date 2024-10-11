@@ -3,17 +3,16 @@ use cosmwasm_std::{
     StdError, StdResult, SubMsg,
 };
 use cw2::set_contract_version;
-use neutron_std::types::neutron::transfer::{MsgTransfer, MsgTransferResponse};
 use neutron_sdk::interchain_txs::helpers::decode_message_response;
 use neutron_sdk::{
     sudo::msg::{RequestPacket, RequestPacketTimeoutHeight, TransferSudoMsg},
     NeutronResult,
 };
+use neutron_std::types::neutron::transfer::{MsgTransfer, MsgTransferResponse};
+// TODO: rename
 use neutron_std::types::cosmos::base::v1beta1::Coin as SuperCoin;
 use neutron_std::types::neutron::feerefunder::{Fee, FeerefunderQuerier};
 // TODO: rename
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
 use crate::{
     msg::{ExecuteMsg, InstantiateMsg, MigrateMsg},
     state::{
@@ -21,6 +20,8 @@ use crate::{
         IBC_SUDO_ID_RANGE_END, IBC_SUDO_ID_RANGE_START,
     },
 };
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 // Default timeout for IbcTransfer is 10000000 blocks
 const DEFAULT_TIMEOUT_HEIGHT: u64 = 10000000;
@@ -41,12 +42,7 @@ pub fn instantiate(
 }
 
 #[entry_point]
-pub fn execute(
-    deps: DepsMut,
-    env: Env,
-    _: MessageInfo,
-    msg: ExecuteMsg,
-) -> StdResult<Response> {
+pub fn execute(deps: DepsMut, env: Env, _: MessageInfo, msg: ExecuteMsg) -> StdResult<Response> {
     match msg {
         // NOTE: this is an example contract that shows how to make IBC transfers!
         // Please add necessary authorization or other protection mechanisms
@@ -156,7 +152,10 @@ fn execute_send(
         source_channel: channel.clone(),
         sender: env.contract.address.to_string(),
         receiver: to.clone(),
-        token: Some(SuperCoin{ denom: denom.clone(), amount: amount.to_string() }),
+        token: Some(SuperCoin {
+            denom: denom.clone(),
+            amount: amount.to_string(),
+        }),
         timeout_height: Some(neutron_std::types::ibc::core::client::v1::Height {
             revision_number: 2,
             revision_height: timeout_height.unwrap_or_else(|| DEFAULT_TIMEOUT_HEIGHT),
@@ -170,7 +169,10 @@ fn execute_send(
         source_channel: channel,
         sender: env.contract.address.to_string(),
         receiver: to,
-        token: Some(SuperCoin{ denom, amount: (2 * amount).to_string() }),
+        token: Some(SuperCoin {
+            denom,
+            amount: (2 * amount).to_string(),
+        }),
         timeout_height: Some(neutron_std::types::ibc::core::client::v1::Height {
             revision_number: 2,
             revision_height: timeout_height.unwrap_or_else(|| DEFAULT_TIMEOUT_HEIGHT),
@@ -277,23 +279,42 @@ pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response
 fn query_min_fee(deps: Deps) -> StdResult<Fee> {
     let querier = FeerefunderQuerier::new(&deps.querier);
     let params = querier.params()?;
-    let params_inner = params.params.ok_or_else(|| StdError::generic_err("no params found for feerefunder"))?;
-    let min_fee = params_inner.min_fee.ok_or_else(|| StdError::generic_err("no minimum fee param for feerefunder"))?;
+    let params_inner = params
+        .params
+        .ok_or_else(|| StdError::generic_err("no params found for feerefunder"))?;
+    let min_fee = params_inner
+        .min_fee
+        .ok_or_else(|| StdError::generic_err("no minimum fee param for feerefunder"))?;
 
     Ok(min_fee)
 }
 
 fn min_ntrn_ibc_fee(fee: Fee) -> neutron_std::types::neutron::feerefunder::Fee {
     neutron_std::types::neutron::feerefunder::Fee {
-        recv_fee: fee.recv_fee.iter().map(|r| SuperCoin{ denom: r.denom.to_string(), amount: r.amount.clone() } ).collect(),
+        recv_fee: fee
+            .recv_fee
+            .iter()
+            .map(|r| SuperCoin {
+                denom: r.denom.to_string(),
+                amount: r.amount.clone(),
+            })
+            .collect(),
         ack_fee: fee
             .ack_fee
-            .iter().map(|r| SuperCoin{ denom: r.denom.to_string(), amount: r.amount.clone() } )
+            .iter()
+            .map(|r| SuperCoin {
+                denom: r.denom.to_string(),
+                amount: r.amount.clone(),
+            })
             .filter(|a| a.denom == FEE_DENOM)
             .collect(),
         timeout_fee: fee
             .timeout_fee
-            .iter().map(|r| SuperCoin{ denom: r.denom.to_string(), amount: r.amount.clone() } )
+            .iter()
+            .map(|r| SuperCoin {
+                denom: r.denom.to_string(),
+                amount: r.amount.clone(),
+            })
             .filter(|a| a.denom == FEE_DENOM)
             .collect(),
     }

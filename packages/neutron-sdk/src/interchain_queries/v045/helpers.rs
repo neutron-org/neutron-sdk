@@ -1,3 +1,4 @@
+use super::types::{GOV_STORE_KEY, VOTES_KEY_PREFIX};
 use crate::errors::error::NeutronResult;
 use crate::interchain_queries::helpers::{decode_and_convert, length_prefix};
 use crate::interchain_queries::types::AddressBytes;
@@ -9,9 +10,8 @@ use crate::interchain_queries::v045::types::{
 use crate::NeutronError;
 use cosmos_sdk_proto::cosmos::staking::v1beta1::Commission as ValidatorCommission;
 use cosmwasm_std::{Binary, Decimal, Uint128};
-use std::str::{from_utf8, FromStr};
 use neutron_std::types::neutron::interchainqueries::KvKey;
-use super::types::{GOV_STORE_KEY, VOTES_KEY_PREFIX};
+use std::str::{from_utf8, FromStr};
 
 /// Creates KV key to get **module** param by **key**
 pub fn create_params_store_key(module: &str, key: &str) -> Vec<u8> {
@@ -284,10 +284,7 @@ pub fn create_gov_proposals_voters_votes_keys(
         for proposal_id in proposals_ids.clone() {
             let kv_key = KvKey {
                 path: GOV_STORE_KEY.to_string(),
-                key: create_gov_proposal_voter_votes_key(
-                    proposal_id,
-                    &voter_addr,
-                )?,
+                key: create_gov_proposal_voter_votes_key(proposal_id, &voter_addr)?,
             };
 
             kv_keys.push(kv_key)
@@ -338,5 +335,7 @@ pub fn get_total_supply_denom(denom: &Vec<u8>) -> Option<String> {
 
 /// Returns total supply amount from StorageValue key
 pub fn get_total_supply_amount(amount: &Vec<u8>) -> Option<Uint128> {
-    from_utf8(amount.as_slice()).ok().map(|a| Uint128::from_str(a).ok())?
+    from_utf8(amount.as_slice())
+        .ok()
+        .map(|a| Uint128::from_str(a).ok())?
 }

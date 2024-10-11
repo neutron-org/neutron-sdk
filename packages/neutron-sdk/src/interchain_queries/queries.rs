@@ -2,7 +2,9 @@ use crate::errors::error::NeutronResult;
 use crate::interchain_queries::types::{KVReconstruct, QueryType};
 use crate::NeutronError;
 use cosmwasm_std::{Deps, StdError};
-use neutron_std::types::neutron::interchainqueries::{InterchainqueriesQuerier, RegisteredQuery, QueryResult};
+use neutron_std::types::neutron::interchainqueries::{
+    InterchainqueriesQuerier, QueryResult, RegisteredQuery,
+};
 
 /// Checks **actual** query type is **expected** query type
 pub fn check_query_type(actual: String, expected: QueryType) -> NeutronResult<()> {
@@ -22,15 +24,14 @@ pub fn get_registered_query(
 ) -> NeutronResult<RegisteredQuery> {
     let querier = InterchainqueriesQuerier::new(&deps.querier);
     let query_res = querier.registered_query(interchain_query_id)?;
-    let res= query_res.registered_query.ok_or_else(|| StdError::generic_err("no registered query"))?;
+    let res = query_res
+        .registered_query
+        .ok_or_else(|| StdError::generic_err("no registered query"))?;
     Ok(res)
 }
 
 /// Reads submitted raw KV values for Interchain Query with **query_id** from the storage and reconstructs the result
-pub fn query_kv_result<T: KVReconstruct>(
-    deps: Deps,
-    query_id: u64,
-) -> NeutronResult<T> {
+pub fn query_kv_result<T: KVReconstruct>(deps: Deps, query_id: u64) -> NeutronResult<T> {
     let registered_query_result = get_raw_interchain_query_result(deps, query_id)?;
     KVReconstruct::reconstruct(registered_query_result.kv_results.as_slice())
 }
@@ -45,7 +46,9 @@ pub fn get_raw_interchain_query_result(
 ) -> NeutronResult<QueryResult> {
     let querier = InterchainqueriesQuerier::new(&deps.querier);
     let query_res = querier.query_result(interchain_query_id.into())?;
-    let res = query_res.result.ok_or_else(|| StdError::generic_err("no result in registered query"))?;
+    let res = query_res
+        .result
+        .ok_or_else(|| StdError::generic_err("no result in registered query"))?;
 
     Ok(res)
 }
