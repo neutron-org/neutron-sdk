@@ -9,7 +9,7 @@ use crate::interchain_queries::v045::types::{
 };
 use crate::NeutronError;
 use cosmos_sdk_proto::cosmos::staking::v1beta1::Commission as ValidatorCommission;
-use cosmwasm_std::{Binary, Decimal, Uint128};
+use cosmwasm_std::{Decimal, Uint128};
 use neutron_std::types::neutron::interchainqueries::KvKey;
 use std::str::{from_utf8, FromStr};
 

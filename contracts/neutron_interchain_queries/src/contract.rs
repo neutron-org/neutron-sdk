@@ -7,9 +7,7 @@ use cosmwasm_std::{
 };
 use cw2::set_contract_version;
 use neutron_sdk::interchain_queries::v047::register_queries::new_register_validators_signing_infos_query_msg;
-use neutron_std::types::neutron::interchainqueries::{
-    InterchainqueriesQuerier, KvKey, QueryResult, RegisteredQuery,
-};
+use neutron_std::types::neutron::interchainqueries::{KvKey, RegisteredQuery};
 // TODO: fix name
 use neutron_sdk::interchain_queries::v045::register_queries::{
     remove_interchain_query as helpers_remove_interchain_query,

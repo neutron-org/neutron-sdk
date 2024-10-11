@@ -1,7 +1,4 @@
-use crate::{
-    // bindings::types::{StorageValue},
-    errors::error::NeutronResult,
-};
+use crate::errors::error::NeutronResult;
 use cosmwasm_std::{from_json, StdError, Uint128};
 use neutron_std::types::neutron::interchainqueries::{KvKey, StorageValue};
 use schemars::{JsonSchema, _serde_json::Value};

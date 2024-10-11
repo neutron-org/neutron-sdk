@@ -1,13 +1,7 @@
-use crate::{
-    bindings::types::ProtobufAny,
-    interchain_queries::types::{QueryPayload, QueryType, TransactionFilterItem},
-    sudo::msg::RequestPacketTimeoutHeight,
-    NeutronResult,
-};
-use cosmwasm_std::{Binary, Coin, CosmosMsg, CustomMsg, DenomUnit, StdError, Uint128};
+use cosmwasm_std::{Binary, Coin, CosmosMsg, CustomMsg};
+use neutron_std::shim::Any;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use serde_json_wasm::to_string;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 /// IbcFee defines struct for fees that refund the relayer for `SudoMsg` messages submission.
@@ -226,7 +220,8 @@ pub struct UpgradeProposal {
     /// **plan** is a plan of upgrade.
     pub plan: Plan,
     /// **upgraded_client_state** is an upgraded client state.
-    pub upgraded_client_state: ProtobufAny,
+    // TODO: correct?
+    pub upgraded_client_state: Any,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]

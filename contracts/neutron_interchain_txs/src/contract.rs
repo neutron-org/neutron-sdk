@@ -1,7 +1,7 @@
 use cosmos_sdk_proto::traits::Message;
 use cosmwasm_std::{
-    to_json_binary, Addr, Binary, Coin as CoinSDK, CosmosMsg, CustomQuery, Deps, DepsMut, Env,
-    MessageInfo, Reply, Response, StdError, StdResult, SubMsg,
+    to_json_binary, Addr, Binary, CosmosMsg, CustomQuery, Deps, DepsMut, Env, MessageInfo, Reply,
+    Response, StdError, StdResult, SubMsg,
 };
 use cw2::set_contract_version;
 use neutron_std::shim::Timestamp;
@@ -12,10 +12,9 @@ use crate::storage::{
     save_reply_payload, save_sudo_payload, AcknowledgementResult, SudoPayload,
     ACKNOWLEDGEMENT_RESULTS, INTERCHAIN_ACCOUNTS, SUDO_PAYLOAD_REPLY_ID,
 };
-use neutron_sdk::bindings::msg::{ChannelOrdering, IbcFee};
+use neutron_sdk::bindings::msg::ChannelOrdering;
 use neutron_sdk::interchain_queries::v045::register_queries::register_interchain_account;
 use neutron_sdk::{
-    bindings::types::ProtobufAny,
     interchain_txs::helpers::{decode_message_response, get_port_id},
     interchain_txs::v047::helpers::decode_acknowledgement_response,
     sudo::msg::{RequestPacket, SudoMsg},

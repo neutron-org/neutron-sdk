@@ -1,13 +1,10 @@
 use cosmwasm_std::{
-    coin, entry_point, Binary, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Reply, Response,
-    StdError, StdResult, SubMsg,
+    entry_point, Binary, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Reply, Response, StdError,
+    StdResult, SubMsg,
 };
 use cw2::set_contract_version;
 use neutron_sdk::interchain_txs::helpers::decode_message_response;
-use neutron_sdk::{
-    sudo::msg::{RequestPacket, RequestPacketTimeoutHeight, TransferSudoMsg},
-    NeutronResult,
-};
+use neutron_sdk::sudo::msg::{RequestPacket, TransferSudoMsg};
 use neutron_std::types::neutron::transfer::{MsgTransfer, MsgTransferResponse};
 // TODO: rename
 use neutron_std::types::cosmos::base::v1beta1::Coin as SuperCoin;
