@@ -1,7 +1,6 @@
 use crate::state::Transfer;
 use cosmwasm_std::Uint128;
 use neutron_std::types::neutron::interchainqueries::KvKey;
-use neutron_sdk::bindings::types::KVKey;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 

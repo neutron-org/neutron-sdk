@@ -3,17 +3,17 @@ use cosmwasm_std::{
     StdError, StdResult, SubMsg,
 };
 use cw2::set_contract_version;
-use neutron_std::types::neutron::transfer::MsgTransfer;
+use neutron_std::types::neutron::transfer::{MsgTransfer, MsgTransferResponse};
 use neutron_sdk::interchain_txs::helpers::decode_message_response;
-use neutron_sdk::proto_types::neutron::transfer::{MsgTransferResponse};
 use neutron_sdk::{
     sudo::msg::{RequestPacket, RequestPacketTimeoutHeight, TransferSudoMsg},
     NeutronResult,
 };
-use neutron_std::types::cosmos::base::v1beta1::Coin as SuperCoin; // TODO: rename
+use neutron_std::types::cosmos::base::v1beta1::Coin as SuperCoin;
+use neutron_std::types::neutron::feerefunder::{Fee, FeerefunderQuerier};
+// TODO: rename
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use neutron_sdk::proto_types::neutron::feerefunder::{Fee, FeerefunderQuerier};
 use crate::{
     msg::{ExecuteMsg, InstantiateMsg, MigrateMsg},
     state::{

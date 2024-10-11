@@ -1,16 +1,15 @@
-use cosmos_sdk_proto::cosmos::base::v1beta1::Coin;
-use cosmos_sdk_proto::cosmos::staking::v1beta1::{
-    MsgDelegate, MsgDelegateResponse, MsgUndelegate, MsgUndelegateResponse,
-};
 use cosmos_sdk_proto::traits::Message;
 use cosmwasm_std::{
     to_json_binary, Binary, Coin as CoinSDK, CosmosMsg, CustomQuery, Deps, DepsMut, Env,
     MessageInfo, Reply, Response, StdError, StdResult, SubMsg,
 };
 use cw2::set_contract_version;
+use neutron_std::shim::Timestamp;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-
+use neutron_std::types::cosmos::base::v1beta1::Coin;
+use neutron_std::types::cosmos::staking::v1beta1::{MsgDelegate, MsgDelegateResponse, MsgUndelegateResponse};
+use neutron_std::types::neutron::feerefunder::{Fee, FeerefunderQuerier};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::storage::{
     add_error_to_queue, read_errors_from_queue, read_reply_payload, read_sudo_payload,
@@ -18,10 +17,8 @@ use crate::storage::{
     ACKNOWLEDGEMENT_RESULTS, INTERCHAIN_ACCOUNTS, SUDO_PAYLOAD_REPLY_ID,
 };
 use neutron_sdk::bindings::msg::{ChannelOrdering, IbcFee};
-use neutron_sdk::proto_types::neutron::interchaintxs::v1::MsgSubmitTxResponse;
 use neutron_sdk::{
     bindings::{
-        msg::NeutronMsg,
         types::ProtobufAny,
     },
     interchain_txs::helpers::{decode_message_response, get_port_id},
@@ -29,6 +26,8 @@ use neutron_sdk::{
     sudo::msg::{RequestPacket, SudoMsg},
     NeutronError, NeutronResult,
 };
+use neutron_sdk::interchain_queries::v045::register_queries::register_interchain_account;
+use neutron_std::types::neutron::interchaintxs::v1::{InterchaintxsQuerier, MsgSubmitTxResponse};
 
 // Default timeout for SubmitTX is two weeks
 const DEFAULT_TIMEOUT_SECONDS: u64 = 60 * 60 * 24 * 7 * 2;
@@ -54,7 +53,7 @@ pub fn instantiate(
     _env: Env,
     _info: MessageInfo,
     _msg: InstantiateMsg,
-) -> NeutronResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response> {
     deps.api.debug("WASMDEBUG: instantiate");
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
     Ok(Response::default())
@@ -62,11 +61,11 @@ pub fn instantiate(
 
 #[cfg_attr(not(feature = "library"), cosmwasm_std::entry_point)]
 pub fn execute(
-    deps: DepsMut<NeutronQuery>,
+    deps: DepsMut,
     env: Env,
     _: MessageInfo,
     msg: ExecuteMsg,
-) -> NeutronResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response>{
     deps.api
         .debug(format!("WASMDEBUG: execute: received msg: {:?}", msg).as_str());
     match msg {
@@ -117,7 +116,7 @@ pub fn execute(
 }
 
 #[cfg_attr(not(feature = "library"), cosmwasm_std::entry_point)]
-pub fn query(deps: Deps<NeutronQuery>, env: Env, msg: QueryMsg) -> NeutronResult<Binary> {
+pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> NeutronResult<Binary> {
     match msg {
         QueryMsg::InterchainAccountAddress {
             interchain_account_id,
@@ -136,24 +135,24 @@ pub fn query(deps: Deps<NeutronQuery>, env: Env, msg: QueryMsg) -> NeutronResult
 
 // returns ICA address from Neutron ICA SDK module
 pub fn query_interchain_address(
-    deps: Deps<NeutronQuery>,
+    deps: Deps,
     env: Env,
     interchain_account_id: String,
     connection_id: String,
 ) -> NeutronResult<Binary> {
-    let query = NeutronQuery::InterchainAccountAddress {
-        owner_address: env.contract.address.to_string(),
+    let querier = InterchaintxsQuerier::new(&deps.querier);
+    let res = querier.interchain_account_address(
+        env.contract.address.to_string(),
         interchain_account_id,
         connection_id,
-    };
+    )?;
 
-    let res: QueryInterchainAccountAddressResponse = deps.querier.query(&query.into())?;
     Ok(to_json_binary(&res)?)
 }
 
 // returns ICA address from the contract storage. The address was saved in sudo_open_ack method
 pub fn query_interchain_address_contract(
-    deps: Deps<NeutronQuery>,
+    deps: Deps,
     env: Env,
     interchain_account_id: String,
 ) -> NeutronResult<Binary> {
@@ -166,7 +165,7 @@ pub fn query_interchain_address_contract(
 
 // returns the result
 pub fn query_acknowledgement_result(
-    deps: Deps<NeutronQuery>,
+    deps: Deps,
     env: Env,
     interchain_account_id: String,
     sequence_id: u64,
@@ -176,14 +175,14 @@ pub fn query_acknowledgement_result(
     Ok(to_json_binary(&res)?)
 }
 
-pub fn query_errors_queue(deps: Deps<NeutronQuery>) -> NeutronResult<Binary> {
+pub fn query_errors_queue(deps: Deps) -> NeutronResult<Binary> {
     let res = read_errors_from_queue(deps.storage)?;
     Ok(to_json_binary(&res)?)
 }
 
 // saves payload to process later to the storage and returns a SubmitTX Cosmos SubMsg with necessary reply id
 fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
-    deps: DepsMut<NeutronQuery>,
+    deps: DepsMut,
     msg: C,
     payload: SudoPayload,
 ) -> StdResult<SubMsg<T>> {
@@ -192,37 +191,38 @@ fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
 }
 
 fn execute_register_ica(
-    deps: DepsMut<NeutronQuery>,
+    deps: DepsMut,
     env: Env,
     connection_id: String,
     interchain_account_id: String,
-    register_fee: Vec<CoinSDK>,
+    register_fee: Vec<Coin>,
     ordering: Option<ChannelOrdering>,
-) -> NeutronResult<Response<NeutronMsg>> {
-    let register = NeutronMsg::register_interchain_account(
+) -> NeutronResult<Response> {
+    let register = register_interchain_account(
+        env.contract.address.clone(),
         connection_id,
         interchain_account_id.clone(),
-        Some(register_fee),
+        register_fee,
         ordering,
     );
-    let key = get_port_id(env.contract.address.as_str(), &interchain_account_id);
+    let key = get_port_id(&env.contract.address.to_string(), &interchain_account_id);
     // we are saving empty data here because we handle response of registering ICA in sudo_open_ack method
     INTERCHAIN_ACCOUNTS.save(deps.storage, key, &None)?;
     Ok(Response::new().add_message(register))
 }
 
 fn execute_delegate(
-    mut deps: DepsMut<NeutronQuery>,
+    mut deps: DepsMut,
     env: Env,
     interchain_account_id: String,
     validator: String,
     amount: u128,
     denom: String,
     timeout: Option<u64>,
-) -> NeutronResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response> {
     // contract must pay for relaying of acknowledgements
     // See more info here: https://docs.neutron.org/neutron/feerefunder/overview
-    let fee = min_ntrn_ibc_fee(query_min_ibc_fee(deps.as_ref())?.min_fee);
+    let fee = min_ntrn_ibc_fee(query_min_fee(deps.as_ref())?.min_fee);
     let (delegator, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
     let delegate_msg = MsgDelegate {
         delegator_address: delegator,
@@ -246,7 +246,7 @@ fn execute_delegate(
         value: Binary::from(buf),
     };
 
-    let cosmos_msg = NeutronMsg::submit_tx(
+    let cosmos_msg = submit_tx(
         connection_id,
         interchain_account_id.clone(),
         vec![any_msg],
@@ -270,14 +270,14 @@ fn execute_delegate(
 }
 
 fn execute_undelegate(
-    mut deps: DepsMut<NeutronQuery>,
+    mut deps: DepsMut,
     env: Env,
     interchain_account_id: String,
     validator: String,
     amount: u128,
     denom: String,
     timeout: Option<u64>,
-) -> NeutronResult<Response<NeutronMsg>> {
+) -> NeutronResult<Response> {
     // contract must pay for relaying of acknowledgements
     // See more info here: https://docs.neutron.org/neutron/feerefunder/overview
     let fee = min_ntrn_ibc_fee(query_min_ibc_fee(deps.as_ref())?.min_fee);
@@ -304,7 +304,7 @@ fn execute_undelegate(
         value: Binary::from(buf),
     };
 
-    let cosmos_msg = NeutronMsg::submit_tx(
+    let cosmos_msg = submit_tx(
         connection_id,
         interchain_account_id.clone(),
         vec![any_msg],
@@ -454,7 +454,7 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
                     deps.api
                         .debug(error_msg);
                     add_error_to_queue(deps.storage, error_msg.to_string());
-                    Some(prost_types::Timestamp::default())
+                    Some(Timestamp::default())
                 });
                 deps.api
                     .debug(format!("Undelegation completion time: {:?}", completion_time).as_str());
@@ -642,4 +642,13 @@ fn min_ntrn_ibc_fee(fee: IbcFee) -> IbcFee {
             .filter(|a| a.denom == FEE_DENOM)
             .collect(),
     }
+}
+
+fn query_min_fee(deps: Deps) -> StdResult<Fee> {
+    let querier = FeerefunderQuerier::new(&deps.querier);
+    let params = querier.params()?;
+    let params_inner = params.params.ok_or_else(|| StdError::generic_err("no params found for feerefunder"))?;
+    let min_fee = params_inner.min_fee.ok_or_else(|| StdError::generic_err("no minimum fee param for feerefunder"))?;
+
+    Ok(min_fee)
 }

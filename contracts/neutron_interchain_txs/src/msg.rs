@@ -1,4 +1,4 @@
-use cosmwasm_std::Coin;
+use neutron_std::types::cosmos::base::v1beta1::Coin;
 use neutron_sdk::bindings::msg::ChannelOrdering;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};

@@ -28,7 +28,7 @@ serde-json-wasm = { workspace = true }
 prost-types = { workspace = true }
 cosmwasm-schema = { workspace = true }
 # TODO: use workspace everywhere?
-neutron-std = "4.2.2-rc"
+neutron-std = { git = "https://github.com/neutron-org/neutron-std", rev = "cc49ece967353bcae7ad29ce04f75d2cc167b028" }
 
 [dev-dependencies]
 base64 = { workspace = true }

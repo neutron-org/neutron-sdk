@@ -13,9 +13,12 @@ use crate::{
         create_validator_signing_info_key, create_wasm_contract_store_key,
     },
 };
-use cosmwasm_std::{Addr, Binary, CosmosMsg, StdError};
+use cosmwasm_std::{Addr, CosmosMsg, StdError};
 use neutron_std::types::neutron::interchainqueries::{KvKey, MsgRegisterInterchainQuery, MsgRemoveInterchainQueryRequest, MsgUpdateInterchainQueryRequest};
+use neutron_std::types::neutron::interchaintxs::v1::MsgRegisterInterchainAccount;
 use serde_json_wasm::to_string;
+use crate::bindings::msg::ChannelOrdering;
+use neutron_std::types::cosmos::base::v1beta1::Coin;
 
 /// Creates a message to register an Interchain Query to get balance of account on remote chain for list of denoms
 ///
@@ -29,7 +32,7 @@ pub fn new_register_balances_query_msg(
     addr: String,
     denoms: Vec<String>,
     update_period: u64,
-) -> NeutronResult<dyn Into<CosmosMsg>> {
+) -> NeutronResult<Box<impl Into<CosmosMsg>>> {
     let kv_keys = create_balances_query_keys(addr, denoms)?;
     register_interchain_query(contract, QueryPayload::KV(kv_keys), connection_id, update_period)
 }
@@ -47,7 +50,7 @@ pub fn new_register_balance_query_msg(
     addr: String,
     denom: String,
     update_period: u64,
-) -> NeutronResult<dyn Into<CosmosMsg>> {
+) -> NeutronResult<Box<impl Into<CosmosMsg>>> {
     new_register_balances_query_msg(contract, connection_id, addr, vec![denom], update_period)
 }
 
@@ -61,7 +64,7 @@ pub fn new_register_bank_total_supply_query_msg(
     connection_id: String,
     denoms: Vec<String>,
     update_period: u64,
-) -> NeutronResult<dyn Into<CosmosMsg>> {
+) -> NeutronResult<Box<impl Into<CosmosMsg>>> {
     let mut kv_keys: Vec<KvKey> = Vec::with_capacity(denoms.len());
 
     for denom in denoms {
@@ -86,7 +89,7 @@ pub fn new_register_distribution_fee_pool_query_msg(
     contract: Addr,
     connection_id: String,
     update_period: u64,
-) -> NeutronResult<dyn Into<CosmosMsg>> {
+) -> NeutronResult<Box<impl Into<CosmosMsg>>> {
     let kv_key = KvKey {
         path: DISTRIBUTION_STORE_KEY.to_string(),
         key: create_fee_pool_key()?,
@@ -110,7 +113,7 @@ pub fn new_register_gov_proposals_query_msg(
     connection_id: String,
     proposals_ids: Vec<u64>,
     update_period: u64,
-) -> NeutronResult<dyn Into<CosmosMsg>> {
+) -> NeutronResult<Box<impl Into<CosmosMsg>>> {
     let kv_keys = create_gov_proposal_keys(proposals_ids)?;
 
     register_interchain_query(contract, QueryPayload::KV(kv_keys), connection_id, update_period)
@@ -126,7 +129,7 @@ pub fn update_gov_proposals_query_msg(
     query_id: u64,
     proposals_ids: Vec<u64>,
     new_update_period: u64,
-) -> NeutronResult<dyn Into<CosmosMsg>> {
+) -> NeutronResult<Box<impl Into<CosmosMsg>>> {
     let kv_keys = create_gov_proposal_keys(proposals_ids)?;
 
     update_interchain_query(contract, query_id, kv_keys, new_update_period, None)
@@ -144,7 +147,7 @@ pub fn new_register_gov_proposals_voters_votes_query_msg(
     proposals_ids: Vec<u64>,
     voters: Vec<String>,
     update_period: u64,
-) -> NeutronResult<dyn Into<CosmosMsg>> {
+) -> NeutronResult<Box<impl Into<CosmosMsg>>> {
     let kv_keys = create_gov_proposals_voters_votes_keys(proposals_ids, voters)?;
 
     register_interchain_query(contract, QueryPayload::KV(kv_keys), connection_id, update_period)
@@ -162,7 +165,7 @@ pub fn update_gov_proposals_votes_query_msg(
     proposals_ids: Vec<u64>,
     voters: Vec<String>,
     new_update_period: u64,
-) -> NeutronResult<dyn Into<CosmosMsg>> {
+) -> NeutronResult<Box<impl Into<CosmosMsg>>> {
     let kv_keys = create_gov_proposals_voters_votes_keys(proposals_ids, voters)?;
 
     update_interchain_query(contract, query_id, kv_keys, new_update_period, None)
@@ -178,7 +181,7 @@ pub fn new_register_staking_validators_query_msg(
     connection_id: String,
     validators: Vec<String>,
     update_period: u64,
-) -> NeutronResult<dyn Into<CosmosMsg>> {
+) -> NeutronResult<Box<impl Into<CosmosMsg>>> {
     let mut kv_keys: Vec<KvKey> = Vec::with_capacity(validators.len());
 
     for validator in validators {
@@ -205,7 +208,7 @@ pub fn new_register_validators_signing_infos_query_msg(
     connection_id: String,
     validators: Vec<String>,
     update_period: u64,
-) -> NeutronResult<dyn Into<CosmosMsg>> {
+) -> NeutronResult<Box<impl Into<CosmosMsg>>> {
     let mut kv_keys: Vec<KvKey> = Vec::with_capacity(validators.len());
 
     for validator in validators {
@@ -234,7 +237,7 @@ pub fn new_register_delegator_delegations_query_msg(
     delegator: String,
     validators: Vec<String>,
     update_period: u64,
-) -> NeutronResult<dyn Into<CosmosMsg>> {
+) -> NeutronResult<Box<impl Into<CosmosMsg>>> {
     let delegator_addr = decode_and_convert(&delegator)?;
 
     // Allocate memory for such KV keys as:
@@ -280,7 +283,7 @@ pub fn new_register_delegator_unbonding_delegations_query_msg(
     delegator: String,
     validators: Vec<String>,
     update_period: u64,
-) -> NeutronResult<dyn Into<CosmosMsg>> {
+) -> NeutronResult<Box<impl Into<CosmosMsg>>> {
     let delegator_addr = decode_and_convert(&delegator)?;
 
     // Allocate memory, one KV key per validator
@@ -318,7 +321,7 @@ pub fn new_register_wasm_contract_store_query_msg(
     contract_address: String,
     key: impl AsRef<[u8]>,
     update_period: u64,
-) -> NeutronResult<dyn Into<CosmosMsg>> {
+) -> NeutronResult<Box<impl Into<CosmosMsg>>> {
     let converted_addr_bytes = decode_and_convert(contract_address.as_str())?;
     let wasm_key = create_wasm_contract_store_key(converted_addr_bytes, key.as_ref())?;
 
@@ -347,7 +350,7 @@ pub fn new_register_transfers_query_msg(
     recipient: String,
     update_period: u64,
     min_height: Option<u64>,
-) -> NeutronResult<dyn Into<CosmosMsg>> {
+) -> NeutronResult<Box<impl Into<CosmosMsg>>> {
     let mut query_data = vec![TransactionFilterItem {
         field: RECIPIENT_FIELD.to_string(),
         op: TransactionFilterOp::Eq,
@@ -377,11 +380,11 @@ pub fn new_register_transfers_query_msg(
 ///     maximum allowed number of filters is 32.
 /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
 /// * **update_period** is used to say how often (in neutron blocks) the query must be updated.
-fn register_interchain_query(contract: Addr, query: QueryPayload, connection_id: String, update_period: u64) -> NeutronResult<dyn Into<CosmosMsg>> {
-    Ok(match query {
+fn register_interchain_query(contract: Addr, query: QueryPayload, connection_id: String, update_period: u64) -> NeutronResult<Box<impl Into<CosmosMsg>>> {
+    Ok(Box::new(match query {
         QueryPayload::KV(keys) => MsgRegisterInterchainQuery{
             sender: contract.to_string(),
-            query_type: QueryType::KV.to_string(),
+            query_type: QueryType::KV.into(),
             keys,
             transactions_filter: String::new(),
             connection_id,
@@ -396,7 +399,7 @@ fn register_interchain_query(contract: Addr, query: QueryPayload, connection_id:
             connection_id,
             update_period,
         },
-    })
+    }))
 }
 
 /// Basic helper to define a update interchain query message:
@@ -409,8 +412,8 @@ pub fn update_interchain_query(
     new_keys: Vec<KvKey>,
     new_update_period: u64,
     new_transactions_filter: Option<Vec<TransactionFilterItem>>,
-) -> NeutronResult<dyn Into<CosmosMsg>> {
-    Ok(MsgUpdateInterchainQueryRequest {
+) -> NeutronResult<Box<impl Into<CosmosMsg>>> {
+    Ok(Box::new(MsgUpdateInterchainQueryRequest {
         sender: contract.to_string(),
         query_id,
         new_keys,
@@ -422,14 +425,25 @@ pub fn update_interchain_query(
             // TODO: check if passing empty string is correct
             None => "".to_string(),
         },
-    })
+    }))
 }
 
 /// Basic helper to define a remove interchain query message:
 /// * **query_id** is ID of the query we want to remove.
-pub fn remove_interchain_query(contract: Addr, query_id: u64)-> NeutronResult<dyn Into<CosmosMsg>> {
-    Ok(MsgRemoveInterchainQueryRequest {
+pub fn remove_interchain_query(contract: Addr, query_id: u64) -> NeutronResult<Box<impl Into<CosmosMsg>>> {
+    Ok(Box::new(MsgRemoveInterchainQueryRequest {
         sender: contract.to_string(),
         query_id,
-    })
+    }))
+}
+
+// TODO: comment
+pub fn register_interchain_account(contract: Addr, connection_id: String, interchain_account_id: String, register_fee: Vec<Coin>, ordering: Option<ChannelOrdering>) -> NeutronResult<Box<impl Into<CosmosMsg>>> {
+    Ok(Box::new(MsgRegisterInterchainAccount{
+        from_address: contract.to_string(),
+        connection_id,
+        interchain_account_id,
+        register_fee,
+        ordering: ordering.unwrap_or_else(|| ChannelOrdering::OrderOrdered).into(),
+    }))
 }

@@ -2,7 +2,6 @@ use crate::interchain_queries::helpers::uint256_to_u128;
 use crate::interchain_queries::types::KVReconstruct;
 use crate::interchain_queries::v045::helpers::deconstruct_account_denom_balance_key;
 use crate::{
-    bindings::types::StorageValue,
     errors::error::{NeutronError, NeutronResult},
 };
 use cosmos_sdk_proto::cosmos::gov::v1beta1::Vote;
@@ -18,7 +17,7 @@ use cosmwasm_std::{from_json, Addr, Coin, Decimal, Decimal256, Timestamp, Uint12
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::{ops::Div, str::FromStr};
-
+use neutron_std::types::neutron::interchainqueries::StorageValue;
 use super::helpers::{
     get_max_change_rate, get_max_rate, get_rate, get_total_supply_amount, get_total_supply_denom,
     get_update_time,

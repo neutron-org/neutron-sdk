@@ -150,7 +150,7 @@ pub fn register_balances_query(
     denoms: Vec<String>,
     update_period: u64,
 ) -> NeutronResult<Response> {
-    let msg = new_register_balances_query_msg(contract, connection_id, addr, denoms, update_period)?;
+    let msg: CosmosMsg = new_register_balances_query_msg(contract, connection_id, addr, denoms, update_period)?.into();
 
     Ok(Response::new().add_message(msg))
 }
@@ -289,7 +289,7 @@ pub fn update_interchain_query(
     new_keys: Vec<KvKey>,
     new_update_period: u64,
     new_recipient: Option<String>,
-) -> NeutronResult<dyn Into<CosmosMsg>> {
+) -> NeutronResult<Response> {
     let new_filter = new_recipient.map(|recipient| {
         vec![TransactionFilterItem {
             field: RECIPIENT_FIELD.to_string(),
@@ -303,7 +303,7 @@ pub fn update_interchain_query(
     Ok(Response::new().add_message(update_msg))
 }
 
-pub fn remove_interchain_query(contract: Addr, query_id: u64) -> NeutronResult<dyn Into<CosmosMsg>> {
+pub fn remove_interchain_query(contract: Addr, query_id: u64) -> NeutronResult<Response> {
     let remove_msg = helpers_remove_interchain_query(contract, query_id);
     Ok(Response::new().add_message(remove_msg))
 }

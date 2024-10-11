@@ -7,7 +7,7 @@ pub use crate::interchain_queries::v045::types::*;
 // compatible with Cosmos SDK 0.47
 
 use crate::interchain_queries::types::KVReconstruct;
-use crate::{bindings::types::StorageValue, errors::error::NeutronResult, NeutronError};
+use crate::{errors::error::NeutronResult, NeutronError};
 
 use crate::interchain_queries::helpers::uint256_to_u128;
 use crate::interchain_queries::v047::helpers::deconstruct_account_denom_balance_key;
@@ -19,6 +19,7 @@ use cosmwasm_std::{Addr, Coin, Decimal256, Uint128, Uint256};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
+use neutron_std::types::neutron::interchainqueries::StorageValue;
 
 /// Key for Staking Params in the **staking** module's storage
 /// <https://github.com/cosmos/cosmos-sdk/blob/54120626e9994b2f1cc7a2bebc60cfb99703028f/x/staking/types/keys.go#L56>

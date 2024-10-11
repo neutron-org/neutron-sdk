@@ -6,7 +6,8 @@ use neutron_std::types::neutron::interchainqueries::{InterchainqueriesQuerier, R
 
 /// Checks **actual** query type is **expected** query type
 pub fn check_query_type(actual: String, expected: QueryType) -> NeutronResult<()> {
-    if actual != expected.to_string() {
+    let expected_str: String = expected.into();
+    if actual != expected_str {
         return Err(NeutronError::InvalidQueryType {
             query_type: actual.into(),
         });
@@ -31,7 +32,7 @@ pub fn query_kv_result<T: KVReconstruct>(
     query_id: u64,
 ) -> NeutronResult<T> {
     let registered_query_result = get_raw_interchain_query_result(deps, query_id)?;
-    KVReconstruct::reconstruct(registered_query_result.clone().kv_results.into())
+    KVReconstruct::reconstruct(registered_query_result.kv_results.as_slice())
 }
 
 /// Queries raw interchain query result (raw KV storage values or transactions) from Interchain Queries Module.
@@ -41,10 +42,10 @@ pub fn query_kv_result<T: KVReconstruct>(
 pub fn get_raw_interchain_query_result(
     deps: Deps,
     interchain_query_id: u64,
-) -> NeutronResult<&QueryResult> {
+) -> NeutronResult<QueryResult> {
     let querier = InterchainqueriesQuerier::new(&deps.querier);
     let query_res = querier.query_result(interchain_query_id.into())?;
-    let res = &query_res.result.ok_or_else(|| StdError::generic_err("no result in registered query"))?;
+    let res = query_res.result.ok_or_else(|| StdError::generic_err("no result in registered query"))?;
 
     Ok(res)
 }

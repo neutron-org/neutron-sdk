@@ -324,7 +324,7 @@ pub fn get_update_time(commission: &Option<ValidatorCommission>) -> Option<u64> 
 }
 
 /// Returns denom for total supply from StorageValue key
-pub fn get_total_supply_denom(denom: &Binary) -> Option<String> {
+pub fn get_total_supply_denom(denom: &Vec<u8>) -> Option<String> {
     if denom.len() < 2 {
         return None;
     }
@@ -337,6 +337,6 @@ pub fn get_total_supply_denom(denom: &Binary) -> Option<String> {
 }
 
 /// Returns total supply amount from StorageValue key
-pub fn get_total_supply_amount(amount: &Binary) -> Option<Uint128> {
-    from_utf8(amount).ok().map(|a| Uint128::from_str(a).ok())?
+pub fn get_total_supply_amount(amount: &Vec<u8>) -> Option<Uint128> {
+    from_utf8(amount.as_slice()).ok().map(|a| Uint128::from_str(a).ok())?
 }

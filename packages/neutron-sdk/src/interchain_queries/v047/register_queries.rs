@@ -2,15 +2,13 @@
 // to make it available from v047 package (kinda proxy) since they work with Cosmos SDK 0.47 as usual
 pub use crate::interchain_queries::v045::register_queries::*;
 
-use crate::bindings::msg::NeutronMsg;
-use crate::bindings::types::KVKey;
 use crate::interchain_queries::helpers::decode_and_convert;
-use crate::interchain_queries::types::{QueryPayload, QueryType};
+use crate::interchain_queries::types::QueryType;
 use crate::interchain_queries::v045::helpers::{create_delegation_key, create_validator_key};
 use crate::interchain_queries::v045::types::STAKING_STORE_KEY;
 use crate::interchain_queries::v047::types::STAKING_PARAMS_KEY;
 use crate::NeutronResult;
-use cosmwasm_std::{Addr, Binary, CosmosMsg};
+use cosmwasm_std::{Addr, CosmosMsg};
 use neutron_std::types::neutron::interchainqueries::{MsgRegisterInterchainQuery, KvKey};
 
 /// Creates a message to register an Interchain Query to get delegations of particular delegator on remote chain.
@@ -25,7 +23,7 @@ pub fn new_register_delegator_delegations_query_msg(
     delegator: String,
     validators: Vec<String>,
     update_period: u64,
-) -> NeutronResult<dyn Into<CosmosMsg>> {
+) -> NeutronResult<Box<impl Into<CosmosMsg>>> {
     let delegator_addr = decode_and_convert(&delegator)?;
 
     // Allocate memory for such KV keys as:
@@ -56,12 +54,12 @@ pub fn new_register_delegator_delegations_query_msg(
         })
     }
 
-    Ok(MsgRegisterInterchainQuery{
-        query_type: QueryType::KV.to_string(),
+    Ok(Box::new(MsgRegisterInterchainQuery{
+        query_type: QueryType::KV.into(),
         keys,
         transactions_filter: "".to_string(),
         connection_id,
         update_period,
         sender: contract.to_string(),
-    })
+    }))
 }
