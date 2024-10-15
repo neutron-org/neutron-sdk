@@ -1,5 +1,5 @@
-use crate::bindings::types::Height;
 use cosmwasm_std::Binary;
+use neutron_std::types::ibc::core::client::v1::Height;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -14,6 +14,7 @@ pub struct RequestPacket {
     pub timeout_height: Option<RequestPacketTimeoutHeight>,
     pub timeout_timestamp: Option<u64>,
 }
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct RequestPacketTimeoutHeight {
     pub revision_number: Option<u64>,
