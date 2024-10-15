@@ -1,5 +1,4 @@
 use crate::bindings::msg::ChannelOrdering;
-use crate::NeutronResult;
 use cosmos_sdk_proto::traits::Message;
 use cosmwasm_std::{Addr, CosmosMsg, StdError, StdResult};
 use neutron_std::shim::Any;
@@ -34,15 +33,15 @@ pub fn register_interchain_account(
     interchain_account_id: String,
     register_fee: Vec<Coin>,
     ordering: Option<ChannelOrdering>,
-) -> NeutronResult<CosmosMsg> {
-    Ok(MsgRegisterInterchainAccount {
+) -> CosmosMsg {
+    MsgRegisterInterchainAccount {
         from_address: contract.to_string(),
         connection_id,
         interchain_account_id,
         register_fee,
         ordering: ordering.unwrap_or(ChannelOrdering::OrderOrdered).into(),
     }
-    .into())
+    .into()
 }
 
 /// Basic helper to define a submit tx message:

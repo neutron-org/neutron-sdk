@@ -207,7 +207,7 @@ fn execute_register_ica(
         interchain_account_id.clone(),
         register_fee,
         ordering,
-    )?;
+    );
     let key = get_port_id(&env.contract.address.to_string(), &interchain_account_id);
     // we are saving empty data here because we handle response of registering ICA in sudo_open_ack method
     INTERCHAIN_ACCOUNTS.save(deps.storage, key, &None)?;
