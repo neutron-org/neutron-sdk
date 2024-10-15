@@ -1,15 +1,3 @@
-use cosmwasm_std::{
-    entry_point, Binary, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Reply, Response, StdError,
-    StdResult, SubMsg,
-};
-use cw2::set_contract_version;
-use neutron_sdk::interchain_txs::helpers::decode_message_response;
-use neutron_sdk::sudo::msg::{RequestPacket, TransferSudoMsg};
-use neutron_std::types::neutron::transfer::{MsgTransfer, MsgTransferResponse};
-// TODO: rename
-use neutron_std::types::cosmos::base::v1beta1::Coin as SuperCoin;
-use neutron_std::types::neutron::feerefunder::{Fee, FeerefunderQuerier};
-// TODO: rename
 use crate::{
     msg::{ExecuteMsg, InstantiateMsg, MigrateMsg},
     state::{
@@ -17,6 +5,16 @@ use crate::{
         IBC_SUDO_ID_RANGE_END, IBC_SUDO_ID_RANGE_START,
     },
 };
+use cosmwasm_std::{
+    entry_point, Binary, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Reply, Response, StdError,
+    StdResult, SubMsg,
+};
+use cw2::set_contract_version;
+use neutron_sdk::interchain_txs::helpers::decode_message_response;
+use neutron_sdk::sudo::msg::{RequestPacket, TransferSudoMsg};
+use neutron_std::types::cosmos::base::v1beta1::Coin as SDKCoin;
+use neutron_std::types::neutron::feerefunder::{Fee, FeerefunderQuerier};
+use neutron_std::types::neutron::transfer::{MsgTransfer, MsgTransferResponse};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -149,7 +147,7 @@ fn execute_send(
         source_channel: channel.clone(),
         sender: env.contract.address.to_string(),
         receiver: to.clone(),
-        token: Some(SuperCoin {
+        token: Some(SDKCoin {
             denom: denom.clone(),
             amount: amount.to_string(),
         }),
@@ -166,7 +164,7 @@ fn execute_send(
         source_channel: channel,
         sender: env.contract.address.to_string(),
         receiver: to,
-        token: Some(SuperCoin {
+        token: Some(SDKCoin {
             denom,
             amount: (2 * amount).to_string(),
         }),
@@ -286,12 +284,12 @@ fn query_min_fee(deps: Deps) -> StdResult<Fee> {
     Ok(min_fee)
 }
 
-fn min_ntrn_ibc_fee(fee: Fee) -> neutron_std::types::neutron::feerefunder::Fee {
-    neutron_std::types::neutron::feerefunder::Fee {
+fn min_ntrn_ibc_fee(fee: Fee) -> Fee {
+    Fee {
         recv_fee: fee
             .recv_fee
             .iter()
-            .map(|r| SuperCoin {
+            .map(|r| SDKCoin {
                 denom: r.denom.to_string(),
                 amount: r.amount.clone(),
             })
@@ -299,7 +297,7 @@ fn min_ntrn_ibc_fee(fee: Fee) -> neutron_std::types::neutron::feerefunder::Fee {
         ack_fee: fee
             .ack_fee
             .iter()
-            .map(|r| SuperCoin {
+            .map(|r| SDKCoin {
                 denom: r.denom.to_string(),
                 amount: r.amount.clone(),
             })
@@ -308,7 +306,7 @@ fn min_ntrn_ibc_fee(fee: Fee) -> neutron_std::types::neutron::feerefunder::Fee {
         timeout_fee: fee
             .timeout_fee
             .iter()
-            .map(|r| SuperCoin {
+            .map(|r| SDKCoin {
                 denom: r.denom.to_string(),
                 amount: r.amount.clone(),
             })

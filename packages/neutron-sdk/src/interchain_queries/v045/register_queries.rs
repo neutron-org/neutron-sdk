@@ -1,6 +1,6 @@
-use crate::bindings::msg::ChannelOrdering;
+use crate::interchain_queries::helpers::{register_interchain_query, update_interchain_query};
 use crate::interchain_queries::types::{
-    QueryPayload, QueryType, TransactionFilterItem, TransactionFilterOp, TransactionFilterValue,
+    QueryPayload, TransactionFilterItem, TransactionFilterOp, TransactionFilterValue,
 };
 use crate::interchain_queries::v045::types::{
     BANK_STORE_KEY, DISTRIBUTION_STORE_KEY, HEIGHT_FIELD, KEY_BOND_DENOM, PARAMS_STORE_KEY,
@@ -16,14 +16,8 @@ use crate::{
         create_validator_signing_info_key, create_wasm_contract_store_key,
     },
 };
-use cosmwasm_std::{Addr, CosmosMsg, StdError};
-use neutron_std::types::cosmos::base::v1beta1::Coin;
-use neutron_std::types::neutron::interchainqueries::{
-    KvKey, MsgRegisterInterchainQuery, MsgRemoveInterchainQueryRequest,
-    MsgUpdateInterchainQueryRequest,
-};
-use neutron_std::types::neutron::interchaintxs::v1::MsgRegisterInterchainAccount;
-use serde_json_wasm::to_string;
+use cosmwasm_std::{Addr, CosmosMsg};
+use neutron_std::types::neutron::interchainqueries::KvKey;
 
 /// Creates a message to register an Interchain Query to get balance of account on remote chain for list of denoms
 ///
@@ -415,95 +409,4 @@ pub fn new_register_transfers_query_msg(
         connection_id,
         update_period,
     )
-}
-
-/// Basic helper to define a register interchain query message:
-/// * **query** is a query type identifier ('tx' or 'kv' for now) with a payload:
-///   - when the query enum is 'kv' then payload is the KV-storage keys for which we want to get
-///     values from remote chain;
-///   - when the query enum is 'tx' then payload is the filters for transaction search ICQ,
-///     maximum allowed number of filters is 32.
-/// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
-/// * **update_period** is used to say how often (in neutron blocks) the query must be updated.
-fn register_interchain_query(
-    contract: Addr,
-    query: QueryPayload,
-    connection_id: String,
-    update_period: u64,
-) -> NeutronResult<CosmosMsg> {
-    Ok(match query {
-        QueryPayload::KV(keys) => MsgRegisterInterchainQuery {
-            sender: contract.to_string(),
-            query_type: QueryType::KV.into(),
-            keys,
-            transactions_filter: String::new(),
-            connection_id,
-            update_period,
-        },
-        QueryPayload::TX(transactions_filters) => MsgRegisterInterchainQuery {
-            sender: contract.to_string(),
-            query_type: QueryType::TX.into(),
-            keys: vec![],
-            transactions_filter: to_string(&transactions_filters)
-                .map_err(|e| StdError::generic_err(e.to_string()))?,
-            connection_id,
-            update_period,
-        },
-    }
-    .into())
-}
-
-/// Basic helper to define a update interchain query message:
-/// * **query_id** is ID of the query we want to update;
-/// * **new_keys** is encoded keys to query;
-/// * **new_update_period** is used to say how often (in neutron blocks) the query must be updated.
-pub fn update_interchain_query(
-    contract: Addr,
-    query_id: u64,
-    new_keys: Vec<KvKey>,
-    new_update_period: u64,
-    new_transactions_filter: Option<Vec<TransactionFilterItem>>,
-) -> NeutronResult<CosmosMsg> {
-    Ok(MsgUpdateInterchainQueryRequest {
-        sender: contract.to_string(),
-        query_id,
-        new_keys,
-        new_update_period,
-        new_transactions_filter: match new_transactions_filter {
-            Some(filters) => {
-                to_string(&filters).map_err(|e| StdError::generic_err(e.to_string()))?
-            }
-            // TODO: check if passing empty string is correct
-            None => "".to_string(),
-        },
-    }
-    .into())
-}
-
-/// Basic helper to define a remove interchain query message:
-/// * **query_id** is ID of the query we want to remove.
-pub fn remove_interchain_query(contract: Addr, query_id: u64) -> NeutronResult<CosmosMsg> {
-    Ok(MsgRemoveInterchainQueryRequest {
-        sender: contract.to_string(),
-        query_id,
-    }
-    .into())
-}
-
-// TODO: comment
-pub fn register_interchain_account(
-    contract: Addr,
-    connection_id: String,
-    interchain_account_id: String,
-    register_fee: Vec<Coin>,
-    ordering: Option<ChannelOrdering>,
-) -> NeutronResult<CosmosMsg> {
-    Ok(MsgRegisterInterchainAccount {
-        from_address: contract.to_string(),
-        connection_id,
-        interchain_account_id,
-        register_fee,
-        ordering: ordering.unwrap_or(ChannelOrdering::OrderOrdered).into(),
-    }
-    .into())
 }

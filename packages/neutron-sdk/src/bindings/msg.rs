@@ -1,23 +1,7 @@
-use cosmwasm_std::{Binary, Coin, CosmosMsg, CustomMsg};
+use cosmwasm_std::{Binary, CosmosMsg, CustomMsg};
 use neutron_std::shim::Any;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-/// IbcFee defines struct for fees that refund the relayer for `SudoMsg` messages submission.
-/// Unused fee kind will be returned back to message sender.
-/// Please refer to these links for more information:
-/// IBC transaction structure - <https://docs.neutron.org/neutron/interchain-txs/messages/#msgsubmittx>
-/// General mechanics of fee payments - <https://docs.neutron.org/neutron/feerefunder/overview/#general-mechanics>
-pub struct IbcFee {
-    /// **recv_fee** currently is used for compatibility with ICS-29 interface only and must be set to zero (i.e. 0untrn),
-    /// because Neutron's fee module can't refund relayer for submission of Recv IBC packets due to compatibility with target chains.
-    pub recv_fee: Vec<Coin>,
-    /// **ack_fee** is an amount of coins to refund relayer for submitting ack message for a particular IBC packet.
-    pub ack_fee: Vec<Coin>,
-    /// **timeout_fee** amount of coins to refund relayer for submitting timeout message for a particular IBC packet.
-    pub timeout_fee: Vec<Coin>,
-}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub enum ChannelOrdering {

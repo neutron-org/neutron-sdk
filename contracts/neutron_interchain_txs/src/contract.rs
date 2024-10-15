@@ -13,14 +13,14 @@ use crate::storage::{
     ACKNOWLEDGEMENT_RESULTS, INTERCHAIN_ACCOUNTS, SUDO_PAYLOAD_REPLY_ID,
 };
 use neutron_sdk::bindings::msg::ChannelOrdering;
-use neutron_sdk::interchain_queries::v045::register_queries::register_interchain_account;
+use neutron_sdk::interchain_txs::helpers::register_interchain_account;
 use neutron_sdk::{
     interchain_txs::helpers::{decode_message_response, get_port_id},
     interchain_txs::v047::helpers::decode_acknowledgement_response,
     sudo::msg::{RequestPacket, SudoMsg},
     NeutronError, NeutronResult,
 };
-use neutron_std::types::cosmos::base::v1beta1::Coin as SuperCoin;
+use neutron_std::types::cosmos::base::v1beta1::Coin as SDKCoin;
 use neutron_std::types::cosmos::base::v1beta1::Coin;
 use neutron_std::types::cosmos::staking::v1beta1::{
     MsgDelegate, MsgDelegateResponse, MsgUndelegate, MsgUndelegateResponse,
@@ -659,7 +659,7 @@ fn min_ntrn_ibc_fee(fee: Fee) -> neutron_std::types::neutron::feerefunder::Fee {
         recv_fee: fee
             .recv_fee
             .iter()
-            .map(|r| SuperCoin {
+            .map(|r| SDKCoin {
                 denom: r.denom.to_string(),
                 amount: r.amount.clone(),
             })
@@ -667,7 +667,7 @@ fn min_ntrn_ibc_fee(fee: Fee) -> neutron_std::types::neutron::feerefunder::Fee {
         ack_fee: fee
             .ack_fee
             .iter()
-            .map(|r| SuperCoin {
+            .map(|r| SDKCoin {
                 denom: r.denom.to_string(),
                 amount: r.amount.clone(),
             })
@@ -676,7 +676,7 @@ fn min_ntrn_ibc_fee(fee: Fee) -> neutron_std::types::neutron::feerefunder::Fee {
         timeout_fee: fee
             .timeout_fee
             .iter()
-            .map(|r| SuperCoin {
+            .map(|r| SDKCoin {
                 denom: r.denom.to_string(),
                 amount: r.amount.clone(),
             })

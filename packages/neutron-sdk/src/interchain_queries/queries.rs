@@ -10,9 +10,7 @@ use neutron_std::types::neutron::interchainqueries::{
 pub fn check_query_type(actual: String, expected: QueryType) -> NeutronResult<()> {
     let expected_str: String = expected.into();
     if actual != expected_str {
-        return Err(NeutronError::InvalidQueryType {
-            query_type: actual,
-        });
+        return Err(NeutronError::InvalidQueryType { query_type: actual });
     }
     Ok(())
 }

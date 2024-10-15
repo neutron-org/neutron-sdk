@@ -8,17 +8,16 @@ use cosmwasm_std::{
 use cw2::set_contract_version;
 use neutron_sdk::interchain_queries::v047::register_queries::new_register_validators_signing_infos_query_msg;
 use neutron_std::types::neutron::interchainqueries::{KvKey, RegisteredQuery};
-// TODO: fix name
-use neutron_sdk::interchain_queries::v045::register_queries::{
-    remove_interchain_query as helpers_remove_interchain_query,
-    update_interchain_query as helpers_update_interchain_query,
-};
 
 use crate::msg::{
     Cw20BalanceResponse, ExecuteMsg, GetRecipientTxsResponse, InstantiateMsg, MigrateMsg, QueryMsg,
 };
 use crate::state::{Transfer, RECIPIENT_TXS, TRANSFERS};
 use neutron_sdk::bindings::types::Height;
+use neutron_sdk::interchain_queries::helpers::{
+    remove_interchain_query as helpers_remove_interchain_query,
+    update_interchain_query as helpers_update_interchain_query,
+};
 use neutron_sdk::interchain_queries::v047::queries::{
     query_balance, query_bank_total, query_delegations, query_distribution_fee_pool,
     query_government_proposals, query_staking_validators, query_unbonding_delegations,
