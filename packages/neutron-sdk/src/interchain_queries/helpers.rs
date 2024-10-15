@@ -8,6 +8,7 @@ use neutron_std::types::neutron::interchainqueries::{
     MsgUpdateInterchainQueryRequest,
 };
 use serde_json_wasm::to_string;
+use crate::interchain_queries::hex::decode_hex;
 
 /// Decodes a bech32 encoded string and converts to base64 encoded bytes
 /// <https://github.com/cosmos/cosmos-sdk/blob/ad9e5620fb3445c716e9de45cfcdb56e8f1745bf/types/bech32/bech32.go#L20>
@@ -116,4 +117,18 @@ pub fn remove_interchain_query(contract: Addr, query_id: u64) -> NeutronResult<C
         query_id,
     }
     .into())
+}
+
+const KV_PATH_KEY_DELIMITER: &str = "/";
+
+pub fn kv_key_from_string<S: AsRef<str>>(s: S) -> Option<KvKey> {
+    let split: Vec<&str> = s.as_ref().split(KV_PATH_KEY_DELIMITER).collect();
+    if split.len() < 2 {
+        return None;
+    }
+
+    Some(KvKey {
+        path: split[0].to_string(),
+        key: decode_hex(split[1])?,
+    })
 }
