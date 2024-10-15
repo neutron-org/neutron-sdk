@@ -654,8 +654,8 @@ pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> StdResult<Response> {
     }
 }
 
-fn min_ntrn_ibc_fee(fee: Fee) -> neutron_std::types::neutron::feerefunder::Fee {
-    neutron_std::types::neutron::feerefunder::Fee {
+fn min_ntrn_ibc_fee(fee: Fee) -> Fee {
+    Fee {
         recv_fee: fee
             .recv_fee
             .iter()

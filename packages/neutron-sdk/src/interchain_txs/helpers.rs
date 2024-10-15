@@ -2,8 +2,10 @@ use crate::bindings::msg::ChannelOrdering;
 use crate::NeutronResult;
 use cosmos_sdk_proto::traits::Message;
 use cosmwasm_std::{Addr, CosmosMsg, StdError, StdResult};
+use neutron_std::shim::Any;
 use neutron_std::types::cosmos::base::v1beta1::Coin;
-use neutron_std::types::neutron::interchaintxs::v1::MsgRegisterInterchainAccount;
+use neutron_std::types::neutron::feerefunder::Fee;
+use neutron_std::types::neutron::interchaintxs::v1::{MsgRegisterInterchainAccount, MsgSubmitTx};
 
 /// Decodes protobuf any item into T structure
 pub fn decode_message_response<T: Message + Default>(item: &Vec<u8>) -> StdResult<T> {
@@ -41,4 +43,32 @@ pub fn register_interchain_account(
         ordering: ordering.unwrap_or(ChannelOrdering::OrderOrdered).into(),
     }
     .into())
+}
+
+/// Basic helper to define a submit tx message:
+/// * **contract** is a contract that is sending the message
+/// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
+/// * **interchain_account_id** is an identifier of your interchain account from which you want to execute msgs;
+/// * **msgs** is a list of protobuf encoded Cosmos-SDK messages you want to execute on remote chain;
+/// * **memo** is a memo you want to attach to your interchain transaction. It behaves like a memo in usual Cosmos transaction;
+/// * **timeout** is a timeout in seconds after which the packet times out.
+/// * **fee** is a fee that is used for different kinds of callbacks. Unused fee types will be returned to msg sender.
+pub fn submit_tx(
+    contract: Addr,
+    connection_id: String,
+    interchain_account_id: String,
+    msgs: Vec<Any>,
+    memo: String,
+    timeout: u64,
+    fee: Fee,
+) -> CosmosMsg {
+    MsgSubmitTx {
+        from_address: contract.to_string(),
+        connection_id,
+        interchain_account_id,
+        msgs,
+        memo,
+        timeout,
+        fee: Some(fee),
+    }.into()
 }
