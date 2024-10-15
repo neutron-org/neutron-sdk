@@ -1,8 +1,8 @@
-use crate::bindings::msg::ChannelOrdering;
 use cosmos_sdk_proto::traits::Message;
 use cosmwasm_std::{Addr, CosmosMsg, StdError, StdResult};
 use neutron_std::shim::Any;
 use neutron_std::types::cosmos::base::v1beta1::Coin;
+use neutron_std::types::ibc::core::channel::v1::Order;
 use neutron_std::types::neutron::feerefunder::Fee;
 use neutron_std::types::neutron::interchaintxs::v1::{MsgRegisterInterchainAccount, MsgSubmitTx};
 
@@ -32,14 +32,14 @@ pub fn register_interchain_account(
     connection_id: String,
     interchain_account_id: String,
     register_fee: Vec<Coin>,
-    ordering: Option<ChannelOrdering>,
+    ordering: Option<Order>,
 ) -> CosmosMsg {
     MsgRegisterInterchainAccount {
         from_address: contract.to_string(),
         connection_id,
         interchain_account_id,
         register_fee,
-        ordering: ordering.unwrap_or(ChannelOrdering::OrderOrdered).into(),
+        ordering: ordering.unwrap_or(Order::Ordered).into(),
     }
     .into()
 }
@@ -69,5 +69,6 @@ pub fn submit_tx(
         memo,
         timeout,
         fee: Some(fee),
-    }.into()
+    }
+    .into()
 }

@@ -12,7 +12,6 @@ use crate::storage::{
     save_reply_payload, save_sudo_payload, AcknowledgementResult, SudoPayload,
     ACKNOWLEDGEMENT_RESULTS, INTERCHAIN_ACCOUNTS, SUDO_PAYLOAD_REPLY_ID,
 };
-use neutron_sdk::bindings::msg::ChannelOrdering;
 use neutron_sdk::interchain_txs::helpers::register_interchain_account;
 use neutron_sdk::{
     interchain_txs::helpers::{decode_message_response, get_port_id},
@@ -25,6 +24,7 @@ use neutron_std::types::cosmos::base::v1beta1::Coin;
 use neutron_std::types::cosmos::staking::v1beta1::{
     MsgDelegate, MsgDelegateResponse, MsgUndelegate, MsgUndelegateResponse,
 };
+use neutron_std::types::ibc::core::channel::v1::Order;
 use neutron_std::types::neutron::feerefunder::{Fee, FeerefunderQuerier};
 use neutron_std::types::neutron::interchaintxs::v1::{
     InterchaintxsQuerier, MsgSubmitTx, MsgSubmitTxResponse,
@@ -199,7 +199,7 @@ fn execute_register_ica(
     connection_id: String,
     interchain_account_id: String,
     register_fee: Vec<Coin>,
-    ordering: Option<ChannelOrdering>,
+    ordering: Option<Order>,
 ) -> NeutronResult<Response> {
     let register = register_interchain_account(
         env.contract.address.clone(),
