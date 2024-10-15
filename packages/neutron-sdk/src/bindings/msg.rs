@@ -41,44 +41,6 @@ impl CustomMsg for NeutronMsg {}
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
-/// Describes response structure for **RegisterInterchainQuery** msg.
-pub struct MsgRegisterInterchainQueryResponse {
-    /// **id** is an identifier of newly registered interchain query.
-    pub id: u64,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-/// MsgRegisterInterchainAccountResponse defines the Msg/RegisterInterchainAccount response type.
-pub struct MsgRegisterInterchainAccountResponse {
-    /// **channel_id** is a ...
-    pub channel_id: String,
-    /// **port_id** is a ...
-    pub port_id: String,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-/// MsgSubmitTxResponse defines the response for Msg/SubmitTx.
-pub struct MsgSubmitTxResponse {
-    /// **sequence_id** is a channel's sequence_id for outgoing ibc packet. Unique per a channel.
-    pub sequence_id: u64,
-    /// **channel** is a src channel on neutron side transaction was submitted from.
-    pub channel: String,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-/// MsgIbcTransferResponse defines the response for Msg/IbcTransfer.
-pub struct MsgIbcTransferResponse {
-    /// **sequence_id** is a channel's sequence_id for outgoing ibc packet. Unique per a channel.
-    pub sequence_id: u64,
-    /// **channel** is a src channel on neutron side transaction was submitted from.
-    pub channel: String,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
 /// AdminProposal defines the struct for various proposals which Neutron's Admin Module may accept.
 pub enum AdminProposal {
     /// Proposal to change params. Note that this works for old params.

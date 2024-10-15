@@ -1,5 +1,3 @@
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
 use std::fmt::Write as _;
 
 // TODO: do we need it?
@@ -19,15 +17,4 @@ pub fn decode_hex(s: &str) -> Option<Vec<u8>> {
         .step_by(2)
         .map(|i| u8::from_str_radix(&s[i..i + 2], 16).ok())
         .collect()
-}
-
-#[derive(Default, Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
-pub struct Height {
-    /// the revision that the client is currently on
-    #[serde(default)]
-    pub revision_number: u64,
-    /// **height** is a height of remote chain
-    #[serde(default)]
-    pub revision_height: u64,
 }
