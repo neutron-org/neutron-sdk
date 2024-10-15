@@ -1,6 +1,5 @@
 use std::fmt::Write as _;
 
-// TODO: do we need it?
 /// Encodes bytes slice into hex string
 pub fn encode_hex(bytes: &[u8]) -> String {
     let mut s = String::with_capacity(bytes.len() * 2);
@@ -10,7 +9,6 @@ pub fn encode_hex(bytes: &[u8]) -> String {
     s
 }
 
-// TODO: do we need it?
 /// Decodes hex string into bytes vec
 pub fn decode_hex(s: &str) -> Option<Vec<u8>> {
     (0..s.len())
