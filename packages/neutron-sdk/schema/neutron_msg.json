@@ -1,0 +1,572 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "NeutronMsg",
+  "description": "A number of Custom messages that can call into the Neutron bindings.",
+  "deprecated": true,
+  "oneOf": [
+    {
+      "description": "SubmitAdminProposal sends a proposal to neutron's Admin module. This type of messages can be only executed by Neutron DAO.",
+      "type": "object",
+      "required": [
+        "submit_admin_proposal"
+      ],
+      "properties": {
+        "submit_admin_proposal": {
+          "type": "object",
+          "required": [
+            "admin_proposal"
+          ],
+          "properties": {
+            "admin_proposal": {
+              "$ref": "#/definitions/AdminProposal"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  ],
+  "definitions": {
+    "AdminProposal": {
+      "description": "AdminProposal defines the struct for various proposals which Neutron's Admin Module may accept.",
+      "oneOf": [
+        {
+          "description": "Proposal to change params. Note that this works for old params. New params has their own `MsgUpdateParams` msgs that can be supplied to `ProposalExecuteMessage`",
+          "type": "object",
+          "required": [
+            "param_change_proposal"
+          ],
+          "properties": {
+            "param_change_proposal": {
+              "$ref": "#/definitions/ParamChangeProposal"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "description": "Deprecated. Proposal to upgrade IBC client",
+          "deprecated": true,
+          "type": "object",
+          "required": [
+            "upgrade_proposal"
+          ],
+          "properties": {
+            "upgrade_proposal": {
+              "$ref": "#/definitions/UpgradeProposal"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "description": "Deprecated. Proposal to update IBC client",
+          "deprecated": true,
+          "type": "object",
+          "required": [
+            "client_update_proposal"
+          ],
+          "properties": {
+            "client_update_proposal": {
+              "$ref": "#/definitions/ClientUpdateProposal"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "description": "Proposal to execute CosmosMsg.",
+          "type": "object",
+          "required": [
+            "proposal_execute_message"
+          ],
+          "properties": {
+            "proposal_execute_message": {
+              "$ref": "#/definitions/ProposalExecuteMessage"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "description": "Deprecated. Proposal to upgrade network",
+          "deprecated": true,
+          "type": "object",
+          "required": [
+            "software_upgrade_proposal"
+          ],
+          "properties": {
+            "software_upgrade_proposal": {
+              "$ref": "#/definitions/SoftwareUpgradeProposal"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "description": "Deprecated. Proposal to cancel existing software upgrade",
+          "deprecated": true,
+          "type": "object",
+          "required": [
+            "cancel_software_upgrade_proposal"
+          ],
+          "properties": {
+            "cancel_software_upgrade_proposal": {
+              "$ref": "#/definitions/CancelSoftwareUpgradeProposal"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "description": "Deprecated. Will fail to execute if you use it. Deprecated. Proposal to pin wasm contract codes",
+          "deprecated": true,
+          "type": "object",
+          "required": [
+            "pin_codes_proposal"
+          ],
+          "properties": {
+            "pin_codes_proposal": {
+              "$ref": "#/definitions/PinCodesProposal"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "description": "Deprecated. Deprecated. Proposal to unpin wasm contract codes.",
+          "deprecated": true,
+          "type": "object",
+          "required": [
+            "unpin_codes_proposal"
+          ],
+          "properties": {
+            "unpin_codes_proposal": {
+              "$ref": "#/definitions/UnpinCodesProposal"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "description": "Deprecated. Proposal to call sudo on contract.",
+          "deprecated": true,
+          "type": "object",
+          "required": [
+            "sudo_contract_proposal"
+          ],
+          "properties": {
+            "sudo_contract_proposal": {
+              "$ref": "#/definitions/SudoContractProposal"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "description": "Deprecated. Proposal to update contract admin.",
+          "deprecated": true,
+          "type": "object",
+          "required": [
+            "update_admin_proposal"
+          ],
+          "properties": {
+            "update_admin_proposal": {
+              "$ref": "#/definitions/UpdateAdminProposal"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "description": "Deprecated. Proposal to clear contract admin.",
+          "deprecated": true,
+          "type": "object",
+          "required": [
+            "clear_admin_proposal"
+          ],
+          "properties": {
+            "clear_admin_proposal": {
+              "$ref": "#/definitions/ClearAdminProposal"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "Any": {
+      "type": "object",
+      "required": [
+        "type_url",
+        "value"
+      ],
+      "properties": {
+        "type_url": {
+          "description": "A URL/resource name that uniquely identifies the type of the serialized protocol buffer message. This string must contain at least one \"/\" character. The last segment of the URL's path must represent the fully qualified name of the type (as in `path/google.protobuf.Duration`). The name should be in a canonical form (e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they expect it to use in the context of Any. However, for URLs which use the scheme `http`, `https`, or no scheme, one can optionally set up a type server that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed. * An HTTP GET on the URL must yield a \\[google.protobuf.Type][\\] value in binary format, or produce an error. * Applications are allowed to cache lookup results based on the URL, or have them precompiled into a binary to avoid any lookup. Therefore, binary compatibility needs to be preserved on changes to types. (Use versioned type names to manage breaking changes.)\n\nNote: this functionality is not currently available in the official protobuf release, and it is not used for type URLs beginning with type.googleapis.com.\n\nSchemes other than `http`, `https` (or the empty scheme) might be used with implementation specific semantics.",
+          "type": "string"
+        },
+        "value": {
+          "description": "Must be a valid serialized protocol buffer of the above specified type.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "uint8",
+            "minimum": 0.0
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "Binary": {
+      "description": "Binary is a wrapper around Vec<u8> to add base64 de/serialization with serde. It also adds some helper methods to help encode inline.\n\nThis is only needed as serde-json-{core,wasm} has a horrible encoding for Vec<u8>. See also <https://github.com/CosmWasm/cosmwasm/blob/main/docs/MESSAGE_TYPES.md>.",
+      "type": "string"
+    },
+    "CancelSoftwareUpgradeProposal": {
+      "description": "Deprecated. CancelSoftwareUpgradeProposal defines the struct for cancel software upgrade proposal.",
+      "deprecated": true,
+      "type": "object",
+      "required": [
+        "description",
+        "title"
+      ],
+      "properties": {
+        "description": {
+          "description": "*description** is a text description of proposal. Non unique.",
+          "type": "string"
+        },
+        "title": {
+          "description": "*title** is a text title of proposal. Non unique.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ClearAdminProposal": {
+      "description": "Deprecated. SudoContractProposal defines the struct for clear admin proposal.",
+      "deprecated": true,
+      "type": "object",
+      "required": [
+        "contract",
+        "description",
+        "title"
+      ],
+      "properties": {
+        "contract": {
+          "description": "*contract** is an address of contract admin will be removed.",
+          "type": "string"
+        },
+        "description": {
+          "description": "*description** is a text description of proposal.",
+          "type": "string"
+        },
+        "title": {
+          "description": "*title** is a text title of proposal.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ClientUpdateProposal": {
+      "description": "ClientUpdateProposal defines the struct for client update proposal.",
+      "deprecated": true,
+      "type": "object",
+      "required": [
+        "description",
+        "subject_client_id",
+        "substitute_client_id",
+        "title"
+      ],
+      "properties": {
+        "description": {
+          "description": "*description** is a text description of proposal. Non unique.",
+          "type": "string"
+        },
+        "subject_client_id": {
+          "description": "*subject_client_id** is a subject client id.",
+          "type": "string"
+        },
+        "substitute_client_id": {
+          "description": "*substitute_client_id** is a substitute client id.",
+          "type": "string"
+        },
+        "title": {
+          "description": "*title** is a text title of proposal.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ParamChange": {
+      "description": "ParamChange defines the struct for parameter change request.",
+      "type": "object",
+      "required": [
+        "key",
+        "subspace",
+        "value"
+      ],
+      "properties": {
+        "key": {
+          "description": "*key** is a name of parameter. Unique for subspace.",
+          "type": "string"
+        },
+        "subspace": {
+          "description": "*subspace** is a key of module to which the parameter to change belongs. Unique for each module.",
+          "type": "string"
+        },
+        "value": {
+          "description": "*value** is a new value for given parameter. Non unique.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ParamChangeProposal": {
+      "description": "ParamChangeProposal defines the struct for single parameter change proposal.",
+      "type": "object",
+      "required": [
+        "description",
+        "param_changes",
+        "title"
+      ],
+      "properties": {
+        "description": {
+          "description": "*description** is a text description of proposal. Non unique.",
+          "type": "string"
+        },
+        "param_changes": {
+          "description": "*param_changes** is a vector of params to be changed. Non unique.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ParamChange"
+          }
+        },
+        "title": {
+          "description": "*title** is a text title of proposal. Non unique.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "PinCodesProposal": {
+      "description": "Deprecated. PinCodesProposal defines the struct for pin contract codes proposal.",
+      "deprecated": true,
+      "type": "object",
+      "required": [
+        "code_ids",
+        "description",
+        "title"
+      ],
+      "properties": {
+        "code_ids": {
+          "description": "*code_ids** is an array of codes to be pined.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "uint64",
+            "minimum": 0.0
+          }
+        },
+        "description": {
+          "description": "*description** is a text description of proposal.",
+          "type": "string"
+        },
+        "title": {
+          "description": "*title** is a text title of proposal.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "Plan": {
+      "description": "Plan defines the struct for planned upgrade.",
+      "type": "object",
+      "required": [
+        "height",
+        "info",
+        "name"
+      ],
+      "properties": {
+        "height": {
+          "description": "*height** is a height at which the upgrade must be performed",
+          "type": "integer",
+          "format": "int64"
+        },
+        "info": {
+          "description": "*info** is any application specific upgrade info to be included on-chain",
+          "type": "string"
+        },
+        "name": {
+          "description": "*name** is a name for the upgrade",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ProposalExecuteMessage": {
+      "description": "ProposalExecuteMessage defines the struct for sdk47 compatible admin proposal.",
+      "type": "object",
+      "required": [
+        "message"
+      ],
+      "properties": {
+        "message": {
+          "description": "*message** is a json representing an sdk message passed to admin module to execute.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "SoftwareUpgradeProposal": {
+      "description": "Deprecated. SoftwareUpgradeProposal defines the struct for software upgrade proposal.",
+      "deprecated": true,
+      "type": "object",
+      "required": [
+        "description",
+        "plan",
+        "title"
+      ],
+      "properties": {
+        "description": {
+          "description": "*description** is a text description of proposal. Non unique.",
+          "type": "string"
+        },
+        "plan": {
+          "description": "*plan** is a plan of upgrade.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Plan"
+            }
+          ]
+        },
+        "title": {
+          "description": "*title** is a text title of proposal. Non unique.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "SudoContractProposal": {
+      "description": "Deprecated. SudoContractProposal defines the struct for sudo execution proposal.",
+      "deprecated": true,
+      "type": "object",
+      "required": [
+        "contract",
+        "description",
+        "msg",
+        "title"
+      ],
+      "properties": {
+        "contract": {
+          "description": "*contract** is an address of contract to be executed.",
+          "type": "string"
+        },
+        "description": {
+          "description": "*description** is a text description of proposal.",
+          "type": "string"
+        },
+        "msg": {
+          "description": "**msg*** is a sudo message.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Binary"
+            }
+          ]
+        },
+        "title": {
+          "description": "*title** is a text title of proposal.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "UnpinCodesProposal": {
+      "description": "Deprecated. UnpinCodesProposal defines the struct for unpin contract codes proposal.",
+      "deprecated": true,
+      "type": "object",
+      "required": [
+        "code_ids",
+        "description",
+        "title"
+      ],
+      "properties": {
+        "code_ids": {
+          "description": "*code_ids** is an array of codes to be unpined.",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "uint64",
+            "minimum": 0.0
+          }
+        },
+        "description": {
+          "description": "*description** is a text description of proposal.",
+          "type": "string"
+        },
+        "title": {
+          "description": "*title** is a text title of proposal.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "UpdateAdminProposal": {
+      "description": "Deprecated. UpdateAdminProposal defines the struct for update admin proposal.",
+      "deprecated": true,
+      "type": "object",
+      "required": [
+        "contract",
+        "description",
+        "new_admin",
+        "title"
+      ],
+      "properties": {
+        "contract": {
+          "description": "*contract** is an address of contract to update admin.",
+          "type": "string"
+        },
+        "description": {
+          "description": "*description** is a text description of proposal.",
+          "type": "string"
+        },
+        "new_admin": {
+          "description": "**new_admin*** is an address of new admin",
+          "type": "string"
+        },
+        "title": {
+          "description": "*title** is a text title of proposal.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "UpgradeProposal": {
+      "description": "UpgradeProposal defines the struct for IBC upgrade proposal.",
+      "deprecated": true,
+      "type": "object",
+      "required": [
+        "description",
+        "plan",
+        "title",
+        "upgraded_client_state"
+      ],
+      "properties": {
+        "description": {
+          "description": "*description** is a text description of proposal.",
+          "type": "string"
+        },
+        "plan": {
+          "description": "*plan** is a plan of upgrade.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Plan"
+            }
+          ]
+        },
+        "title": {
+          "description": "*title** is a text title of proposal.",
+          "type": "string"
+        },
+        "upgraded_client_state": {
+          "description": "*upgraded_client_state** is an upgraded client state.",
+          "allOf": [
+            {
+              "$ref": "#/definitions/Any"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
