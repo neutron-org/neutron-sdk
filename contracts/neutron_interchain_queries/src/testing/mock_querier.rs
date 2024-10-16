@@ -1,7 +1,7 @@
 use cosmwasm_std::testing::{MockApi, MockQuerier, MockStorage};
 use cosmwasm_std::{
-    from_json, Binary, Coin, ContractResult, CustomQuery, FullDelegation, GrpcQuery, OwnedDeps,
-    Querier, QuerierResult, QueryRequest, SystemError, SystemResult, Uint128, Validator,
+    from_json, Binary, Coin, ContractResult, CustomQuery, GrpcQuery, OwnedDeps,
+    Querier, QuerierResult, QueryRequest, SystemError, SystemResult, Uint128,
 };
 use neutron_std::types::neutron::interchainqueries::{
     QueryRegisteredQueryRequest, QueryRegisteredQueryResultRequest,
