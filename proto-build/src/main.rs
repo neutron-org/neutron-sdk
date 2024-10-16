@@ -18,6 +18,7 @@ const IBC_GO_REPO: &str = "https://github.com/cosmos/ibc-go.git";
 const ICS23_REPO: &str = "https://github.com/cosmos/ics23.git";
 const FEEMARKET_REPO: &str = "https://github.com/skip-mev/feemarket.git";
 const SLINKY_REPO: &str = "https://github.com/skip-mev/slinky.git";
+const INTERCHAIN_SECURITY_REPO: &str = "https://github.com/cosmos/interchain-security.git";
 
 /// The Cosmos SDK commit or tag to be cloned and used to build the proto files
 const COSMOS_SDK_REV: &str = "v0.50.8-neutron";
@@ -41,6 +42,8 @@ const FEEMARKET_REV: &str = "v1.0.3";
 
 const SLINKY_REV: &str = "v1.0.3";
 
+const INTERCHAIN_SECURITY_REV: &str = "v5.1.1";
+
 // All paths must end with a / and either be absolute or include a ./ to reference the current
 // working directory.
 
@@ -60,6 +63,8 @@ const ICS23_DIR: &str = "../dependencies/ics23/";
 const FEEMARKET_DIR: &str = "../dependencies/feemarket/";
 /// Directory where the slinky repo is located
 const SLINKY_DIR: &str = "../dependencies/slinky/";
+/// Directory where the interchain-security repo is located
+const INTERCHAIN_SECURITY_DIR: &str = "../dependencies/interchain-security/";
 
 /// A temporary directory for repos storing
 const TMP_REPOS_DIR: &str = "./dependencies/";
@@ -82,6 +87,11 @@ pub fn generate() {
     git::clone_repo(ICS23_REPO, ICS23_DIR, ICS23_REV);
     git::clone_repo(FEEMARKET_REPO, FEEMARKET_DIR, FEEMARKET_REV);
     git::clone_repo(SLINKY_REPO, SLINKY_DIR, SLINKY_REV);
+    git::clone_repo(
+        INTERCHAIN_SECURITY_REPO,
+        INTERCHAIN_SECURITY_DIR,
+        INTERCHAIN_SECURITY_REV,
+    );
 
     let tmp_build_dir: PathBuf = TMP_BUILD_DIR.parse().unwrap();
     let out_dir: PathBuf = OUT_DIR.parse().unwrap();
@@ -142,6 +152,13 @@ pub fn generate() {
         exclude_mods: vec![],
     };
 
+    let interchain_security_project = CosmosProject {
+        name: "interchain-security".to_string(),
+        version: INTERCHAIN_SECURITY_REV.to_string(),
+        project_dir: INTERCHAIN_SECURITY_DIR.to_string(),
+        exclude_mods: vec![],
+    };
+
     let neutron_code_generator = CodeGenerator::new(
         out_dir,
         tmp_build_dir,
@@ -154,6 +171,7 @@ pub fn generate() {
             ics23_project,
             feemarket_project,
             slinky_project,
+            interchain_security_project,
         ],
     );
 
