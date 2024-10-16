@@ -28,6 +28,7 @@ serde-json-wasm = { workspace = true }
 prost-types = { workspace = true }
 cosmwasm-schema = { workspace = true }
 neutron-std = { workspace = true }
+prost = { workspace = true }
 
 [dev-dependencies]
 base64 = { workspace = true }

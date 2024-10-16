@@ -1,4 +1,5 @@
 use crate::errors::error::{NeutronError, NeutronResult};
+use crate::interchain_queries::hex::decode_hex;
 use crate::interchain_queries::types::{
     AddressBytes, QueryPayload, QueryType, TransactionFilterItem, MAX_ADDR_LEN,
 };
@@ -8,7 +9,6 @@ use neutron_std::types::neutron::interchainqueries::{
     MsgUpdateInterchainQueryRequest,
 };
 use serde_json_wasm::to_string;
-use crate::interchain_queries::hex::decode_hex;
 
 /// Decodes a bech32 encoded string and converts to base64 encoded bytes
 /// <https://github.com/cosmos/cosmos-sdk/blob/ad9e5620fb3445c716e9de45cfcdb56e8f1745bf/types/bech32/bech32.go#L20>

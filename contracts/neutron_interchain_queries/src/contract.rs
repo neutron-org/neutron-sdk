@@ -516,8 +516,8 @@ pub fn sudo_tx_query_result(
             let mut stored_transfers: u64 = TRANSFERS.load(deps.storage).unwrap_or_default();
             stored_transfers += deposits.len() as u64;
             TRANSFERS.save(deps.storage, &stored_transfers)?;
-
             check_deposits_size(&deposits)?;
+
             let mut stored_deposits: Vec<Transfer> = RECIPIENT_TXS
                 .load(deps.storage, recipient)
                 .unwrap_or_default();
