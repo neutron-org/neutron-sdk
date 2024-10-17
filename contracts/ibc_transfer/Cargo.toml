@@ -26,6 +26,7 @@ serde-json-wasm = { workspace = true }
 cw-storage-plus = { workspace = true, features = ["iterator"]}
 cosmwasm-schema = { workspace = true }
 neutron-sdk = { path = "../../packages/neutron-sdk", default-features = false }
+neutron-std = { workspace = true }
 
 [dev-dependencies]
 cosmwasm-schema = { workspace = true }

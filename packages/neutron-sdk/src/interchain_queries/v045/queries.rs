@@ -1,5 +1,4 @@
 use crate::{
-    bindings::query::NeutronQuery,
     interchain_queries::{
         queries::{check_query_type, get_registered_query, query_kv_result},
         types::QueryType,
@@ -80,20 +79,18 @@ pub struct DelegatorUnbondingDelegationsResponse {
 /// Returns balance of account on remote chain for particular denom
 /// * ***registered_query_id*** is an identifier of the corresponding registered interchain query
 pub fn query_balance(
-    deps: Deps<NeutronQuery>,
+    deps: Deps,
     _env: Env,
     registered_query_id: u64,
 ) -> NeutronResult<BalanceResponse> {
     let registered_query = get_registered_query(deps, registered_query_id)?;
 
-    check_query_type(registered_query.registered_query.query_type, QueryType::KV)?;
+    check_query_type(registered_query.query_type, QueryType::KV)?;
 
     let balances: Balances = query_kv_result(deps, registered_query_id)?;
 
     Ok(BalanceResponse {
-        last_submitted_local_height: registered_query
-            .registered_query
-            .last_submitted_result_local_height,
+        last_submitted_local_height: registered_query.last_submitted_result_local_height,
         balances,
     })
 }
@@ -101,20 +98,18 @@ pub fn query_balance(
 /// Returns bank total supply on remote chain for particular denom
 /// * ***registered_query_id*** is an identifier of the corresponding registered interchain query
 pub fn query_bank_total(
-    deps: Deps<NeutronQuery>,
+    deps: Deps,
     _env: Env,
     registered_query_id: u64,
 ) -> NeutronResult<TotalSupplyResponse> {
     let registered_query = get_registered_query(deps, registered_query_id)?;
 
-    check_query_type(registered_query.registered_query.query_type, QueryType::KV)?;
+    check_query_type(registered_query.query_type, QueryType::KV)?;
 
     let total_supply: TotalSupply = query_kv_result(deps, registered_query_id)?;
 
     Ok(TotalSupplyResponse {
-        last_submitted_local_height: registered_query
-            .registered_query
-            .last_submitted_result_local_height,
+        last_submitted_local_height: registered_query.last_submitted_result_local_height,
         supply: total_supply,
     })
 }
@@ -122,20 +117,18 @@ pub fn query_bank_total(
 /// Returns distribution fee pool on remote chain
 /// * ***registered_query_id*** is an identifier of the corresponding registered interchain query
 pub fn query_distribution_fee_pool(
-    deps: Deps<NeutronQuery>,
+    deps: Deps,
     _env: Env,
     registered_query_id: u64,
 ) -> NeutronResult<FeePoolResponse> {
     let registered_query = get_registered_query(deps, registered_query_id)?;
 
-    check_query_type(registered_query.registered_query.query_type, QueryType::KV)?;
+    check_query_type(registered_query.query_type, QueryType::KV)?;
 
     let fee_pool: FeePool = query_kv_result(deps, registered_query_id)?;
 
     Ok(FeePoolResponse {
-        last_submitted_local_height: registered_query
-            .registered_query
-            .last_submitted_result_local_height,
+        last_submitted_local_height: registered_query.last_submitted_result_local_height,
         pool: fee_pool,
     })
 }
@@ -143,20 +136,18 @@ pub fn query_distribution_fee_pool(
 /// Returns staking validator from remote chain
 /// * ***registered_query_id*** is an identifier of the corresponding registered interchain query
 pub fn query_staking_validators(
-    deps: Deps<NeutronQuery>,
+    deps: Deps,
     _env: Env,
     registered_query_id: u64,
 ) -> NeutronResult<ValidatorResponse> {
     let registered_query = get_registered_query(deps, registered_query_id)?;
 
-    check_query_type(registered_query.registered_query.query_type, QueryType::KV)?;
+    check_query_type(registered_query.query_type, QueryType::KV)?;
 
     let validator: StakingValidator = query_kv_result(deps, registered_query_id)?;
 
     Ok(ValidatorResponse {
-        last_submitted_local_height: registered_query
-            .registered_query
-            .last_submitted_result_local_height,
+        last_submitted_local_height: registered_query.last_submitted_result_local_height,
         validator,
     })
 }
@@ -164,20 +155,18 @@ pub fn query_staking_validators(
 /// Returns validators signing infos from remote chain
 /// * ***registered_query_id*** is an identifier of the corresponding registered interchain query
 pub fn query_validators_signing_infos(
-    deps: Deps<NeutronQuery>,
+    deps: Deps,
     _env: Env,
     registered_query_id: u64,
 ) -> NeutronResult<ValidatorSigningInfoResponse> {
     let registered_query = get_registered_query(deps, registered_query_id)?;
 
-    check_query_type(registered_query.registered_query.query_type, QueryType::KV)?;
+    check_query_type(registered_query.query_type, QueryType::KV)?;
 
     let signing_infos: SigningInfo = query_kv_result(deps, registered_query_id)?;
 
     Ok(ValidatorSigningInfoResponse {
-        last_submitted_local_height: registered_query
-            .registered_query
-            .last_submitted_result_local_height,
+        last_submitted_local_height: registered_query.last_submitted_result_local_height,
         signing_infos,
     })
 }
@@ -185,20 +174,18 @@ pub fn query_validators_signing_infos(
 /// Returns list of government proposals on the remote chain
 /// * ***registered_query_id*** is an identifier of the corresponding registered interchain query
 pub fn query_government_proposals(
-    deps: Deps<NeutronQuery>,
+    deps: Deps,
     _env: Env,
     registered_query_id: u64,
 ) -> NeutronResult<ProposalResponse> {
     let registered_query = get_registered_query(deps, registered_query_id)?;
 
-    check_query_type(registered_query.registered_query.query_type, QueryType::KV)?;
+    check_query_type(registered_query.query_type, QueryType::KV)?;
 
     let proposals: GovernmentProposal = query_kv_result(deps, registered_query_id)?;
 
     Ok(ProposalResponse {
-        last_submitted_local_height: registered_query
-            .registered_query
-            .last_submitted_result_local_height,
+        last_submitted_local_height: registered_query.last_submitted_result_local_height,
         proposals,
     })
 }
@@ -206,20 +193,18 @@ pub fn query_government_proposals(
 /// Returns list of government proposal votes on the remote chain
 /// * ***registered_query_id*** is an identifier of the corresponding registered interchain query
 pub fn query_government_proposal_votes(
-    deps: Deps<NeutronQuery>,
+    deps: Deps,
     _env: Env,
     registered_query_id: u64,
 ) -> NeutronResult<ProposalVotesResponse> {
     let registered_query = get_registered_query(deps, registered_query_id)?;
 
-    check_query_type(registered_query.registered_query.query_type, QueryType::KV)?;
+    check_query_type(registered_query.query_type, QueryType::KV)?;
 
     let votes: GovernmentProposalVotes = query_kv_result(deps, registered_query_id)?;
 
     Ok(ProposalVotesResponse {
-        last_submitted_local_height: registered_query
-            .registered_query
-            .last_submitted_result_local_height,
+        last_submitted_local_height: registered_query.last_submitted_result_local_height,
         votes,
     })
 }
@@ -227,41 +212,37 @@ pub fn query_government_proposal_votes(
 /// Returns delegations of particular delegator on remote chain
 /// * ***registered_query_id*** is an identifier of the corresponding registered interchain query
 pub fn query_delegations(
-    deps: Deps<NeutronQuery>,
+    deps: Deps,
     _env: Env,
     registered_query_id: u64,
 ) -> NeutronResult<DelegatorDelegationsResponse> {
     let registered_query = get_registered_query(deps, registered_query_id)?;
 
-    check_query_type(registered_query.registered_query.query_type, QueryType::KV)?;
+    check_query_type(registered_query.query_type, QueryType::KV)?;
 
     let delegations: Delegations = query_kv_result(deps, registered_query_id)?;
 
     Ok(DelegatorDelegationsResponse {
         delegations: delegations.delegations,
-        last_submitted_local_height: registered_query
-            .registered_query
-            .last_submitted_result_local_height,
+        last_submitted_local_height: registered_query.last_submitted_result_local_height,
     })
 }
 
 /// Returns list of unbonding delegations of particular delegator on remote chain
 /// * ***registered_query_id*** is an identifier of the corresponding registered interchain query
 pub fn query_unbonding_delegations(
-    deps: Deps<NeutronQuery>,
+    deps: Deps,
     _env: Env,
     registered_query_id: u64,
 ) -> NeutronResult<DelegatorUnbondingDelegationsResponse> {
     let registered_query = get_registered_query(deps, registered_query_id)?;
 
-    check_query_type(registered_query.registered_query.query_type, QueryType::KV)?;
+    check_query_type(registered_query.query_type, QueryType::KV)?;
 
     let unbonding_delegations: UnbondingDelegations = query_kv_result(deps, registered_query_id)?;
 
     Ok(DelegatorUnbondingDelegationsResponse {
         unbonding_delegations,
-        last_submitted_local_height: registered_query
-            .registered_query
-            .last_submitted_result_local_height,
+        last_submitted_local_height: registered_query.last_submitted_result_local_height,
     })
 }
