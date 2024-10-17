@@ -7,7 +7,6 @@ use cosmwasm_std::{
 };
 use cw2::set_contract_version;
 use neutron_sdk::interchain_queries::v047::register_queries::new_register_validators_signing_infos_query_msg;
-use neutron_std::types::ibc::core::client::v1::Height;
 use neutron_std::types::neutron::interchainqueries::{KvKey, RegisteredQuery};
 
 use crate::msg::{
@@ -40,6 +39,7 @@ use neutron_sdk::interchain_queries::{
 use neutron_sdk::sudo::msg::SudoMsg;
 use neutron_sdk::{NeutronError, NeutronResult};
 
+use neutron_sdk::interchain_queries::sudo::Height;
 use neutron_sdk::interchain_queries::types::{
     QueryType, TransactionFilterItem, TransactionFilterOp, TransactionFilterValue,
 };

@@ -1,6 +1,7 @@
 pub mod helpers;
 pub mod hex;
 pub mod queries;
+pub mod sudo;
 pub mod types;
 pub mod v045;
 pub mod v047;

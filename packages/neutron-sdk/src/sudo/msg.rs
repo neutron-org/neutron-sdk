@@ -1,5 +1,5 @@
+use crate::interchain_queries::sudo::Height;
 use cosmwasm_std::Binary;
-use neutron_std::types::ibc::core::client::v1::Height;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
