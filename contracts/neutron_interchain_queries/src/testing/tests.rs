@@ -20,6 +20,7 @@ use cosmwasm_std::{
     from_json, Addr, Binary, Coin, Decimal, Env, MessageInfo, OwnedDeps, StdError, Uint128,
 };
 use neutron_sdk::interchain_queries::helpers::{decode_and_convert, kv_key_from_string};
+use neutron_sdk::interchain_queries::sudo::Height as SudoHeight;
 use neutron_sdk::interchain_queries::types::{
     QueryType, TransactionFilterItem, TransactionFilterOp, TransactionFilterValue,
 };
@@ -27,7 +28,6 @@ use neutron_sdk::interchain_queries::v047::helpers::{
     create_account_denom_balance_key, create_fee_pool_key, create_gov_proposal_key,
     create_total_denom_key, create_validator_key,
 };
-use neutron_sdk::interchain_queries::sudo::Height as SudoHeight;
 use neutron_sdk::interchain_queries::v047::types::{
     Balances, FeePool, GovernmentProposal, Proposal, SigningInfo, StakingValidator, StdDelegation,
     TallyResult, TotalSupply, Validator, ValidatorSigningInfo, RECIPIENT_FIELD, STAKING_PARAMS_KEY,
