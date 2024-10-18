@@ -1,4 +1,5 @@
 pub mod helpers;
+pub mod hex;
 pub mod queries;
 pub mod types;
 pub mod v045;

@@ -1,4 +1,3 @@
-use crate::bindings::types::Height;
 use cosmwasm_std::Binary;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -14,6 +13,7 @@ pub struct RequestPacket {
     pub timeout_height: Option<RequestPacketTimeoutHeight>,
     pub timeout_timestamp: Option<u64>,
 }
+
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct RequestPacketTimeoutHeight {
     pub revision_number: Option<u64>,
@@ -68,4 +68,16 @@ pub enum TransferSudoMsg {
     Timeout {
         request: RequestPacket,
     },
+}
+
+/// Height is used for sudo call for `TxQueryResult` enum variant type
+#[derive(Default, Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct Height {
+    /// the revision that the client is currently on
+    #[serde(default)]
+    pub revision_number: u64,
+    /// **height** is a height of remote chain
+    #[serde(default)]
+    pub revision_height: u64,
 }
