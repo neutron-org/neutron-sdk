@@ -36,10 +36,9 @@ use neutron_sdk::interchain_queries::{
         types::{COSMOS_SDK_TRANSFER_MSG_URL, RECIPIENT_FIELD},
     },
 };
-use neutron_sdk::sudo::msg::SudoMsg;
+use neutron_sdk::sudo::msg::{Height, SudoMsg};
 use neutron_sdk::{NeutronError, NeutronResult};
 
-use neutron_sdk::interchain_queries::sudo::Height;
 use neutron_sdk::interchain_queries::types::{
     QueryType, TransactionFilterItem, TransactionFilterOp, TransactionFilterValue,
 };

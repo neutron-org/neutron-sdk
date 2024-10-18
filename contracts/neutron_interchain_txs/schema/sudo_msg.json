@@ -167,21 +167,19 @@
       "type": "string"
     },
     "Height": {
-      "description": "Height is a monotonically increasing data type that can be compared against another Height for the purposes of updating and freezing clients\n\nNormally the RevisionHeight is incremented at each height while keeping RevisionNumber the same. However some consensus algorithms may choose to reset the height in certain conditions e.g. hard forks, state-machine breaking changes In these cases, the RevisionNumber is incremented so that height continues to be monitonically increasing even as the RevisionHeight gets reset",
+      "description": "Height is used for sudo call for `TxQueryResult` enum variant type",
       "type": "object",
-      "required": [
-        "revision_height",
-        "revision_number"
-      ],
       "properties": {
         "revision_height": {
-          "description": "the height within the given revision",
+          "description": "*height** is a height of remote chain",
+          "default": 0,
           "type": "integer",
           "format": "uint64",
           "minimum": 0.0
         },
         "revision_number": {
           "description": "the revision that the client is currently on",
+          "default": 0,
           "type": "integer",
           "format": "uint64",
           "minimum": 0.0
