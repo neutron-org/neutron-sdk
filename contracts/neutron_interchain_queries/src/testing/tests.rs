@@ -27,6 +27,7 @@ use neutron_sdk::interchain_queries::v047::helpers::{
     create_account_denom_balance_key, create_fee_pool_key, create_gov_proposal_key,
     create_total_denom_key, create_validator_key,
 };
+use neutron_sdk::interchain_queries::sudo::Height as SudoHeight;
 use neutron_sdk::interchain_queries::v047::types::{
     Balances, FeePool, GovernmentProposal, Proposal, SigningInfo, StakingValidator, StdDelegation,
     TallyResult, TotalSupply, Validator, ValidatorSigningInfo, RECIPIENT_FIELD, STAKING_PARAMS_KEY,
@@ -948,7 +949,7 @@ fn test_sudo_tx_query_result_callback() {
         deps.as_mut(),
         env.clone(),
         query_id,
-        Height {
+        SudoHeight {
             revision_number: 0,
             revision_height: height,
         },
@@ -975,7 +976,7 @@ fn test_sudo_tx_query_result_callback() {
         deps.as_mut(),
         env.clone(),
         query_id,
-        Height {
+        SudoHeight {
             revision_number: 0,
             revision_height: height,
         },
@@ -1007,7 +1008,7 @@ fn test_sudo_tx_query_result_callback() {
         deps.as_mut(),
         env,
         query_id,
-        Height {
+        SudoHeight {
             revision_number: 0,
             revision_height: height,
         },
@@ -1042,7 +1043,7 @@ fn test_sudo_tx_query_result_min_height_callback() {
     let env = mock_env();
     let watched_addr: String = "neutron1fj6yqrkpw6fmp7f7jhj57dujfpwal4m25dafzx".to_string();
     let query_id: u64 = 1u64;
-    let height = Height {
+    let height = SudoHeight {
         revision_number: 0u64,
         revision_height: 1u64,
     };
