@@ -27,6 +27,11 @@ pub fn get_port_id<R: AsRef<str>>(contract_address: R, interchain_account_id: R)
         + interchain_account_id.as_ref()
 }
 
+/// Basic helper to define a register interchain account message:
+/// * **contract** is a contract that registers ICA. Must be the contract address that sends this message.
+/// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
+/// * **interchain_account_id** is an identifier of your new interchain account. Can be any string.
+/// * **ordering** is an ordering of ICA channel. Set to ORDERED if not specified
 pub fn register_interchain_account(
     contract: Addr,
     connection_id: String,

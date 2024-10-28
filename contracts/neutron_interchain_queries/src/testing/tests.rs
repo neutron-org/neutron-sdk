@@ -19,7 +19,9 @@ use cosmwasm_std::testing::{message_info, mock_env, MockApi, MockStorage};
 use cosmwasm_std::{
     from_json, Addr, Binary, Coin, Decimal, Env, MessageInfo, OwnedDeps, StdError, Uint128,
 };
-use neutron_sdk::interchain_queries::helpers::{decode_and_convert, kv_key_from_string};
+use neutron_sdk::interchain_queries::helpers::{
+    decode_and_convert, decode_hex, kv_key_from_string,
+};
 use neutron_sdk::interchain_queries::types::{
     QueryType, TransactionFilterItem, TransactionFilterOp, TransactionFilterValue,
 };
@@ -39,7 +41,6 @@ use neutron_std::types::neutron::interchainqueries::{
     RegisteredQuery, StorageValue,
 };
 
-use neutron_sdk::interchain_queries::hex::decode_hex;
 use neutron_sdk::interchain_queries::v047::queries::{
     BalanceResponse, DelegatorDelegationsResponse, FeePoolResponse, ProposalResponse,
     TotalSupplyResponse, ValidatorResponse, ValidatorSigningInfoResponse,

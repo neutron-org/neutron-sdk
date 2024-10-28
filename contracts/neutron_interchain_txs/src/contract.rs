@@ -6,11 +6,11 @@ use crate::storage::{
 };
 use cosmos_sdk_proto::traits::Message;
 use cosmwasm_std::{
-    to_json_binary, Addr, Binary, CosmosMsg, CustomQuery, Deps, DepsMut, Env, MessageInfo, Reply,
+    to_json_binary, Binary, CosmosMsg, CustomQuery, Deps, DepsMut, Env, MessageInfo, Reply,
     Response, StdError, StdResult, SubMsg,
 };
 use cw2::set_contract_version;
-use neutron_sdk::interchain_txs::helpers::register_interchain_account;
+use neutron_sdk::interchain_txs::helpers::{register_interchain_account, submit_tx};
 use neutron_sdk::{
     interchain_txs::helpers::{decode_message_response, get_port_id},
     interchain_txs::v047::helpers::decode_acknowledgement_response,
@@ -25,9 +25,7 @@ use neutron_std::types::cosmos::staking::v1beta1::{
 };
 use neutron_std::types::ibc::core::channel::v1::Order;
 use neutron_std::types::neutron::feerefunder::{Fee, FeerefunderQuerier};
-use neutron_std::types::neutron::interchaintxs::v1::{
-    InterchaintxsQuerier, MsgSubmitTx, MsgSubmitTxResponse,
-};
+use neutron_std::types::neutron::interchaintxs::v1::{InterchaintxsQuerier, MsgSubmitTxResponse};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -270,27 +268,6 @@ fn execute_delegate(
     )?;
 
     Ok(Response::default().add_submessages(vec![submsg]))
-}
-
-fn submit_tx(
-    contract: Addr,
-    connection_id: String,
-    interchain_account_id: String,
-    msgs: Vec<neutron_std::shim::Any>,
-    memo: String,
-    timeout: u64,
-    fee: Fee,
-) -> CosmosMsg {
-    MsgSubmitTx {
-        from_address: contract.to_string(),
-        interchain_account_id,
-        connection_id,
-        msgs,
-        memo,
-        timeout,
-        fee: Some(fee),
-    }
-    .into()
 }
 
 fn execute_undelegate(
