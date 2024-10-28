@@ -3,7 +3,6 @@
 // #![forbid(unsafe_code)]
 #![warn(trivial_casts, trivial_numeric_casts, unused_import_braces)]
 
-
 pub mod bindings;
 mod errors;
 pub mod interchain_queries;

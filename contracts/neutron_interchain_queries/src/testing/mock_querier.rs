@@ -60,21 +60,19 @@ impl WasmMockQuerier {
     pub fn handle_query(&self, request: &QueryRequest) -> QuerierResult {
         match &request {
             QueryRequest::Grpc(GrpcQuery { path, data }) => {
-                let quoted_path = path.trim_matches('"').to_string();
-                if &quoted_path == "/neutron.interchainqueries.Query/QueryResult" {
+                if path == "/neutron.interchainqueries.Query/QueryResult" {
                     let request: QueryRegisteredQueryResultRequest =
                         ::prost::Message::decode(&data[..]).unwrap();
                     SystemResult::Ok(ContractResult::Ok(
                         (*self.query_responses.get(&request.query_id).unwrap()).clone(),
                     ))
-                } else if &quoted_path == "/neutron.interchainqueries.Query/RegisteredQuery" {
+                } else if path == "/neutron.interchainqueries.Query/RegisteredQuery" {
                     let request: QueryRegisteredQueryRequest =
                         ::prost::Message::decode(&data[..]).unwrap();
                     SystemResult::Ok(ContractResult::Ok(
                         (*self.registered_queries.get(&request.query_id).unwrap()).clone(),
                     ))
                 } else {
-                    println!("PATH: {}", quoted_path);
                     self.base.handle_query(request)
                 }
             }
