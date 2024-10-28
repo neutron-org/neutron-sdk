@@ -10,7 +10,9 @@ use cosmwasm_std::{
     Response, StdError, StdResult, SubMsg,
 };
 use cw2::set_contract_version;
-use neutron_sdk::interchain_txs::helpers::{register_interchain_account, submit_tx};
+use neutron_sdk::interchain_txs::helpers::{
+    query_denom_min_ibc_fee, register_interchain_account, submit_tx,
+};
 use neutron_sdk::{
     interchain_txs::helpers::{decode_message_response, get_port_id},
     interchain_txs::v047::helpers::decode_acknowledgement_response,
@@ -18,13 +20,11 @@ use neutron_sdk::{
     NeutronError, NeutronResult,
 };
 use neutron_std::shim::Timestamp;
-use neutron_std::types::cosmos::base::v1beta1::Coin as SDKCoin;
 use neutron_std::types::cosmos::base::v1beta1::Coin;
 use neutron_std::types::cosmos::staking::v1beta1::{
     MsgDelegate, MsgDelegateResponse, MsgUndelegate, MsgUndelegateResponse,
 };
 use neutron_std::types::ibc::core::channel::v1::Order;
-use neutron_std::types::neutron::feerefunder::{Fee, FeerefunderQuerier};
 use neutron_std::types::neutron::interchaintxs::v1::{InterchaintxsQuerier, MsgSubmitTxResponse};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -222,7 +222,7 @@ fn execute_delegate(
 ) -> NeutronResult<Response> {
     // contract must pay for relaying of acknowledgements
     // See more info here: https://docs.neutron.org/neutron/feerefunder/overview
-    let fee = min_ntrn_ibc_fee(query_min_fee(deps.as_ref())?);
+    let fee = query_denom_min_ibc_fee(deps.as_ref(), FEE_DENOM)?;
     let (delegator, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
     let delegate_msg = MsgDelegate {
         delegator_address: delegator,
@@ -281,7 +281,7 @@ fn execute_undelegate(
 ) -> NeutronResult<Response> {
     // contract must pay for relaying of acknowledgements
     // See more info here: https://docs.neutron.org/neutron/feerefunder/overview
-    let fee = min_ntrn_ibc_fee(query_min_fee(deps.as_ref())?);
+    let fee = query_denom_min_ibc_fee(deps.as_ref(), FEE_DENOM)?;
     let (delegator, connection_id) = get_ica(deps.as_ref(), &env, &interchain_account_id)?;
     let delegate_msg = MsgUndelegate {
         delegator_address: delegator,
@@ -628,48 +628,4 @@ pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> StdResult<Response> {
             msg.id
         ))),
     }
-}
-
-fn min_ntrn_ibc_fee(fee: Fee) -> Fee {
-    Fee {
-        recv_fee: fee
-            .recv_fee
-            .iter()
-            .map(|r| SDKCoin {
-                denom: r.denom.to_string(),
-                amount: r.amount.clone(),
-            })
-            .collect(),
-        ack_fee: fee
-            .ack_fee
-            .iter()
-            .map(|r| SDKCoin {
-                denom: r.denom.to_string(),
-                amount: r.amount.clone(),
-            })
-            .filter(|a| a.denom == FEE_DENOM)
-            .collect(),
-        timeout_fee: fee
-            .timeout_fee
-            .iter()
-            .map(|r| SDKCoin {
-                denom: r.denom.to_string(),
-                amount: r.amount.clone(),
-            })
-            .filter(|a| a.denom == FEE_DENOM)
-            .collect(),
-    }
-}
-
-fn query_min_fee(deps: Deps) -> StdResult<Fee> {
-    let querier = FeerefunderQuerier::new(&deps.querier);
-    let params = querier.params()?;
-    let params_inner = params
-        .params
-        .ok_or_else(|| StdError::generic_err("no params found for feerefunder"))?;
-    let min_fee = params_inner
-        .min_fee
-        .ok_or_else(|| StdError::generic_err("no minimum fee param for feerefunder"))?;
-
-    Ok(min_fee)
 }

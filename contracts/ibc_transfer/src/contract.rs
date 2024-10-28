@@ -10,10 +10,9 @@ use cosmwasm_std::{
     StdResult, SubMsg,
 };
 use cw2::set_contract_version;
-use neutron_sdk::interchain_txs::helpers::decode_message_response;
+use neutron_sdk::interchain_txs::helpers::{decode_message_response, query_denom_min_ibc_fee};
 use neutron_sdk::sudo::msg::{RequestPacket, TransferSudoMsg};
 use neutron_std::types::cosmos::base::v1beta1::Coin as SDKCoin;
-use neutron_std::types::neutron::feerefunder::{Fee, FeerefunderQuerier};
 use neutron_std::types::neutron::transfer::{MsgTransfer, MsgTransferResponse};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -141,7 +140,7 @@ fn execute_send(
 ) -> StdResult<Response> {
     // contract must pay for relaying of acknowledgements
     // See more info here: https://docs.neutron.org/neutron/feerefunder/overview
-    let fee = min_ntrn_ibc_fee(query_min_fee(deps.as_ref())?);
+    let fee = query_denom_min_ibc_fee(deps.as_ref(), FEE_DENOM)?;
     let msg1 = MsgTransfer {
         source_port: "transfer".to_string(),
         source_channel: channel.clone(),
@@ -269,48 +268,4 @@ fn sudo_response(deps: DepsMut, req: RequestPacket, data: Binary) -> StdResult<R
 pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
     deps.api.debug("WASMDEBUG: migrate");
     Ok(Response::default())
-}
-
-fn query_min_fee(deps: Deps) -> StdResult<Fee> {
-    let querier = FeerefunderQuerier::new(&deps.querier);
-    let params = querier.params()?;
-    let params_inner = params
-        .params
-        .ok_or_else(|| StdError::generic_err("no params found for feerefunder"))?;
-    let min_fee = params_inner
-        .min_fee
-        .ok_or_else(|| StdError::generic_err("no minimum fee param for feerefunder"))?;
-
-    Ok(min_fee)
-}
-
-fn min_ntrn_ibc_fee(fee: Fee) -> Fee {
-    Fee {
-        recv_fee: fee
-            .recv_fee
-            .iter()
-            .map(|r| SDKCoin {
-                denom: r.denom.to_string(),
-                amount: r.amount.clone(),
-            })
-            .collect(),
-        ack_fee: fee
-            .ack_fee
-            .iter()
-            .map(|r| SDKCoin {
-                denom: r.denom.to_string(),
-                amount: r.amount.clone(),
-            })
-            .filter(|a| a.denom == FEE_DENOM)
-            .collect(),
-        timeout_fee: fee
-            .timeout_fee
-            .iter()
-            .map(|r| SDKCoin {
-                denom: r.denom.to_string(),
-                amount: r.amount.clone(),
-            })
-            .filter(|a| a.denom == FEE_DENOM)
-            .collect(),
-    }
 }

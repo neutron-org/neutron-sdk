@@ -1,9 +1,9 @@
 use cosmos_sdk_proto::traits::Message;
-use cosmwasm_std::{Addr, CosmosMsg, StdError, StdResult};
+use cosmwasm_std::{Addr, CosmosMsg, Deps, StdError, StdResult};
 use neutron_std::shim::Any;
 use neutron_std::types::cosmos::base::v1beta1::Coin;
 use neutron_std::types::ibc::core::channel::v1::Order;
-use neutron_std::types::neutron::feerefunder::Fee;
+use neutron_std::types::neutron::feerefunder::{Fee, FeerefunderQuerier};
 use neutron_std::types::neutron::interchaintxs::v1::{MsgRegisterInterchainAccount, MsgSubmitTx};
 
 /// Decodes protobuf any item into T structure
@@ -27,7 +27,8 @@ pub fn get_port_id<R: AsRef<str>>(contract_address: R, interchain_account_id: R)
         + interchain_account_id.as_ref()
 }
 
-/// Basic helper to define a register interchain account message:
+/// Basic helper to define a register interchain account message.
+///
 /// * **contract** is a contract that registers ICA. Must be the contract address that sends this message.
 /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
 /// * **interchain_account_id** is an identifier of your new interchain account. Can be any string.
@@ -49,7 +50,8 @@ pub fn register_interchain_account(
     .into()
 }
 
-/// Basic helper to define a submit tx message:
+/// Basic helper to define a submit tx message.
+///
 /// * **contract** is a contract that is sending the message
 /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
 /// * **interchain_account_id** is an identifier of your interchain account from which you want to execute msgs;
@@ -76,4 +78,46 @@ pub fn submit_tx(
         fee: Some(fee),
     }
     .into()
+}
+
+/// Queries chain for minimum fee for given denom. Returns Err if not found.
+///
+/// * **deps** is contract `Deps`
+/// * **denom** is a denom which can be used. Function will return Err if denom is not in a list of fee denoms.
+pub fn query_denom_min_ibc_fee(deps: Deps, denom: &str) -> StdResult<Fee> {
+    let fee = query_min_fee(deps)?;
+    Ok(Fee {
+        recv_fee: fee_with_denom(fee.recv_fee, denom)?,
+        ack_fee: fee_with_denom(fee.ack_fee, denom)?,
+        timeout_fee: fee_with_denom(fee.timeout_fee, denom)?,
+    })
+}
+
+/// Queries chain for all possible minimal fee. Each fee in Vec is a different denom.
+///
+/// * **deps** is contract `Deps`
+pub fn query_min_fee(deps: Deps) -> StdResult<Fee> {
+    let querier = FeerefunderQuerier::new(&deps.querier);
+    let params = querier.params()?;
+    let params_inner = params
+        .params
+        .ok_or_else(|| StdError::generic_err("no params found for feerefunder"))?;
+    let min_fee = params_inner
+        .min_fee
+        .ok_or_else(|| StdError::generic_err("no minimum fee param for feerefunder"))?;
+
+    Ok(min_fee)
+}
+
+fn fee_with_denom(fee: Vec<Coin>, denom: &str) -> StdResult<Vec<Coin>> {
+    Ok(vec![fee
+        .iter()
+        .find(|a| a.denom == denom)
+        .map(|r| Coin {
+            denom: r.denom.to_string(),
+            amount: r.amount.clone(),
+        })
+        .ok_or_else(|| {
+            StdError::not_found(format!("cannot find fee for denom {}", denom))
+        })?])
 }

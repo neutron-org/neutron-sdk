@@ -43,6 +43,7 @@ pub fn new_register_balances_query_msg(
 
 /// Creates a message to register an Interchain Query to get balance of account on remote chain for a particular denom
 ///
+/// * **contract** is an address of the contract that registers the query. Must be contract that sends this message.
 /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
 /// * **addr** address of an account on remote chain for which you want to get balances;
 /// * **denom** denomination of the coin for which you want to get balance;
@@ -60,6 +61,7 @@ pub fn new_register_balance_query_msg(
 
 /// Creates a message to register an Interchain Query to get total supply on remote chain for particular denom
 ///
+/// * **contract** is an address of the contract that registers the query. Must be contract that sends this message.
 /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
 /// * **denom** denomination of the coin for which you want to get total supply;
 /// * **update_period** is used to say how often the query must be updated.
@@ -92,6 +94,7 @@ pub fn new_register_bank_total_supply_query_msg(
 
 /// Creates a message to register an Interchain Query to get fee pool on remote chain from distribution module
 ///
+/// * **contract** is an address of the contract that registers the query. Must be contract that sends this message.
 /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
 /// * **update_period** is used to say how often the query must be updated.
 pub fn new_register_distribution_fee_pool_query_msg(
@@ -114,6 +117,7 @@ pub fn new_register_distribution_fee_pool_query_msg(
 
 /// Creates a message to register an Interchain Query to get governance proposals on remote chain
 ///
+/// * **contract** is an address of the contract that registers the query. Must be contract that sends this message.
 /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
 /// * **proposals_ids** is a list of proposals ids from remote chain.
 /// * **update_period** is used to say how often the query must be updated.
@@ -135,6 +139,7 @@ pub fn new_register_gov_proposals_query_msg(
 
 /// Creates a message to update an Interchain Query to get governance proposals on remote chain
 ///
+/// * **contract** is an address of the contract that registers the query. Must be contract that sends this message.
 /// * **query_id** is an IBC connection identifier between Neutron and remote chain;
 /// * **proposals_ids** is a list of proposals ids from remote chain.
 /// * **new_update_period** is used to update period of how often the query must be updated.
@@ -151,6 +156,7 @@ pub fn update_gov_proposals_query_msg(
 
 /// Creates a message to register an Interchain Query to get governance proposals votes on the remote chain
 ///
+/// * **contract** is an address of the contract that registers the query. Must be contract that sends this message.
 /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
 /// * **proposals_ids** is a list of proposals ids from remote chain.
 /// * **voters** is a list of voter to get voting info from remote chain.
@@ -174,6 +180,7 @@ pub fn new_register_gov_proposals_voters_votes_query_msg(
 
 /// Creates a message to update an Interchain Query to get governance proposals votes on the remote chain
 ///
+/// * **contract** is an address of the contract that registers the query. Must be contract that sends this message.
 /// * **query_id** is an IBC connection identifier between Neutron and remote chain;
 /// * **proposals_ids** is a list of proposals ids from remote chain.
 /// * **voters** is a list of voter to get voting info from remote chain.
@@ -192,6 +199,7 @@ pub fn update_gov_proposals_votes_query_msg(
 
 /// Creates a message to register an Interchain Query to get validator info on remote chain
 ///
+/// * **contract** is an address of the contract that registers the query. Must be contract that sends this message.
 /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
 /// * **validator** is an validator operator address of an account on remote chain for which you want to get rewards ;
 /// * **update_period** is used to say how often the query must be updated.
@@ -224,6 +232,7 @@ pub fn new_register_staking_validators_query_msg(
 
 /// Creates a message to register an Interchain Query to get validators signing infos on remote chain
 ///
+/// * **contract** is an address of the contract that registers the query. Must be contract that sends this message.
 /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
 /// * **validators** is an list of validators valcons addresses of an account on remote chain for which you want to get rewards ;
 /// * **update_period** is used to say how often the query must be updated.
@@ -256,6 +265,7 @@ pub fn new_register_validators_signing_infos_query_msg(
 
 /// Creates a message to register an Interchain Query to get delegations of particular delegator on remote chain.
 ///
+/// * **contract** is an address of the contract that registers the query. Must be contract that sends this message.
 /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
 /// * **delegator** is an address of an account on remote chain for which you want to get list of delegations;
 /// * **validators** is a list of validators addresses for which you want to get delegations from particular **delegator**;
@@ -307,6 +317,7 @@ pub fn new_register_delegator_delegations_query_msg(
 
 /// Creates a message to register an Interchain Query to get unbonding delegations of particular delegator on remote chain.
 ///
+/// * **contract** is an address of the contract that registers the query. Must be contract that sends this message.
 /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
 /// * **delegator** is an address of an account on remote chain for which you want to get list of unbonding delegations;
 /// * **validators** is a list of validators addresses for which you want to get unbonding delegations from particular **delegator**;
@@ -344,6 +355,7 @@ pub fn new_register_delegator_unbonding_delegations_query_msg(
 /// Creates a message to register an Interchain Query to get wasm contract store on remote chain
 /// from **wasm** module
 ///
+/// * **contract** is an address of the contract that registers the query. Must be contract that sends this message.
 /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
 /// * **contract_address** is an address of a contract on a remote chain;
 /// * **key** is a wasm contract store key;
@@ -379,6 +391,7 @@ pub fn new_register_wasm_contract_store_query_msg(
 
 /// Creates a message to register an Interchain Query to get transfer events to a recipient on a remote chain.
 ///
+/// * **contract** is an address of the contract that registers the query. Must be contract that sends this message.
 /// * **connection_id** is an IBC connection identifier between Neutron and remote chain;
 /// * **recipient** is an address of an account on remote chain for which you want to get list of transfer transactions;
 /// * **update_period** is used to say how often the query must be updated.
