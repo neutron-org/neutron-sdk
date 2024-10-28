@@ -5,7 +5,6 @@ use cosmwasm_std::{
 };
 use cw2::set_contract_version;
 use neutron_std::shim::Timestamp;
-// TODO: rename
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::storage::{
     add_error_to_queue, read_errors_from_queue, read_reply_payload, read_sudo_payload,

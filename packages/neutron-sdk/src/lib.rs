@@ -3,10 +3,6 @@
 // #![forbid(unsafe_code)]
 #![warn(trivial_casts, trivial_numeric_casts, unused_import_braces)]
 
-// TODO: can we get it from other place? or move NEUTRON_COMMIT to other place
-// TODO: do we need NEUTROND_VERSION?
-/// The version (commit hash) of the Cosmos SDK used when generating this library.
-pub const NEUTROND_VERSION: &str = include_str!("proto_types/NEUTRON_COMMIT");
 
 pub mod bindings;
 mod errors;
