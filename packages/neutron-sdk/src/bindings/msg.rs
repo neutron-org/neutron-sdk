@@ -151,7 +151,6 @@ pub struct UpgradeProposal {
     /// **plan** is a plan of upgrade.
     pub plan: Plan,
     /// **upgraded_client_state** is an upgraded client state.
-    // TODO: correct?
     pub upgraded_client_state: Any,
 }
 

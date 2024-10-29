@@ -487,7 +487,6 @@ pub fn sudo_tx_query_result(
     // all submitted results will be treated as valid.
     //
     // TODO: come up with solution to determine transactions filter type
-    // TODO: fix this?
     match registered_query.query_type {
         _ => {
             // For transfer queries, query data looks like `[{"field:"transfer.recipient", "op":"eq", "value":"some_address"}]`
