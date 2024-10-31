@@ -1,22 +1,3 @@
-use cosmwasm_std::{
-    coin, entry_point, Binary, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Reply, Response,
-    StdError, StdResult, SubMsg,
-};
-use cw2::set_contract_version;
-use neutron_sdk::interchain_txs::helpers::decode_message_response;
-use neutron_sdk::proto_types::neutron::transfer::MsgTransferResponse;
-use neutron_sdk::{
-    bindings::{
-        msg::{IbcFee, NeutronMsg},
-        query::NeutronQuery,
-    },
-    query::min_ibc_fee::query_min_ibc_fee,
-    sudo::msg::{RequestPacket, RequestPacketTimeoutHeight, TransferSudoMsg},
-    NeutronResult,
-};
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
-
 use crate::{
     msg::{ExecuteMsg, InstantiateMsg, MigrateMsg},
     state::{
@@ -24,6 +5,17 @@ use crate::{
         IBC_SUDO_ID_RANGE_END, IBC_SUDO_ID_RANGE_START,
     },
 };
+use cosmwasm_std::{
+    entry_point, Binary, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Reply, Response, StdError,
+    StdResult, SubMsg,
+};
+use cw2::set_contract_version;
+use neutron_sdk::interchain_txs::helpers::{decode_message_response, query_denom_min_ibc_fee};
+use neutron_sdk::sudo::msg::{RequestPacket, TransferSudoMsg};
+use neutron_std::types::cosmos::base::v1beta1::Coin as SDKCoin;
+use neutron_std::types::neutron::transfer::{MsgTransfer, MsgTransferResponse};
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 
 // Default timeout for IbcTransfer is 10000000 blocks
 const DEFAULT_TIMEOUT_HEIGHT: u64 = 10000000;
@@ -44,12 +36,7 @@ pub fn instantiate(
 }
 
 #[entry_point]
-pub fn execute(
-    deps: DepsMut<NeutronQuery>,
-    env: Env,
-    _: MessageInfo,
-    msg: ExecuteMsg,
-) -> NeutronResult<Response<NeutronMsg>> {
+pub fn execute(deps: DepsMut, env: Env, _: MessageInfo, msg: ExecuteMsg) -> StdResult<Response> {
     match msg {
         // NOTE: this is an example contract that shows how to make IBC transfers!
         // Please add necessary authorization or other protection mechanisms
@@ -100,7 +87,7 @@ pub enum SudoPayload {
 
 // saves payload to process later to the storage and returns a SubmitTX Cosmos SubMsg with necessary reply id
 fn msg_with_sudo_callback<C: Into<CosmosMsg<T>>, T>(
-    deps: DepsMut<NeutronQuery>,
+    deps: DepsMut,
     msg: C,
     payload: SudoPayload,
 ) -> StdResult<SubMsg<T>> {
@@ -143,46 +130,50 @@ pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> StdResult<Response> {
 }
 
 fn execute_send(
-    mut deps: DepsMut<NeutronQuery>,
+    mut deps: DepsMut,
     env: Env,
     channel: String,
     to: String,
     denom: String,
     amount: u128,
     timeout_height: Option<u64>,
-) -> NeutronResult<Response<NeutronMsg>> {
+) -> StdResult<Response> {
     // contract must pay for relaying of acknowledgements
     // See more info here: https://docs.neutron.org/neutron/feerefunder/overview
-    let fee = min_ntrn_ibc_fee(query_min_ibc_fee(deps.as_ref())?.min_fee);
-    let coin1 = coin(amount, denom.clone());
-    let msg1 = NeutronMsg::IbcTransfer {
+    let fee = query_denom_min_ibc_fee(deps.as_ref(), FEE_DENOM)?;
+    let msg1 = MsgTransfer {
         source_port: "transfer".to_string(),
         source_channel: channel.clone(),
         sender: env.contract.address.to_string(),
         receiver: to.clone(),
-        token: coin1,
-        timeout_height: RequestPacketTimeoutHeight {
-            revision_number: Some(2),
-            revision_height: timeout_height.or(Some(DEFAULT_TIMEOUT_HEIGHT)),
-        },
+        token: Some(SDKCoin {
+            denom: denom.clone(),
+            amount: amount.to_string(),
+        }),
+        timeout_height: Some(neutron_std::types::ibc::core::client::v1::Height {
+            revision_number: 2,
+            revision_height: timeout_height.unwrap_or(DEFAULT_TIMEOUT_HEIGHT),
+        }),
         timeout_timestamp: 0,
         memo: "".to_string(),
-        fee: fee.clone(),
+        fee: Some(fee.clone()),
     };
-    let coin2 = coin(2 * amount, denom);
-    let msg2 = NeutronMsg::IbcTransfer {
+    let msg2 = MsgTransfer {
         source_port: "transfer".to_string(),
         source_channel: channel,
         sender: env.contract.address.to_string(),
         receiver: to,
-        token: coin2,
-        timeout_height: RequestPacketTimeoutHeight {
-            revision_number: Some(2),
-            revision_height: timeout_height.or(Some(DEFAULT_TIMEOUT_HEIGHT)),
-        },
+        token: Some(SDKCoin {
+            denom,
+            amount: (2 * amount).to_string(),
+        }),
+        timeout_height: Some(neutron_std::types::ibc::core::client::v1::Height {
+            revision_number: 2,
+            revision_height: timeout_height.unwrap_or(DEFAULT_TIMEOUT_HEIGHT),
+        }),
         timeout_timestamp: 0,
         memo: "".to_string(),
-        fee,
+        fee: Some(fee.clone()),
     };
     // prepare first transfer message with payload of Type1
     let submsg1 = msg_with_sudo_callback(
@@ -277,20 +268,4 @@ fn sudo_response(deps: DepsMut, req: RequestPacket, data: Binary) -> StdResult<R
 pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
     deps.api.debug("WASMDEBUG: migrate");
     Ok(Response::default())
-}
-
-fn min_ntrn_ibc_fee(fee: IbcFee) -> IbcFee {
-    IbcFee {
-        recv_fee: fee.recv_fee,
-        ack_fee: fee
-            .ack_fee
-            .into_iter()
-            .filter(|a| a.denom == FEE_DENOM)
-            .collect(),
-        timeout_fee: fee
-            .timeout_fee
-            .into_iter()
-            .filter(|a| a.denom == FEE_DENOM)
-            .collect(),
-    }
 }

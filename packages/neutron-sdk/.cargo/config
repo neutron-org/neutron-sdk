@@ -2,4 +2,4 @@
 wasm = "build --release --target wasm32-unknown-unknown"
 wasm-debug = "build --target wasm32-unknown-unknown"
 unit-test = "test --lib"
-schema = "run --bin neutron-sdk-schema"
+schema = "run --bin neutron_sdk_schema"

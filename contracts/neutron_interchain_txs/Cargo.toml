@@ -27,3 +27,4 @@ cosmos-sdk-proto = { workspace = true }
 neutron-sdk = { path = "../../packages/neutron-sdk", default-features = false }
 prost-types = { workspace = true }
 cosmwasm-schema = { workspace = true }
+neutron-std = { workspace = true }

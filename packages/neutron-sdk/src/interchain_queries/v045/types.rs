@@ -1,10 +1,11 @@
+use super::helpers::{
+    get_max_change_rate, get_max_rate, get_rate, get_total_supply_amount, get_total_supply_denom,
+    get_update_time,
+};
+use crate::errors::error::{NeutronError, NeutronResult};
 use crate::interchain_queries::helpers::uint256_to_u128;
 use crate::interchain_queries::types::KVReconstruct;
 use crate::interchain_queries::v045::helpers::deconstruct_account_denom_balance_key;
-use crate::{
-    bindings::types::StorageValue,
-    errors::error::{NeutronError, NeutronResult},
-};
 use cosmos_sdk_proto::cosmos::gov::v1beta1::Vote;
 use cosmos_sdk_proto::cosmos::{
     base::v1beta1::Coin as CosmosCoin,
@@ -15,14 +16,10 @@ use cosmos_sdk_proto::cosmos::{
 };
 use cosmos_sdk_proto::traits::Message;
 use cosmwasm_std::{from_json, Addr, Coin, Decimal, Decimal256, Timestamp, Uint128, Uint256};
+use neutron_std::types::neutron::interchainqueries::StorageValue;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::{ops::Div, str::FromStr};
-
-use super::helpers::{
-    get_max_change_rate, get_max_rate, get_rate, get_total_supply_amount, get_total_supply_denom,
-    get_update_time,
-};
 
 pub const DECIMAL_PLACES: u32 = 18;
 pub const DECIMAL_FRACTIONAL: u128 = 10u128.pow(DECIMAL_PLACES);
@@ -114,11 +111,11 @@ impl KVReconstruct for Balances {
 
         for kv in storage_values {
             let (_, denom) = deconstruct_account_denom_balance_key(kv.key.to_vec())?;
-            let amount = if kv.value.len() > 0 {
+            let amount = if kv.value.is_empty() {
+                0u128
+            } else {
                 let balance: CosmosCoin = CosmosCoin::decode(kv.value.as_slice())?;
                 Uint128::from_str(balance.amount.as_str())?.u128()
-            } else {
-                0u128
             };
 
             coins.push(Coin::new(amount, denom))

@@ -167,6 +167,7 @@
       "type": "string"
     },
     "Height": {
+      "description": "Height is used for sudo call for `TxQueryResult` enum variant type",
       "type": "object",
       "properties": {
         "revision_height": {

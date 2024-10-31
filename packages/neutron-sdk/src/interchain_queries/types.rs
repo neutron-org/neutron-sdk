@@ -1,8 +1,6 @@
-use crate::{
-    bindings::types::{KVKey, StorageValue},
-    errors::error::NeutronResult,
-};
+use crate::errors::error::NeutronResult;
 use cosmwasm_std::{from_json, StdError, Uint128};
+use neutron_std::types::neutron::interchainqueries::{KvKey, StorageValue};
 use schemars::{JsonSchema, _serde_json::Value};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
@@ -92,7 +90,7 @@ impl Into<String> for QueryType {
 pub enum QueryPayload {
     /// **kv** is an interchain query type to query KV values from remote chain
     /// payload is kvkeys
-    KV(Vec<KVKey>),
+    KV(Vec<KvKey>),
 
     /// **tx** is an interchain query type to query transactions from remote chain
     /// payload is transactions filter
