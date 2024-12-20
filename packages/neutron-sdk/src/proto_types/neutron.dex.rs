@@ -175,6 +175,10 @@ pub struct MsgPlaceLimitOrder {
     pub expiration_time: ::core::option::Option<::prost_types::Timestamp>,
     #[prost(string, tag = "10")]
     pub max_amount_out: ::prost::alloc::string::String,
+    #[prost(string, optional, tag = "11")]
+    pub limit_sell_price: ::core::option::Option<::prost::alloc::string::String>,
+    #[prost(string, optional, tag = "12")]
+    pub min_average_sell_price: ::core::option::Option<::prost::alloc::string::String>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MsgPlaceLimitOrderResponse {
@@ -189,6 +193,9 @@ pub struct MsgPlaceLimitOrderResponse {
     /// maker portion which will have withdrawn in the future
     #[prost(message, optional, tag = "3")]
     pub taker_coin_out: ::core::option::Option<cosmos_sdk_proto::cosmos::base::v1beta1::Coin>,
+    /// Total amount of the token in that was immediately swapped for takerOutCoin
+    #[prost(message, optional, tag = "4")]
+    pub taker_coin_in: ::core::option::Option<cosmos_sdk_proto::cosmos::base::v1beta1::Coin>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MsgWithdrawFilledLimitOrder {
@@ -234,6 +241,10 @@ pub struct MsgMultiHopSwap {
 pub struct MsgMultiHopSwapResponse {
     #[prost(message, optional, tag = "1")]
     pub coin_out: ::core::option::Option<cosmos_sdk_proto::cosmos::base::v1beta1::Coin>,
+    #[prost(message, optional, tag = "2")]
+    pub route: ::core::option::Option<MultiHopRoute>,
+    #[prost(message, repeated, tag = "3")]
+    pub dust: ::prost::alloc::vec::Vec<cosmos_sdk_proto::cosmos::base::v1beta1::Coin>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MsgUpdateParams {
@@ -634,4 +645,26 @@ pub struct QueryAllPoolMetadataResponse {
     pub pagination:
         ::core::option::Option<cosmos_sdk_proto::cosmos::base::query::v1beta1::PageResponse>,
 }
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct QuerySimulatePlaceLimitOrderRequest {
+    #[prost(message, optional, tag = "1")]
+    pub msg: ::core::option::Option<MsgPlaceLimitOrder>,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct QuerySimulatePlaceLimitOrderResponse {
+    #[prost(message, optional, tag = "1")]
+    pub resp: ::core::option::Option<MsgPlaceLimitOrderResponse>,
+}
+
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct QuerySimulateMultiHopSwapRequest {
+    #[prost(message, optional, tag = "1")]
+    pub msg: ::core::option::Option<MsgMultiHopSwap>,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct QuerySimulateMultiHopSwapResponse {
+    #[prost(message, optional, tag = "1")]
+    pub resp: ::core::option::Option<MsgPlaceLimitOrderResponse>,
+}
+
 // @@protoc_insertion_point(module)

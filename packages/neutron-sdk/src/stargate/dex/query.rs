@@ -6,6 +6,7 @@ use crate::proto_types::neutron::dex::{
     QueryGetInactiveLimitOrderTrancheRequest, QueryGetLimitOrderTrancheRequest,
     QueryGetLimitOrderTrancheUserRequest, QueryGetPoolMetadataRequest, QueryGetPoolReservesRequest,
     QueryParamsRequest, QueryPoolByIdRequest, QueryPoolRequest,
+    QuerySimulatePlaceLimitOrderRequest, QuerySimulateMultiHopSwapRequest,
 };
 use crate::stargate::aux::make_stargate_query;
 use crate::stargate::dex::types::{
@@ -17,10 +18,12 @@ use crate::stargate::dex::types::{
     EstimateMultiHopSwapRequest, EstimateMultiHopSwapResponse, EstimatePlaceLimitOrderRequest,
     EstimatePlaceLimitOrderResponse, GetInactiveLimitOrderTrancheRequest,
     GetInactiveLimitOrderTrancheResponse, GetLimitOrderTrancheRequest,
+    SimulatePlaceLimitOrderResponse, SimulateMultiHopSwapResponse,
     GetLimitOrderTrancheResponse, GetPoolMetadataRequest, GetPoolMetadataResponse,
     GetPoolReservesRequest, GetPoolReservesResponse, LimitOrderTrancheUserAllRequest,
     LimitOrderTrancheUserAllResponse, LimitOrderTrancheUserRequest, LimitOrderTrancheUserResponse,
     ParamsRequest, ParamsResponse, PoolByIdRequest, PoolRequest, PoolResponse,
+    SimulatePlaceLimitOrderRequest, SimulateMultiHopSwapRequest
 };
 use cosmwasm_std::{Deps, StdResult};
 
@@ -45,6 +48,8 @@ const POOL_QUERY_PATH: &str = "/neutron.dex.Query/Pool";
 const POOL_BY_ID_QUERY_PATH: &str = "/neutron.dex.Query/PoolByID";
 const POOL_METADATA_QUERY_PATH: &str = "/neutron.dex.Query/PoolMetadata";
 const POOL_METADATA_ALL_QUERY_PATH: &str = "/neutron.dex.Query/PoolMetadataAll";
+const SIMULATE_PLACE_LIMIT_ORDER__QUERY_PATH: &str = "/neutron.dex.Query/SimulatePlaceLimitOrder";
+const SIMULATE_MULTI_HOP_SWAP_QUERY_PATH: &str = "/neutron.dex.Query/SimulateMultiHopSwap";
 
 /// Queries the parameters of the module.
 pub fn get_params(deps: Deps, req: ParamsRequest) -> StdResult<ParamsResponse> {
@@ -238,5 +243,30 @@ pub fn get_pool_metadata_all(
         deps,
         POOL_METADATA_ALL_QUERY_PATH,
         QueryAllPoolMetadataRequest::from(req),
+    )
+}
+
+
+/// Simulate Place Limit Order
+pub fn simulate_place_place_order(
+    deps: Deps,
+    req: SimulatePlaceLimitOrderRequest,
+) -> StdResult<SimulatePlaceLimitOrderResponse> {
+    make_stargate_query(
+        deps,
+        SIMULATE_PLACE_LIMIT_ORDER__QUERY_PATH,
+        QuerySimulatePlaceLimitOrderRequest::from(req),
+    )
+}
+
+/// Simulate MultiHopSwap
+pub fn simulate_multi_hop_swap(
+    deps: Deps,
+    req: SimulateMultiHopSwapRequest,
+) -> StdResult<SimulateMultiHopSwapResponse> {
+    make_stargate_query(
+        deps,
+        SIMULATE_MULTI_HOP_SWAP_QUERY_PATH,
+        QuerySimulateMultiHopSwapRequest::from(req),
     )
 }

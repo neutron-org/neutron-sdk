@@ -8,7 +8,7 @@ use crate::proto_types::neutron::dex::{
     QueryEstimateMultiHopSwapRequest, QueryEstimatePlaceLimitOrderRequest,
     QueryGetInactiveLimitOrderTrancheRequest, QueryGetLimitOrderTrancheRequest,
     QueryGetLimitOrderTrancheUserRequest, QueryGetPoolMetadataRequest, QueryGetPoolReservesRequest,
-    QueryParamsRequest, QueryPoolByIdRequest, QueryPoolRequest,
+    QueryParamsRequest, QueryPoolByIdRequest, QueryPoolRequest, QuerySimulatePlaceLimitOrderRequest, QuerySimulateMultiHopSwapRequest,
 };
 use crate::stargate::aux::proto_timestamp_from_i64;
 use cosmos_sdk_proto::cosmos::base::query::v1beta1::PageRequest as PageRequestGen;
@@ -121,6 +121,8 @@ pub struct PlaceLimitOrderRequest {
     /// Expiration time for order. Only valid for GoodTilTime limit orders.
     pub expiration_time: Option<i64>,
     pub max_amount_out: Option<String>,
+    pub limit_sell_price: Option<String>,
+    pub min_avg_sell_price: Option<String>,
 }
 
 impl From<PlaceLimitOrderRequest> for MsgPlaceLimitOrder {
@@ -135,6 +137,8 @@ impl From<PlaceLimitOrderRequest> for MsgPlaceLimitOrder {
             order_type: v.order_type as i32,
             expiration_time: v.expiration_time.map(proto_timestamp_from_i64),
             max_amount_out: v.max_amount_out.unwrap_or_default(),
+            limit_sell_price: v.limit_sell_price,
+            min_average_sell_price: v.min_avg_sell_price,
         }
     }
 }
@@ -661,6 +665,97 @@ impl From<AllPoolMetadataRequest> for QueryAllPoolMetadataRequest {
     fn from(v: AllPoolMetadataRequest) -> QueryAllPoolMetadataRequest {
         QueryAllPoolMetadataRequest {
             pagination: convert_page_request(v.pagination),
+        }
+    }
+}
+
+//SimulatePlaceLimitOrder
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+pub struct SimulatePlaceLimitOrderRequest {
+    /// Account from which token_in is debited.
+    pub sender: String,
+    /// Account to which token_out is credited or that will be allowed to withdraw or cancel a
+    /// maker order.
+    pub receiver: String,
+    /// Token being “sold”.
+    pub token_in: String,
+    /// Token being “bought”.
+    pub token_out: String,
+    /// Limit tick for a limit order, specified in terms of token_in to token_out.
+    pub tick_index_in_to_out: i64,
+    /// Amount of TokenIn to be traded.
+    pub amount_in: String,
+    /// Type of limit order to be used.
+    pub order_type: LimitOrderType,
+    /// Expiration time for order. Only valid for GoodTilTime limit orders.
+    pub expiration_time: Option<i64>,
+    pub max_amount_out: Option<String>,
+    pub limit_sell_price: Option<String>,
+    pub min_avg_sell_price: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+pub struct SimulatePlaceLimitOrderResponse{
+    resp: PlaceLimitOrderResponse
+}
+
+impl From<SimulatePlaceLimitOrderRequest> for QuerySimulatePlaceLimitOrderRequest {
+    fn from(v: SimulatePlaceLimitOrderRequest) -> QuerySimulatePlaceLimitOrderRequest {
+        QuerySimulatePlaceLimitOrderRequest {
+            msg: Some(MsgPlaceLimitOrder{
+                creator: v.sender,
+                receiver: v.receiver,
+                token_in: v.token_in,
+                token_out: v.token_out,
+                tick_index_in_to_out: v.tick_index_in_to_out,
+                amount_in: v.amount_in,
+                order_type: v.order_type as i32,
+                expiration_time: v.expiration_time.map(proto_timestamp_from_i64),
+                max_amount_out: v.max_amount_out.unwrap_or_default(),
+                limit_sell_price: v.limit_sell_price,
+                min_average_sell_price: v.min_avg_sell_price,
+            })
+        }
+    }
+}
+
+// SimulateMultiHopSwap
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+pub struct SimulateMultiHopSwapRequest{
+    pub sender: String,
+    /// Account to which TokenOut is credited
+    receiver: String,
+    /// Array of possible routes
+    routes: Vec<Vec<String>>,
+    /// Amount of TokenIn to swap
+    amount_in: String,
+    /// Minimum price that that must be satisfied for a route to succeed
+    exit_limit_price: String,
+    /// If true all routes are run and the route with the best price is used
+    pick_best_route: bool,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+pub struct SimulateMultiHopSwapResponse{
+    resp: MultiHopSwapResponse
+}
+
+impl From<SimulateMultiHopSwapRequest> for QuerySimulateMultiHopSwapRequest {
+    fn from(v: SimulateMultiHopSwapRequest) -> QuerySimulateMultiHopSwapRequest {
+        QuerySimulateMultiHopSwapRequest {
+            msg: Some(MsgMultiHopSwap{
+                creator: v.sender,
+                receiver: v.receiver,
+                routes: v
+                    .routes
+                    .into_iter()
+                    .map(|r| MultiHopRoute { hops: r })
+                    .collect(),
+                amount_in: v.amount_in,
+                exit_limit_price: v.exit_limit_price,
+                pick_best_route: v.pick_best_route,
+            })
         }
     }
 }
