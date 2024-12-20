@@ -198,6 +198,13 @@ pub struct MultiHopSwapRequest {
     pub pick_best_route: bool,
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+pub struct MultiHopSwapResponse {
+    pub coin_out: Coin,
+    pub route: Vec<String>,
+    pub dust: Vec<Coin>,
+}
+
 impl From<MultiHopSwapRequest> for MsgMultiHopSwap {
     fn from(v: MultiHopSwapRequest) -> MsgMultiHopSwap {
         MsgMultiHopSwap {
@@ -556,6 +563,14 @@ pub struct EstimatePlaceLimitOrderResponse {
     // This is the amount of coin immediately available in the users account after executing the
     // limit order. It does not include any future proceeds from the maker portion which will have withdrawn in the future
     pub swap_out_coin: Coin,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+pub struct PlaceLimitOrderResponse {
+    pub tranche_key: String,
+    pub coin_in: Option<Coin>,
+    pub taker_coin_out: Option<Coin>,
+    pub taker_coin_in: Option<Coin>,
 }
 
 impl From<EstimatePlaceLimitOrderRequest> for QueryEstimatePlaceLimitOrderRequest {

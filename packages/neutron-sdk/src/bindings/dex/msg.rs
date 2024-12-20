@@ -98,3 +98,42 @@ pub enum DexMsg {
         pick_best_route: bool,
     },
 }
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct PlaceLimitOrder {
+    /// Account to which TokenOut is credited or that will be allowed to
+    /// withdraw or cancel a maker order
+    receiver: String,
+    /// Token being “sold”
+    token_in: String,
+    /// Token being “bought”
+    token_out: String,
+    /// Limit tick for a limit order, specified in terms of TokenIn to TokenOut
+    tick_index_in_to_out: i64,
+    /// Amount of TokenIn to be traded
+    amount_in: Uint128,
+    /// Type of limit order to be used. Must be one of:
+    /// GOOD_TIL_CANCELLED, FILL_OR_KILL, IMMEDIATE_OR_CANCEL, JUST_IN_TIME, or GOOD_TIL_TIME
+    order_type: LimitOrderType,
+    // expirationTime is only valid if orderType == GOOD_TIL_TIME.
+    /// Expiration time for order. Only valid for GOOD_TIL_TIME limit orders
+    expiration_time: Option<u64>,
+    /// Maximum amount of TokenB can be bought. For everything except JUST_IN_TIME OrderType
+    max_amount_out: Option<Uint128>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct MultiHopSwap {
+    /// Account to which TokenOut is credited
+    receiver: String,
+    /// Array of possible routes
+    routes: Vec<MultiHopRoute>,
+    /// Amount of TokenIn to swap
+    amount_in: Uint128,
+    /// Minimum price that that must be satisfied for a route to succeed
+    exit_limit_price: PrecDec,
+    /// If true all routes are run and the route with the best price is used
+    pick_best_route: bool,
+}
