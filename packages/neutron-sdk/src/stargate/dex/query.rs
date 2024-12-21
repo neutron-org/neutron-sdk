@@ -248,7 +248,7 @@ pub fn get_pool_metadata_all(
 
 
 /// Simulate Place Limit Order
-pub fn get_simulate_place_order(
+pub fn get_simulate_place_limit_order(
     deps: Deps,
     req: SimulatePlaceLimitOrderRequest,
 ) -> StdResult<SimulatePlaceLimitOrderResponse> {
