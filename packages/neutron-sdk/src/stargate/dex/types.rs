@@ -725,15 +725,15 @@ impl From<SimulatePlaceLimitOrderRequest> for QuerySimulatePlaceLimitOrderReques
 pub struct SimulateMultiHopSwapRequest{
     pub sender: String,
     /// Account to which TokenOut is credited
-    receiver: String,
+    pub receiver: String,
     /// Array of possible routes
-    routes: Vec<Vec<String>>,
+    pub routes: Vec<Vec<String>>,
     /// Amount of TokenIn to swap
-    amount_in: String,
+    pub amount_in: String,
     /// Minimum price that that must be satisfied for a route to succeed
-    exit_limit_price: String,
+    pub exit_limit_price: String,
     /// If true all routes are run and the route with the best price is used
-    pick_best_route: bool,
+    pub pick_best_route: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
