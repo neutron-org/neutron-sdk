@@ -183,7 +183,7 @@ pub struct MsgPlaceLimitOrder {
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct MsgPlaceLimitOrderResponse {
     #[prost(string, tag = "1")]
-    pub tranche_key: ::prost::alloc::string::String,
+    pub trancheKey: ::prost::alloc::string::String,
     /// Total amount of coin used for the limit order
     #[prost(message, optional, tag = "2")]
     pub coin_in: ::core::option::Option<cosmos_sdk_proto::cosmos::base::v1beta1::Coin>,

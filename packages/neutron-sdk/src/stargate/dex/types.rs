@@ -571,7 +571,7 @@ pub struct EstimatePlaceLimitOrderResponse {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct PlaceLimitOrderResponse {
-    pub tranche_key: String,
+    pub trancheKey: String,
     pub coin_in: Option<Coin>,
     pub taker_coin_out: Option<Coin>,
     pub taker_coin_in: Option<Coin>,
