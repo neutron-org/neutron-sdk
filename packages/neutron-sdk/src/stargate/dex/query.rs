@@ -254,7 +254,7 @@ pub fn get_simulate_place_order(
 ) -> StdResult<SimulatePlaceLimitOrderResponse> {
     make_stargate_query(
         deps,
-        SIMULATE_PLACE_LIMIT_ORDER__QUERY_PATH,
+        SIMULATE_PLACE_LIMIT_ORDER_QUERY_PATH,
         QuerySimulatePlaceLimitOrderRequest::from(req),
     )
 }
