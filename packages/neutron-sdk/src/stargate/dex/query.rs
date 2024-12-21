@@ -48,7 +48,7 @@ const POOL_QUERY_PATH: &str = "/neutron.dex.Query/Pool";
 const POOL_BY_ID_QUERY_PATH: &str = "/neutron.dex.Query/PoolByID";
 const POOL_METADATA_QUERY_PATH: &str = "/neutron.dex.Query/PoolMetadata";
 const POOL_METADATA_ALL_QUERY_PATH: &str = "/neutron.dex.Query/PoolMetadataAll";
-const SIMULATE_PLACE_LIMIT_ORDER__QUERY_PATH: &str = "/neutron.dex.Query/SimulatePlaceLimitOrder";
+const SIMULATE_PLACE_LIMIT_ORDER_QUERY_PATH: &str = "/neutron.dex.Query/SimulatePlaceLimitOrder";
 const SIMULATE_MULTI_HOP_SWAP_QUERY_PATH: &str = "/neutron.dex.Query/SimulateMultiHopSwap";
 
 /// Queries the parameters of the module.
@@ -248,7 +248,7 @@ pub fn get_pool_metadata_all(
 
 
 /// Simulate Place Limit Order
-pub fn simulate_place_place_order(
+pub fn get_simulate_place_order(
     deps: Deps,
     req: SimulatePlaceLimitOrderRequest,
 ) -> StdResult<SimulatePlaceLimitOrderResponse> {
@@ -260,7 +260,7 @@ pub fn simulate_place_place_order(
 }
 
 /// Simulate MultiHopSwap
-pub fn simulate_multi_hop_swap(
+pub fn get_simulate_multi_hop_swap(
     deps: Deps,
     req: SimulateMultiHopSwapRequest,
 ) -> StdResult<SimulateMultiHopSwapResponse> {

@@ -697,7 +697,7 @@ pub struct SimulatePlaceLimitOrderRequest {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct SimulatePlaceLimitOrderResponse{
-    resp: PlaceLimitOrderResponse
+    pub resp: PlaceLimitOrderResponse
 }
 
 impl From<SimulatePlaceLimitOrderRequest> for QuerySimulatePlaceLimitOrderRequest {
@@ -738,7 +738,7 @@ pub struct SimulateMultiHopSwapRequest{
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct SimulateMultiHopSwapResponse{
-    resp: MultiHopSwapResponse
+    pub resp: MultiHopSwapResponse
 }
 
 impl From<SimulateMultiHopSwapRequest> for QuerySimulateMultiHopSwapRequest {
