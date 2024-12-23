@@ -647,8 +647,8 @@ pub struct QueryAllPoolMetadataResponse {
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QuerySimulatePlaceLimitOrderRequest {
-    #[prost(message, optional, tag = "1")]
-    pub msg: ::core::option::Option<MsgPlaceLimitOrder>,
+    #[prost(message, required, tag = "1")]
+    pub msg: MsgPlaceLimitOrder,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QuerySimulatePlaceLimitOrderResponse {
@@ -658,8 +658,8 @@ pub struct QuerySimulatePlaceLimitOrderResponse {
 
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QuerySimulateMultiHopSwapRequest {
-    #[prost(message, optional, tag = "1")]
-    pub msg: ::core::option::Option<MsgMultiHopSwap>,
+    #[prost(message, required, tag = "1")]
+    pub msg: MsgMultiHopSwap,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct QuerySimulateMultiHopSwapResponse {

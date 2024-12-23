@@ -703,7 +703,7 @@ pub struct SimulatePlaceLimitOrderResponse{
 impl From<SimulatePlaceLimitOrderRequest> for QuerySimulatePlaceLimitOrderRequest {
     fn from(v: SimulatePlaceLimitOrderRequest) -> QuerySimulatePlaceLimitOrderRequest {
         QuerySimulatePlaceLimitOrderRequest {
-            msg: Some(MsgPlaceLimitOrder{
+            msg: MsgPlaceLimitOrder{
                 creator: v.sender,
                 receiver: v.receiver,
                 token_in: v.token_in,
@@ -715,7 +715,7 @@ impl From<SimulatePlaceLimitOrderRequest> for QuerySimulatePlaceLimitOrderReques
                 max_amount_out: v.max_amount_out.unwrap_or_default(),
                 limit_sell_price: v.limit_sell_price,
                 min_average_sell_price: v.min_avg_sell_price,
-            })
+            }
         }
     }
 }
@@ -744,7 +744,7 @@ pub struct SimulateMultiHopSwapResponse{
 impl From<SimulateMultiHopSwapRequest> for QuerySimulateMultiHopSwapRequest {
     fn from(v: SimulateMultiHopSwapRequest) -> QuerySimulateMultiHopSwapRequest {
         QuerySimulateMultiHopSwapRequest {
-            msg: Some(MsgMultiHopSwap{
+            msg: MsgMultiHopSwap{
                 creator: v.sender,
                 receiver: v.receiver,
                 routes: v
@@ -755,7 +755,7 @@ impl From<SimulateMultiHopSwapRequest> for QuerySimulateMultiHopSwapRequest {
                 amount_in: v.amount_in,
                 exit_limit_price: v.exit_limit_price,
                 pick_best_route: v.pick_best_route,
-            })
+            }
         }
     }
 }
