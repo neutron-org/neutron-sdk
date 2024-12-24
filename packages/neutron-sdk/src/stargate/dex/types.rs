@@ -203,9 +203,14 @@ pub struct MultiHopSwapRequest {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+pub struct MHRoute {
+    pub hops: Vec<String>
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct MultiHopSwapResponse {
     pub coin_out: Coin,
-    pub route: Vec<String>,
+    pub route: MHRoute,
     pub dust: Vec<Coin>,
 }
 
