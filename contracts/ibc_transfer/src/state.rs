@@ -39,7 +39,7 @@ pub fn read_reply_payload(store: &dyn Storage, id: u64) -> StdResult<SudoPayload
 
 /// SUDO_PAYLOAD - tmp storage for sudo handler payloads
 /// key (String, u64) - (channel_id, seq_id)
-/// every ibc chanel have its own sequence counter(autoincrement)
+/// every ibc channel have its own sequence counter(autoincrement)
 /// we can catch the counter in the reply msg for outgoing sudo msg
 /// and save our payload for the msg
 pub const SUDO_PAYLOAD: Map<(String, u64), Vec<u8>> = Map::new("sudo_payload");
