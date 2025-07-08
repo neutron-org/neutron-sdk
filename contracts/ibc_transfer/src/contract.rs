@@ -156,7 +156,7 @@ fn execute_send(
         }),
         timeout_timestamp: 0,
         memo: "".to_string(),
-        fee: Some(fee.clone()),
+        fee: fee.clone(),
     };
     let msg2 = MsgTransfer {
         source_port: "transfer".to_string(),
@@ -173,7 +173,7 @@ fn execute_send(
         }),
         timeout_timestamp: 0,
         memo: "".to_string(),
-        fee: Some(fee.clone()),
+        fee: fee.clone(),
     };
     // prepare first transfer message with payload of Type1
     let submsg1 = msg_with_sudo_callback(
