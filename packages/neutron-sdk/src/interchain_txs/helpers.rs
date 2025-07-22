@@ -58,7 +58,7 @@ pub fn register_interchain_account(
 /// * **msgs** is a list of protobuf encoded Cosmos-SDK messages you want to execute on remote chain;
 /// * **memo** is a memo you want to attach to your interchain transaction. It behaves like a memo in usual Cosmos transaction;
 /// * **timeout** is a timeout in seconds after which the packet times out.
-/// * **fee** is a fee that is used for different kinds of callbacks. Unused fee types will be returned to msg sender.
+/// * **fee** is a fee used for different kinds of callbacks. Unused fee types will be returned to msg sender.
 pub fn submit_tx(
     contract: Addr,
     connection_id: String,
@@ -66,7 +66,7 @@ pub fn submit_tx(
     msgs: Vec<Any>,
     memo: String,
     timeout: u64,
-    fee: Fee,
+    fee: Option<Fee>,
 ) -> CosmosMsg {
     MsgSubmitTx {
         from_address: contract.to_string(),
@@ -75,7 +75,7 @@ pub fn submit_tx(
         msgs,
         memo,
         timeout,
-        fee: Some(fee),
+        fee,
     }
     .into()
 }
@@ -84,29 +84,37 @@ pub fn submit_tx(
 ///
 /// * **deps** is contract `Deps`
 /// * **denom** is a denom which can be used. Function will return Err if denom is not in a list of fee denoms.
-pub fn query_denom_min_ibc_fee(deps: Deps, denom: &str) -> StdResult<Fee> {
+pub fn query_denom_min_ibc_fee(deps: Deps, denom: &str) -> StdResult<Option<Fee>> {
     let fee = query_min_fee(deps)?;
-    Ok(Fee {
-        recv_fee: fee_with_denom(fee.recv_fee, denom)?,
-        ack_fee: fee_with_denom(fee.ack_fee, denom)?,
-        timeout_fee: fee_with_denom(fee.timeout_fee, denom)?,
-    })
+    if let Some(fee) = fee {
+        Ok(Some(Fee {
+            recv_fee: fee_with_denom(fee.recv_fee, denom)?,
+            ack_fee: fee_with_denom(fee.ack_fee, denom)?,
+            timeout_fee: fee_with_denom(fee.timeout_fee, denom)?,
+        }))
+    } else {
+        Ok(None)
+    }
 }
 
 /// Queries chain for all possible minimal fee. Each fee in Vec is a different denom.
+/// If fees are disabled, returns None.
 ///
 /// * **deps** is contract `Deps`
-pub fn query_min_fee(deps: Deps) -> StdResult<Fee> {
+pub fn query_min_fee(deps: Deps) -> StdResult<Option<Fee>> {
     let querier = FeerefunderQuerier::new(&deps.querier);
     let params = querier.params()?;
     let params_inner = params
         .params
         .ok_or_else(|| StdError::generic_err("no params found for feerefunder"))?;
-    let min_fee = params_inner
-        .min_fee
-        .ok_or_else(|| StdError::generic_err("no minimum fee param for feerefunder"))?;
-
-    Ok(min_fee)
+    if params_inner.fee_enabled {
+        let min_fee = params_inner
+            .min_fee
+            .ok_or_else(|| StdError::generic_err("no minimum fee param for feerefunder"))?;
+        Ok(Some(min_fee))
+    } else {
+        Ok(None)
+    }
 }
 
 fn fee_with_denom(fee: Vec<Coin>, denom: &str) -> StdResult<Vec<Coin>> {
