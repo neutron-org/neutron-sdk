@@ -86,7 +86,7 @@ Check out our documentation at <https://docs.neutron.org>.
 
 ## License
 
-Copyright 2025 Neutron
+Copyright 2026 Neutron
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
