@@ -42,7 +42,7 @@ pub fn length_prefix<AddrBytes: AsRef<[u8]>>(addr: AddrBytes) -> NeutronResult<V
 pub fn uint256_to_u128(value: Uint256) -> Result<u128, StdError> {
     let converted: Uint128 = value
         .try_into()
-        .map_err(|_| StdError::generic_err("Uint256 value exceeds u128 limits"))?;
+        .map_err(|_| StdError::msg("Uint256 value exceeds u128 limits"))?;
     Ok(converted.u128())
 }
 
@@ -76,7 +76,7 @@ pub fn register_interchain_query(
             query_type: QueryType::TX.into(),
             keys: vec![],
             transactions_filter: to_string(&transactions_filters)
-                .map_err(|e| StdError::generic_err(e.to_string()))?,
+                .map_err(|e| StdError::msg(e.to_string()))?,
             connection_id,
             update_period,
         },
@@ -104,7 +104,7 @@ pub fn update_interchain_query(
         new_update_period,
         new_transactions_filter: match new_transactions_filter {
             Some(filters) => {
-                to_string(&filters).map_err(|e| StdError::generic_err(e.to_string()))?
+                to_string(&filters).map_err(|e| StdError::msg(e.to_string()))?
             }
             None => "".to_string(),
         },

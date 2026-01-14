@@ -10,7 +10,7 @@ use neutron_std::types::neutron::interchaintxs::v1::{MsgRegisterInterchainAccoun
 pub fn decode_message_response<T: Message + Default>(item: &Vec<u8>) -> StdResult<T> {
     let res = T::decode(item.as_slice());
     match res {
-        Err(e) => Err(StdError::generic_err(format!("Can't decode item: {}", e))),
+        Err(e) => Err(StdError::msg(format!("Can't decode item: {}", e))),
         Ok(data) => Ok(data),
     }
 }
@@ -106,11 +106,11 @@ pub fn query_min_fee(deps: Deps) -> StdResult<Option<Fee>> {
     let params = querier.params()?;
     let params_inner = params
         .params
-        .ok_or_else(|| StdError::generic_err("no params found for feerefunder"))?;
+        .ok_or_else(|| StdError::msg("no params found for feerefunder"))?;
     if params_inner.fee_enabled {
         let min_fee = params_inner
             .min_fee
-            .ok_or_else(|| StdError::generic_err("no minimum fee param for feerefunder"))?;
+            .ok_or_else(|| StdError::msg("no minimum fee param for feerefunder"))?;
         Ok(Some(min_fee))
     } else {
         Ok(None)
@@ -126,6 +126,6 @@ fn fee_with_denom(fee: Vec<Coin>, denom: &str) -> StdResult<Vec<Coin>> {
             amount: r.amount.clone(),
         })
         .ok_or_else(|| {
-            StdError::not_found(format!("cannot find fee for denom {}", denom))
+            StdError::msg(format!("cannot find fee for denom {}", denom))
         })?])
 }
