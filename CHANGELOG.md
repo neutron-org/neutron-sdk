@@ -3,7 +3,7 @@
 ## 0.12.0
 
 ### Improvements
-* Rust 1.86;
+* Rust 1.82;
 
 ## 0.11.0
 

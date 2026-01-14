@@ -31,7 +31,7 @@ We provide sample contracts that either implement or consume these specification
 
 ### Environment Setup
 
-- Rust v1.86.0+
+- Rust v1.82.0+
 - `wasm32-unknown-unknown` target
 - Docker
 
