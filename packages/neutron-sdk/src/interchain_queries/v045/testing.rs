@@ -27,7 +27,9 @@ use cosmos_sdk_proto::cosmos::staking::v1beta1::{
     Commission, CommissionRates, Delegation, Description, Validator,
 };
 use cosmos_sdk_proto::traits::Message;
-use cosmwasm_std::{to_json_binary, Addr, Binary, Coin as StdCoin, Decimal, Timestamp, Uint128, Uint256};
+use cosmwasm_std::{
+    to_json_binary, Addr, Binary, Coin as StdCoin, Decimal, Timestamp, Uint128, Uint256,
+};
 use hex;
 use neutron_std::types::neutron::interchainqueries::StorageValue;
 use std::ops::Mul;
@@ -1004,7 +1006,10 @@ fn test_delegations_reconstruct() {
         // test reconstruction
         let delegations = Delegations::reconstruct(&st_values);
 
-        assert_eq!(delegations.as_ref().unwrap(), ts.expected_result.as_ref().unwrap())
+        assert_eq!(
+            delegations.as_ref().unwrap(),
+            ts.expected_result.as_ref().unwrap()
+        )
     }
 }
 
@@ -1403,7 +1408,11 @@ fn test_deconstruct_account_denom_balance_key() {
                 // Compare error messages since NeutronError doesn't implement PartialEq
                 assert_eq!(err.to_string(), expected_err.to_string())
             }
-            _ => panic!("Result type mismatch: got {:?}, expected {:?}", result.is_ok(), tc.expected_result.is_ok()),
+            _ => panic!(
+                "Result type mismatch: got {:?}, expected {:?}",
+                result.is_ok(),
+                tc.expected_result.is_ok()
+            ),
         }
     }
 }
@@ -1483,6 +1492,9 @@ fn test_delegations_reconstruct_overflow() {
         // test reconstruction
         let delegations = Delegations::reconstruct(&st_values);
 
-        assert_eq!(delegations.as_ref().unwrap(), ts.expected_result.as_ref().unwrap())
+        assert_eq!(
+            delegations.as_ref().unwrap(),
+            ts.expected_result.as_ref().unwrap()
+        )
     }
 }

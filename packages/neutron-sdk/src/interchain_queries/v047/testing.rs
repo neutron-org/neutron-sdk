@@ -95,7 +95,10 @@ fn test_balance_reconstruct() {
                 assert_eq!(coin.amount, Uint256::from(Uint128::zero()));
                 continue;
             }
-            assert_eq!(coin.amount, Uint256::from(Uint128::from_str(&ts.coins[i].1).unwrap()))
+            assert_eq!(
+                coin.amount,
+                Uint256::from(Uint128::from_str(&ts.coins[i].1).unwrap())
+            )
         }
     }
 }
@@ -931,7 +934,10 @@ fn test_delegations_reconstruct() {
         // test reconstruction
         let delegations = Delegations::reconstruct(&st_values);
 
-        assert_eq!(delegations.as_ref().unwrap(), ts.expected_result.as_ref().unwrap())
+        assert_eq!(
+            delegations.as_ref().unwrap(),
+            ts.expected_result.as_ref().unwrap()
+        )
     }
 }
 
@@ -1077,7 +1083,10 @@ fn test_delegations_reconstruct_overflow() {
         // test reconstruction
         let delegations = Delegations::reconstruct(&st_values);
 
-        assert_eq!(delegations.as_ref().unwrap(), ts.expected_result.as_ref().unwrap())
+        assert_eq!(
+            delegations.as_ref().unwrap(),
+            ts.expected_result.as_ref().unwrap()
+        )
     }
 }
 

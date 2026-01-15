@@ -17,7 +17,7 @@ use cosmos_sdk_proto::traits::Message;
 use cosmos_sdk_proto::Any;
 use cosmwasm_std::testing::{message_info, mock_env, MockApi, MockStorage};
 use cosmwasm_std::{
-    from_json, Addr, Binary, Coin, Decimal, Env, MessageInfo, OwnedDeps, StdError, Uint128, Uint256,
+    from_json, Addr, Binary, Coin, Decimal, Env, MessageInfo, OwnedDeps, Uint128, Uint256,
 };
 use neutron_sdk::interchain_queries::helpers::{
     decode_and_convert, decode_hex, kv_key_from_string,
@@ -45,7 +45,6 @@ use neutron_sdk::interchain_queries::v047::queries::{
     BalanceResponse, DelegatorDelegationsResponse, FeePoolResponse, ProposalResponse,
     TotalSupplyResponse, ValidatorResponse, ValidatorSigningInfoResponse,
 };
-use neutron_sdk::NeutronError;
 use schemars::_serde_json::to_string;
 
 enum QueryParam {
@@ -986,7 +985,9 @@ fn test_sudo_tx_query_result_callback() {
 
     // ensure the callback has returned an error and contract's state hasn't changed
     let err = res.unwrap_err();
-    assert!(err.to_string().contains("failed to find a matching transaction message"));
+    assert!(err
+        .to_string()
+        .contains("failed to find a matching transaction message"));
     let txs = RECIPIENT_TXS.load(&deps.storage, &watched_addr).unwrap();
     assert_eq!(
         txs,
@@ -1096,7 +1097,9 @@ fn test_sudo_tx_query_result_min_height_callback() {
 
     // ensure the callback has returned an error and contract's state hasn't changed
     let err = res.unwrap_err();
-    assert!(err.to_string().contains("failed to find a matching transaction message"));
+    assert!(err
+        .to_string()
+        .contains("failed to find a matching transaction message"));
     let txs = RECIPIENT_TXS.load(&deps.storage, &watched_addr).unwrap();
     assert_eq!(
         txs,

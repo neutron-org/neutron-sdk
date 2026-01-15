@@ -103,9 +103,7 @@ pub fn update_interchain_query(
         new_keys,
         new_update_period,
         new_transactions_filter: match new_transactions_filter {
-            Some(filters) => {
-                to_string(&filters).map_err(|e| StdError::msg(e.to_string()))?
-            }
+            Some(filters) => to_string(&filters).map_err(|e| StdError::msg(e.to_string()))?,
             None => "".to_string(),
         },
     }
