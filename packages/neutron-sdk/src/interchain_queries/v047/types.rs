@@ -9,7 +9,6 @@ pub use crate::interchain_queries::v045::types::*;
 use crate::interchain_queries::types::KVReconstruct;
 use crate::{errors::error::NeutronResult, NeutronError};
 
-use crate::interchain_queries::helpers::uint256_to_u128;
 use crate::interchain_queries::v047::helpers::deconstruct_account_denom_balance_key;
 use cosmos_sdk_proto::cosmos::staking::v1beta1::{
     Delegation, Params, Validator as CosmosValidator,
@@ -126,8 +125,7 @@ impl KVReconstruct for Delegations {
                 .atomics()
                 .div(Uint256::new(DECIMAL_FRACTIONAL));
 
-            delegation_std.amount =
-                Coin::new(uint256_to_u128(delegated_tokens)?, &params.bond_denom);
+            delegation_std.amount = Coin::new(delegated_tokens, &params.bond_denom);
 
             delegations.push(delegation_std);
         }

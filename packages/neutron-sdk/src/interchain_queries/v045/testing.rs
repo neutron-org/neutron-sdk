@@ -52,19 +52,19 @@ pub const VALIDATOR_SIGNING_INFO_HEX_RESPONSE: &str = "0a34636f736d6f7376616c636
 fn test_balance_reconstruct() {
     struct TestCase {
         addr: String,
-        coins: Vec<(String, Uint128)>,
+        coins: Vec<(String, Uint256)>,
     }
     let test_cases: Vec<TestCase> = vec![
         TestCase {
             addr: "osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs".to_string(),
-            coins: vec![("uosmo".to_string(), Uint128::from(100u128))],
+            coins: vec![("uosmo".to_string(), Uint256::from(100u128))],
         },
         TestCase {
             addr: "osmo1yz54ncxj9csp7un3xled03q6thrrhy9cztkfzs".to_string(),
             coins: vec![
-                ("uosmo".to_string(), Uint128::from(100u128)),
-                ("uatom".to_string(), Uint128::from(500u128)),
-                ("uluna".to_string(), Uint128::from(80u128)),
+                ("uosmo".to_string(), Uint256::from(100u128)),
+                ("uatom".to_string(), Uint256::from(500u128)),
+                ("uluna".to_string(), Uint256::from(80u128)),
             ],
         },
         TestCase {
@@ -98,7 +98,7 @@ fn test_balance_reconstruct() {
         assert_eq!(balances.coins.len(), ts.coins.len());
         for (i, coin) in balances.coins.iter().enumerate() {
             assert_eq!(coin.denom, ts.coins[i].0);
-            assert_eq!(coin.amount, Uint256::from(ts.coins[i].1))
+            assert_eq!(coin.amount, ts.coins[i].1);
         }
     }
 }
@@ -155,7 +155,7 @@ fn test_bank_total_supply_reconstruct() {
             assert_eq!(coin.denom, ts.values[i].denom);
             assert_eq!(
                 coin.amount,
-                Uint256::from(Uint128::from_str(ts.values[i].amount.as_str()).unwrap())
+                Uint256::from_str(ts.values[i].amount.as_str()).unwrap()
             )
         }
     }
@@ -787,17 +787,17 @@ fn test_proposal_votes_reconstruct() {
 #[test]
 fn test_fee_pool_reconstruct() {
     struct TestCase {
-        coins: Vec<(String, Uint128)>,
+        coins: Vec<(String, Uint256)>,
     }
     let test_cases: Vec<TestCase> = vec![
         TestCase {
-            coins: vec![("uosmo".to_string(), Uint128::from(100u128))],
+            coins: vec![("uosmo".to_string(), Uint256::from(100u128))],
         },
         TestCase {
             coins: vec![
-                ("uosmo".to_string(), Uint128::from(100u128)),
-                ("uatom".to_string(), Uint128::from(500u128)),
-                ("uluna".to_string(), Uint128::from(80u128)),
+                ("uosmo".to_string(), Uint256::from(100u128)),
+                ("uatom".to_string(), Uint256::from(500u128)),
+                ("uluna".to_string(), Uint256::from(80u128)),
             ],
         },
         TestCase { coins: vec![] },
@@ -811,7 +811,7 @@ fn test_fee_pool_reconstruct() {
                 denom: coin.0.clone(),
                 amount: coin
                     .1
-                    .mul(Uint128::one().mul(Uint128::from(10u64).pow(DECIMAL_PLACES))) // adjust to Dec gogo proto format
+                    .mul(Uint256::one().mul(Uint256::from(10u64).pow(DECIMAL_PLACES))) // adjust to Dec gogo proto format
                     .to_string(),
             };
 
@@ -835,7 +835,7 @@ fn test_fee_pool_reconstruct() {
         assert_eq!(fee_pool_coins.coins.len(), ts.coins.len());
         for (i, coin) in fee_pool_coins.coins.iter().enumerate() {
             assert_eq!(coin.denom, ts.coins[i].0);
-            assert_eq!(coin.amount, Uint256::from(ts.coins[i].1))
+            assert_eq!(coin.amount, ts.coins[i].1)
         }
     }
 }

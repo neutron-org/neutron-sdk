@@ -2,7 +2,7 @@ use crate::errors::error::{NeutronError, NeutronResult};
 use crate::interchain_queries::types::{
     AddressBytes, QueryPayload, QueryType, TransactionFilterItem, MAX_ADDR_LEN,
 };
-use cosmwasm_std::{Addr, CosmosMsg, StdError, Uint128, Uint256};
+use cosmwasm_std::{Addr, CosmosMsg, StdError};
 use neutron_std::types::neutron::interchainqueries::{
     KvKey, MsgRegisterInterchainQuery, MsgRemoveInterchainQueryRequest,
     MsgUpdateInterchainQueryRequest,
@@ -37,13 +37,6 @@ pub fn length_prefix<AddrBytes: AsRef<[u8]>>(addr: AddrBytes) -> NeutronResult<V
     p.extend_from_slice(addr.as_ref());
 
     Ok(p)
-}
-
-pub fn uint256_to_u128(value: Uint256) -> Result<u128, StdError> {
-    let converted: Uint128 = value
-        .try_into()
-        .map_err(|_| StdError::msg("Uint256 value exceeds u128 limits"))?;
-    Ok(converted.u128())
 }
 
 /// Basic helper to define a register interchain query message:
