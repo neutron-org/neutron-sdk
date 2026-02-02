@@ -17,7 +17,7 @@ use cosmos_sdk_proto::traits::Message;
 use cosmos_sdk_proto::Any;
 use cosmwasm_std::testing::{message_info, mock_env, MockApi, MockStorage};
 use cosmwasm_std::{
-    from_json, Addr, Binary, Coin, Decimal, Env, MessageInfo, OwnedDeps, StdError, Uint128,
+    from_json, Addr, Binary, Coin, Decimal, Env, MessageInfo, OwnedDeps, Uint128, Uint256,
 };
 use neutron_sdk::interchain_queries::helpers::{
     decode_and_convert, decode_hex, kv_key_from_string,
@@ -45,7 +45,6 @@ use neutron_sdk::interchain_queries::v047::queries::{
     BalanceResponse, DelegatorDelegationsResponse, FeePoolResponse, ProposalResponse,
     TotalSupplyResponse, ValidatorResponse, ValidatorSigningInfoResponse,
 };
-use neutron_sdk::NeutronError;
 use schemars::_serde_json::to_string;
 
 enum QueryParam {
@@ -523,7 +522,7 @@ fn test_gov_proposals_query() {
                         proposal_type: Some("/cosmos.gov.v1beta1.TextProposal".to_string()),
                         total_deposit: Vec::from([Coin {
                             denom: "stake".to_string(),
-                            amount: Uint128::from_str("100").unwrap(),
+                            amount: Uint256::from_str("100").unwrap(),
                         }]),
                         status: 1,
                         submit_time: None,
@@ -542,7 +541,7 @@ fn test_gov_proposals_query() {
                         proposal_type: Some("/cosmos.gov.v1beta1.TextProposal".to_string()),
                         total_deposit: Vec::from([Coin {
                             denom: "stake".to_string(),
-                            amount: Uint128::from_str("100").unwrap(),
+                            amount: Uint256::from_str("100").unwrap(),
                         }]),
                         status: 1,
                         submit_time: None,
@@ -561,7 +560,7 @@ fn test_gov_proposals_query() {
                         proposal_type: Some("/cosmos.gov.v1beta1.TextProposal".to_string()),
                         total_deposit: Vec::from([Coin {
                             denom: "stake".to_string(),
-                            amount: Uint128::from_str("100").unwrap(),
+                            amount: Uint256::from_str("100").unwrap(),
                         }]),
                         status: 1,
                         submit_time: None,
@@ -985,12 +984,10 @@ fn test_sudo_tx_query_result_callback() {
     );
 
     // ensure the callback has returned an error and contract's state hasn't changed
-    assert_eq!(
-        res.unwrap_err(),
-        NeutronError::Std(StdError::generic_err(
-            "failed to find a matching transaction message",
-        ))
-    );
+    let err = res.unwrap_err();
+    assert!(err
+        .to_string()
+        .contains("failed to find a matching transaction message"));
     let txs = RECIPIENT_TXS.load(&deps.storage, &watched_addr).unwrap();
     assert_eq!(
         txs,
@@ -1099,12 +1096,10 @@ fn test_sudo_tx_query_result_min_height_callback() {
     let res = sudo_tx_query_result(deps.as_mut(), env.clone(), query_id, height.clone(), data);
 
     // ensure the callback has returned an error and contract's state hasn't changed
-    assert_eq!(
-        res.unwrap_err(),
-        NeutronError::Std(StdError::generic_err(
-            "failed to find a matching transaction message",
-        ))
-    );
+    let err = res.unwrap_err();
+    assert!(err
+        .to_string()
+        .contains("failed to find a matching transaction message"));
     let txs = RECIPIENT_TXS.load(&deps.storage, &watched_addr).unwrap();
     assert_eq!(
         txs,

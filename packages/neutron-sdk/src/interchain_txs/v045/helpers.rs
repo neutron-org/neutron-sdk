@@ -8,10 +8,7 @@ use cosmwasm_std::{Binary, StdError, StdResult};
 pub fn decode_acknowledgement_response(data: Binary) -> StdResult<Vec<MsgData>> {
     let msg_data: Result<TxMsgData, _> = TxMsgData::decode(data.as_slice());
     match msg_data {
-        Err(e) => Err(StdError::generic_err(format!(
-            "Can't decode response: {}",
-            e
-        ))),
+        Err(e) => Err(StdError::msg(format!("Can't decode response: {}", e))),
         #[allow(deprecated)]
         Ok(msg) => Ok(msg.data),
     }

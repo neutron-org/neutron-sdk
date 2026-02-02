@@ -4,7 +4,7 @@ use thiserror::Error;
 
 pub type NeutronResult<T> = Result<T, NeutronError>;
 
-#[derive(Error, Debug, PartialEq)]
+#[derive(Error, Debug)]
 pub enum NeutronError {
     #[error("{0}")]
     Std(#[from] StdError),

@@ -3,7 +3,6 @@ use super::helpers::{
     get_update_time,
 };
 use crate::errors::error::{NeutronError, NeutronResult};
-use crate::interchain_queries::helpers::uint256_to_u128;
 use crate::interchain_queries::types::KVReconstruct;
 use crate::interchain_queries::v045::helpers::deconstruct_account_denom_balance_key;
 use cosmos_sdk_proto::cosmos::gov::v1beta1::Vote;
@@ -522,9 +521,9 @@ impl KVReconstruct for Delegations {
                 .checked_mul(validator_tokens)?
                 .div(delegator_shares)
                 .atomics()
-                .div(Uint256::from_u128(DECIMAL_FRACTIONAL));
+                .div(Uint256::new(DECIMAL_FRACTIONAL));
 
-            delegation_std.amount = Coin::new(uint256_to_u128(delegated_tokens)?, &denom);
+            delegation_std.amount = Coin::new(delegated_tokens, &denom);
 
             delegations.push(delegation_std);
         }

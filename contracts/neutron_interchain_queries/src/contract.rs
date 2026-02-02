@@ -506,7 +506,7 @@ pub fn sudo_tx_query_result(
             // If we didn't find a Send message with the correct recipient, return an error, and
             // this query result will be rejected by Neutron: no data will be saved to state.
             if deposits.is_empty() {
-                return Err(NeutronError::Std(StdError::generic_err(
+                return Err(NeutronError::Std(StdError::msg(
                     "failed to find a matching transaction message",
                 )));
             }
@@ -564,14 +564,14 @@ fn check_deposits_size(deposits: &Vec<Transfer>) -> StdResult<()> {
         match deposit.amount.parse::<u64>() {
             Ok(amount) => {
                 if amount > MAX_ALLOWED_TRANSFER {
-                    return Err(StdError::generic_err(format!(
+                    return Err(StdError::msg(format!(
                         "maximum allowed transfer is {}",
                         MAX_ALLOWED_TRANSFER
                     )));
                 };
             }
             Err(error) => {
-                return Err(StdError::generic_err(format!(
+                return Err(StdError::msg(format!(
                     "failed to cast transfer amount to u64: {}",
                     error
                 )));

@@ -104,13 +104,13 @@ fn prepare_sudo_payload(mut deps: DepsMut, _env: Env, msg: Reply) -> StdResult<R
     let resp: MsgTransferResponse = decode_message_response(
         &msg.result
             .into_result()
-            .map_err(StdError::generic_err)?
+            .map_err(StdError::msg)?
             .msg_responses[0] // msg_responses must have exactly one Msg response: https://github.com/neutron-org/neutron/blob/28b1d2ce968aaf1866e92d5286487f079eba3370/wasmbinding/message_plugin.go#L307
             .clone()
             .value
             .to_vec(),
     )
-    .map_err(|e| StdError::generic_err(format!("failed to parse response: {:?}", e)))?;
+    .map_err(|e| StdError::msg(format!("failed to parse response: {:?}", e)))?;
     let seq_id = resp.sequence_id;
     let channel_id = resp.channel;
     save_sudo_payload(deps.branch().storage, channel_id, seq_id, payload)?;
@@ -122,7 +122,7 @@ pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> StdResult<Response> {
     match msg.id {
         // It's convenient to use range of ID's to handle multiple reply messages
         IBC_SUDO_ID_RANGE_START..=IBC_SUDO_ID_RANGE_END => prepare_sudo_payload(deps, env, msg),
-        _ => Err(StdError::generic_err(format!(
+        _ => Err(StdError::msg(format!(
             "unsupported reply message id {}",
             msg.id
         ))),
@@ -247,10 +247,10 @@ fn sudo_response(deps: DepsMut, req: RequestPacket, data: Binary) -> StdResult<R
     );
     let seq_id = req
         .sequence
-        .ok_or_else(|| StdError::generic_err("sequence not found"))?;
+        .ok_or_else(|| StdError::msg("sequence not found"))?;
     let channel_id = req
         .source_channel
-        .ok_or_else(|| StdError::generic_err("channel_id not found"))?;
+        .ok_or_else(|| StdError::msg("channel_id not found"))?;
 
     match read_sudo_payload(deps.storage, channel_id, seq_id)? {
         // here we can do different logic depending on the type of the payload we saved in msg_with_sudo_callback() call

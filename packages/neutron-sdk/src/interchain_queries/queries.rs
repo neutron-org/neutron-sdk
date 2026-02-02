@@ -24,7 +24,7 @@ pub fn get_registered_query(
     let query_res = querier.registered_query(interchain_query_id)?;
     let res = query_res
         .registered_query
-        .ok_or_else(|| StdError::generic_err("no registered query"))?;
+        .ok_or_else(|| StdError::msg("no registered query"))?;
     Ok(res)
 }
 
@@ -46,7 +46,7 @@ pub fn get_raw_interchain_query_result(
     let query_res = querier.query_result(interchain_query_id)?;
     let res = query_res
         .result
-        .ok_or_else(|| StdError::generic_err("no result in registered query"))?;
+        .ok_or_else(|| StdError::msg("no result in registered query"))?;
 
     Ok(res)
 }

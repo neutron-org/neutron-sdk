@@ -2,7 +2,7 @@ use crate::errors::error::{NeutronError, NeutronResult};
 use crate::interchain_queries::types::{
     AddressBytes, QueryPayload, QueryType, TransactionFilterItem, MAX_ADDR_LEN,
 };
-use cosmwasm_std::{Addr, CosmosMsg, StdError, Uint128, Uint256};
+use cosmwasm_std::{Addr, CosmosMsg, StdError};
 use neutron_std::types::neutron::interchainqueries::{
     KvKey, MsgRegisterInterchainQuery, MsgRemoveInterchainQueryRequest,
     MsgUpdateInterchainQueryRequest,
@@ -39,13 +39,6 @@ pub fn length_prefix<AddrBytes: AsRef<[u8]>>(addr: AddrBytes) -> NeutronResult<V
     Ok(p)
 }
 
-pub fn uint256_to_u128(value: Uint256) -> Result<u128, StdError> {
-    let converted: Uint128 = value
-        .try_into()
-        .map_err(|_| StdError::generic_err("Uint256 value exceeds u128 limits"))?;
-    Ok(converted.u128())
-}
-
 /// Basic helper to define a register interchain query message:
 /// * **contract** is a contract address that registers the interchain query.
 ///   Must be equal to the contract that sends the message.
@@ -76,7 +69,7 @@ pub fn register_interchain_query(
             query_type: QueryType::TX.into(),
             keys: vec![],
             transactions_filter: to_string(&transactions_filters)
-                .map_err(|e| StdError::generic_err(e.to_string()))?,
+                .map_err(|e| StdError::msg(e.to_string()))?,
             connection_id,
             update_period,
         },
@@ -103,9 +96,7 @@ pub fn update_interchain_query(
         new_keys,
         new_update_period,
         new_transactions_filter: match new_transactions_filter {
-            Some(filters) => {
-                to_string(&filters).map_err(|e| StdError::generic_err(e.to_string()))?
-            }
+            Some(filters) => to_string(&filters).map_err(|e| StdError::msg(e.to_string()))?,
             None => "".to_string(),
         },
     }
