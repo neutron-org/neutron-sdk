@@ -2,7 +2,6 @@
 target/
 /artifacts/checksums_intermediate.txt
 artifacts/
-Cargo.lock
 
 /deployment_scripts/node_modules
 

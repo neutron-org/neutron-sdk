@@ -423,6 +423,7 @@
   ],
   "definitions": {
     "KvKey": {
+      "description": "Represents a path to an IAVL storage node.",
       "type": "object",
       "required": [
         "key",
@@ -430,7 +431,7 @@
       ],
       "properties": {
         "key": {
-          "description": "Key you want to read from the storage",
+          "description": "A bytes field representing the key for specific data in the module's storage.",
           "type": "array",
           "items": {
             "type": "integer",
@@ -439,7 +440,7 @@
           }
         },
         "path": {
-          "description": "Path (storage prefix) to the storage where you want to read value by key (usually name of cosmos-sdk module: 'staking', 'bank', etc.)",
+          "description": "The substore name used in an Interchain Query. Typically, this corresponds to the keeper's storeKey, usually the module's name, such as \"bank\", \"staking\", etc.",
           "type": "string"
         }
       },

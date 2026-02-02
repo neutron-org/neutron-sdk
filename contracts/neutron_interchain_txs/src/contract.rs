@@ -235,7 +235,7 @@ fn execute_delegate(
     let mut buf = Vec::with_capacity(delegate_msg.encoded_len());
 
     if let Err(e) = delegate_msg.encode(&mut buf) {
-        return Err(NeutronError::Std(StdError::generic_err(format!(
+        return Err(NeutronError::Std(StdError::msg(format!(
             "Encode error: {}",
             e
         ))));
@@ -294,7 +294,7 @@ fn execute_undelegate(
     let mut buf = Vec::with_capacity(delegate_msg.encoded_len());
 
     if let Err(e) = delegate_msg.encode(&mut buf) {
-        return Err(NeutronError::Std(StdError::generic_err(format!(
+        return Err(NeutronError::Std(StdError::msg(format!(
             "Encode error: {}",
             e
         ))));
@@ -394,7 +394,7 @@ fn sudo_open_ack(
         )?;
         return Ok(Response::default());
     }
-    Err(StdError::generic_err("Can't parse counterparty_version"))
+    Err(StdError::msg("Can't parse counterparty_version"))
 }
 
 fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResult<Response> {
@@ -410,13 +410,13 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
     // in the request value implies that a fatal error occurred on Neutron side.
     let seq_id = request
         .sequence
-        .ok_or_else(|| StdError::generic_err("sequence not found"))?;
+        .ok_or_else(|| StdError::msg("sequence not found"))?;
 
     // In this particular case, we return an error because not having the sequence id
     // in the request value implies that a fatal error occurred on Neutron side.
     let channel_id = request
         .source_channel
-        .ok_or_else(|| StdError::generic_err("channel_id not found"))?;
+        .ok_or_else(|| StdError::msg("channel_id not found"))?;
 
     // In this particular example, this is a matter of developer's choice. Not being able to read
     // the payload here means that there was a problem with the contract while submitting an
@@ -485,7 +485,7 @@ fn sudo_response(deps: DepsMut, request: RequestPacket, data: Binary) -> StdResu
             (payload.port_id, seq_id),
             |maybe_ack| -> StdResult<AcknowledgementResult> {
                 match maybe_ack {
-                    Some(_ack) => Err(StdError::generic_err("trying to update same seq_id")),
+                    Some(_ack) => Err(StdError::msg("trying to update same seq_id")),
                     None => Ok(AcknowledgementResult::Success(item_types)),
                 }
             },
@@ -503,13 +503,13 @@ fn sudo_timeout(deps: DepsMut, _env: Env, request: RequestPacket) -> StdResult<R
     // in the request value implies that a fatal error occurred on Neutron side.
     let seq_id = request
         .sequence
-        .ok_or_else(|| StdError::generic_err("sequence not found"))?;
+        .ok_or_else(|| StdError::msg("sequence not found"))?;
 
     // In this particular case, we return an error because not having the sequence id
     // in the request value implies that a fatal error occurred on Neutron side.
     let channel_id = request
         .source_channel
-        .ok_or_else(|| StdError::generic_err("channel_id not found"))?;
+        .ok_or_else(|| StdError::msg("channel_id not found"))?;
 
     // update but also check that we don't update same seq_id twice
     // In this particular example, this is a matter of developer's choice. Not being able to read
@@ -527,7 +527,7 @@ fn sudo_timeout(deps: DepsMut, _env: Env, request: RequestPacket) -> StdResult<R
             (payload.port_id, seq_id),
             |maybe_ack| -> StdResult<AcknowledgementResult> {
                 match maybe_ack {
-                    Some(_ack) => Err(StdError::generic_err("trying to update same seq_id")),
+                    Some(_ack) => Err(StdError::msg("trying to update same seq_id")),
                     None => Ok(AcknowledgementResult::Timeout(payload.message)),
                 }
             },
@@ -551,13 +551,13 @@ fn sudo_error(deps: DepsMut, request: RequestPacket, details: String) -> StdResu
     // in the request value implies that a fatal error occurred on Neutron side.
     let seq_id = request
         .sequence
-        .ok_or_else(|| StdError::generic_err("sequence not found"))?;
+        .ok_or_else(|| StdError::msg("sequence not found"))?;
 
     // In this particular case, we return an error because not having the sequence id
     // in the request value implies that a fatal error occurred on Neutron side.
     let channel_id = request
         .source_channel
-        .ok_or_else(|| StdError::generic_err("channel_id not found"))?;
+        .ok_or_else(|| StdError::msg("channel_id not found"))?;
     let payload = read_sudo_payload(deps.storage, channel_id, seq_id).ok();
 
     if let Some(payload) = payload {
@@ -567,7 +567,7 @@ fn sudo_error(deps: DepsMut, request: RequestPacket, details: String) -> StdResu
             (payload.port_id, seq_id),
             |maybe_ack| -> StdResult<AcknowledgementResult> {
                 match maybe_ack {
-                    Some(_ack) => Err(StdError::generic_err("trying to update same seq_id")),
+                    Some(_ack) => Err(StdError::msg("trying to update same seq_id")),
                     None => Ok(AcknowledgementResult::Error((payload.message, details))),
                 }
             },
@@ -590,13 +590,13 @@ fn prepare_sudo_payload(mut deps: DepsMut, _env: Env, msg: Reply) -> StdResult<R
     let resp: MsgSubmitTxResponse = decode_message_response(
         &msg.result
             .into_result()
-            .map_err(StdError::generic_err)?
+            .map_err(StdError::msg)?
             .msg_responses[0] // msg_responses must have exactly one Msg response: https://github.com/neutron-org/neutron/blob/28b1d2ce968aaf1866e92d5286487f079eba3370/wasmbinding/message_plugin.go#L443
             .clone()
             .value
             .to_vec(),
     )
-    .map_err(|e| StdError::generic_err(format!("failed to parse response: {:?}", e)))?;
+    .map_err(|e| StdError::msg(format!("failed to parse response: {:?}", e)))?;
     deps.api
         .debug(format!("WASMDEBUG: reply msg: {:?}", resp).as_str());
     let seq_id = resp.sequence_id;
@@ -614,7 +614,7 @@ fn get_ica(
 
     INTERCHAIN_ACCOUNTS
         .load(deps.storage, key)?
-        .ok_or_else(|| StdError::generic_err("Interchain account is not created yet"))
+        .ok_or_else(|| StdError::msg("Interchain account is not created yet"))
 }
 
 #[cfg_attr(not(feature = "library"), cosmwasm_std::entry_point)]
@@ -623,7 +623,7 @@ pub fn reply(deps: DepsMut, env: Env, msg: Reply) -> StdResult<Response> {
         .debug(format!("WASMDEBUG: reply msg: {:?}", msg).as_str());
     match msg.id {
         SUDO_PAYLOAD_REPLY_ID => prepare_sudo_payload(deps, env, msg),
-        _ => Err(StdError::generic_err(format!(
+        _ => Err(StdError::msg(format!(
             "unsupported reply message id {}",
             msg.id
         ))),

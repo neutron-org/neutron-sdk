@@ -124,7 +124,7 @@ impl KVReconstruct for Uint128 {
     fn reconstruct(storage_values: &[StorageValue]) -> NeutronResult<Uint128> {
         let value = storage_values
             .first()
-            .ok_or_else(|| StdError::generic_err("empty query result"))?;
+            .ok_or_else(|| StdError::msg("empty query result"))?;
         let balance: Uint128 = from_json(&value.value)?;
         Ok(balance)
     }

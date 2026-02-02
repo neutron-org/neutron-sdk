@@ -14,14 +14,14 @@ incremental = false
 overflow-checks = true
 
 [workspace.dependencies]
-cosmwasm-std = "2.1.0"
-neutron-std = { git = "https://github.com/neutron-org/neutron-std", branch = "feat/tf2" }
-cosmwasm-schema = { version = "2.1.0", default-features = false }
-cw2 = "2.0.0"
-cw-storage-plus = "2.0.0"
+cosmwasm-std = "3.0.2"
+neutron-std = { git = "https://github.com/neutron-org/neutron-std", branch = "feat/cosmwasm-3" }
+cosmwasm-schema = { version = "3.0.2", default-features = false }
+cw2 = "3.0.0"
+cw-storage-plus = "3.0.1"
 schemars = "0.8.15"
 serde = { version = "1.0.188", default-features = false }
-serde-json-wasm = "1.0.0"
+serde-json-wasm = "1.0.1"
 base64 = "0.21.7"
 prost = "0.12.3"
 prost-types = "0.12.1"

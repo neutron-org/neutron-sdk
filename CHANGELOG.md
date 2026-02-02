@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.12.0
+
+### Improvements
+* Rust 1.86;
+
 ## 0.11.0
 
 ### Improvements

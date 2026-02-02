@@ -21,7 +21,7 @@ compile:
 		--mount type=volume,source="$(notdir $(CURDIR))_cache",target=/target \
 		--mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
 		--platform linux/amd64 \
-		cosmwasm/workspace-optimizer:0.16.0
+		cosmwasm/workspace-optimizer:0.17.0
 
 check_contracts:
 	@cargo install cosmwasm-check
