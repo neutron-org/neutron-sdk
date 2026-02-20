@@ -15,7 +15,7 @@ overflow-checks = true
 
 [workspace.dependencies]
 cosmwasm-std = "3.0.2"
-neutron-std = { git = "https://github.com/neutron-org/neutron-std", branch = "feat/cosmwasm-3" }
+neutron-std = { git = "https://github.com/neutron-org/neutron-std", branch = "feat/ibc-transfer-encoding-support" }
 cosmwasm-schema = { version = "3.0.2", default-features = false }
 cw2 = "3.0.0"
 cw-storage-plus = "3.0.1"
