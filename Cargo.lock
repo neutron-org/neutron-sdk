@@ -931,7 +931,7 @@ dependencies = [
 [[package]]
 name = "neutron-std"
 version = "9.1.0"
-source = "git+https://github.com/neutron-org/neutron-std?branch=feat%2Fcosmwasm-3#b0bb1c99eff87c24a14e55e67aa83079799310f1"
+source = "git+https://github.com/neutron-org/neutron-std?branch=feat%2Fibc-transfer-encoding-support#0880622e469949ed2b1e74ad50ce069c1b7eb45a"
 dependencies = [
  "bech32 0.9.1",
  "chrono",
@@ -956,7 +956,7 @@ dependencies = [
 [[package]]
 name = "neutron-std-derive"
 version = "0.20.1"
-source = "git+https://github.com/neutron-org/neutron-std?branch=feat%2Fcosmwasm-3#b0bb1c99eff87c24a14e55e67aa83079799310f1"
+source = "git+https://github.com/neutron-org/neutron-std?branch=feat%2Fibc-transfer-encoding-support#0880622e469949ed2b1e74ad50ce069c1b7eb45a"
 dependencies = [
  "itertools 0.10.5",
  "proc-macro2",
